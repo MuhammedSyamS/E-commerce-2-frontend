@@ -14,12 +14,15 @@ import ProductDetails from './pages/ProductDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Account from './pages/Account';
+import OrderDetails from './pages/OrderDetails'; // <--- NEW
 import Checkout from './pages/Checkout';
 import OrderSuccess from './pages/OrderSuccess';
+import NotFound from './pages/NotFound';         // <--- NEW
 
-// Admin Imports (New Path)
+// Admin
 import Admin from './pages/admin/Admin';
 import AddProduct from './pages/admin/AddProduct';
+import EditProduct from './pages/admin/EditProduct'; // <--- NEW
 
 // --- Internal Cart Component ---
 const CartDrawer = () => {
@@ -89,15 +92,24 @@ const App = () => {
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop />} />
           <Route path="/product/:slug" element={<ProductDetails />} />
+          
+          {/* User Auth & Account */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/account" element={<Account />} />
+          <Route path="/order/:id" element={<OrderDetails />} /> {/* <--- NEW */}
+
+          {/* Checkout */}
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
 
-          {/* ADMIN ROUTES */}
+          {/* Admin Routes */}
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/add" element={<AddProduct />} />
+          <Route path="/admin/edit/:id" element={<EditProduct />} /> {/* <--- NEW */}
+
+          {/* 404 */}
+          <Route path="*" element={<NotFound />} /> {/* <--- NEW */}
         </Routes>
       </div>
       <Footer />
