@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart } from 'lucide-react'; // <--- Added Heart
 import { useStore } from '../store/useStore';
 
 const Navbar = () => {
@@ -55,7 +55,7 @@ const Navbar = () => {
   return (
     <div className="sticky top-0 z-50">
       
-      {/* --- TOP BANNER (Increased Height to h-10) --- */}
+      {/* --- TOP BANNER --- */}
       <div className="bg-black text-white h-10 flex items-center justify-center gap-2 text-xs">
         <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer">
           <ChevronLeft size={14} />
@@ -76,9 +76,8 @@ const Navbar = () => {
         </button>
       </div>
       
-      {/* --- MAIN NAV (Increased Height to h-20) --- */}
+      {/* --- MAIN NAV --- */}
       <nav className="bg-[#454545] text-white transition-all duration-300 relative mx-4 mt-3 rounded-2xl shadow-xl">
-        {/* Increased vertical padding (py-0) and set fixed height (h-20) for a thicker bar */}
         <div className="w-full px-8 flex items-center justify-between relative h-20">
           
           {/* Mobile Menu */}
@@ -86,23 +85,28 @@ const Navbar = () => {
             <Menu className="w-6 h-6 text-white" />
           </div>
 
-          {/* Logo (Larger Text) */}
+          {/* Logo */}
           <Link to="/" className="text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110">
             miso
           </Link>
 
-          {/* Desktop Links (Larger Text & Spacing) */}
+          {/* Desktop Links */}
           <div className="hidden md:flex gap-12 text-xs font-bold tracking-[0.2em] uppercase absolute left-1/2 transform -translate-x-1/2">
             <Link to="/" className="text-white hover:text-gray-200 transition">Home</Link>
             <Link to="/shop" className="text-white hover:text-gray-200 transition">Best Sellers</Link>
             <Link to="/shop" className="text-white hover:text-gray-200 transition">Shop</Link>
           </div>
 
-          {/* Icons (Larger Icons) */}
+          {/* Icons */}
           <div className="flex items-center gap-6">
             <button onClick={() => setIsSearchOpen(!isSearchOpen)}>
                <Search className="w-5 h-5 cursor-pointer text-white hover:text-gray-200 transition-colors" />
             </button>
+
+            {/* --- WISHLIST ICON ADDED HERE --- */}
+            <Link to="/wishlist">
+              <Heart className="w-5 h-5 cursor-pointer text-white hover:text-gray-200 transition-colors" />
+            </Link>
 
             <Link to={user ? "/account" : "/login"}>
               <User className={`w-5 h-5 cursor-pointer transition-colors ${user ? 'text-green-400' : 'text-white hover:text-gray-200'}`} />
@@ -119,7 +123,7 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* SEARCH BAR DROPDOWN (Curved Bottom) */}
+        {/* SEARCH BAR DROPDOWN */}
         {isSearchOpen && (
           <div className="absolute top-full left-0 w-full bg-white text-black border-b border-gray-200 p-5 rounded-b-2xl shadow-2xl z-50">
             <form onSubmit={handleSearch} className="container mx-auto flex items-center gap-4">
