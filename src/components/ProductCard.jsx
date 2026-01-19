@@ -1,32 +1,49 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { Star } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 
 const ProductCard = ({ product }) => {
   const addToCart = useStore((state) => state.addToCart);
+  const [isWishlisted, setIsWishlisted] = useState(false);
 
   return (
     <div className="group relative w-full">
-      <Link to={`/product/${product.slug}`} className="block">
+      <div className="block">
         
         {/* IMAGE CONTAINER */}
         <div className="relative aspect-square overflow-hidden bg-gray-100 mb-4 cursor-pointer">
-          {/* Main Image */}
-          <img 
-            src={product.image} 
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          />
+          <Link to={`/product/${product.slug}`}>
+            <img 
+              src={product.image} 
+              alt={product.name}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+          </Link>
           
-          {/* Best Seller Badge */}
           {product.isBestSeller && (
             <span className="absolute top-2 left-2 bg-black text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider z-10">
               Best Seller
             </span>
           )}
 
-          {/* ADD TO CART BUTTON (Slides Up) */}
+          {/* --- WISHLIST BUTTON (Black Fill Toggle) --- */}
+          <button 
+            onClick={(e) => {
+              e.preventDefault();
+              setIsWishlisted(!isWishlisted);
+            }}
+            className="absolute top-2 right-2 z-30 p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-sm hover:bg-white transition-all active:scale-90"
+          >
+            <Heart 
+              size={14} 
+              className={`transition-colors duration-300 ${
+                isWishlisted ? "text-black fill-black" : "text-black"
+              }`} 
+            />
+          </button>
+
+          {/* ADD TO CART BUTTON */}
           <button 
             onClick={(e) => {
               e.preventDefault();
@@ -38,33 +55,37 @@ const ProductCard = ({ product }) => {
           </button>
         </div>
 
-        {/* INFO SECTION - Matches video layout */}
-        <div className="flex justify-between items-start">
-          <div className="flex-1 pr-2">
-            <h3 className="text-sm font-bold text-gray-900 leading-tight group-hover:underline decoration-1 underline-offset-4 line-clamp-2 uppercase">
-              {product.name}
-            </h3>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium tracking-wide">
-              925 Sterling Silver
-            </p>
+        {/* INFO SECTION */}
+        <Link to={`/product/${product.slug}`}>
+          <div className="flex justify-between items-start px-1">
+            <div className="flex-1 pr-2">
+              <h3 className="text-[13px] font-bold text-gray-900 leading-tight group-hover:underline decoration-1 underline-offset-4 line-clamp-2 uppercase tracking-tight">
+                {product.name}
+              </h3>
+              <p className="text-[10px] text-gray-500 mt-1 font-medium tracking-wide">
+                925 Sterling Silver
+              </p>
+            </div>
+            
+            <div className="text-right">
+               <p className="text-[13px] font-bold text-black">Rs. {product.price}</p>
+            </div>
           </div>
           
-          <div className="text-right">
-             <p className="text-sm font-bold text-black">Rs. {product.price}</p>
+          {/* REVIEWS */}
+          <div className="flex items-center gap-1 mt-1 px-1">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={10} fill="currentColor" className="text-black" />
+              ))}
+            </div>
+            <span className="text-[9px] text-gray-400 font-medium tracking-tighter">
+              ({product.reviews || 0})
+            </span>
           </div>
-        </div>
-        
-        {/* REVIEWS */}
-        <div className="flex items-center gap-1 mt-1">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={10} fill="currentColor" className="text-black" />
-            ))}
-          </div>
-          <span className="text-[10px] text-gray-400 font-medium">({product.reviews})</span>
-        </div>
+        </Link>
 
-      </Link>
+      </div>
     </div>
   );
 };
