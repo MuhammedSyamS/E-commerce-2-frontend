@@ -14,8 +14,12 @@ import ProductDetails from './pages/ProductDetails';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Account from './pages/Account';
-import Checkout from './pages/Checkout';          // <--- ADDED
-import OrderSuccess from './pages/OrderSuccess';  // <--- ADDED
+import Checkout from './pages/Checkout';
+import OrderSuccess from './pages/OrderSuccess';
+
+// Admin Imports (New Path)
+import Admin from './pages/admin/Admin';
+import AddProduct from './pages/admin/AddProduct';
 
 // --- Internal Cart Component ---
 const CartDrawer = () => {
@@ -60,7 +64,6 @@ const CartDrawer = () => {
               <span>Subtotal</span>
               <span>Rs. {subtotal}.00</span>
             </div>
-            {/* CHECKOUT BUTTON NOW WORKS */}
             <button 
               onClick={() => { toggleCart(); navigate('/checkout'); }} 
               className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest text-xs hover:bg-gray-800 transition"
@@ -91,6 +94,10 @@ const App = () => {
           <Route path="/account" element={<Account />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/order-success" element={<OrderSuccess />} />
+
+          {/* ADMIN ROUTES */}
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/add" element={<AddProduct />} />
         </Routes>
       </div>
       <Footer />
