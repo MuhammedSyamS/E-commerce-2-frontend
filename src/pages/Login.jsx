@@ -72,7 +72,7 @@ const Login = () => {
             required
           />
           <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest hover:bg-zinc-900 transition active:scale-95">
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? 'Authenticating...' : 'LogIn'}
           </button>
         </form>
 
