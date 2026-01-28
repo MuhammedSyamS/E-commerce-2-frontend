@@ -9,3 +9,13 @@ html, body {
   margin: 0;
   font-family: 'Inter', sans-serif;
 }
+/* Add this to your index.css */
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Safari and Chrome */
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+  }
+}

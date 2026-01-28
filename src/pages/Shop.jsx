@@ -1,68 +1,106 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import ProductCard from '../components/ProductCard';
-import { products } from '../data/products';
 
 const Shop = () => {
-  const [filter, setFilter] = useState('All');
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('All');
 
-  // Fix: Force the page to the top whenever the component loads
+  const categories = ['All', 'Rings', 'Pendants', 'Bracelets', 'Earrings'];
+
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        // Ensure your backend is running on port 5000
+        const res = await axios.get('http://localhost:5000/api/products');
+        const data = Array.isArray(res.data) ? res.data : [];
+        setProducts(data);
+        setFilteredProducts(data);
+      } catch (err) {
+        console.error("Shop Fetch Error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
   }, []);
 
-  const filteredProducts = filter === 'All' 
-    ? products 
-    : products.filter(p => p.category === filter);
+  // Filter Logic
+  useEffect(() => {
+    if (activeCategory === 'All') {
+      setFilteredProducts(products);
+    } else {
+      setFilteredProducts(products.filter(p => p.category === activeCategory));
+    }
+  }, [activeCategory, products]);
+
+  if (loading) return (
+    <div className="h-screen flex items-center justify-center bg-white">
+      <div className="w-6 h-6 border-2 border-zinc-200 border-t-black rounded-full animate-spin"></div>
+    </div>
+  );
 
   return (
-    /* CRITICAL FIX: 
-       pt-40 (Mobile) and md:pt-52 (Desktop) ensures the title 
-       is never hidden behind your fixed Navbar + Top Banner.
-    */
-    <div className="bg-white min-h-screen pt-40 md:pt-52 pb-32">
-      <div className="container mx-auto px-4 md:px-10">
+    <div className="bg-white min-h-screen pt-40 pb-20">
+      <div className="container mx-auto px-6 md:px-12">
         
-        {/* --- PAGE TITLE --- */}
-        <div className="text-center mb-16 space-y-4">
-          <p className="text-[10px] font-black uppercase tracking-[0.8em] text-zinc-400">
-            Miso Silver Studio
-          </p>
-          <h1 className="text-4xl md:text-7xl font-black uppercase tracking-tighter text-black leading-none">
-            The Collection
+        {/* --- CLEAN HEADER --- */}
+        <div className="mb-16">
+          <h1 className="text-4xl md:text-5xl font-light uppercase tracking-[0.2em] text-black">
+            The Silver <span className="font-bold">Gallery</span>
           </h1>
+          <div className="h-px w-20 bg-black mt-6"></div>
         </div>
 
-        {/* --- CATEGORY FILTERS (SCROLLABLE ON MOBILE) --- */}
-        <div className="flex justify-start md:justify-center gap-4 mb-20 overflow-x-auto no-scrollbar px-4 pb-4">
-          {['All', 'Rings', 'Earrings', 'Pendants', 'Bracelets'].map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`flex-shrink-0 px-8 py-3 text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-500 rounded-full border ${
-                filter === cat 
-                  ? 'bg-black text-white border-black shadow-xl' 
-                  : 'bg-white text-zinc-400 border-zinc-100 hover:border-black hover:text-black'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+        {/* --- FILTER NAVIGATION --- */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-16 border-b border-zinc-100 pb-6">
+          <div className="flex flex-wrap justify-center gap-6 md:gap-10">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`text-[11px] font-bold uppercase tracking-[0.3em] transition-all duration-300 ${
+                  activeCategory === cat 
+                  ? 'text-black scale-110' 
+                  : 'text-zinc-400 hover:text-black'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+          
+          <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest">
+            {filteredProducts.length} Items Found
+          </span>
         </div>
 
         {/* --- PRODUCT GRID --- */}
-        {filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 md:gap-x-10 gap-y-16">
-            {filteredProducts.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
-        ) : (
-          <div className="py-24 text-center border-y border-zinc-50">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-300">
-              No pieces currently available in this category.
-            </p>
-          </div>
-        )}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-12 md:gap-x-12 md:gap-y-20">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
+              <div key={product._id} className="transition-opacity duration-500">
+                <ProductCard product={product} />
+              </div>
+            ))
+          ) : (
+            <div className="col-span-full py-32 text-center">
+              <p className="text-[11px] font-medium uppercase tracking-[0.5em] text-zinc-300">
+                Selection currently unavailable
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* --- MINIMALIST FOOTER INFO --- */}
+      <div className="mt-40 pt-20 border-t border-zinc-100 text-center">
+        <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-zinc-300">
+          Miso Studio &copy; 2026 | Hallmarked 925 Silver
+        </p>
       </div>
     </div>
   );

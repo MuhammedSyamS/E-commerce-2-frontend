@@ -1,22 +1,35 @@
 import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
 
-export const useStore = create((set) => ({
-  cart: [],
-  isCartOpen: false,
-  addToCart: (product) => set((state) => {
-    const existing = state.cart.find((item) => item._id === product._id);
-    if (existing) {
-      return {
-        cart: state.cart.map((item) =>
-          item._id === product._id ? { ...item, qty: item.qty + 1 } : item
-        ),
-        isCartOpen: true
-      };
+export const useStore = create(
+  persist(
+    (set) => ({
+      user: null,
+      isCartOpen: false,
+      isSearchOpen: false,
+
+      // Sets the entire user object (including the cart from DB)
+      setUser: (userData) => set({ user: userData }),
+
+      // Syncs ONLY the cart array when the controller returns it
+      setCart: (updatedCart) => set((state) => ({
+        user: state.user ? { ...state.user, cart: updatedCart } : null
+      })),
+
+      toggleCart: (open) => set((state) => ({ 
+        isCartOpen: typeof open === 'boolean' ? open : !state.isCartOpen 
+      })),
+      
+      toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
+
+      logout: () => {
+        set({ user: null });
+        localStorage.removeItem('miso-storage');
+      }
+    }),
+    { 
+      name: 'miso-storage',
+      storage: createJSONStorage(() => localStorage)
     }
-    return { cart: [...state.cart, { ...product, qty: 1 }], isCartOpen: true };
-  }),
-  removeFromCart: (id) => set((state) => ({
-    cart: state.cart.filter((item) => item._id !== id)
-  })),
-  toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),
-}));
+  )
+);

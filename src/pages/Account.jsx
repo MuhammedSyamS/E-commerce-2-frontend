@@ -1,16 +1,26 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Package } from 'lucide-react';
+import { LogOut, Package, MapPin, Heart, ChevronRight, ShoppingBag, Truck } from 'lucide-react';
 
 const Account = () => {
   const { user, logout } = useStore();
   const navigate = useNavigate();
 
   if (!user) {
-    navigate('/login');
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center pt-52 bg-white">
+        <div className="text-center">
+          <p className="text-xs font-bold uppercase tracking-widest mb-4">Session Expired</p>
+          <button onClick={() => navigate('/login')} className="bg-black text-white px-8 py-3 uppercase text-[10px] font-black">
+            Login to View Account
+          </button>
+        </div>
+      </div>
+    );
   }
+
+  const displayName = user.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Member';
 
   const handleLogout = () => {
     logout();
@@ -18,67 +28,129 @@ const Account = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-12 md:py-20">
-      <div className="flex flex-col md:flex-row justify-between items-start mb-12 border-b pb-6">
-        <div>
-          <h1 className="text-3xl font-bold uppercase tracking-tighter mb-2">My Account</h1>
-          <p className="text-gray-500">Welcome back, {user.name}</p>
+    <div className="min-h-screen bg-white pb-20 pt-52">
+      <div className="container mx-auto px-6 max-w-6xl">
+        
+        {/* HEADER SECTION */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-gray-100 pb-10">
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-[0.5em] text-gray-400 mb-2">Member Portal</p>
+            <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter italic transform -skew-x-3">My Account</h1>
+            <p className="text-gray-500 mt-2 font-medium">Greetings, {user.firstName} {user.lastName || 'User'}</p>
+          </div>
+          <button 
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-black px-6 py-3 hover:bg-black hover:text-white transition-all mt-6 md:mt-0">
+            <LogOut size={14} /> Secure Logout
+          </button>
         </div>
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-2 text-sm font-bold uppercase underline hover:text-gray-500 mt-4 md:mt-0">
-          <LogOut size={16} /> Log Out
-        </button>
-      </div>
 
-      <div className="grid md:grid-cols-3 gap-12">
-        {/* Order History */}
-        <div className="md:col-span-2">
-          <h2 className="text-xl font-bold uppercase tracking-wide mb-6">Order History</h2>
+        <div className="grid lg:grid-cols-3 gap-16">
           
-          {/* Mock Order Item */}
-          <div className="border border-gray-200 p-6 mb-4">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="font-bold text-sm">Order #1024</p>
-                <p className="text-xs text-gray-500">Placed on Jan 15, 2026</p>
-              </div>
-              <span className="bg-gray-100 text-xs font-bold px-3 py-1 rounded-full">Processing</span>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-gray-100 flex items-center justify-center">
-                 <Package size={20} />
-              </div>
-              <div className="flex-1">
-                 <p className="text-sm font-medium">Eagle Adjustable Ring x 1</p>
-                 <p className="text-sm font-medium">Batman Ring x 1</p>
-              </div>
-              <p className="font-bold text-sm">Rs. 1,798</p>
+          {/* LEFT: DASHBOARD NAV */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              
+              {/* --- NEW: TRACK ORDER BUTTON (BLACK STYLE) --- */}
+              <button 
+                onClick={() => navigate('/track-order')}
+                className="group flex items-center justify-between p-8 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="p-3 bg-white/10 rounded-lg">
+                    <Truck size={24} className="text-white" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-sm uppercase italic">Track Order</p>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Real-time Logistics</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform text-white" />
+              </button>
+
+              {/* ORDERS LINK */}
+              <button 
+                onClick={() => navigate('/my-orders')}
+                className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="p-3 bg-white rounded-lg shadow-sm">
+                    <Package size={24} />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-sm uppercase">Orders History</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Manage Manifests</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+              </button>
+
+              {/* WISHLIST LINK */}
+              <button 
+                onClick={() => navigate('/wishlist')}
+                className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="p-3 bg-white rounded-lg shadow-sm">
+                    <Heart size={24} className="text-black" />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-sm uppercase">Wishlist</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Saved Favorites</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+              </button>
+
+              {/* SHOP LINK */}
+              <button 
+                onClick={() => navigate('/shop')}
+                className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
+              >
+                <div className="flex items-center gap-5">
+                  <div className="p-3 bg-white rounded-lg shadow-sm">
+                    <ShoppingBag size={24} />
+                  </div>
+                  <div className="text-left">
+                    <p className="font-bold text-sm uppercase">Studio Shop</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">New Collections</p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
+              </button>
             </div>
           </div>
 
-          <div className="text-center py-10 bg-gray-50 border border-dashed border-gray-300">
-            <p className="text-gray-500 text-sm">No other orders found.</p>
-          </div>
-        </div>
+          {/* RIGHT: ACCOUNT DETAILS */}
+          <div className="space-y-8">
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-400">Profile Details</h2>
+            <div className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-12 h-12 bg-black text-white flex items-center justify-center rounded-full font-bold">
+                  {user.firstName ? user.firstName.charAt(0) : 'U'}
+                </div>
+                <div>
+                  <p className="font-bold text-sm uppercase">{displayName}</p>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-tight">{user.email}</p>
+                </div>
+              </div>
 
-        {/* Address Details */}
-        <div>
-          <h2 className="text-xl font-bold uppercase tracking-wide mb-6">Account Details</h2>
-          <div className="bg-gray-50 p-6">
-            <p className="font-bold mb-1">{user.name}</p>
-            <p className="text-gray-600 text-sm mb-4">{user.email}</p>
-            <p className="text-gray-600 text-sm">
-              India<br/>
-              Kerala<br/>
-              695141
-            </p>
-            <button className="text-xs font-bold underline mt-4">View Addresses (1)</button>
+              <div className="space-y-6 pt-6 border-t border-gray-200">
+                <div className="flex gap-4">
+                  <MapPin size={18} className="text-gray-400 flex-shrink-0" />
+                  <div className="text-[11px] font-bold uppercase tracking-tight leading-relaxed">
+                    <p className="text-gray-400 mb-1">Status</p>
+                    <p>Verified Member</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
   );
-};
+}; 
 
 export default Account;
