@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react';
-import { useStore } from '../store/useStore'; // 1. Import your store
+import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react'; 
+import { useStore } from '../store/useStore';
 
 const Orders = () => {
   const navigate = useNavigate();
-  const { user } = useStore(); // 2. Access user from Zustand
+  const { user } = useStore();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      // 3. Ensure user and token exist before fetching
       if (!user?.token) {
         setLoading(false);
         return;
@@ -22,11 +21,10 @@ const Orders = () => {
         setLoading(true);
         const config = {
           headers: {
-            Authorization: `Bearer ${user.token}` // 4. Use token from store
+            Authorization: `Bearer ${user.token}`
           }
         };
         
-        // 5. URL matches your router.route('/myorders')
         const res = await axios.get('http://localhost:5000/api/orders/myorders', config);
         
         const data = Array.isArray(res.data) ? res.data : (res.data.orders || []);
@@ -49,59 +47,69 @@ const Orders = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white pb-20 pt-52 px-6">
+    <div className="min-h-screen bg-white pb-20 pt-52 px-6 text-[#1a1a1a]">
       <div className="container mx-auto max-w-5xl">
         <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter italic transform -skew-x-3">
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3 leading-none">
             My <span className="text-zinc-300">Orders</span>
           </h1>
           <div className="h-1 w-20 bg-black mt-4"></div>
         </div>
 
         {orders.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {orders.map((order) => (
-              <div key={order._id} className="border border-gray-100 p-8 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-6 hover:border-black transition duration-500 hover:shadow-xl">
-                <div className="flex items-center gap-6">
-                  <div className="p-4 bg-zinc-50 rounded-full">
-                    <Package size={24} className="text-black" />
+              <div key={order._id} className="border border-zinc-100 p-6 md:p-10 rounded-[2rem] bg-white hover:border-black transition-all duration-500 group shadow-sm hover:shadow-xl">
+                <div className="flex flex-col lg:flex-row justify-between gap-10">
+                  
+                  {/* LEFT: Order Info & Product Thumbnails */}
+                  <div className="space-y-8 flex-grow">
+                    <div className="flex items-center gap-4">
+                       <p className="font-black text-xl tracking-tighter uppercase italic">#{order._id.slice(-8).toUpperCase()}</p>
+                       <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${order.isDelivered ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-500'}`}>
+                         {order.isDelivered ? 'Delivered' : 'Processing'}
+                       </span>
+                    </div>
+
+                    {/* PRODUCT IMAGES PREVIEW - EFFECT REMOVED */}
+                    <div className="flex flex-wrap gap-3">
+                      {order.orderItems && order.orderItems.map((item, idx) => (
+                        <div key={idx} className="relative w-20 h-24 bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100">
+                          <img 
+                            src={item.image} 
+                            alt={item.name} 
+                            /* REMOVED: grayscale hover:grayscale-0 */
+                            className="w-full h-full object-cover transition-all duration-500 hover:scale-110"
+                            onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Reference</p>
-                    <p className="font-black text-sm tracking-tighter">#{order._id.slice(-8).toUpperCase()}</p>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
+
+                  {/* RIGHT: Price & Action */}
+                  <div className="flex flex-col justify-between items-end gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-6 lg:pt-0 lg:pl-10">
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
+                      <p className="text-3xl font-black italic tracking-tighter transform -skew-x-3">₹{order.totalPrice?.toLocaleString()}</p>
+                    </div>
+
+                    <button 
+                      onClick={() => navigate(`/order/${order._id}`)}
+                      className="w-full lg:w-auto px-10 py-5 bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] hover:bg-zinc-800 transition shadow-2xl active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      View Details <ChevronRight size={14} />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex gap-12">
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Status</p>
-                    <p className={`text-[10px] font-black uppercase mt-1 ${order.isDelivered ? 'text-green-600' : 'text-orange-500'}`}>
-                      {order.isDelivered ? 'Delivered' : 'Processing'}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Amount</p>
-                    <p className="text-sm font-black uppercase">₹{order.totalPrice.toLocaleString()}</p>
-                  </div>
-                </div>
-
-                <button 
-                  onClick={() => navigate(`/order/${order._id}`)}
-                  className="px-10 py-4 bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] hover:bg-zinc-800 transition shadow-lg active:scale-95"
-                >
-                  Track Order
-                </button>
               </div>
             ))}
           </div>
         ) : (
-          <div className="text-center py-32 bg-zinc-50 rounded-3xl border border-dashed border-zinc-200">
+          <div className="text-center py-32 bg-zinc-50 rounded-[3rem] border border-dashed border-zinc-200">
             <ShoppingBag size={48} className="mx-auto text-zinc-200 mb-6" />
-            <p className="text-zinc-400 font-black uppercase tracking-widest text-xs">No orders found in history</p>
-            <button onClick={() => navigate('/shop')} className="mt-8 bg-black text-white px-8 py-4 rounded-full font-black uppercase tracking-widest text-[10px]">Start Shopping</button>
+            <p className="text-zinc-400 font-black uppercase tracking-widest text-xs italic">The history is empty</p>
+            <button onClick={() => navigate('/shop')} className="mt-8 bg-black text-white px-10 py-5 rounded-full font-black uppercase tracking-widest text-[10px] shadow-xl">Back to Shop</button>
           </div>
         )}
       </div>

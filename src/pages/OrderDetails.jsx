@@ -1,131 +1,141 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useStore } from '../store/useStore'; // 1. Import useStore
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Truck, MapPin, PackageCheck, Loader2 } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { ArrowLeft, MapPin, CreditCard, Truck, Package, Loader2, ChevronRight } from 'lucide-react';
 
 const OrderDetails = () => {
+  const { id } = useParams(); 
   const navigate = useNavigate();
-  const { id } = useParams();
-  const { user } = useStore(); // 2. Get the logged-in user
+  const { user } = useStore();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
+      if (!user?.token) return;
+
       try {
         setLoading(true);
-        // 3. Add Authorization headers to the GET request
-        const res = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+        const { data } = await axios.get(`http://localhost:5000/api/orders/${id}`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
-        setOrder(res.data);
+        setOrder(data);
       } catch (err) {
-        console.error("Failed to fetch order details:", err);
+        console.error("Order Detail Error:", err);
+        setError(err.response?.data?.message || "Could not load order details");
       } finally {
         setLoading(false);
       }
     };
 
-    if (id && user?.token) fetchOrder();
-    else if (!user) navigate('/login'); // Redirect if not logged in
-  }, [id, user, navigate]);
+    fetchOrder();
+  }, [id, user?.token]);
 
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-white">
-      <Loader2 className="animate-spin text-zinc-300" size={40} />
+      <Loader2 className="animate-spin text-black" size={32} />
     </div>
   );
 
-  if (!order) return (
-    <div className="h-screen flex flex-col items-center justify-center bg-white gap-4">
-      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Manifest Not Found</p>
-      <button onClick={() => navigate('/my-orders')} className="text-xs font-bold underline uppercase">Return to History</button>
+  if (error || !order) return (
+    <div className="h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
+      <p className="font-black uppercase tracking-widest text-xs mb-6">{error || "Order not found"}</p>
+      <button onClick={() => navigate('/my-orders')} className="bg-black text-white px-10 py-4 rounded-full font-black uppercase tracking-widest text-[10px]">Back to History</button>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white pb-20 pt-32 md:pt-40">
-      <div className="container mx-auto px-6 max-w-5xl">
+    <div className="min-h-screen bg-white pt-44 md:pt-52 pb-20 px-6 text-[#1a1a1a]">
+      <div className="max-w-5xl mx-auto">
         
         <button 
           onClick={() => navigate('/my-orders')} 
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black mb-10 transition"
+          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-10 hover:text-black transition"
         >
-          <ArrowLeft size={14} /> Back to My Orders
+          <ArrowLeft size={14} /> Back to History
         </button>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-zinc-100 pb-8 mb-12 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 mb-2">Order Information</p>
-            <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-2">Order Reference</p>
+            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none">
               #{order._id.slice(-8).toUpperCase()}
             </h1>
-            <p className="text-xs text-zinc-500 mt-2 font-medium">
-              Recorded on {new Date(order.createdAt).toLocaleDateString()}
-            </p>
           </div>
-          <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-100 px-6 py-3 rounded-full">
-            <PackageCheck size={16} className="text-black" />
-            <span className="text-[10px] font-black uppercase tracking-widest text-black">
-              {order.isDelivered ? "Delivered" : "Processing"}
-            </span>
+          <div className="text-left md:text-right">
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300 mb-2">Placed On</p>
+              <p className="font-bold text-xs uppercase">{new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
           </div>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-16 items-start">
-          <div className="w-full lg:w-3/5 space-y-10">
-            <h2 className="text-[10px] font-black uppercase tracking-widest border-b border-zinc-100 pb-3">Manifest</h2>
-            <div className="space-y-8">
-              {order.orderItems.map((item, index) => (
-                <div key={index} className="flex gap-6 items-center">
-                  <div className="w-20 h-24 bg-zinc-50 border border-zinc-100 rounded-sm overflow-hidden flex-shrink-0">
-                    <img src={item.image} className="w-full h-full object-cover grayscale-[30%]" alt={item.name} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-black text-xs uppercase tracking-tight">{item.name}</h3>
-                    <p className="text-[10px] text-zinc-400 font-bold mt-1 uppercase">Quantity: {item.qty}</p>
-                    <p className="font-bold text-sm mt-3">₹{item.price.toLocaleString()}</p>
-                  </div>
-                </div>
-              ))}
+        {/* INFO GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 border-y border-zinc-100 py-12">
+            <div className="space-y-4">
+                <MapPin size={18} className="text-zinc-400" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Shipping To</p>
+                <p className="text-xs font-bold text-zinc-500 uppercase leading-relaxed">
+                    {order.shippingAddress.address}<br/>
+                    {order.shippingAddress.city}, {order.shippingAddress.postalCode}
+                </p>
             </div>
-          </div>
-
-          <div className="w-full lg:w-2/5 space-y-8 lg:sticky lg:top-32">
-            <div className="bg-zinc-50 border border-zinc-100 p-8 rounded-3xl space-y-8">
-              <div className="flex gap-4">
-                <MapPin size={20} className="text-black flex-shrink-0" />
-                <div className="text-[11px] leading-relaxed uppercase font-bold tracking-tight">
-                  <p className="text-zinc-400 mb-2">Destination</p>
-                  {/* FIXED: Using postalCode instead of zip to match schema */}
-                  <p className="text-black">{order.shippingAddress.firstName} {order.shippingAddress.lastName}</p>
-                  <p>{order.shippingAddress.address}</p>
-                  <p>{order.shippingAddress.city}, {order.shippingAddress.postalCode}</p> 
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <Truck size={20} className="text-black flex-shrink-0" />
-                <div className="text-[11px] leading-relaxed uppercase font-bold tracking-tight">
-                  <p className="text-zinc-400 mb-2">Logistics</p>
-                  <p>{order.paymentMethod === 'cod' ? 'COD Verified' : 'Prepaid Studio Delivery'}</p>
-                  <p className="text-green-600 mt-1">EST-SHP-{order._id.slice(0, 5).toUpperCase()}</p>
-                </div>
-              </div>
-
-              <div className="pt-6 border-t border-zinc-200">
-                  <div className="flex justify-between items-end italic transform -skew-x-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Grand Total</span>
-                    <span className="text-3xl font-black uppercase tracking-tighter">₹{order.totalPrice.toLocaleString()}</span>
-                  </div>
-              </div>
+            <div className="space-y-4">
+                <CreditCard size={18} className="text-zinc-400" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Payment</p>
+                <p className="text-xs font-bold text-zinc-500 uppercase">Method: {order.paymentMethod}</p>
+                <p className="text-[10px] font-black text-green-600 uppercase mt-1">Transaction Authorized</p>
             </div>
+            <div className="space-y-4">
+                <Truck size={18} className="text-zinc-400" />
+                <p className="text-[10px] font-black uppercase tracking-widest">Delivery Status</p>
+                <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${order.isDelivered ? 'bg-green-500' : 'bg-orange-500'}`}></span>
+                    <p className={`text-xs font-black uppercase ${order.isDelivered ? 'text-green-600' : 'text-orange-500'}`}>
+                        {order.isDelivered ? `Delivered` : 'Processing'}
+                    </p>
+                </div>
+            </div>
+        </div>
 
-            <button onClick={() => window.print()} className="w-full border border-zinc-200 py-4 rounded-full text-[9px] font-black uppercase tracking-[0.3em] hover:bg-black hover:text-white transition-all">
-              Download Invoice (PDF)
-            </button>
-          </div>
+        {/* ITEMS LIST */}
+        <div className="space-y-8">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.4em] mb-10 text-zinc-300">Package Contents</h2>
+            {order.orderItems.map((item, i) => (
+                <div 
+                  key={i} 
+                  className="flex items-center gap-6 md:gap-10 group cursor-pointer border-b border-zinc-50 pb-8 hover:border-zinc-200 transition-colors"
+                  onClick={() => navigate(`/product/${item.product}`)}
+                >
+                    <div className="w-20 h-28 md:w-28 md:h-36 bg-zinc-50 overflow-hidden rounded-2xl border border-zinc-100">
+                        <img 
+                          src={item.image} 
+                          /* REMOVED: grayscale group-hover:grayscale-0 */
+                          className="w-full h-full object-cover transition-all duration-700 hover:scale-105" 
+                          alt={item.name}
+                          onError={(e) => e.target.src = 'https://via.placeholder.com/300x400'}
+                        />
+                    </div>
+                    <div className="flex-grow">
+                        <p className="font-black text-lg md:text-2xl uppercase tracking-tight italic leading-tight group-hover:translate-x-1 transition-transform">{item.name}</p>
+                        <p className="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest">
+                            Unit Price: ₹{item.price.toLocaleString()} &nbsp; | &nbsp; Qty: {item.qty}
+                        </p>
+                    </div>
+                    <div className="text-right hidden sm:block">
+                        <p className="font-black text-xl italic tracking-tighter transform -skew-x-6">₹{(item.qty * item.price).toLocaleString()}</p>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        {/* TOTALS */}
+        <div className="mt-20 p-8 md:p-12 bg-zinc-50 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6">
+             <div className="text-center md:text-left">
+                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Total Charged</p>
+                 <p className="text-[9px] font-bold text-zinc-300 uppercase mt-1 italic">Billing inclusive of all duties and taxes</p>
+             </div>
+             <p className="text-5xl md:text-7xl font-black italic tracking-tighter transform -skew-x-6">₹{order.totalPrice.toLocaleString()}</p>
         </div>
       </div>
     </div>

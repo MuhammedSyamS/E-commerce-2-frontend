@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
@@ -7,7 +7,7 @@ const Navbar = () => {
   const { toggleCart, user, isSearchOpen, toggleSearch } = useStore();
   
   const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // NEW: Track mobile menu state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   // --- TOP BANNER LOGIC ---
@@ -44,7 +44,7 @@ const Navbar = () => {
 
   const handleFilterNavigation = (viewType) => {
     navigate('/', { state: { filter: viewType } });
-    setIsMenuOpen(false); // Close menu on click
+    setIsMenuOpen(false);
   };
 
   const cartCount = user?.cart?.reduce((acc, item) => acc + (item.quantity || 1), 0) || 0;
@@ -52,43 +52,53 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-0 left-0 w-full z-[100] transition-all duration-500">
-      {/* TOP BANNER */}
-      <div className="bg-black text-white h-10 flex items-center justify-center gap-2 text-xs">
-        <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer">
+      
+      {/* --- TOP BANNER (FIXED ALIGNMENT) --- */}
+      <div className="bg-black text-white h-10 flex items-center justify-center px-4">
+        {/* Left Arrow */}
+        <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer flex-shrink-0">
           <ChevronLeft size={14} />
         </button>
-        <div className="h-full w-[280px] md:w-[350px] relative overflow-hidden flex items-center justify-center">
-          <p className={`font-black tracking-[0.2em] uppercase text-center w-full absolute transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-            {messages[currentMsgIndex]}
-          </p>
+
+        {/* Message Container - Now using Flex Centering */}
+        <div className="h-full w-[280px] md:w-[400px] relative overflow-hidden mx-2">
+          <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+            <p className="font-black tracking-[0.2em] uppercase text-[9px] text-center">
+              {messages[currentMsgIndex]}
+            </p>
+          </div>
         </div>
-        <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer">
+
+        {/* Right Arrow */}
+        <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer flex-shrink-0">
           <ChevronRight size={14} />
         </button>
       </div>
 
       {/* MAIN NAV */}
       <nav className={`transition-all duration-700 relative mx-4 mt-3 rounded-2xl border border-white/10 ${isScrolled || isMenuOpen ? 'bg-black/90 backdrop-blur-2xl shadow-xl' : 'bg-black/30 backdrop-blur-xl'}`}>
-        <div className="w-full px-8 flex items-center justify-between h-20">
+        <div className="w-full px-8 flex items-center h-20">
           
-          {/* MOBILE MENU TOGGLE */}
-          <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-white">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-          </button>
+          {/* 1. LEFT SECTION (LOGO) */}
+          <div className="flex-1 flex items-center">
+            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-white mr-4">
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </button>
 
-          <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110">
-            miso
-          </Link>
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110">
+              miso
+            </Link>
+          </div>
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex gap-12 text-xs font-bold tracking-[0.2em] uppercase absolute left-1/2 transform -translate-x-1/2">
-            <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition">NEW ARRIVAL</button>
-            <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition">BEST SELLER</button>
+          {/* 2. CENTER SECTION (LINKS) */}
+          <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
+            <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
+            <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
           </div>
 
-          {/* Icons Group */}
-          <div className="flex items-center gap-6">
+          {/* 3. RIGHT SECTION (ICONS) */}
+          <div className="flex-1 flex items-center justify-end gap-6">
             <button onClick={toggleSearch} className="relative group">
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
@@ -123,7 +133,6 @@ const Navbar = () => {
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">New Arrivals</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">Best Sellers</button>
             <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4">Shop All</Link>
-            <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest">My Account</Link>
           </div>
         )}
 
