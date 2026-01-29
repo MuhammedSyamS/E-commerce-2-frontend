@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@400;500;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,14 +8,26 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-/* Add this to your index.css */
+
+/* --- REMOVE ITALICS & SKEWS GLOBALLY --- */
+* {
+  font-style: normal !important;
+}
+
+.transform, 
+[class*="-skew-x-"], 
+[class*="skew-x-"] {
+  transform: none !important;
+}
+
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
-    display: none; /* Safari and Chrome */
+    display: none;
   }
   .no-scrollbar {
-    -ms-overflow-style: none;  /* Internet Explorer 10+ */
-    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
