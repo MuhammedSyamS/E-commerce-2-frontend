@@ -2,18 +2,19 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import axios from 'axios';
-import ProductCard from '../components/ProductCard'; 
+import ProductCard from '../components/ProductCard';
+import FeaturedReviews from '../components/FeaturedReviews';
 
 const Home = () => {
   const location = useLocation();
-  const [activeView, setActiveView] = useState('all'); 
-  const [products, setProducts] = useState([]); 
+  const [activeView, setActiveView] = useState('all');
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  
+
   const scrollRef = useRef(null);
   const newArrivalRef = useRef(null);
-  const bestSellersSectionRef = useRef(null); 
+  const bestSellersSectionRef = useRef(null);
 
   const slides = [
     { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Authentic 925 Silver" },
@@ -47,13 +48,13 @@ const Home = () => {
   }, [location]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setLoading(false), 3000); 
+    const timeout = setTimeout(() => setLoading(false), 3000);
     const promises = slides.map((slide) => {
       return new Promise((resolve) => {
         const img = new Image();
         img.src = slide.img;
         img.onload = resolve;
-        img.onerror = resolve; 
+        img.onerror = resolve;
       });
     });
     Promise.all(promises).then(() => {
@@ -80,7 +81,7 @@ const Home = () => {
     }
   };
 
-  const bestSellers = products.filter(p => p.isBestSeller); 
+  const bestSellers = products.filter(p => p.isBestSeller);
   const newArrivals = products.filter(p => p.isNewArrival || !p.isBestSeller);
 
   if (loading) return (
@@ -91,7 +92,7 @@ const Home = () => {
 
   return (
     <div className="bg-white min-h-screen selection:bg-black selection:text-white overflow-x-hidden">
-      
+
       {/* --- MAIN HERO --- */}
       {activeView === 'all' && (
         <section className="relative w-full h-screen overflow-hidden bg-zinc-950">
@@ -108,7 +109,7 @@ const Home = () => {
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 z-10"></div>
             </div>
           ))}
-          
+
           <div className="absolute inset-0 z-30 flex items-center justify-between px-2 md:px-10 pointer-events-none">
             <button onClick={prevSlide} className="text-white/50 hover:text-white transition-colors pointer-events-auto">
               <ChevronLeft className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} />
@@ -157,10 +158,10 @@ const Home = () => {
       {activeView === 'all' && (
         <section className="relative w-full h-[60vh] md:h-[75vh] bg-zinc-900 overflow-hidden flex items-center">
           <div className="absolute inset-0">
-            <img 
-              src="https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600" 
-              className="w-full h-full object-cover opacity-70" 
-              alt="Brand Heritage" 
+            <img
+              src="https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600"
+              className="w-full h-full object-cover opacity-70"
+              alt="Brand Heritage"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent"></div>
           </div>
@@ -211,6 +212,9 @@ const Home = () => {
           </div>
         </section>
       )}
+      {/* --- FEATURED REVIEWS --- */}
+      {activeView === 'all' && <FeaturedReviews />}
+
     </div>
   );
 };

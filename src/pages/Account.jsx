@@ -1,7 +1,7 @@
 import React from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Package, MapPin, Heart, ChevronRight, ShoppingBag, Truck } from 'lucide-react';
+import { LogOut, Package, MapPin, Heart, ChevronRight, Truck, Star } from 'lucide-react';
 
 const Account = () => {
   const { user, logout } = useStore();
@@ -30,7 +30,7 @@ const Account = () => {
   return (
     <div className="min-h-screen bg-white pb-20 pt-52">
       <div className="container mx-auto px-6 max-w-6xl">
-        
+
         {/* HEADER SECTION */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 border-b border-gray-100 pb-10">
           <div>
@@ -38,7 +38,7 @@ const Account = () => {
             <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tighter italic transform -skew-x-3">My Account</h1>
             <p className="text-gray-500 mt-2 font-medium">Greetings, {user.firstName} {user.lastName || 'User'}</p>
           </div>
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest border border-black px-6 py-3 hover:bg-black hover:text-white transition-all mt-6 md:mt-0">
             <LogOut size={14} /> Secure Logout
@@ -46,47 +46,47 @@ const Account = () => {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-16">
-          
+
           {/* LEFT: DASHBOARD NAV */}
           <div className="lg:col-span-2 space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
-              
-              {/* --- NEW: TRACK ORDER BUTTON (BLACK STYLE) --- */}
-              <button 
-                onClick={() => navigate('/track-order')}
+
+              {/* ORDERS LINK */}
+              <button
+                onClick={() => navigate('/my-orders')}
                 className="group flex items-center justify-between p-8 bg-black text-white rounded-xl hover:bg-zinc-800 transition-all shadow-xl"
               >
                 <div className="flex items-center gap-5">
                   <div className="p-3 bg-white/10 rounded-lg">
-                    <Truck size={24} className="text-white" />
+                    <Package size={24} className="text-white" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-sm uppercase italic">Track Order</p>
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Real-time Logistics</p>
+                    <p className="font-bold text-sm uppercase italic">Orders History</p>
+                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-tight">Manage Manifests</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform text-white" />
               </button>
 
-              {/* ORDERS LINK */}
-              <button 
-                onClick={() => navigate('/my-orders')}
+              {/* REVIEWS LINK */}
+              <button
+                onClick={() => navigate('/my-reviews')}
                 className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
               >
                 <div className="flex items-center gap-5">
                   <div className="p-3 bg-white rounded-lg shadow-sm">
-                    <Package size={24} />
+                    <Star size={24} className="text-black" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-sm uppercase">Orders History</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Manage Manifests</p>
+                    <p className="font-bold text-sm uppercase">My Reviews</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Your Contributions</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
               </button>
 
               {/* WISHLIST LINK */}
-              <button 
+              <button
                 onClick={() => navigate('/wishlist')}
                 className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
               >
@@ -102,18 +102,18 @@ const Account = () => {
                 <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
               </button>
 
-              {/* SHOP LINK */}
-              <button 
-                onClick={() => navigate('/shop')}
+              {/* TRACK ORDER LINK (Restored) */}
+              <button
+                onClick={() => navigate('/track-order')}
                 className="group flex items-center justify-between p-8 border border-gray-100 rounded-xl hover:border-black transition-all bg-gray-50/50"
               >
                 <div className="flex items-center gap-5">
                   <div className="p-3 bg-white rounded-lg shadow-sm">
-                    <ShoppingBag size={24} />
+                    <Truck size={24} className="text-black" />
                   </div>
                   <div className="text-left">
-                    <p className="font-bold text-sm uppercase">Studio Shop</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">New Collections</p>
+                    <p className="font-bold text-sm uppercase">Track Order</p>
+                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">Logistics</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="group-hover:translate-x-2 transition-transform" />
@@ -135,14 +135,38 @@ const Account = () => {
                 </div>
               </div>
 
-              <div className="space-y-6 pt-6 border-t border-gray-200">
-                <div className="flex gap-4">
-                  <MapPin size={18} className="text-gray-400 flex-shrink-0" />
-                  <div className="text-[11px] font-bold uppercase tracking-tight leading-relaxed">
-                    <p className="text-gray-400 mb-1">Status</p>
-                    <p>Verified Member</p>
+              <div className="space-y-4 pt-6 border-t border-gray-200">
+                <button onClick={() => navigate('/account/edit')} className="w-full flex justify-between items-center p-4 bg-white border border-zinc-100 rounded-xl hover:border-black transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-zinc-50 rounded-lg"><MapPin size={16} /></div>
+                    <span className="text-xs font-bold uppercase">Edit Profile</span>
                   </div>
-                </div>
+                  <ChevronRight size={14} className="text-zinc-400" />
+                </button>
+
+                <button onClick={() => navigate('/account/addresses')} className="w-full flex justify-between items-center p-4 bg-white border border-zinc-100 rounded-xl hover:border-black transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-zinc-50 rounded-lg"><MapPin size={16} /></div>
+                    <span className="text-xs font-bold uppercase">Address Book</span>
+                  </div>
+                  <ChevronRight size={14} className="text-zinc-400" />
+                </button>
+
+                <button onClick={() => navigate('/account/notifications')} className="w-full flex justify-between items-center p-4 bg-white border border-zinc-100 rounded-xl hover:border-black transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-zinc-50 rounded-lg"><MapPin size={16} /></div>
+                    <span className="text-xs font-bold uppercase">Notifications</span>
+                  </div>
+                  <ChevronRight size={14} className="text-zinc-400" />
+                </button>
+
+                <button onClick={() => navigate('/account/payments')} className="w-full flex justify-between items-center p-4 bg-white border border-zinc-100 rounded-xl hover:border-black transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-zinc-50 rounded-lg"><MapPin size={16} /></div>
+                    <span className="text-xs font-bold uppercase">Saved Cards</span>
+                  </div>
+                  <ChevronRight size={14} className="text-zinc-400" />
+                </button>
               </div>
             </div>
           </div>
@@ -151,6 +175,6 @@ const Account = () => {
       </div>
     </div>
   );
-}; 
+};
 
 export default Account;

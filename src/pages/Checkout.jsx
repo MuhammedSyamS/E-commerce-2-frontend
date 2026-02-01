@@ -7,7 +7,7 @@ import axios from 'axios';
 const Checkout = () => {
   const { user, setUser } = useStore();
   const navigate = useNavigate();
-  const [step, setStep] = useState('shipping'); 
+  const [step, setStep] = useState('shipping');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const cartItems = user?.cart || [];
@@ -17,9 +17,9 @@ const Checkout = () => {
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
-    address: '', 
-    city: '', 
-    zip: '', 
+    address: '',
+    city: '',
+    zip: '',
     phone: ''
   });
 
@@ -29,20 +29,20 @@ const Checkout = () => {
     }
   }, [cartItems.length, navigate, isSubmitting]);
 
-  const goToSelection = (e) => { 
-    e.preventDefault(); 
-    setStep('selection'); 
-    window.scrollTo(0,0); 
+  const goToSelection = (e) => {
+    e.preventDefault();
+    setStep('selection');
+    window.scrollTo(0, 0);
   };
 
-  const goToPayment = (type) => { 
-    setStep(type); 
-    window.scrollTo(0,0); 
+  const goToPayment = (type) => {
+    setStep(type);
+    window.scrollTo(0, 0);
   };
 
   const handlePlaceOrder = async () => {
     if (!user?.token) return alert("Please login again to continue");
-    
+
     setIsSubmitting(true);
     try {
       const orderData = {
@@ -51,12 +51,12 @@ const Checkout = () => {
           qty: item.quantity,
           image: item.image,
           price: item.price,
-          product: item.product || item._id 
+          product: item.product?._id || item.product || item._id
         })),
         shippingAddress: {
           address: formData.address,
           city: formData.city,
-          postalCode: formData.zip, 
+          postalCode: formData.zip,
           phone: formData.phone
         },
         paymentMethod: step,
@@ -64,7 +64,7 @@ const Checkout = () => {
       };
 
       const { data } = await axios.post(
-        'http://localhost:5000/api/orders', 
+        'http://localhost:5000/api/orders',
         orderData,
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
@@ -86,13 +86,13 @@ const Checkout = () => {
   return (
     <div className="bg-white min-h-screen pt-44 md:pt-48 pb-20 font-sans text-[#1a1a1a]">
       <div className="container mx-auto px-6 max-w-7xl">
-        
-        <button 
+
+        <button
           onClick={() => {
             if (step === 'shipping') navigate(-1);
             else if (step === 'selection') setStep('shipping');
             else setStep('selection');
-          }} 
+          }}
           className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-zinc-400 mb-8 hover:text-black transition"
         >
           <ArrowLeft size={16} /> {step === 'shipping' ? 'Back to Bag' : 'Change Method'}
@@ -103,11 +103,11 @@ const Checkout = () => {
         </h1>
 
         <div className="flex flex-col lg:flex-row gap-12 lg:gap-20 items-start">
-          
+
           {/* SIDEBAR SUMMARY */}
           <div className="lg:w-2/5 w-full order-first lg:order-last bg-zinc-50 p-8 rounded-3xl border border-zinc-100 lg:sticky lg:top-32">
             <h2 className="text-[10px] font-black uppercase tracking-widest mb-8 border-b border-zinc-200 pb-4">Bag Summary</h2>
-            
+
             <div className="space-y-5 mb-8">
               {cartItems.map(item => (
                 <div key={item.product || item._id} className="flex justify-between items-start text-xs font-bold uppercase tracking-tight">
@@ -129,14 +129,14 @@ const Checkout = () => {
 
             {/* MAIN ACTION BUTTON */}
             <div className="hidden lg:block space-y-4 mt-10">
-               {step === 'shipping' ? (
+              {step === 'shipping' ? (
                 <button form="checkout-form" type="submit" className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all">
                   <ShieldCheck size={20} /> Continue to Payment
                 </button>
               ) : (
-                <button 
-                  onClick={handlePlaceOrder} 
-                  disabled={step === 'selection' || isSubmitting} 
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={step === 'selection' || isSubmitting}
                   className={`w-full py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] transition-all shadow-lg active:scale-95 ${step === 'selection' || isSubmitting ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed' : 'bg-black text-white hover:bg-zinc-900'}`}
                 >
                   {isSubmitting ? 'Confirming...' : step === 'selection' ? 'Select Method Above' : 'Complete Purchase'}
@@ -152,16 +152,16 @@ const Checkout = () => {
                 <h2 className="text-xs font-black uppercase tracking-widest mb-8 border-b border-zinc-100 pb-4">1. Shipping Details</h2>
                 <form id="checkout-form" onSubmit={goToSelection} className="space-y-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <input type="text" placeholder="First Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} />
-                    <input type="text" placeholder="Last Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} />
+                    <input type="text" placeholder="First Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+                    <input type="text" placeholder="Last Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
                   </div>
-                  <input type="text" placeholder="Full Delivery Address" required className="w-full border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} />
+                  <input type="text" placeholder="Full Delivery Address" required className="w-full border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    <input type="text" placeholder="City" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-                    <input type="text" placeholder="ZIP / Postal Code" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.zip} onChange={e => setFormData({...formData, zip: e.target.value})} />
+                    <input type="text" placeholder="City" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                    <input type="text" placeholder="ZIP / Postal Code" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
                   </div>
-                  <input type="tel" placeholder="Phone Number" required className="w-full border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} />
-                  
+                  <input type="tel" placeholder="Phone Number" required className="w-full border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+
                   {/* MOBILE ONLY BUTTON */}
                   <button type="submit" className="lg:hidden w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3">
                     <ShieldCheck size={20} /> Continue
@@ -198,17 +198,17 @@ const Checkout = () => {
                 <h2 className="text-xs font-black uppercase tracking-widest border-b border-zinc-100 pb-4">3. Confirm Details</h2>
                 <div className="p-10 bg-zinc-50 rounded-[2rem] border border-dashed border-zinc-200 flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm">
-                    {step === 'upi' ? <Smartphone size={24}/> : step === 'card' ? <CreditCard size={24}/> : <Truck size={24}/>}
+                    {step === 'upi' ? <Smartphone size={24} /> : step === 'card' ? <CreditCard size={24} /> : <Truck size={24} />}
                   </div>
                   <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-1">Billing with</p>
                   <p className="font-black text-xl uppercase italic transform -skew-x-3">
                     {step === 'upi' ? 'UPI / QR Payment' : step === 'card' ? 'Credit / Debit Card' : 'Cash On Delivery'}
                   </p>
-                  
+
                   {/* MOBILE ONLY FINAL ACTION */}
-                  <button 
-                    onClick={handlePlaceOrder} 
-                    disabled={isSubmitting} 
+                  <button
+                    onClick={handlePlaceOrder}
+                    disabled={isSubmitting}
                     className="lg:hidden mt-10 w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px]"
                   >
                     {isSubmitting ? 'Processing...' : 'Complete Purchase'}
