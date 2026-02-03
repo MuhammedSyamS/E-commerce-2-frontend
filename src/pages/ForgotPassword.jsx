@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import { Mail, ShieldCheck, Lock, ArrowLeft, Loader2, RotateCcw } from 'lucide-react';
 
 const ForgotPassword = () => {
@@ -10,9 +11,10 @@ const ForgotPassword = () => {
   const [newPassword, setNewPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(0); // Timer state
-  
+  const { addToast } = useToast();
+
   const navigate = useNavigate();
-  const API_URL = "http://localhost:5000/api/users"; 
+  const API_URL = "http://localhost:5000/api/users";
 
   // Timer logic
   useEffect(() => {
@@ -29,13 +31,13 @@ const ForgotPassword = () => {
     if (e) e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/forgot-password`, { 
-        email: email.toLowerCase().trim() 
+      await axios.post(`${API_URL}/forgot-password`, {
+        email: email.toLowerCase().trim()
       });
       setStep(2);
       setTimer(60); // Start 60s countdown
     } catch (err) {
-      alert(err.response?.data?.message || "Error sending code");
+      addToast(err.response?.data?.message || "Error sending code", "error");
     } finally { setLoading(false); }
   };
 
@@ -43,23 +45,23 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/reset-password`, { 
-        email: email.toLowerCase().trim(), 
-        code: code.trim(), 
-        newPassword 
+      await axios.post(`${API_URL}/reset-password`, {
+        email: email.toLowerCase().trim(),
+        code: code.trim(),
+        newPassword
       });
-      alert("PASSWORD UPDATED SUCCESSFULLY");
+      addToast("PASSWORD UPDATED SUCCESSFULLY", "success");
       navigate('/login');
     } catch (err) {
-      alert(err.response?.data?.message || "Invalid or Expired Code");
+      addToast(err.response?.data?.message || "Invalid or Expired Code", "error");
     } finally { setLoading(false); }
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6">
+    <div className="min-h-screen bg-white flex items-center justify-center px-6 pt-40 lg:pt-52 pb-20">
       <div className="max-w-sm w-full">
-        <button 
-          onClick={() => step === 1 ? navigate('/login') : setStep(1)} 
+        <button
+          onClick={() => step === 1 ? navigate('/login') : setStep(1)}
           className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-12 hover:text-black transition-all"
         >
           <ArrowLeft size={14} /> {step === 1 ? 'Back to Login' : 'Back to Email'}
@@ -72,7 +74,7 @@ const ForgotPassword = () => {
         <form onSubmit={step === 1 ? handleSendOtp : handleReset} className="space-y-6">
           {step === 1 ? (
             <div className="border-b border-zinc-200 py-4 focus-within:border-black transition-colors">
-              <input 
+              <input
                 type="email" placeholder="ENTER REGISTERED EMAIL" required
                 className="w-full bg-transparent outline-none text-[10px] font-bold uppercase tracking-widest"
                 value={email} onChange={(e) => setEmail(e.target.value)}
@@ -81,26 +83,26 @@ const ForgotPassword = () => {
           ) : (
             <div className="space-y-6">
               <div className="border-b border-zinc-200 py-4 focus-within:border-black transition-colors">
-                <input 
+                <input
                   type="text" placeholder="6-DIGIT CODE" required maxLength="6"
                   className="w-full bg-transparent outline-none text-[10px] font-bold uppercase tracking-widest"
                   value={code} onChange={(e) => setCode(e.target.value)}
                 />
               </div>
               <div className="border-b border-zinc-200 py-4 focus-within:border-black transition-colors">
-                <input 
+                <input
                   type="password" placeholder="NEW PASSWORD" required
                   className="w-full bg-transparent outline-none text-[10px] font-bold uppercase tracking-widest"
                   value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
                 />
               </div>
-              
+
               {/* RESEND TIMER UI */}
               <div className="flex justify-between items-center px-1">
                 <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                   {timer > 0 ? `Resend code in ${timer}s` : "Didn't receive code?"}
                 </p>
-                <button 
+                <button
                   type="button"
                   disabled={timer > 0 || loading}
                   onClick={handleSendOtp}

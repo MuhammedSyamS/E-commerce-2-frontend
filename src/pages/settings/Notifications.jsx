@@ -34,7 +34,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-52 pb-20">
+    <div className="min-h-screen bg-white pt-40 lg:pt-48 pb-20">
       <div className="container mx-auto px-6 max-w-4xl">
 
         <button onClick={() => navigate('/account')} className="flex items-center gap-2 text-zinc-400 font-bold uppercase text-[10px] hover:text-black mb-8">

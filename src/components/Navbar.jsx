@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart, Shield } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 const Navbar = () => {
-  const { toggleCart, user, isSearchOpen, toggleSearch } = useStore();
-  
+  const { toggleCart, user, isSearchOpen, toggleSearch, isAdminSidebarOpen } = useStore();
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   // --- TOP BANNER LOGIC ---
   const messages = ["Save 5% on prepaid orders!", "Free Shipping on orders over ₹1999", "New Collection Drops Every Friday"];
@@ -51,8 +54,11 @@ const Navbar = () => {
   const wishlistCount = user?.wishlist?.length || 0;
 
   return (
-    <div className="fixed top-0 left-0 w-full z-[100] transition-all duration-500">
-      
+    <div className={`fixed top-0 z-[100] transition-all duration-300 ease-in-out ${isAdminRoute && isAdminSidebarOpen
+      ? 'left-0 w-full md:left-64 md:w-[calc(100%-16rem)]'
+      : 'left-0 w-full'
+      }`}>
+
       {/* --- TOP BANNER (FIXED ALIGNMENT) --- */}
       <div className="bg-black text-white h-10 flex items-center justify-center px-4">
         {/* Left Arrow */}
@@ -78,12 +84,21 @@ const Navbar = () => {
       {/* MAIN NAV */}
       <nav className={`transition-all duration-700 relative mx-4 mt-3 rounded-2xl border border-white/10 ${isScrolled || isMenuOpen ? 'bg-black/90 backdrop-blur-2xl shadow-xl' : 'bg-black/30 backdrop-blur-xl'}`}>
         <div className="w-full px-8 flex items-center h-20">
-          
+
           {/* 1. LEFT SECTION (LOGO) */}
-          <div className="flex-1 flex items-center">
-            <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-white mr-4">
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+          <div className="flex-1 flex items-center gap-4">
+            {/* ADMIN TOGGLE (YouTube Style) */}
+            {isAdminRoute && (
+              <button onClick={useStore.getState().toggleAdminSidebar} className="p-2 text-white hover:bg-white/10 rounded-full transition">
+                <Menu size={24} />
+              </button>
+            )}
+
+            {!isAdminRoute && (
+              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="md:hidden p-2 text-white mr-4">
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+            )}
 
             <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110">
               miso
@@ -102,7 +117,7 @@ const Navbar = () => {
             <button onClick={toggleSearch} className="relative group">
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
-            
+
             <Link to="/wishlist" className="relative group">
               <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white group-hover:text-zinc-400'}`} />
               {wishlistCount > 0 && (
@@ -111,6 +126,28 @@ const Navbar = () => {
                 </span>
               )}
             </Link>
+
+            {/* ADMIN / MANAGER PANEL LINK */}
+            {(() => {
+              if (user?.role === 'admin' || user?.isAdmin) {
+                return (
+                  <Link to="/admin" className="relative group" title="Admin Panel">
+                    <Shield className="w-5 h-5 text-white transition group-hover:text-zinc-400" />
+                  </Link>
+                );
+              }
+              if (user?.role === 'manager') {
+                return (
+                  <Link to="/admin" className="relative group" title="Manager Panel">
+                    <div className="relative">
+                      <Shield className="w-5 h-5 text-purple-400 transition group-hover:text-white" />
+                      <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-purple-500 rounded-full border border-black"></div>
+                    </div>
+                  </Link>
+                );
+              }
+              return null;
+            })()}
 
             <Link to={user ? "/account" : "/login"}>
               <User className={`w-5 h-5 transition-all ${user ? 'text-white fill-white scale-110' : 'text-white hover:text-zinc-400'}`} />
@@ -140,11 +177,11 @@ const Navbar = () => {
         {isSearchOpen && (
           <div className="absolute top-0 left-0 w-full h-20 bg-white text-black rounded-2xl flex items-center px-8 z-[110] animate-in slide-in-from-top duration-300">
             <Search className="text-zinc-400 w-5 h-5" />
-            <input 
-              autoFocus 
-              type="text" 
-              placeholder="SEARCH THE SILVER STUDIO..." 
-              className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest" 
+            <input
+              autoFocus
+              type="text"
+              placeholder="SEARCH THE SILVER STUDIO..."
+              className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest"
             />
             <button onClick={toggleSearch}><X className="w-5 h-5 text-black" /></button>
           </div>

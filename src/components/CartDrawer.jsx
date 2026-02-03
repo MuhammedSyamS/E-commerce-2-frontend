@@ -1,17 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket } from 'lucide-react';
+import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2 } from 'lucide-react'; // Added Trash2
+
 import { useStore } from '../store/useStore';
+import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const CartDrawer = () => {
   const { user, setUser, toggleCart, isCartOpen } = useStore();
+  const { addToast } = useToast();
   const navigate = useNavigate();
-  const scrollRef = useRef(null); 
-  
+  const scrollRef = useRef(null);
+
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState(0);
   const [allProducts, setAllProducts] = useState([]);
+
+  const removeItem = async (productId) => {
+    try {
+      const { data } = await axios.delete(`http://localhost:5000/api/cart/remove/${productId}`,
+        { headers: { Authorization: `Bearer ${user.token}` } }
+      );
+      setUser({ ...user, cart: data });
+    } catch (err) { console.error(err); }
+  };
 
   const cartItems = user?.cart || [];
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
@@ -45,8 +57,8 @@ const CartDrawer = () => {
     const newQty = currentQty + delta;
     if (newQty < 1) return;
     try {
-      const { data } = await axios.post('http://localhost:5000/api/cart/add', 
-        { productId, quantity: delta }, 
+      const { data } = await axios.post('http://localhost:5000/api/cart/add',
+        { productId, quantity: delta },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
       setUser({ ...user, cart: data });
@@ -56,9 +68,9 @@ const CartDrawer = () => {
   const applyCoupon = () => {
     if (coupon.toUpperCase() === 'MISO10') {
       setDiscount(subtotal * 0.10);
-      alert("10% Studio Discount Applied!");
+      addToast("10% Studio Discount Applied!", "success");
     } else {
-      alert("Invalid code");
+      addToast("Invalid code", "error");
     }
   };
 
@@ -69,7 +81,7 @@ const CartDrawer = () => {
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={() => toggleCart(false)} />
 
       <div className="relative w-full max-w-[420px] bg-[#fcfcfc] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
-        
+
         {/* Header */}
         <div className="p-6 flex items-center justify-between bg-white border-b border-zinc-100">
           <div className="flex items-center gap-3">
@@ -94,10 +106,19 @@ const CartDrawer = () => {
                         <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name}</p>
                         <p className="font-black text-[11px] italic transform -skew-x-6">₹{item.price.toLocaleString()}</p>
                       </div>
-                      <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100 mt-2">
-                        <button onClick={() => updateQty(item.product, item.quantity, -1)} className="p-1 hover:text-black text-zinc-400"><Minus size={12}/></button>
-                        <span className="w-8 text-center text-[11px] font-black">{item.quantity}</span>
-                        <button onClick={() => updateQty(item.product, item.quantity, 1)} className="p-1 hover:text-black text-zinc-400"><Plus size={12}/></button>
+                      <div className="flex justify-between items-end mt-2">
+                        <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
+                          <button onClick={() => updateQty(item.product, item.quantity, -1)} className="p-1 hover:text-black text-zinc-400"><Minus size={12} /></button>
+                          <span className="w-8 text-center text-[11px] font-black">{item.quantity}</span>
+                          <button onClick={() => updateQty(item.product, item.quantity, 1)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
+                        </div>
+                        <button
+                          onClick={() => removeItem(item.product)}
+                          className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
+                          title="Remove Item"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -111,14 +132,14 @@ const CartDrawer = () => {
                   <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Promotional Code</p>
                 </div>
                 <div className="flex gap-2">
-                  <input 
-                    type="text" 
-                    placeholder="ENTER CODE" 
+                  <input
+                    type="text"
+                    placeholder="ENTER CODE"
                     value={coupon}
                     onChange={(e) => setCoupon(e.target.value)}
                     className="flex-1 bg-[#f8f8f8] border border-transparent rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest outline-none focus:border-zinc-200 transition-all"
                   />
-                  <button 
+                  <button
                     onClick={applyCoupon}
                     className="bg-black text-white px-5 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-transform"
                   >
@@ -142,25 +163,25 @@ const CartDrawer = () => {
                     </div>
                   </div>
 
-                  <div 
+                  <div
                     ref={scrollRef}
                     className="flex gap-4 overflow-x-auto no-scrollbar pb-4"
                   >
                     {suggestions.map(sug => (
-                      <div 
-                        key={sug._id} 
+                      <div
+                        key={sug._id}
                         className="min-w-[140px] bg-white p-3 rounded-2xl border border-zinc-50 shadow-sm cursor-pointer hover:border-black transition-all group"
                         onClick={() => { navigate(`/product/${sug.slug || sug._id}`); toggleCart(false); }}
                       >
                         <div className="aspect-[4/5] bg-[#f8f8f8] rounded-xl overflow-hidden mb-3 relative">
                           {/* REMOVED: grayscale and group-hover:grayscale-0 */}
-                          <img 
-                            src={sug.image} 
-                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105" 
+                          <img
+                            src={sug.image}
+                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
                             alt={sug.name}
                           />
                           <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                             <Plus className="text-white bg-black rounded-full p-1" size={20} />
+                            <Plus className="text-white bg-black rounded-full p-1" size={20} />
                           </div>
                         </div>
                         <p className="text-[9px] font-black uppercase truncate text-zinc-500 group-hover:text-black transition-colors">{sug.name}</p>
@@ -187,7 +208,7 @@ const CartDrawer = () => {
                 <span>Subtotal</span>
                 <span>₹{subtotal.toLocaleString()}</span>
               </div>
-              
+
               {discount > 0 && (
                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
                   <span>Studio Discount</span>
@@ -200,7 +221,7 @@ const CartDrawer = () => {
                 <span>₹{total.toLocaleString()}</span>
               </div>
             </div>
-            <button 
+            <button
               onClick={() => { toggleCart(false); navigate('/checkout'); }}
               className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10"
             >

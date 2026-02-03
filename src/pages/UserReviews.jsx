@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
+import { useToast } from '../context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Star, ChevronLeft, Trash2, Calendar, Quote, X } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Trash2, Calendar, Quote, X } from 'lucide-react';
 
 const UserReviews = () => {
     const { user } = useStore();
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedReview, setSelectedReview] = useState(null);
@@ -46,7 +48,7 @@ const UserReviews = () => {
             setReviews(reviews.filter(r => r.review._id !== reviewId));
         } catch (err) {
             console.error("Failed to delete review", err);
-            alert("Failed to delete review.");
+            addToast("Failed to delete review.", "error");
         }
     };
 
@@ -55,22 +57,61 @@ const UserReviews = () => {
     return (
         <div className="min-h-screen bg-zinc-50 pt-32 pb-20">
             {/* LIGHTBOX MODAL (White Theme) */}
+            {/* GLOBAL LIGHTBOX (Gallery Mode) */}
             {selectedReview && (
                 <div
-                    className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-4 cursor-zoom-out"
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4"
                     onClick={() => setSelectedReview(null)}
                 >
-                    <button className="absolute top-8 right-8 text-black hover:text-zinc-500 transition-colors p-2 bg-zinc-100 rounded-full">
+                    <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
                         <X size={24} />
                     </button>
-                    <img
-                        src={selectedReview.image}
-                        alt="Full View"
-                        className="w-auto h-auto max-w-[95vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl mb-6 animate-in fade-in zoom-in duration-300"
-                    />
-                    <p className="text-zinc-800 text-lg md:text-xl font-medium italic text-center max-w-2xl leading-relaxed">
+
+                    <div className="relative w-full max-w-5xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+
+                        {/* PREV BUTTON */}
+                        {selectedReview.images?.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = (selectedReview.index - 1 + selectedReview.images.length) % selectedReview.images.length;
+                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
+                                }}
+                                className="absolute left-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        )}
+
+                        <img
+                            src={selectedReview.image}
+                            alt="Full View"
+                            className="w-auto h-auto max-w-[90vw] max-h-[80vh] object-contain rounded-xl shadow-2xl animate-in fade-in zoom-in duration-300 select-none"
+                        />
+
+                        {/* NEXT BUTTON */}
+                        {selectedReview.images?.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = (selectedReview.index + 1) % selectedReview.images.length;
+                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
+                                }}
+                                className="absolute right-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        )}
+                    </div>
+
+                    <p className="text-white/80 text-lg md:text-xl font-medium italic text-center max-w-2xl leading-relaxed mt-8">
                         "{selectedReview.comment}"
                     </p>
+                    {selectedReview.images?.length > 1 && (
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-4">
+                            Image {selectedReview.index + 1} of {selectedReview.images.length}
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -133,24 +174,24 @@ const UserReviews = () => {
 
                                     {/* DISPLAY IMAGES */}
                                     <div className="flex gap-2 mt-4 pl-8 flex-wrap">
-                                        {item.review.images && item.review.images.length > 0 ? (
-                                            item.review.images.map((img, idx) => (
+                                        {(() => {
+                                            const allImages = item.review.images && item.review.images.length > 0 ? item.review.images : (item.review.reviewImage ? [item.review.reviewImage] : []);
+
+                                            return allImages.map((img, idx) => (
                                                 <img
                                                     key={idx}
                                                     src={img}
                                                     alt="User Upload"
-                                                    onClick={() => setSelectedReview({ image: img, comment: item.review.comment })}
+                                                    onClick={() => setSelectedReview({
+                                                        image: img,
+                                                        images: allImages,
+                                                        index: idx,
+                                                        comment: item.review.comment
+                                                    })}
                                                     className="w-16 h-16 rounded-lg object-cover border border-zinc-200 cursor-zoom-in hover:opacity-80 transition-opacity"
                                                 />
-                                            ))
-                                        ) : item.review.reviewImage ? (
-                                            <img
-                                                src={item.review.reviewImage}
-                                                alt="User Upload"
-                                                onClick={() => setSelectedReview({ image: item.review.reviewImage, comment: item.review.comment })}
-                                                className="w-16 h-16 rounded-lg object-cover border border-zinc-200 cursor-zoom-in hover:opacity-80 transition-opacity"
-                                            />
-                                        ) : null}
+                                            ));
+                                        })()}
                                     </div>
                                 </div>
                             </div>

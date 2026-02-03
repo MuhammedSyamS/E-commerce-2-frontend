@@ -1,90 +1,130 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '../store/useStore';
+import axios from 'axios';
+import { User, Mail, Lock, Save, ArrowLeft } from 'lucide-react';
 
 const EditProfile = () => {
   const navigate = useNavigate();
+  const { user, setUser } = useStore();
+
   const [formData, setFormData] = useState({
-    fullName: 'Sonia Fan',
-    email: 'sonia@example.com',
-    phone: '9876543210',
-    address: 'Varkala, Kerala',
-    zip: '695141'
+    firstName: '',
+    lastName: '',
+    email: ''
   });
 
-  const handleSubmit = (e) => {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '' // Read Only
+      }));
+    }
+  }, [user]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Profile Updated Successfully!");
-    navigate('/account');
+    setMessage(null);
+
+    try {
+      setLoading(true);
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+
+      // Prepare payload (only send changed fields)
+      const updateData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+      };
+
+      const { data } = await axios.put('http://localhost:5000/api/users/profile', updateData, config);
+
+      // Update Global Store
+      setUser({ ...data, token: user.token }); // Maintain token
+
+      setMessage({ type: 'success', text: "Profile updated successfully!" });
+      setLoading(false);
+      // navigate('/account'); // Optional: redirect back or stay
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.message || "Update failed" });
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-6">
-      <div className="bg-white p-8 md:p-10 rounded-xl shadow-lg w-full max-w-lg border border-gray-100">
-        
-        <h2 className="text-2xl font-black uppercase tracking-tighter mb-8 text-center">Edit Profile</h2>
+    // ADJUSTED PADDING: pt-32 (Mobile) and pt-40 (Desktop) to clear navbar (Safe Zone)
+    <div className="min-h-screen bg-white pt-40 lg:pt-48 pb-20 px-6">
+      <div className="max-w-xl mx-auto">
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Full Name</label>
-            <input 
-              type="text" 
-              value={formData.fullName}
-              onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-              className="w-full border-b-2 border-gray-200 py-2 outline-none focus:border-black transition font-bold"
-            />
+        <button onClick={() => navigate('/account')} className="flex items-center gap-2 text-zinc-400 font-bold uppercase text-[10px] hover:text-black mb-12">
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
+
+        <h1 className="text-3xl font-black uppercase italic tracking-tighter mb-8">Edit <span className="text-zinc-300">Profile</span></h1>
+
+        {message && (
+          <div className={`p-4 mb-8 text-xs font-bold uppercase tracking-widest rounded-xl ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+            {message.text}
           </div>
+        )}
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Email</label>
-            <input 
-              type="email" 
-              value={formData.email}
-              disabled
-              className="w-full border-b-2 border-gray-100 py-2 outline-none text-gray-400 cursor-not-allowed"
-            />
-            <p className="text-[10px] text-gray-400 mt-1">Email cannot be changed.</p>
-          </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
 
-          <div>
-            <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Phone Number</label>
-            <input 
-              type="tel" 
-              value={formData.phone}
-              onChange={(e) => setFormData({...formData, phone: e.target.value})}
-              className="w-full border-b-2 border-gray-200 py-2 outline-none focus:border-black transition font-bold"
-            />
-          </div>
-
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
-              <label className="block text-xs font-bold uppercase text-gray-500 mb-1">City / State</label>
-              <input 
-                type="text" 
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full border-b-2 border-gray-200 py-2 outline-none focus:border-black transition font-bold"
-              />
-            </div>
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Zip Code</label>
-              <input 
-                type="text" 
-                value={formData.zip}
-                onChange={(e) => setFormData({...formData, zip: e.target.value})}
-                className="w-full border-b-2 border-gray-200 py-2 outline-none focus:border-black transition font-bold"
-              />
+              <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">First Name</label>
+              <div className="relative">
+                <User size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                <input
+                  type="text"
+                  value={formData.firstName}
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  className="w-full bg-zinc-50 border border-transparent focus:border-black rounded-xl py-3 pl-12 pr-4 outline-none font-bold text-sm transition"
+                  placeholder="First Name"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Last Name</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={formData.lastName}
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  className="w-full bg-zinc-50 border border-transparent focus:border-black rounded-xl py-3 px-4 outline-none font-bold text-sm transition"
+                  placeholder="Last Name"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="pt-4 flex gap-4">
-            <button type="button" onClick={() => navigate('/account')} className="flex-1 border border-gray-300 py-3 font-bold uppercase text-xs tracking-widest hover:bg-gray-50 transition">
-              Cancel
-            </button>
-            <button type="submit" className="flex-1 bg-black text-white py-3 font-bold uppercase text-xs tracking-widest hover:bg-gray-800 transition shadow-lg">
-              Save Changes
-            </button>
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Email Address</label>
+            <div className="relative">
+              <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full bg-zinc-100 text-zinc-400 border border-transparent rounded-xl py-3 pl-12 pr-4 outline-none font-bold text-sm cursor-not-allowed"
+              />
+            </div>
+            <p className="text-[9px] text-zinc-400 mt-2 uppercase font-bold tracking-wider">Contact support to change email.</p>
           </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-zinc-800 transition flex items-center justify-center gap-3 mt-8 shadow-xl"
+          >
+            {loading ? 'Saving...' : <><Save size={16} /> Save Changes</>}
+          </button>
 
         </form>
       </div>

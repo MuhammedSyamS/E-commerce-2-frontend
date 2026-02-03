@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../context/ToastContext';
 import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck } from 'lucide-react';
 import axios from 'axios';
 
 const Checkout = () => {
   const { user, setUser } = useStore();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [step, setStep] = useState('shipping');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +43,7 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!user?.token) return alert("Please login again to continue");
+    if (!user?.token) return addToast("Please login again to continue", "error");
 
     setIsSubmitting(true);
     try {
@@ -76,7 +78,7 @@ const Checkout = () => {
       setUser({ ...user, cart: [] });
       navigate('/order-success', { state: { orderId: data._id }, replace: true });
     } catch (err) {
-      alert(err.response?.data?.message || "Order failed. Please check details.");
+      addToast(err.response?.data?.message || "Order failed. Please check details.", "error");
       setIsSubmitting(false);
     }
   };
@@ -151,6 +153,29 @@ const Checkout = () => {
               <div className="animate-in fade-in duration-500">
                 <h2 className="text-xs font-black uppercase tracking-widest mb-8 border-b border-zinc-100 pb-4">1. Shipping Details</h2>
                 <form id="checkout-form" onSubmit={goToSelection} className="space-y-8">
+
+                  {/* SAVED ADDRESSES SELECTOR */}
+                  {user?.addresses?.length > 0 && (
+                    <div className="mb-8">
+                      <h3 className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">Saved Addresses</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {user.addresses.map((addr, i) => (
+                          <div key={i} onClick={() => {
+                            setFormData({ ...formData, address: addr.street, city: addr.city, zip: addr.zip, phone: addr.phone || formData.phone });
+                          }} className="p-4 border border-zinc-200 rounded-xl cursor-pointer hover:border-black hover:bg-zinc-50 transition-all">
+                            <p className="font-bold text-xs uppercase">{addr.label}</p>
+                            <p className="text-[10px] text-zinc-500">{addr.street}, {addr.city}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex items-center gap-4 my-6">
+                        <div className="h-px bg-zinc-100 flex-1"></div>
+                        <span className="text-[9px] font-bold uppercase text-zinc-300">OR ENTER NEW</span>
+                        <div className="h-px bg-zinc-100 flex-1"></div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <input type="text" placeholder="First Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
                     <input type="text" placeholder="Last Name" required className="border-b border-zinc-200 py-3 outline-none focus:border-black bg-transparent font-bold uppercase text-[10px] md:text-base tracking-widest" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
@@ -180,13 +205,32 @@ const Checkout = () => {
                     { id: 'card', name: 'Credit / Debit Card', icon: <CreditCard />, desc: 'Secure Encryption' },
                     { id: 'cod', name: 'Cash On Delivery', icon: <Truck />, desc: 'Pay when you receive' }
                   ].map(m => (
-                    <button key={m.id} onClick={() => goToPayment(m.id)} className="flex items-center p-6 border border-zinc-100 rounded-2xl hover:border-black transition-all text-left bg-zinc-50/50 group">
-                      <div className="p-4 bg-white rounded-full mr-6 border border-zinc-100 group-hover:scale-110 transition-transform">{m.icon}</div>
-                      <div>
-                        <p className="font-black text-sm uppercase tracking-tight">{m.name}</p>
-                        <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{m.desc}</p>
-                      </div>
-                    </button>
+                    <div key={m.id}>
+                      <button onClick={() => goToPayment(m.id)} className={`w-full flex items-center p-6 border rounded-2xl transition-all text-left group ${step === m.id ? 'border-black bg-zinc-900 text-white' : 'border-zinc-100 bg-zinc-50/50 hover:border-black'}`}>
+                        <div className={`p-4 rounded-full mr-6 border transition-transform group-hover:scale-110 ${step === m.id ? 'bg-zinc-800 border-zinc-700' : 'bg-white border-zinc-100'}`}>{m.icon}</div>
+                        <div>
+                          <p className="font-black text-sm uppercase tracking-tight">{m.name}</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${step === m.id ? 'text-zinc-500' : 'text-zinc-400'}`}>{m.desc}</p>
+                        </div>
+                      </button>
+
+                      {/* SAVED CARDS EXPANSION */}
+                      {m.id === 'card' && step === 'card' && user?.savedCards?.length > 0 && (
+                        <div className="mt-4 pl-4 animate-in slide-in-from-top duration-300">
+                          <p className="text-[10px] font-bold uppercase text-zinc-400 mb-2">Select Saved Card</p>
+                          <div className="space-y-2">
+                            {user.savedCards.map((card, idx) => (
+                              <div key={idx} className="flex items-center gap-3 p-3 border border-zinc-200 rounded-xl bg-white hover:border-black cursor-pointer">
+                                <div className="w-8 h-5 bg-zinc-100 rounded flex items-center justify-center text-[8px] font-mono">{card.brand}</div>
+                                <div className="flex-1 font-mono text-xs">•••• {card.last4}</div>
+                                <div className="text-[10px] font-bold text-zinc-400">{card.expMonth}/{card.expYear}</div>
+                              </div>
+                            ))}
+                            <div className="text-[10px] text-zinc-400 font-bold uppercase pt-2 text-center text-red-500">CVV Confirmation Required on Payment</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

@@ -57,23 +57,61 @@ const FeaturedReviews = () => {
         <section className="bg-white text-zinc-900 py-32 overflow-hidden border-t border-zinc-100">
 
             {/* LIGHTBOX MODAL (White Theme) */}
+            {/* LIGHTBOX MODAL (Gallery Mode) */}
             {selectedReview && (
                 <div
-                    className="fixed inset-0 z-[100] bg-white/95 backdrop-blur-md flex flex-col items-center justify-center p-4 cursor-zoom-out"
+                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4"
                     onClick={() => setSelectedReview(null)}
                 >
-                    <button className="absolute top-8 right-8 text-black hover:text-zinc-500 transition-colors p-2 bg-zinc-100 rounded-full">
+                    <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
                         <X size={24} />
                     </button>
-                    {/* INCREASED SIZE: max-h-[85vh] and max-w-5xl */}
-                    <img
-                        src={selectedReview.image}
-                        alt="Full View"
-                        className="w-auto h-auto max-w-[95vw] max-h-[85vh] object-contain rounded-2xl shadow-2xl mb-6 animate-in fade-in zoom-in duration-300"
-                    />
-                    <p className="text-zinc-800 text-lg md:text-xl font-medium italic text-center max-w-2xl leading-relaxed">
+
+                    <div className="relative w-full max-w-5xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+
+                        {/* PREV BUTTON */}
+                        {selectedReview.images?.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = (selectedReview.index - 1 + selectedReview.images.length) % selectedReview.images.length;
+                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
+                                }}
+                                className="absolute left-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
+                            >
+                                <ChevronLeft size={24} />
+                            </button>
+                        )}
+
+                        <img
+                            src={selectedReview.image}
+                            alt="Full View"
+                            className="w-auto h-auto max-w-[90vw] max-h-[80vh] object-contain rounded-xl shadow-2xl animate-in fade-in zoom-in duration-300 select-none"
+                        />
+
+                        {/* NEXT BUTTON */}
+                        {selectedReview.images?.length > 1 && (
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    const newIndex = (selectedReview.index + 1) % selectedReview.images.length;
+                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
+                                }}
+                                className="absolute right-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
+                            >
+                                <ChevronRight size={24} />
+                            </button>
+                        )}
+                    </div>
+
+                    <p className="text-white/80 text-lg md:text-xl font-medium italic text-center max-w-2xl leading-relaxed mt-8">
                         "{selectedReview.comment}"
                     </p>
+                    {selectedReview.images?.length > 1 && (
+                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-4">
+                            Image {selectedReview.index + 1} of {selectedReview.images.length}
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -100,61 +138,83 @@ const FeaturedReviews = () => {
                     <ChevronRight size={24} />
                 </button>
 
-                <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar px-6 md:px-16 pb-10 snap-x snap-mandatory scroll-smooth">
+                <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar px-6 md:px-16 pb-16 snap-x snap-mandatory scroll-smooth">
                     {reviews.map((item, idx) => {
                         // Resolve Image: New 'images' array or Legacy 'reviewImage'
                         const displayImage = (item.review.images && item.review.images[0]) || item.review.reviewImage;
+                        const allImages = item.review.images && item.review.images.length > 0
+                            ? item.review.images
+                            : (item.review.reviewImage ? [item.review.reviewImage] : []);
 
                         return (
                             <div
                                 key={idx}
-                                onClick={() => displayImage && setSelectedReview({ image: displayImage, comment: item.review.comment })}
-                                className={`min-w-[320px] md:min-w-[400px] bg-zinc-50 border border-zinc-100 p-8 md:p-10 rounded-[2rem] snap-center flex flex-col justify-between group/card hover:shadow-xl transition-all duration-500 ${displayImage ? 'cursor-pointer' : ''}`}
+                                className="min-w-[340px] md:min-w-[420px] bg-white border border-zinc-100 p-8 md:p-12 rounded-[2rem] snap-center flex flex-col justify-between group/card hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative overflow-hidden"
                             >
+                                {/* DECORATIVE QUOTE MARK */}
+                                <div className="absolute top-6 right-8 text-9xl font-serif text-zinc-50 opacity-50 select-none">”</div>
 
-                                <div className="space-y-6">
-                                    <div className="flex gap-1">
-                                        {[...Array(item.review.rating)].map((_, i) => (
-                                            <Star key={i} size={12} fill="black" className="text-black" />
-                                        ))}
+                                <div className="space-y-8 relative z-10">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex gap-1">
+                                            {[...Array(item.review.rating)].map((_, i) => (
+                                                <Star key={i} size={14} fill="black" className="text-black" />
+                                            ))}
+                                        </div>
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-green-600 bg-green-50 px-2 py-1 rounded-full">Verified Buyer</span>
                                     </div>
-                                    <p className="text-lg md:text-xl font-medium leading-relaxed italic text-zinc-600">
+
+                                    <p className="text-xl md:text-2xl font-serif leading-relaxed text-zinc-800 italic">
                                         "{item.review.comment}"
                                     </p>
+
+                                    {/* MULTI-IMAGE GALLERY - ENLARGED */}
+                                    {allImages.length > 0 && (
+                                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                                            {allImages.slice(0, 4).map((img, i) => (
+                                                <div
+                                                    key={i}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedReview({
+                                                            image: img,
+                                                            images: allImages,
+                                                            index: i,
+                                                            comment: item.review.comment
+                                                        });
+                                                    }}
+                                                    className="w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-xl border border-zinc-100 overflow-hidden cursor-zoom-in hover:opacity-80 transition-opacity"
+                                                >
+                                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className="mt-10 pt-8 border-t border-zinc-200 flex items-center justify-between">
+                                <div className="mt-10 pt-8 border-t border-zinc-50 flex items-center justify-between relative z-10">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center font-black text-xs">
+                                        <div className="w-12 h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-lg">
                                             {item.review.name.charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900">{item.review.name}</p>
+                                            <p className="text-xs font-black uppercase tracking-widest text-zinc-900">{item.review.name}</p>
                                             <Link
                                                 to={`/product/${item.productSlug}`}
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="text-[9px] font-bold text-zinc-400 uppercase mt-0.5 hover:text-black transition-colors block"
+                                                className="text-[10px] font-bold text-zinc-400 uppercase mt-1 hover:text-black transition-colors block truncate max-w-[200px]"
                                             >
                                                 {item.productName}
                                             </Link>
                                         </div>
                                     </div>
-                                    {displayImage && (
-                                        <div className="w-12 h-12 rounded-lg overflow-hidden border border-zinc-200 opacity-80 group-hover/card:opacity-100 transition-all">
-                                            <img
-                                                src={displayImage}
-                                                alt=""
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         );
                     })}
                 </div>
             </div>
-        </section>
+        </section >
     );
 };
 

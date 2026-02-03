@@ -13,7 +13,10 @@ const Login = () => {
   const { setUser, user } = useStore();
 
   useEffect(() => {
-    if (user) navigate('/account');
+    if (user) {
+      if (user.isAdmin || user.role === 'manager') navigate('/admin');
+      else navigate('/account');
+    }
   }, [user, navigate]);
 
   const handleSubmit = async (e) => {
@@ -22,14 +25,15 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', { 
-        email: email.toLowerCase().trim(), 
-        password 
+      const res = await axios.post('http://localhost:5000/api/users/login', {
+        email: email.toLowerCase().trim(),
+        password
       });
 
       if (res.data && res.data.token) {
-        setUser(res.data); 
-        navigate('/account');
+        setUser(res.data);
+        if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
+        else navigate('/account');
       }
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password");
@@ -44,7 +48,7 @@ const Login = () => {
         {/* REMOVED ITALIC HERE */}
         <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">Welcome Back</h1>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account</p>
-        
+
         {error && (
           <div className="mb-4 p-3 bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center">
             {error}
@@ -52,28 +56,28 @@ const Login = () => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          <input 
-            type="email" 
-            placeholder="Email" 
+          <input
+            type="email"
+            placeholder="Email"
             className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[10px] tracking-widest"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
           <div className="relative">
-            <input 
-              type="password" 
-              placeholder="Password" 
+            <input
+              type="password"
+              placeholder="Password"
               className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[10px] tracking-widest"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-            
+
             {/* --- ADDED FORGOT PASSWORD LINK --- */}
             <div className="text-right mt-2">
-              <Link 
-                to="/forgot-password" 
+              <Link
+                to="/forgot-password"
                 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition"
               >
                 Forgot Password?

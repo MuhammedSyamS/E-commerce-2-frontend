@@ -81,8 +81,9 @@ const Home = () => {
     }
   };
 
-  const bestSellers = products.filter(p => p.isBestSeller);
-  const newArrivals = products.filter(p => p.isNewArrival || !p.isBestSeller);
+  // FILTERING LOGIC: Supports both legacy booleans and new Tags system
+  const bestSellers = products.filter(p => p.isBestSeller || p.tags?.includes('Best Seller') || p.tags?.includes('best seller'));
+  const newArrivals = products.filter(p => p.tags?.includes('New Arrival') || p.tags?.includes('New') || p.isNewArrival);
 
   if (loading) return (
     <div className="h-screen w-full bg-black flex items-center justify-center">

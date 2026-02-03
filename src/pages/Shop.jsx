@@ -8,7 +8,7 @@ const Shop = () => {
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const categories = ['All', 'Rings', 'Pendants', 'Bracelets', 'Earrings'];
+  const [categories, setCategories] = useState(['All']);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -19,6 +19,10 @@ const Shop = () => {
         const data = Array.isArray(res.data) ? res.data : [];
         setProducts(data);
         setFilteredProducts(data);
+
+        // Derive unique categories from active products
+        const uniqueCats = ['All', ...new Set(data.map(p => p.category).filter(Boolean))];
+        setCategories(uniqueCats);
       } catch (err) {
         console.error("Shop Fetch Error:", err);
       } finally {
@@ -46,7 +50,7 @@ const Shop = () => {
   return (
     <div className="bg-white min-h-screen pt-40 pb-20">
       <div className="container mx-auto px-6 md:px-12">
-        
+
         {/* --- CLEAN HEADER --- */}
         <div className="mb-16">
           <h1 className="text-4xl md:text-5xl font-light uppercase tracking-[0.2em] text-black">
@@ -58,21 +62,26 @@ const Shop = () => {
         {/* --- FILTER NAVIGATION --- */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 mb-16 border-b border-zinc-100 pb-6">
           <div className="flex flex-wrap justify-center gap-6 md:gap-10">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-[11px] font-bold uppercase tracking-[0.3em] transition-all duration-300 ${
-                  activeCategory === cat 
-                  ? 'text-black scale-110' 
-                  : 'text-zinc-400 hover:text-black'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+            {categories.map((cat) => {
+              const count = cat === 'All'
+                ? products.length
+                : products.filter(p => p.category === cat).length;
+
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`text-[11px] font-bold uppercase tracking-[0.3em] transition-all duration-300 ${activeCategory === cat
+                    ? 'text-black scale-110'
+                    : 'text-zinc-400 hover:text-black'
+                    }`}
+                >
+                  {cat} <span className="opacity-50 text-[9px]">({count})</span>
+                </button>
+              )
+            })}
           </div>
-          
+
           <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-widest">
             {filteredProducts.length} Items Found
           </span>
@@ -95,7 +104,7 @@ const Shop = () => {
           )}
         </div>
       </div>
-      
+
       {/* --- MINIMALIST FOOTER INFO --- */}
       <div className="mt-40 pt-20 border-t border-zinc-100 text-center">
         <p className="text-[10px] font-bold uppercase tracking-[0.6em] text-zinc-300">

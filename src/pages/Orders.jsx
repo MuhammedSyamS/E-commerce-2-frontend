@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react'; 
+import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 const Orders = () => {
@@ -24,14 +24,14 @@ const Orders = () => {
             Authorization: `Bearer ${user.token}`
           }
         };
-        
+
         const res = await axios.get('http://localhost:5000/api/orders/myorders', config);
-        
+
         const data = Array.isArray(res.data) ? res.data : (res.data.orders || []);
         setOrders(data);
       } catch (err) {
         console.error("Fetch Error:", err.response?.data?.message || err.message);
-        setOrders([]); 
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -61,23 +61,23 @@ const Orders = () => {
             {orders.map((order) => (
               <div key={order._id} className="border border-zinc-100 p-6 md:p-10 rounded-[2rem] bg-white hover:border-black transition-all duration-500 group shadow-sm hover:shadow-xl">
                 <div className="flex flex-col lg:flex-row justify-between gap-10">
-                  
+
                   {/* LEFT: Order Info & Product Thumbnails */}
                   <div className="space-y-8 flex-grow">
                     <div className="flex items-center gap-4">
-                       <p className="font-black text-xl tracking-tighter uppercase italic">#{order._id.slice(-8).toUpperCase()}</p>
-                       <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${order.isDelivered ? 'bg-green-100 text-green-600' : 'bg-orange-100 text-orange-500'}`}>
-                         {order.isDelivered ? 'Delivered' : 'Processing'}
-                       </span>
+                      <p className="font-black text-xl tracking-tighter uppercase italic">#{order._id.slice(-8).toUpperCase()}</p>
+                      <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${order.isDelivered ? 'bg-green-100 text-green-600' : (order.isDispatched ? 'bg-purple-100 text-purple-600' : 'bg-orange-100 text-orange-500')}`}>
+                        {order.isDelivered ? 'Delivered' : (order.isDispatched ? 'Shipped' : 'Processing')}
+                      </span>
                     </div>
 
                     {/* PRODUCT IMAGES PREVIEW - EFFECT REMOVED */}
                     <div className="flex flex-wrap gap-3">
                       {order.orderItems && order.orderItems.map((item, idx) => (
                         <div key={idx} className="relative w-20 h-24 bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100">
-                          <img 
-                            src={item.image} 
-                            alt={item.name} 
+                          <img
+                            src={item.image}
+                            alt={item.name}
                             /* REMOVED: grayscale hover:grayscale-0 */
                             className="w-full h-full object-cover transition-all duration-500 hover:scale-110"
                             onError={(e) => { e.target.src = 'https://via.placeholder.com/150'; }}
@@ -94,7 +94,7 @@ const Orders = () => {
                       <p className="text-3xl font-black italic tracking-tighter transform -skew-x-3">₹{order.totalPrice?.toLocaleString()}</p>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => navigate(`/order/${order._id}`)}
                       className="w-full lg:w-auto px-10 py-5 bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] hover:bg-zinc-800 transition shadow-2xl active:scale-95 flex items-center justify-center gap-2"
                     >

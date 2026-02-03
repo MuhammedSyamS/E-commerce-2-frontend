@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useStore } from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
+import { useStore } from '../../store/useStore';
+import { useToast } from '../../context/ToastContext';
 import axios from 'axios';
 import { MapPin, Plus, Trash2, ArrowLeft } from 'lucide-react';
 
 const AddressBook = () => {
   const { user, setUser } = useStore();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [addresses, setAddresses] = useState(user?.addresses || []);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -26,6 +28,11 @@ const AddressBook = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user || !user.token) {
+      addToast("Session expired. Please Login again.", "error");
+      return;
+    }
+
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
       const { data } = await axios.post('http://localhost:5000/api/users/addresses', formData, config);
@@ -36,9 +43,13 @@ const AddressBook = () => {
       setShowForm(false);
       setFormData({ label: 'Home', street: '', city: '', state: '', zip: '', phone: '', isDefault: false });
     } catch (err) {
-      alert("Failed to add address");
+      console.error("Add Address Error:", err);
+      // Show explicit error: Server Message OR Network Message OR Fallback
+      addToast(err.response?.data?.message || err.message || "Failed to add address", "error");
     }
   };
+
+
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this address?")) return;
@@ -48,12 +59,12 @@ const AddressBook = () => {
       setAddresses(data);
       setUser({ ...user, addresses: data });
     } catch (err) {
-      alert("Failed to delete");
+      addToast("Failed to delete", "error");
     }
   };
 
   return (
-    <div className="min-h-screen bg-white pt-52 pb-20">
+    <div className="min-h-screen bg-white pt-40 lg:pt-48 pb-20">
       <div className="container mx-auto px-6 max-w-4xl">
 
         <button onClick={() => navigate('/account')} className="flex items-center gap-2 text-zinc-400 font-bold uppercase text-[10px] hover:text-black mb-8">

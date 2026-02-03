@@ -4,7 +4,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', sans-serif;
@@ -16,8 +17,8 @@ html, body {
   font-style: normal !important;
 }
 
-.transform, 
-[class*="-skew-x-"], 
+.transform,
+[class*="-skew-x-"],
 [class*="skew-x-"] {
   transform: none !important;
 }
@@ -26,8 +27,30 @@ html, body {
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  /* CUSTOM SLEEK SCROLLBAR */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d4d4d8;
+    /* zinc-300 */
+    border-radius: 50px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a1a1aa;
+    /* zinc-400 */
   }
 }
