@@ -31,7 +31,7 @@ const AdminUsers = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.get('http://localhost:5000/api/users', config);
-            setUsers(data);
+            setUsers(Array.isArray(data) ? data : []);
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -125,10 +125,13 @@ const AdminUsers = () => {
         }
     };
 
-    const filteredUsers = users.filter(u =>
-        (u.firstName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredUsers = users.filter(u => {
+        if (!u) return false;
+        return (
+            (u.firstName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    });
 
     // Helper to determine dropdown value from user object
     const getRoleValue = (u) => {

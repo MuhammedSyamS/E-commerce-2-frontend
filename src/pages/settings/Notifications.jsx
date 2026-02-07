@@ -33,6 +33,41 @@ const Notifications = () => {
     }
   };
 
+  // --- PUSH NOTIFICATION LOGIC ---
+  const publicVapidKey = 'BBpKl_F-zOM-ujMnUcgudUiVjEIELl0oarZBM8tF9_HAn0bx_MUhxym_5anPaEA653crE40tnwxdAzo1HlIfIh4';
+
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  };
+
+  const subscribeToPush = async () => {
+    if (!('serviceWorker' in navigator)) return alert('Push not supported');
+
+    try {
+      const register = await navigator.serviceWorker.ready;
+      const subscription = await register.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+      });
+
+      // Send to Backend
+      const config = { headers: { Authorization: `Bearer ${user.token}` } };
+      await axios.post('http://localhost:5000/api/notifications/subscribe', subscription, config);
+
+      alert('Notifications Enabled! You will now receive alerts for new drops.');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to subscribe. Please ensure you allowed permissions.');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white pt-40 lg:pt-48 pb-20">
       <div className="container mx-auto px-6 max-w-4xl">
@@ -41,9 +76,17 @@ const Notifications = () => {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <div className="mb-12">
-          <h1 className="text-4xl font-black uppercase italic tracking-tighter">Notifications</h1>
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Updates & Alerts</p>
+        <div className="flex justify-between items-end mb-12">
+          <div>
+            <h1 className="text-4xl font-black uppercase italic tracking-tighter">Notifications</h1>
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Updates & Alerts</p>
+          </div>
+          <button
+            onClick={subscribeToPush}
+            className="bg-black text-white px-6 py-3 text-[10px] font-bold uppercase tracking-widest hover:bg-zinc-800 transition-colors flex items-center gap-2 rounded-lg"
+          >
+            <Bell size={16} /> Enable Push
+          </button>
         </div>
 
         {loading ? (

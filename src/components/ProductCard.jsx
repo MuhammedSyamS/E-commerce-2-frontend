@@ -11,10 +11,10 @@ const ProductCard = ({ product }) => {
   const [cartLoading, setCartLoading] = useState(false);
 
   // --- 1. ROBUST WISHLIST CHECK ---
-  const wishlist = user?.wishlist || [];
+  const wishlist = Array.isArray(user?.wishlist) ? user.wishlist : [];
   const isFav = wishlist.some(item => {
-    const itemId = item._id || item;
-    return itemId.toString() === product?._id?.toString();
+    const itemId = item?._id || item;
+    return itemId?.toString() === product?._id?.toString();
   });
 
   // --- 2. DATABASE WISHLIST TOGGLE ---
@@ -121,7 +121,7 @@ const ProductCard = ({ product }) => {
       <div className="px-1">
         <div className="flex justify-between items-start">
           <h3 className="text-[12px] font-black uppercase truncate pr-2">{product.name}</h3>
-          <p className="text-[12px] font-black">₹{product.price.toLocaleString()}</p>
+          <p className="text-[12px] font-black">{typeof product.price === 'number' ? `₹${product.price.toLocaleString()}` : 'Price Unavailable'}</p>
         </div>
         <div className="flex justify-between items-center mt-1">
           <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">925 Sterling Silver</p>

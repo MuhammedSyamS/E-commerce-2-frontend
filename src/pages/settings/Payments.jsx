@@ -59,15 +59,24 @@ const Payments = () => {
 
 
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Remove this card?")) return;
+  // --- MODAL STATE ---
+  const [deleteModal, setDeleteModal] = useState({ show: false, cardId: null });
+
+  const confirmDelete = (id) => {
+    setDeleteModal({ show: true, cardId: id });
+  };
+
+  const handleDelete = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.delete(`http://localhost:5000/api/users/cards/${id}`, config);
+      const { data } = await axios.delete(`http://localhost:5000/api/users/cards/${deleteModal.cardId}`, config);
       setCards(data);
       setUser({ ...user, savedCards: data });
+      addToast("Card Removed", "success");
     } catch (err) {
       addToast("Failed to delete card", "error");
+    } finally {
+      setDeleteModal({ show: false, cardId: null });
     }
   };
 
@@ -128,7 +137,7 @@ const Payments = () => {
               <div key={card._id || idx} className={`p-8 rounded-3xl relative h-48 flex flex-col justify-between shadow-xl transition-all group ${idx % 2 === 0 ? 'bg-zinc-900 text-white' : 'bg-zinc-100 text-zinc-400 border border-zinc-200'}`}>
                 <div className="flex justify-between items-start">
                   <span className="font-mono text-xs opacity-50">{card.brand}</span>
-                  <button onClick={() => handleDelete(card._id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500 hover:text-white rounded-full"><Trash2 size={14} /></button>
+                  <button onClick={() => confirmDelete(card._id)} className="opacity-0 group-hover:opacity-100 transition-opacity p-2 hover:bg-red-500 hover:text-white rounded-full"><Trash2 size={14} /></button>
                 </div>
                 <div>
                   <p className="font-mono text-xl tracking-widest mb-1">•••• •••• •••• {card.last4}</p>
@@ -139,6 +148,32 @@ const Payments = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* DELETE CONFIRMATION MODAL */}
+        {deleteModal.show && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="bg-white p-8 rounded-[2rem] max-w-sm w-full shadow-2xl animate-in zoom-in-95">
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-4 italic text-center">Remove Card?</h3>
+              <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
+                Are you sure you want to remove this payment method?
+              </p>
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  onClick={() => setDeleteModal({ show: false, cardId: null })}
+                  className="py-4 rounded-xl font-black uppercase text-[10px] tracking-widest border border-zinc-200 hover:bg-zinc-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="py-4 rounded-xl font-black bg-red-500 text-white uppercase text-[10px] tracking-widest hover:bg-red-600 shadow-lg shadow-red-200 transition"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div >

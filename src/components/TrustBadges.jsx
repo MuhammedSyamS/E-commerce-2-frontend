@@ -4,7 +4,7 @@ import { Truck, ShieldCheck, Award, RefreshCcw } from 'lucide-react';
 const TrustBadges = () => {
     const badges = [
         { icon: <Truck size={20} />, title: "Free Shipping", subtitle: "On orders over ₹999" },
-        { icon: <ShieldCheck size={20} />, title: "Secure Checkout", subtitle: "SSL Encrypted" },
+        { icon: <ShieldCheck size={20} />, title: <span>Secure <span className="text-red-500">Checkout</span></span>, subtitle: "SSL Encrypted" },
         { icon: <Award size={20} />, title: "Authentic", subtitle: "100% Original" },
         { icon: <RefreshCcw size={20} />, title: "Easy Returns", subtitle: "7-Day Policy" },
     ];

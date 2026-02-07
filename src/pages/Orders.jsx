@@ -25,7 +25,7 @@ const Orders = () => {
           }
         };
 
-        const res = await axios.get('http://localhost:5000/api/orders/myorders', config);
+        const res = await axios.get(`http://localhost:5000/api/orders/myorders?t=${Date.now()}`, config);
 
         const data = Array.isArray(res.data) ? res.data : (res.data.orders || []);
         setOrders(data);
@@ -38,6 +38,8 @@ const Orders = () => {
     };
 
     fetchOrders();
+    const interval = setInterval(fetchOrders, 15000); // 15s Polling
+    return () => clearInterval(interval);
   }, [user]);
 
   if (loading) return (
@@ -49,11 +51,17 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-white pb-20 pt-52 px-6 text-[#1a1a1a]">
       <div className="container mx-auto max-w-5xl">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3 leading-none">
-            My <span className="text-zinc-300">Orders</span>
-          </h1>
-          <div className="h-1 w-20 bg-black mt-4"></div>
+        <div className="mb-12 flex justify-between items-end">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3 leading-none">
+              My <span className="text-red-500">Orders</span>
+            </h1>
+            <div className="h-1 w-20 bg-black mt-4"></div>
+          </div>
+          {/* REFRESH BTN */}
+          <button onClick={() => window.location.reload()} className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black">
+            Refresh Status
+          </button>
         </div>
 
         {orders.length > 0 ? (
@@ -66,9 +74,30 @@ const Orders = () => {
                   <div className="space-y-8 flex-grow">
                     <div className="flex items-center gap-4">
                       <p className="font-black text-xl tracking-tighter uppercase italic">#{order._id.slice(-8).toUpperCase()}</p>
-                      <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${order.isDelivered ? 'bg-green-100 text-green-600' : (order.isDispatched ? 'bg-purple-100 text-purple-600' : 'bg-orange-100 text-orange-500')}`}>
-                        {order.isDelivered ? 'Delivered' : (order.isDispatched ? 'Shipped' : 'Processing')}
-                      </span>
+
+                      {/* STATUS BADGE LOGIC */}
+                      {(() => {
+                        const status = order.orderStatus || (order.isDelivered ? 'Delivered' : order.isDispatched ? 'Shipped' : 'Pending');
+                        let colorClass = 'bg-zinc-100 text-zinc-600';
+
+                        switch (status) {
+                          case 'Pending': colorClass = 'bg-yellow-100 text-yellow-600'; break;
+                          case 'Processing': colorClass = 'bg-teal-100 text-teal-600'; break;
+                          case 'Confirmed': colorClass = 'bg-blue-100 text-blue-600'; break;
+                          case 'Dispatched': colorClass = 'bg-indigo-100 text-indigo-600'; break; // Renamed from Packed
+                          case 'Shipped': colorClass = 'bg-purple-100 text-purple-600'; break;
+                          case 'Delivered': colorClass = 'bg-green-100 text-green-600'; break;
+                          case 'Cancelled': colorClass = 'bg-red-50 text-red-500'; break;
+                          case 'Returned': colorClass = 'bg-orange-50 text-orange-500'; break;
+                          default: colorClass = 'bg-zinc-100 text-zinc-600';
+                        }
+
+                        return (
+                          <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+                            {status}
+                          </span>
+                        );
+                      })()}
                     </div>
 
                     {/* PRODUCT IMAGES PREVIEW - EFFECT REMOVED */}

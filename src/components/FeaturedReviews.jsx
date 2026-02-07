@@ -140,9 +140,11 @@ const FeaturedReviews = () => {
 
                 <div ref={scrollRef} className="flex gap-6 overflow-x-auto no-scrollbar px-6 md:px-16 pb-16 snap-x snap-mandatory scroll-smooth">
                     {reviews.map((item, idx) => {
+                        if (!item || !item.review) return null; // SAFEGUARD
+
                         // Resolve Image: New 'images' array or Legacy 'reviewImage'
                         const displayImage = (item.review.images && item.review.images[0]) || item.review.reviewImage;
-                        const allImages = item.review.images && item.review.images.length > 0
+                        const allImages = Array.isArray(item.review.images) && item.review.images.length > 0
                             ? item.review.images
                             : (item.review.reviewImage ? [item.review.reviewImage] : []);
 
@@ -157,7 +159,7 @@ const FeaturedReviews = () => {
                                 <div className="space-y-8 relative z-10">
                                     <div className="flex items-center gap-2">
                                         <div className="flex gap-1">
-                                            {[...Array(item.review.rating)].map((_, i) => (
+                                            {[...Array(item.review.rating || 5)].map((_, i) => (
                                                 <Star key={i} size={14} fill="black" className="text-black" />
                                             ))}
                                         </div>
@@ -165,7 +167,7 @@ const FeaturedReviews = () => {
                                     </div>
 
                                     <p className="text-xl md:text-2xl font-serif leading-relaxed text-zinc-800 italic">
-                                        "{item.review.comment}"
+                                        "{item.review.comment || "Great product!"}"
                                     </p>
 
                                     {/* MULTI-IMAGE GALLERY - ENLARGED */}
@@ -195,16 +197,16 @@ const FeaturedReviews = () => {
                                 <div className="mt-10 pt-8 border-t border-zinc-50 flex items-center justify-between relative z-10">
                                     <div className="flex items-center gap-4">
                                         <div className="w-12 h-12 rounded-full bg-zinc-900 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-lg">
-                                            {item.review.name.charAt(0)}
+                                            {(item.review.name || "A").charAt(0)}
                                         </div>
                                         <div>
-                                            <p className="text-xs font-black uppercase tracking-widest text-zinc-900">{item.review.name}</p>
+                                            <p className="text-xs font-black uppercase tracking-widest text-zinc-900">{item.review.name || "Anonymous"}</p>
                                             <Link
                                                 to={`/product/${item.productSlug}`}
                                                 onClick={(e) => e.stopPropagation()}
                                                 className="text-[10px] font-bold text-zinc-400 uppercase mt-1 hover:text-black transition-colors block truncate max-w-[200px]"
                                             >
-                                                {item.productName}
+                                                {item.productName || "Product"}
                                             </Link>
                                         </div>
                                     </div>

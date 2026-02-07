@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
+import { useToast } from '../context/ToastContext';
 import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
   const { setUser, user } = useStore();
+  const { addToast } = useToast();
 
   useEffect(() => {
     if (user) {
@@ -21,7 +22,6 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     setLoading(true);
 
     try {
@@ -32,11 +32,12 @@ const Login = () => {
 
       if (res.data && res.data.token) {
         setUser(res.data);
+        addToast("WELCOME BACK!", "success");
         if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
         else navigate('/account');
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Invalid email or password");
+      addToast(err.response?.data?.message || "Invalid email or password", "error");
     } finally {
       setLoading(false);
     }
@@ -46,14 +47,8 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
       <div className="w-full max-w-md">
         {/* REMOVED ITALIC HERE */}
-        <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">Welcome Back</h1>
+        <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">Welcome <span className="text-red-500">Back</span></h1>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account</p>
-
-        {error && (
-          <div className="mb-4 p-3 bg-red-50 text-red-500 text-[10px] font-bold uppercase tracking-widest text-center">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input

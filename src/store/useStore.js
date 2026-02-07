@@ -8,9 +8,22 @@ export const useStore = create(
       user: null,
       isCartOpen: false,
       isSearchOpen: false,
-      isAdminSidebarOpen: true, // Default Open
+      isDesktopSidebarOpen: true, // Desktop default OPEN
+      isMobileSidebarOpen: false, // Mobile default CLOSED
 
-      toggleAdminSidebar: () => set((state) => ({ isAdminSidebarOpen: !state.isAdminSidebarOpen })),
+      toggleDesktopSidebar: () => set((state) => ({ isDesktopSidebarOpen: !state.isDesktopSidebarOpen })),
+      toggleMobileSidebar: () => set((state) => ({ isMobileSidebarOpen: !state.isMobileSidebarOpen })),
+      // Unified Toggle for simplicity:
+      toggleAdminSidebar: () => set((state) => {
+        // Toggle both for simplicity, or handle logic in component. 
+        // YouTube style: One button toggles the sidebar appropriate for that screen.
+        // We'll toggle both flags, and components will listen to the one they care about.
+        return {
+          isDesktopSidebarOpen: !state.isDesktopSidebarOpen,
+          isMobileSidebarOpen: !state.isMobileSidebarOpen
+        };
+      }),
+      closeMobileSidebar: () => set({ isMobileSidebarOpen: false }),
 
       setUser: (userData) => set({ user: userData }),
 
@@ -55,23 +68,48 @@ export const useStore = create(
         }
       },
 
-      addToCart: (product) => {
+      addToCart: async (product) => {
         const state = get();
         const currentCart = state.user?.cart || [];
-        const existingItem = currentCart.find((item) => item._id === product._id);
+
+        // 1. Optimistic Update
+        const existingItem = currentCart.find((item) => {
+          const sameId = item._id === product._id;
+          const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
+          return sameId && sameVariant;
+        });
 
         let updatedCart;
         if (existingItem) {
-          updatedCart = currentCart.map((item) =>
-            item._id === product._id
-              ? { ...item, quantity: item.quantity + (product.quantity || 1) }
-              : item
-          );
+          updatedCart = currentCart.map((item) => {
+            const sameId = item._id === product._id;
+            const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
+            if (sameId && sameVariant) {
+              return { ...item, quantity: item.quantity + (product.quantity || 1) };
+            }
+            return item;
+          });
         } else {
           updatedCart = [...currentCart, { ...product, quantity: product.quantity || 1 }];
         }
 
         set({ user: state.user ? { ...state.user, cart: updatedCart } : null });
+
+        // 2. Backend Sync
+        if (state.user?.token) {
+          try {
+            await axios.post('http://localhost:5000/api/cart/add', {
+              productId: product._id,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              quantity: product.quantity || 1,
+              selectedVariant: product.selectedVariant
+            }, { headers: { Authorization: `Bearer ${state.user.token}` } });
+          } catch (err) {
+            console.error("Cart sync failed:", err);
+          }
+        }
       },
 
       setCart: (updatedCart) => set((state) => ({
@@ -82,13 +120,18 @@ export const useStore = create(
         isCartOpen: typeof open === 'boolean' ? open : !state.isCartOpen
       })),
 
+      coupon: null, // { code: string, discount: number }
+
+      applyCoupon: (data) => set({ coupon: data }),
+      removeCoupon: () => set({ coupon: null }),
+
       logout: () => {
-        set({ user: null });
-        localStorage.removeItem('miso-storage');
+        set({ user: null, coupon: null });
+        localStorage.removeItem('slook-storage');
       }
     }),
     {
-      name: 'miso-storage',
+      name: 'slook-storage',
       storage: createJSONStorage(() => localStorage)
     }
   )

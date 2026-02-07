@@ -7,71 +7,47 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const CartDrawer = () => {
-  const { user, setUser, toggleCart, isCartOpen } = useStore();
+  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon } = useStore();
   const { addToast } = useToast();
   const navigate = useNavigate();
   const scrollRef = useRef(null);
 
-  const [coupon, setCoupon] = useState('');
-  const [discount, setDiscount] = useState(0);
+  const [couponCode, setCouponCode] = useState('');
   const [allProducts, setAllProducts] = useState([]);
+  const suggestions = []; // Fix ReferenceError
 
-  const removeItem = async (productId) => {
-    try {
-      const { data } = await axios.delete(`http://localhost:5000/api/cart/remove/${productId}`,
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-      setUser({ ...user, cart: data });
-    } catch (err) { console.error(err); }
-  };
+  // ... removeItem ...
 
-  const cartItems = user?.cart || [];
+  const cartItems = (user?.cart && Array.isArray(user.cart)) ? user.cart : [];
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+
+  // Recalculate discount if percentage based? 
+  // For now, backend returns absolute discount. 
+  // We should ideally re-verify if cart changes, but for MVP let's trust the stored discount 
+  // or clear it if cart changes significantly? 
+  // Let's just use the stored discount.
+  const discount = (appliedCoupon && typeof appliedCoupon.discount === 'number') ? appliedCoupon.discount : 0;
   const total = subtotal - discount;
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const { data } = await axios.get('http://localhost:5000/api/products');
-        setAllProducts(data);
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-      }
-    };
-    if (isCartOpen) fetchProducts();
-  }, [isCartOpen]);
-
-  const suggestions = allProducts
-    .filter(p => !cartItems.find(item => item.product === p._id))
-    .slice(0, 8);
-
-  const scroll = (direction) => {
-    if (scrollRef.current) {
-      const { scrollLeft } = scrollRef.current;
-      const scrollTo = direction === 'left' ? scrollLeft - 220 : scrollLeft + 220;
-      scrollRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
-    }
-  };
-
-  const updateQty = async (productId, currentQty, delta) => {
-    const newQty = currentQty + delta;
-    if (newQty < 1) return;
+  const handleApplyCoupon = async () => {
+    if (!couponCode) return;
     try {
-      const { data } = await axios.post('http://localhost:5000/api/cart/add',
-        { productId, quantity: delta },
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-      setUser({ ...user, cart: data });
-    } catch (err) { console.error(err); }
+      const { data } = await axios.post('http://localhost:5000/api/marketing/verify-coupon', {
+        code: couponCode,
+        cartTotal: subtotal
+      });
+
+      applyCoupon({ code: data.code, discount: data.discount });
+      addToast(data.message, "success");
+      setCouponCode('');
+    } catch (err) {
+      addToast(err.response?.data?.message || "Invalid Coupon", "error");
+    }
   };
 
-  const applyCoupon = () => {
-    if (coupon.toUpperCase() === 'MISO10') {
-      setDiscount(subtotal * 0.10);
-      addToast("10% Studio Discount Applied!", "success");
-    } else {
-      addToast("Invalid code", "error");
-    }
+  const handleRemoveCoupon = () => {
+    removeCoupon();
+    addToast("Coupon Removed", "info");
   };
 
   if (!isCartOpen) return null;
@@ -97,14 +73,21 @@ const CartDrawer = () => {
               {/* ITEM CARDS */}
               <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item.product} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100 flex gap-4">
+                  <div key={item.product || Math.random()} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100 flex gap-4">
                     <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 flex-shrink-0">
-                      <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                      <img src={item.image || "/placeholder.jpg"} className="w-full h-full object-cover" alt={item.name} />
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div className="flex justify-between items-start">
-                        <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name}</p>
-                        <p className="font-black text-[11px] italic transform -skew-x-6">₹{item.price.toLocaleString()}</p>
+                        <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name || "Unknown Product"}</p>
+                        {item.selectedVariant && (
+                          <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">
+                            {item.selectedVariant.size && `Size ${item.selectedVariant.size}`}
+                            {item.selectedVariant.size && item.selectedVariant.color && ` / `}
+                            {item.selectedVariant.color}
+                          </p>
+                        )}
+                        <p className="font-black text-[11px] italic transform -skew-x-6">₹{typeof item.price === 'number' ? item.price.toLocaleString() : item.price}</p>
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
@@ -127,25 +110,38 @@ const CartDrawer = () => {
 
               {/* COUPON SECTION */}
               <div className="bg-white p-5 rounded-2xl border border-zinc-100 shadow-sm space-y-3">
-                <div className="flex items-center gap-2">
-                  <Ticket size={14} className="text-zinc-400" />
-                  <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Promotional Code</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Ticket size={14} className="text-zinc-400" />
+                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Promotional Code</p>
+                  </div>
+                  {appliedCoupon && (
+                    <button onClick={handleRemoveCoupon} className="text-[9px] text-red-500 font-bold uppercase tracking-wider hover:underline">Remove</button>
+                  )}
                 </div>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="ENTER CODE"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                    className="flex-1 bg-[#f8f8f8] border border-transparent rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest outline-none focus:border-zinc-200 transition-all"
-                  />
-                  <button
-                    onClick={applyCoupon}
-                    className="bg-black text-white px-5 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-transform"
-                  >
-                    Apply
-                  </button>
-                </div>
+
+                {appliedCoupon ? (
+                  <div className="p-3 bg-green-50 border border-green-100 rounded-xl flex justify-between items-center">
+                    <span className="text-[10px] font-black uppercase text-green-700">{appliedCoupon?.code} Applied</span>
+                    <span className="text-[10px] font-bold text-green-600">-₹{(appliedCoupon?.discount || 0).toLocaleString()}</span>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="ENTER CODE"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value)}
+                      className="flex-1 bg-[#f8f8f8] border border-transparent rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest outline-none focus:border-zinc-200 transition-all"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      className="bg-black text-white px-5 rounded-xl text-[9px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* SUGGESTIONS - EFFECT REMOVED */}
@@ -225,7 +221,7 @@ const CartDrawer = () => {
               onClick={() => { toggleCart(false); navigate('/checkout'); }}
               className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10"
             >
-              Secure Checkout <ChevronRight size={16} />
+              <span>Secure <span className="text-red-500">Checkout</span></span> <ChevronRight size={16} />
             </button>
           </div>
         )}

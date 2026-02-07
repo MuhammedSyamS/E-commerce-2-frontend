@@ -17,50 +17,50 @@ const Contact = () => {
   return (
     <div className="min-h-screen bg-white pt-40 pb-20 px-6">
       <div className="container mx-auto max-w-6xl">
-        
+
         {/* Header */}
         <div className="mb-20 text-center md:text-left">
           <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4">
             Contact Us
           </h1>
           <p className="text-zinc-400 text-[10px] md:text-xs font-bold uppercase tracking-[0.5em]">
-            Reach out to the HighPhaus Studio
+            Reach out to the SLOOK Studio
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-          
+
           {/* Left: Contact Form */}
           <div className="space-y-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <input 
-                  type="text" 
-                  placeholder="Your Name" 
-                  className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium" 
-                  required 
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
+                  required
                 />
-                <input 
-                  type="email" 
-                  placeholder="Email Address" 
-                  className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium" 
-                  required 
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
+                  required
                 />
               </div>
-              <input 
-                type="text" 
-                placeholder="Subject" 
-                className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium" 
+              <input
+                type="text"
+                placeholder="Subject"
+                className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
               />
-              <textarea 
-                rows="5" 
-                placeholder="How can we help you?" 
-                className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium resize-none" 
+              <textarea
+                rows="5"
+                placeholder="How can we help you?"
+                className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium resize-none"
                 required
               ></textarea>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="bg-black text-white px-12 py-5 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-800 transition-all active:scale-95"
               >
                 {status || 'Send Message'}
@@ -71,7 +71,7 @@ const Contact = () => {
           {/* Right: Contact Info */}
           <div className="space-y-12">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-              
+
               {/* Support */}
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
@@ -91,8 +91,8 @@ const Contact = () => {
                   <h3 className="text-[10px] font-black uppercase tracking-widest">Email Us</h3>
                 </div>
                 <p className="text-zinc-500 text-sm">
-                  support@highphaus.com<br />
-                  press@highphaus.com
+                  support@slook.com<br />
+                  press@slook.com
                 </p>
               </div>
 

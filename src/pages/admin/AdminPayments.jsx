@@ -30,19 +30,27 @@ const AdminPayments = () => {
         }
     };
 
-    const handleAction = async (id, action) => {
-        if (!window.confirm(`Are you sure you want to ${action} this transaction?`)) return;
+    // --- CONFIRMATION MODAL STATE ---
+    const [confirmModal, setConfirmModal] = useState({ show: false, id: null, action: null });
 
+    const initiateAction = (id, action) => {
+        setConfirmModal({ show: true, id, action });
+    };
+
+    const handleConfirmAction = async () => {
+        const { id, action } = confirmModal;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const endpoint = action === 'pay' ? 'pay' : 'refund';
             const { data } = await axios.put(`http://localhost:5000/api/orders/${id}/${endpoint}`, {}, config);
 
-            // Update local state by finding and replacing
+            // Update local state
             setOrders(orders.map(o => o._id === id ? data : o));
-            addToast(`Transaction ${action === 'pay' ? 'verified' : 'refunded'} successfully`, "success");
+            addToast(`Transaction ${action === 'pay' ? 'Verified' : 'Refunded'} Successfully`, "success");
         } catch (err) {
             addToast(`Failed to ${action} transaction`, "error");
+        } finally {
+            setConfirmModal({ show: false, id: null, action: null });
         }
     };
 
@@ -205,7 +213,7 @@ const AdminPayments = () => {
                                 <td className="p-6 text-right space-x-2">
                                     {!o.isPaid && o.orderStatus !== 'Cancelled' && (
                                         <button
-                                            onClick={() => handleAction(o._id, 'pay')}
+                                            onClick={() => initiateAction(o._id, 'pay')}
                                             className="inline-flex items-center gap-2 px-3 py-2 bg-black text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-800 transition"
                                         >
                                             <CheckCircle size={12} /> Verify
@@ -213,7 +221,7 @@ const AdminPayments = () => {
                                     )}
                                     {o.isPaid && o.orderStatus !== 'Returned' && (
                                         <button
-                                            onClick={() => handleAction(o._id, 'refund')}
+                                            onClick={() => initiateAction(o._id, 'refund')}
                                             className="inline-flex items-center gap-2 px-3 py-2 border border-zinc-200 text-zinc-400 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition"
                                         >
                                             <RotateCcw size={12} /> Refund
@@ -225,6 +233,41 @@ const AdminPayments = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* CONFIRMATION MODAL */}
+            {confirmModal.show && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white p-8 rounded-[2rem] max-w-sm w-full shadow-2xl animate-in zoom-in-95">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto ${confirmModal.action === 'pay' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                            {confirmModal.action === 'pay' ? <CheckCircle size={24} /> : <RotateCcw size={24} />}
+                        </div>
+                        <h3 className="text-xl font-black uppercase tracking-tighter mb-2 italic text-center">
+                            {confirmModal.action === 'pay' ? 'Verify Payment?' : 'Refund Order?'}
+                        </h3>
+                        <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
+                            {confirmModal.action === 'pay'
+                                ? "Confirm this payment has been received?"
+                                : "This will process a refund for this order."}
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button
+                                onClick={() => setConfirmModal({ show: false, id: null, action: null })}
+                                className="py-4 rounded-xl font-black uppercase text-[10px] tracking-widest border border-zinc-200 hover:bg-zinc-50 transition"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmAction}
+                                className={`py-4 rounded-xl font-black text-white uppercase text-[10px] tracking-widest shadow-lg transition ${confirmModal.action === 'pay'
+                                    ? 'bg-black hover:bg-zinc-800 shadow-zinc-200'
+                                    : 'bg-red-500 hover:bg-red-600 shadow-red-200'}`}
+                            >
+                                {confirmModal.action === 'pay' ? 'Yes, Verify' : 'Confirm Refund'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

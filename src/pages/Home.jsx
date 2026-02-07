@@ -82,8 +82,15 @@ const Home = () => {
   };
 
   // FILTERING LOGIC: Supports both legacy booleans and new Tags system
-  const bestSellers = products.filter(p => p.isBestSeller || p.tags?.includes('Best Seller') || p.tags?.includes('best seller'));
-  const newArrivals = products.filter(p => p.tags?.includes('New Arrival') || p.tags?.includes('New') || p.isNewArrival);
+  const bestSellers = Array.isArray(products) ? products.filter(p =>
+    p.isBestSeller ||
+    (Array.isArray(p.tags) && (p.tags.includes('Best Seller') || p.tags.includes('best seller')))
+  ) : [];
+
+  const newArrivals = Array.isArray(products) ? products.filter(p =>
+    (Array.isArray(p.tags) && (p.tags.includes('New Arrival') || p.tags.includes('New'))) ||
+    p.isNewArrival
+  ) : [];
 
   if (loading) return (
     <div className="h-screen w-full bg-black flex items-center justify-center">
@@ -99,7 +106,7 @@ const Home = () => {
         <section className="relative w-full h-screen overflow-hidden bg-zinc-950">
           {slides.map((slide, index) => (
             <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}>
-              <img src={slide.img} className={`w-full h-full object-cover transition-transform duration-[8000ms] ${index === currentSlide ? "scale-110" : "scale-100"}`} alt="" />
+              <img src={slide.img} className={`w-full h-full object-cover transition-transform ${index === currentSlide ? "scale-110" : "scale-100"}`} style={{ transitionDuration: '8000ms' }} alt="" />
               <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
                 <div className="text-center">
                   <p className="text-white/80 text-[10px] font-black uppercase tracking-[0.8em] mb-6">{slide.subtitle}</p>
@@ -130,7 +137,11 @@ const Home = () => {
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3">Best Sellers</h2>
               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">The Most Iconic Pieces</p>
             </div>
+            <Link to="/shop?filter=best-seller" className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">
+              View All
+            </Link>
           </div>
+
 
           <div className="relative flex items-center group">
             {activeView === 'all' && (
@@ -146,7 +157,7 @@ const Home = () => {
 
             <div ref={scrollRef} className={`flex gap-6 md:gap-8 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0' : 'flex-wrap justify-center'}`}>
               {bestSellers.map((product) => (
-                <div key={product._id} className={`${activeView === 'all' ? 'min-w-[80%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}>
+                <div key={product._id} className={`${activeView === 'all' ? 'min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}>
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -189,7 +200,11 @@ const Home = () => {
               <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3">New Arrivals</h2>
               <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Fresh Studio Drops</p>
             </div>
+            <Link to="/shop?filter=new-arrival" className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">
+              View All
+            </Link>
           </div>
+
 
           <div className="relative flex items-center group">
             {activeView === 'all' && (
@@ -205,7 +220,7 @@ const Home = () => {
 
             <div ref={newArrivalRef} className={`flex gap-6 md:gap-8 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0' : 'flex-wrap justify-center'}`}>
               {newArrivals.map((product) => (
-                <div key={product._id} className={`${activeView === 'all' ? 'min-w-[80%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}>
+                <div key={product._id} className={`${activeView === 'all' ? 'min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}>
                   <ProductCard product={product} />
                 </div>
               ))}

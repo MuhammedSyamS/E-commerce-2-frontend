@@ -25,23 +25,25 @@ export const ToastProvider = ({ children }) => {
     return (
         <ToastContext.Provider value={{ addToast, removeToast }}>
             {children}
-            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3">
+            <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 items-end">
                 {toasts.map((toast) => (
                     <div
                         key={toast.id}
-                        className={`min-w-[300px] max-w-sm p-4 rounded-xl shadow-2xl flex items-center gap-4 animate-in slide-in-from-right-10 fade-in duration-300 ${toast.type === 'success' ? 'bg-black text-white' :
-                                toast.type === 'error' ? 'bg-red-500 text-white' :
-                                    'bg-white text-black border border-zinc-200'
+                        className={`min-w-[320px] max-w-md px-6 py-4 rounded-full shadow-2xl flex items-center gap-4 animate-in slide-in-from-right-10 zoom-in-95 duration-300 ${toast.type === 'success' ? 'bg-black/90 text-white backdrop-blur-xl border border-white/10' :
+                            toast.type === 'error' ? 'bg-red-500/90 text-white backdrop-blur-xl' :
+                                'bg-white/90 text-black border border-zinc-200 backdrop-blur-xl'
                             }`}
                     >
-                        <div className="flex-shrink-0">
-                            {toast.type === 'success' && <CheckCircle size={20} className="text-green-400" />}
-                            {toast.type === 'error' && <AlertCircle size={20} className="text-white" />}
-                            {toast.type === 'info' && <Info size={20} className="text-zinc-400" />}
+                        <div className={`flex-shrink-0 p-1 rounded-full ${toast.type === 'success' ? 'bg-white/20' :
+                            toast.type === 'error' ? 'bg-white/20' : 'bg-black/5'
+                            }`}>
+                            {toast.type === 'success' && <CheckCircle size={16} className="text-white" strokeWidth={3} />}
+                            {toast.type === 'error' && <AlertCircle size={16} className="text-white" strokeWidth={3} />}
+                            {toast.type === 'info' && <Info size={16} className="text-black" strokeWidth={3} />}
                         </div>
-                        <p className="text-xs font-bold uppercase tracking-widest flex-grow">{toast.message}</p>
-                        <button onClick={() => removeToast(toast.id)} className="opacity-50 hover:opacity-100 transition">
-                            <X size={16} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] flex-grow leading-none pt-0.5">{toast.message}</p>
+                        <button onClick={() => removeToast(toast.id)} className="opacity-50 hover:opacity-100 transition p-1 hover:bg-white/20 rounded-full">
+                            <X size={14} />
                         </button>
                     </div>
                 ))}

@@ -68,7 +68,7 @@ const ForgotPassword = () => {
         </button>
 
         <h1 className="text-3xl font-black uppercase tracking-tighter mb-8 leading-none">
-          Reset <span className="text-zinc-200">Password</span>
+          Reset <span className="text-red-500">Password</span>
         </h1>
 
         <form onSubmit={step === 1 ? handleSendOtp : handleReset} className="space-y-6">

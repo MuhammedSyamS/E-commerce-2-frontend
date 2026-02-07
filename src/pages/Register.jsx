@@ -9,7 +9,7 @@ const Register = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState({ type: '', msg: '' });
-  
+
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
 
@@ -68,11 +68,11 @@ const Register = () => {
         ...formData,
         code: otp.join('')
       });
-      
+
       setStatus({ type: 'success', msg: 'ACCOUNT CREATED SUCCESSFULLY!' });
-      
+
       // Save user to Zustand store and localStorage
-      setUser(data); 
+      setUser(data);
 
       // Brief delay so user sees success message before redirect
       setTimeout(() => navigate('/'), 2000);
@@ -96,14 +96,13 @@ const Register = () => {
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
       <div className="w-full max-w-md">
         <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">
-          {showOtp ? "Verify OTP" : "Create Account"}
+          {showOtp ? <span>Verify <span className="text-red-500">OTP</span></span> : <span>Create <span className="text-red-500">Account</span></span>}
         </h1>
 
         <div className="mb-4 h-12">
           {status.msg && (
-            <div className={`p-3 text-xs font-bold uppercase tracking-widest text-center ${
-              status.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-black text-white'
-            }`}>
+            <div className={`p-3 text-xs font-bold uppercase tracking-widest text-center ${status.type === 'error' ? 'bg-red-50 text-red-600' : 'bg-black text-white'
+              }`}>
               {status.msg}
             </div>
           )}
@@ -113,34 +112,34 @@ const Register = () => {
           <div className="space-y-6">
             <form onSubmit={handleRegisterSubmit} className="space-y-5">
               <div className="grid grid-cols-2 gap-4">
-                <input 
-                  type="text" 
-                  placeholder="First Name" 
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500" 
-                  onChange={(e) => setFormData({...formData, firstName: e.target.value})} 
-                  required 
+                <input
+                  type="text"
+                  placeholder="First Name"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                  onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                  required
                 />
-                <input 
-                  type="text" 
-                  placeholder="Last Name" 
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500" 
-                  onChange={(e) => setFormData({...formData, lastName: e.target.value})} 
-                  required 
+                <input
+                  type="text"
+                  placeholder="Last Name"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  required
                 />
               </div>
-              <input 
-                type="email" 
-                placeholder="Email" 
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500" 
-                onChange={(e) => setFormData({...formData, email: e.target.value})} 
-                required 
+              <input
+                type="email"
+                placeholder="Email"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
               />
-              <input 
-                type="password" 
-                placeholder="Password" 
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500" 
-                onChange={(e) => setFormData({...formData, password: e.target.value})} 
-                required 
+              <input
+                type="password"
+                placeholder="Password"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
               />
               <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition">
                 {loading ? "Sending OTP..." : "Create Account"}

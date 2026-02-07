@@ -11,7 +11,7 @@ const XIcon = ({ className }) => (
 const Footer = () => {
   return (
     <footer className="bg-[#0a0a0a] text-white border-t border-zinc-900">
-      
+
       {/* --- TRUST BAR (Inverted to Dark) --- */}
       <div className="border-b border-zinc-900 py-10 px-6">
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
@@ -32,12 +32,12 @@ const Footer = () => {
 
       <div className="container mx-auto px-6 pt-20 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
-          
+
           {/* BRAND STORY */}
           <div className="lg:col-span-4 space-y-6">
-            <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white">HighPhaus</h2>
+            <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white">SLOOK</h2>
             <p className="text-zinc-500 text-xs leading-relaxed max-w-sm font-medium">
-              Authentic 925 Sterling Silver for the modern rebel. 
+              Authentic 925 Sterling Silver for the modern rebel.
               Designed in the studio, worn on the streets. No fillers, no fakes.
             </p>
             <div className="flex gap-6 pt-4">
@@ -77,9 +77,9 @@ const Footer = () => {
               Join for early access to drops and exclusive studio updates.
             </p>
             <div className="relative group">
-              <input 
-                type="email" 
-                placeholder="EMAIL ADDRESS" 
+              <input
+                type="email"
+                placeholder="EMAIL ADDRESS"
                 className="w-full bg-transparent border-b border-zinc-800 py-4 text-[10px] font-black text-white outline-none focus:border-white transition-all placeholder:text-zinc-700"
               />
               <button className="absolute right-0 bottom-4 text-[10px] font-black uppercase tracking-widest text-white hover:translate-x-1 transition-transform">
@@ -93,7 +93,7 @@ const Footer = () => {
         {/* BOTTOM BAR */}
         <div className="mt-24 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em]">
-            © 2026 HighPhaus Studio. All rights reserved.
+            © 2026 SLOOK Studio. All rights reserved.
           </p>
           <div className="flex gap-8 text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em]">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

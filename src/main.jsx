@@ -7,6 +7,14 @@ import './index.css'; // Ensure Tailwind is loaded early
 // We use a constant for the root to ensure it's stable
 const rootElement = document.getElementById('root');
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('SW Registered!', reg))
+      .catch(err => console.error('SW Registration Failed', err));
+  });
+}
+
 if (!rootElement) {
   console.error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
 } else {

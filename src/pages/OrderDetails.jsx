@@ -1,38 +1,38 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { ArrowLeft, MapPin, CreditCard, Truck, Package, Loader2, ChevronRight, Star, AlertTriangle, X, RotateCcw } from 'lucide-react';
-
+import {
+  ArrowLeft, MapPin, CreditCard, Truck, Package,
+  Loader2, ChevronRight, Star, AlertTriangle, RotateCcw,
+  Calendar, CheckCircle2, Copy
+} from 'lucide-react';
 
 const OrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useStore();
   const { addToast } = useToast();
+
   const [order, setOrder] = useState(null);
-  const [allProducts, setAllProducts] = useState([]); // For recommendations
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [confirmModal, setConfirmModal] = useState({ show: false, itemId: null, actionType: 'cancel' }); // actionType: 'cancel' | 'return'
+
+  // Modals for Actions
+  const [confirmModal, setConfirmModal] = useState({ show: false, itemId: null, actionType: 'cancel' });
   const [returnReason, setReturnReason] = useState("");
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!user?.token) return;
-
       try {
         setLoading(true);
         const { data } = await axios.get(`http://localhost:5000/api/orders/${id}`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         setOrder(data);
-
-        // Fetch products for recommendations (simple fetch all for now)
-        const prodRes = await axios.get('http://localhost:5000/api/products');
-        setAllProducts(prodRes.data || []);
-
       } catch (err) {
         console.error("Order Detail Error:", err);
         setError(err.response?.data?.message || "Could not load order details");
@@ -40,299 +40,370 @@ const OrderDetails = () => {
         setLoading(false);
       }
     };
-
     fetchOrder();
   }, [id, user?.token]);
 
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-white">
-      <Loader2 className="animate-spin text-black" size={32} />
+      <Loader2 className="animate-spin" size={40} />
     </div>
   );
 
   if (error || !order) return (
-    <div className="h-screen flex flex-col items-center justify-center bg-white px-6 text-center">
-      <p className="font-black uppercase tracking-widest text-xs mb-6">{error || "Order not found"}</p>
-      <button onClick={() => navigate('/my-orders')} className="bg-black text-white px-10 py-4 rounded-full font-black uppercase tracking-widest text-[10px]">Back to History</button>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-zinc-50 px-6">
+      <div className="text-center space-y-4">
+        <p className="font-bold text-red-500 uppercase tracking-widest">{error || "Order Not Found"}</p>
+        <button onClick={() => navigate('/my-orders')} className="bg-black text-white px-8 py-3 rounded-full uppercase tracking-widest text-xs font-bold">
+          Return to Orders
+        </button>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-white pt-44 md:pt-52 pb-20 px-6 text-[#1a1a1a]">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen bg-zinc-50/50 pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a]">
+      {/* Increased Max Width for Desktop Table View */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8">
 
+        {/* BREADCRUMB / BACK */}
         <button
           onClick={() => navigate('/my-orders')}
-          className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-10 hover:text-black transition"
+          className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8 hover:text-black transition-colors"
         >
-          <ArrowLeft size={14} /> Back to History
+          <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+          Back to Order History
         </button>
 
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-16">
-          <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300 mb-2">Order Reference</p>
-            <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none">
-              #{order._id ? order._id.slice(-8).toUpperCase() : 'UNKNOWN'}
-            </h1>
-            <p className="text-[10px] font-bold text-zinc-400 mt-1 tracking-widest">
-              ID: {order._id}
-            </p>
+        {/* HEADER SECTION */}
+        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+                  order.orderStatus === 'Shipped' ? 'bg-purple-100 text-purple-700' :
+                    order.orderStatus === 'Dispatched' ? 'bg-indigo-100 text-indigo-700' :
+                      order.orderStatus === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
+                        order.orderStatus === 'Processing' ? 'bg-teal-100 text-teal-700' :
+                          order.orderStatus === 'Cancelled' ? 'bg-red-100 text-red-700' :
+                            order.orderStatus === 'Returned' ? 'bg-orange-100 text-orange-700' :
+                              'bg-yellow-100 text-yellow-700' // Pending
+                  }`}>
+                  {order.orderStatus || 'Pending'}
+                </span>
+                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                  Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic mb-2">
+                Order #{order._id?.slice(-6).toUpperCase()}
+              </h1>
+              <div className="flex items-center gap-4">
+                <span className="text-xs font-mono text-zinc-400">ID: {order._id}</span>
+                <button
+                  onClick={() => window.open(`http://localhost:5000/api/orders/${order._id}/invoice?token=${user.token}`, '_blank')}
+                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-black hover:text-zinc-600 border border-black px-3 py-1 rounded-full transition-colors"
+                >
+                  <Copy size={12} /> Download Invoice
+                </button>
+              </div>
+              <span>ID: {order._id}</span>
+              <button onClick={() => navigator.clipboard.writeText(order._id)} className="hover:text-black" title="Copy ID">
+                <Copy size={12} />
+              </button>
+            </div>
           </div>
-          <div className="text-left md:text-right">
-            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300 mb-2">Placed On</p>
-            <p className="font-bold text-xs uppercase">
-              {order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}
-            </p>
+
+          <div className="flex flex-col items-start lg:items-end gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
+            <span className="text-4xl md:text-5xl font-black tracking-tighter italic">
+              ₹{order.totalPrice?.toLocaleString()}
+            </span>
           </div>
         </div>
 
-        {/* INFO GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16 border-y border-zinc-100 py-12">
-          <div className="space-y-4">
-            <MapPin size={18} className="text-zinc-400" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Shipping To</p>
-            <p className="text-xs font-bold text-zinc-500 uppercase leading-relaxed">
-              {order.shippingAddress?.address || 'No Address'}<br />
-              {order.shippingAddress?.city || ''}, {order.shippingAddress?.postalCode || ''}
-            </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-10 border-t border-zinc-100">
+          {/* SHIPPING INFO */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <MapPin size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Shipping Address</span>
+            </div>
+            <div className="text-sm font-bold text-zinc-700 leading-relaxed uppercase">
+              <p>{order.shippingAddress?.address}</p>
+              <p>{order.shippingAddress?.city}, {order.shippingAddress?.postalCode}</p>
+              <p className="text-zinc-400 mt-1">Ph: {order.shippingAddress?.phone}</p>
+            </div>
           </div>
-          <div className="space-y-4">
-            <CreditCard size={18} className="text-zinc-400" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Payment</p>
-            <p className="text-xs font-bold text-zinc-500 uppercase">Method: {order.paymentMethod || 'Unknown'}</p>
-            <p className="text-[10px] font-black text-green-600 uppercase mt-1">Transaction Authorized</p>
-          </div>
-          <div className="space-y-4">
-            <Truck size={18} className="text-zinc-400" />
-            <p className="text-[10px] font-black uppercase tracking-widest">Delivery Status</p>
-            <div className="flex items-center gap-2">
-              <span className={`w-2 h-2 rounded-full ${order.isDelivered ? 'bg-green-500' : (order.isDispatched ? 'bg-purple-500' : 'bg-orange-500')}`}></span>
-              <p className={`text-xs font-black uppercase ${order.isDelivered ? 'text-green-600' : (order.isDispatched ? 'text-purple-600' : 'text-orange-500')}`}>
-                {order.isDelivered ? `Delivered` : (order.isDispatched ? `Shipped` : 'Processing')}
+
+          {/* PAYMENT INFO */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <CreditCard size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Payment Method</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-zinc-700 uppercase">
+                {order.paymentMethod === 'cod' ? 'Cash On Delivery' : order.paymentMethod}
+              </p>
+              <p className="text-[10px] font-bold text-green-600 mt-1 uppercase flex items-center gap-1">
+                <CheckCircle2 size={12} /> Payment {order.isPaid ? 'Completed' : 'Pending'}
               </p>
             </div>
+          </div>
 
-            {/* Courier Info */}
-            {order.isDispatched && (
-              <div className="mt-2 text-[10px] uppercase font-bold text-zinc-500 space-y-1">
-                {order.deliveryPartner && <p>Courier: <span className="text-black">{order.deliveryPartner}</span></p>}
-                {order.trackingId && <p>Tracking ID: <span className="text-black">{order.trackingId}</span></p>}
+          {/* DELIVERY STATUS */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-2 text-zinc-400">
+              <Truck size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Delivery Details</span>
+            </div>
+            <div className="text-sm font-bold text-zinc-700">
+              {order.isDispatched ? (
+                <div className="space-y-1">
+                  <p className="uppercase">{order.deliveryPartner || 'Standard Courier'}</p>
+                  <p className="font-mono text-zinc-400 text-xs">TRK: {order.trackingId || 'Pending'}</p>
+                  <button onClick={() => navigate('/track-order')} className="text-[10px] font-black underline mt-2 hover:text-black">
+                    TRACK PACKAGE
+                  </button>
+                </div>
+              ) : (
+                <p className="text-zinc-500 italic">Expected dispatch within 24hrs</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ITEMS SECTION */}
+      <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
+        <div className="p-8 border-b border-zinc-100">
+          <h2 className="text-xl font-black uppercase tracking-tight italic">Order Items ({order.orderItems?.length})</h2>
+        </div>
+
+        {/* DESKTOP TABLE VIEW (Visible on lg+) */}
+        <div className="hidden lg:block">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-zinc-50 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                <th className="py-6 px-8">Product Details</th>
+                <th className="py-6 px-4">Unit Price</th>
+                <th className="py-6 px-4 text-center">Quantity</th>
+                <th className="py-6 px-4">Total</th>
+                <th className="py-6 px-8 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100">
+              {order.orderItems.map((item, i) => {
+                const productLink = item.product?.slug || item.product?._id || item.product;
+                const isLinkable = typeof productLink === 'string'; // Fallback check
+
+                return (
+                  <tr key={i} className="hover:bg-zinc-50/50 transition-colors group">
+                    <td className="py-6 px-8">
+                      <div className="flex items-center gap-6">
+                        <div className="w-16 h-20 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <Link
+                            to={isLinkable ? `/product/${productLink}` : '#'}
+                            className={`font-bold text-sm uppercase block mb-1 ${isLinkable ? 'hover:underline' : 'pointer-events-none'}`}
+                          >
+                            {item.name}
+                          </Link>
+                          {/* Status Badges */}
+                          {/* Status Badges - Comprehensive */}
+                          {item.status === 'Cancelled' && <span className="bg-red-100 text-red-600 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Cancelled</span>}
+
+                          {item.status === 'Return Requested' && <span className="bg-yellow-100 text-yellow-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Return Pending</span>}
+                          {item.status === 'Returned' && <span className="bg-green-100 text-green-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Returned</span>}
+
+                          {item.status === 'Exchange Requested' && <span className="bg-blue-100 text-blue-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Exchange Pending</span>}
+                          {item.status === 'Exchanged' && <span className="bg-purple-100 text-purple-700 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Exchanged</span>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-6 px-4 text-sm font-medium font-mono">₹{item.price.toLocaleString()}</td>
+                    <td className="py-6 px-4 text-center text-sm font-bold">x {item.qty}</td>
+                    <td className="py-6 px-4 text-sm font-bold font-mono">₹{(item.price * item.qty).toLocaleString()}</td>
+                    <td className="py-6 px-8 text-right">
+                      <div className="flex justify-end gap-3 opacity-100 lg:opacity-50 lg:group-hover:opacity-100 transition-opacity">
+                        {/* Logic for Cancel/Return Buttons */}
+                        {!order.isDispatched && item.status === 'Ordered' && (
+                          <button
+                            onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'cancel' })}
+                            className="text-[9px] font-bold uppercase tracking-wider text-red-500 border border-red-200 px-4 py-2 rounded-full hover:bg-red-50 transition"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                        {order.isDelivered && item.status === 'Ordered' && (
+                          <>
+                            <button
+                              onClick={() => navigate(`/product/${productLink}#reviews`)}
+                              className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
+                            >
+                              Review
+                            </button>
+                            <button
+                              onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })}
+                              className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
+                            >
+                              Return
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* MOBILE LIST VIEW (Visible on < lg) */}
+        <div className="lg:hidden divide-y divide-zinc-100">
+          {order.orderItems.map((item, i) => (
+            <div key={i} className="p-6 flex flex-col gap-4">
+              <div className="flex gap-4">
+                <div className="w-20 h-24 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
+                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
+                  <p className="text-xs text-zinc-500 font-mono mb-2">₹{item.price.toLocaleString()} x {item.qty}</p>
+                  <p className="font-black text-sm">Total: ₹{(item.price * item.qty).toLocaleString()}</p>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.status === 'Cancelled' ? (
+                      <span className="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded font-bold uppercase">Cancelled</span>
+                    ) : (
+                      !order.isDispatched ? (
+                        <button
+                          onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'cancel' })}
+                          className="text-[9px] font-bold text-red-500 uppercase border border-red-200 px-3 py-1.5 rounded-full"
+                        >
+                          Cancel Item
+                        </button>
+                      ) : order.isDelivered ? (
+                        <div className="flex gap-2">
+                          <button onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })} className="text-[9px] font-bold border px-3 py-1.5 rounded-full uppercase">Return</button>
+                          <button onClick={() => navigate(`/product/${item.product?.slug || item.product}#reviews`)} className="text-[9px] font-bold bg-black text-white px-3 py-1.5 rounded-full uppercase">Review</button>
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
 
+      {/* CONFIRM MODAL (Same logic as before) */ }
+  {
+    confirmModal.show && (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 px-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmModal({ ...confirmModal, show: false })} />
+        <div className="relative bg-white w-full max-w-md rounded-3xl p-8 animate-in zoom-in-95 shadow-2xl overflow-y-auto max-h-[90vh]">
+          <h3 className="text-2xl font-black uppercase italic mb-2 tracking-tighter">
+            {confirmModal.actionType === 'cancel' ? 'Confirm Cancellation' : 'Request Service'}
+          </h3>
+
+          {confirmModal.actionType === 'cancel' ? (
+            <p className="text-zinc-500 text-sm font-medium mb-6">
+              Are you sure you want to remove this item from your order? Refund will be processed to original source.
+            </p>
+          ) : (
+            <div className="space-y-4 mb-6">
+              {/* Type Selector */}
+              <div className="flex bg-zinc-100 p-1 rounded-xl">
+                {['Return', 'Exchange'].map(type => (
+                  <button
+                    key={type}
+                    onClick={() => setConfirmModal(prev => ({ ...prev, requestType: type }))}
+                    className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${(confirmModal.requestType || 'Return') === type ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'
+                      }`}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+
+              {/* Reason Select */}
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Reason</label>
+                <select
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-black appearance-none"
+                  value={returnReason}
+                  onChange={e => setReturnReason(e.target.value)}
+                >
+                  <option value="">Select a reason...</option>
+                  <option value="Damaged Product">Damaged Product</option>
+                  <option value="Wrong Item">Wrong Item Received</option>
+                  <option value="Size/Fit Issue">Size/Fit Issue</option>
+                  <option value="Quality Issue">Quality Issue</option>
+                  <option value="Change of Mind">Change of Mind</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              {/* Comment Area */}
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Additional Comments</label>
+                <textarea
+                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 text-sm font-medium outline-none focus:border-black h-24 resize-none"
+                  placeholder="Please provide more details..."
+                  value={confirmModal.comment || ''}
+                  onChange={e => setConfirmModal(prev => ({ ...prev, comment: e.target.value }))}
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-4">
             <button
-              onClick={() => navigate('/track-order')}
-              className="mt-4 text-[9px] font-bold uppercase tracking-widest border-b border-black pb-0.5 hover:text-zinc-500 transition-colors"
+              onClick={() => setConfirmModal({ ...confirmModal, show: false })}
+              className="flex-1 py-4 border border-zinc-200 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-zinc-50"
             >
-              Track Shipment
+              Dismiss
+            </button>
+            <button
+              onClick={async () => {
+                try {
+                  if (confirmModal.actionType === 'cancel') {
+                    await axios.put(`http://localhost:5000/api/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
+                    addToast("Cancelled Successfully", "success");
+                  } else {
+                    // Return / Exchange Request
+                    if (!returnReason) return addToast("Please select a reason", "error");
+
+                    await axios.post('http://localhost:5000/api/returns', {
+                      orderId: order._id,
+                      itemId: confirmModal.itemId,
+                      type: confirmModal.requestType || 'Return',
+                      reason: returnReason,
+                      comment: confirmModal.comment
+                    }, { headers: { Authorization: `Bearer ${user.token}` } });
+
+                    addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");
+                  }
+                  setTimeout(() => window.location.reload(), 1000); // Small delay to allow toast
+                } catch (e) {
+                  addToast(e.response?.data?.message || "Action Failed", "error");
+                }
+              }}
+              className={`flex-1 py-4 font-black uppercase tracking-widest text-[10px] rounded-xl text-white shadow-xl ${confirmModal.actionType === 'cancel' ? 'bg-red-500 hover:bg-red-600' : 'bg-black hover:bg-zinc-800'}`}
+            >
+              Confirm
             </button>
           </div>
         </div>
-
-        {/* ITEMS LIST */}
-        <div className="space-y-8">
-          <h2 className="text-[10px] font-black uppercase tracking-[0.4em] mb-10 text-zinc-300">Package Contents</h2>
-          {order.orderItems.map((item, i) => {
-            // Resolve product target (slug or ID) safely
-            const productData = item.product || {};
-            const targetLink = productData.slug || productData._id || item.product;
-            const isClickable = !!targetLink && typeof targetLink !== 'object';
-            const isCancelled = item.status === 'Cancelled';
-            const isReturned = item.status === 'Return Requested' || item.status === 'Returned' || item.status === 'Exchange Requested';
-
-            return (
-              <div
-                key={i}
-                className={`flex items-center gap-6 md:gap-10 group border-b border-zinc-50 pb-8 hover:border-zinc-200 transition-colors ${isCancelled || isReturned ? 'opacity-50 grayscale' : ''}`}
-                onClick={(e) => {
-                  if (isClickable && !isCancelled) {
-                    navigate(`/product/${targetLink}`);
-                  }
-                }}
-              >
-                <div className="w-20 h-28 md:w-28 md:h-36 bg-zinc-50 overflow-hidden rounded-2xl border border-zinc-100">
-                  <img
-                    src={item.image}
-                    className="w-full h-full object-cover transition-all duration-700 hover:scale-105"
-                    alt={item.name}
-                    onError={(e) => e.target.src = 'https://via.placeholder.com/300x400'}
-                  />
-                </div>
-                <div className="flex-grow">
-                  <div className="flex items-center gap-4">
-                    <p className="font-black text-lg md:text-2xl uppercase tracking-tight italic leading-tight group-hover:translate-x-1 transition-transform">{item.name}</p>
-                    {isCancelled && <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">Cancelled</span>}
-                    {isReturned && (
-                      <span className="bg-zinc-100 text-zinc-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest">
-                        {item.status === 'Exchange Requested' ? 'Exchange Req.' : 'Return Req.'}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase mt-2 tracking-widest">
-                    Unit Price: ₹{(item.price || 0).toLocaleString()} &nbsp; | &nbsp; Qty: {item.qty}
-                  </p>
-
-                  <div className="flex gap-3 mt-4">
-                    {/* WRITE REVIEW BUTTON */}
-                    {isClickable && !isCancelled && order.isDelivered && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          navigate(`/product/${targetLink}#reviews`);
-                        }}
-                        className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest bg-black text-white px-5 py-3 rounded-full hover:bg-zinc-800 transition-colors shadow-md"
-                      >
-                        <Star size={12} /> Write a Review
-                      </button>
-                    )}
-
-                    {/* RETURN / EXCHANGE BUTTON */}
-                    {isClickable && !isCancelled && !isReturned && order.isDelivered && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setReturnReason(""); // Reset reason
-                          setConfirmModal({ show: true, itemId: item._id, actionType: 'return' });
-                        }}
-                        className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest border border-zinc-200 text-zinc-600 px-5 py-3 rounded-full hover:bg-zinc-50 transition-colors"
-                      >
-                        <RotateCcw size={12} /> Return / Exchange
-                      </button>
-                    )}
-
-                    {/* CANCEL ORDER BUTTON */}
-                    {!order.isDispatched && !order.isDelivered && !isCancelled && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setConfirmModal({ show: true, itemId: item._id, actionType: 'cancel' });
-                        }}
-                        className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest border border-red-200 text-red-500 px-5 py-3 rounded-full hover:bg-red-50 transition-colors"
-                      >
-                        <Package size={12} /> Cancel Item
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Snapshot mode: If product is missing, just don't show the link or error */}
-                </div>
-                <div className="text-right hidden sm:block">
-                  <p className="font-black text-xl italic tracking-tighter transform -skew-x-6">₹{((item.qty || 0) * (item.price || 0)).toLocaleString()}</p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* TOTALS */}
-        <div className="mt-20 p-8 md:p-12 bg-zinc-50 rounded-[2.5rem] flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="text-center md:text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Total Charged</p>
-            <p className="text-[9px] font-bold text-zinc-300 uppercase mt-1 italic">Billing inclusive of all duties and taxes</p>
-          </div>
-          <p className="text-5xl md:text-7xl font-black italic tracking-tighter transform -skew-x-6">₹{(order.totalPrice || 0).toLocaleString()}</p>
-        </div>
-
-        {/* YOU MAY ALSO LIKE */}
-        {allProducts.length > 0 && (
-          <div className="mt-20 pt-10 border-t border-zinc-100">
-            <h2 className="text-xs font-black uppercase italic mb-8 tracking-widest text-zinc-300 text-center">You May Also Like</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {allProducts.slice(0, 4).map(item => (
-                <Link key={item._id} to={`/product/${item.slug}`} className="group text-left space-y-2">
-                  <div className="aspect-[4/5] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-50 transition-transform group-hover:scale-95">
-                    <img src={item.image} className="w-full h-full object-cover" alt="" />
-                  </div>
-                  <p className="text-[10px] font-black uppercase truncate">{item.name}</p>
-                  <p className="text-[11px] font-bold italic">₹{item.price?.toLocaleString()}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
       </div>
-
-      {/* CONFIRMATION MODAL */}
-      {
-        confirmModal.show && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setConfirmModal({ ...confirmModal, show: false })}></div>
-            <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto ${confirmModal.actionType === 'cancel' ? 'bg-red-50 text-red-500' : 'bg-zinc-100 text-black'}`}>
-                {confirmModal.actionType === 'cancel' ? <AlertTriangle size={24} /> : <RotateCcw size={24} />}
-              </div>
-              <h3 className="text-xl font-black uppercase text-center mb-2 italic tracking-tighter">
-                {confirmModal.actionType === 'cancel' ? 'Cancel Item?' : 'Return Request'}
-              </h3>
-              <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
-                {confirmModal.actionType === 'cancel'
-                  ? "Are you sure you want to cancel this item? This action cannot be undone."
-                  : "Start a return or exchange request? Please tell us why."}
-              </p>
-
-              {/* REASON INPUT */}
-              {confirmModal.actionType === 'return' && (
-                <div className="mb-8">
-                  <textarea
-                    value={returnReason}
-                    onChange={(e) => setReturnReason(e.target.value)}
-                    placeholder="E.g. Size too small, Damaged item..."
-                    className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-3 text-xs font-medium outline-none focus:border-black h-24 resize-none"
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setConfirmModal({ ...confirmModal, show: false })}
-                  className="py-4 rounded-xl font-black uppercase text-[10px] tracking-widest border border-zinc-200 hover:bg-zinc-50 transition"
-                >
-                  Dismiss
-                </button>
-                <button
-                  onClick={async () => {
-                    if (confirmModal.actionType === 'cancel') {
-                      try {
-                        await axios.put(`http://localhost:5000/api/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, {
-                          headers: { Authorization: `Bearer ${user.token}` }
-                        });
-                        addToast("Item Cancelled Successfully", "success");
-                        window.location.reload();
-                      } catch (err) {
-                        addToast(err.response?.data?.message || "Cancellation failed", "error");
-                      }
-                    } else {
-                      if (!returnReason.trim()) {
-                        addToast("Please provide a reason", "error");
-                        return;
-                      }
-                      try {
-                        await axios.put(`http://localhost:5000/api/orders/${order._id}/return/${confirmModal.itemId}`,
-                          { reason: returnReason, actionType: 'return' },
-                          { headers: { Authorization: `Bearer ${user.token}` } }
-                        );
-                        addToast("Return Request Submitted", "success");
-                        window.location.reload();
-                      } catch (err) {
-                        addToast(err.response?.data?.message || "Return request failed", "error");
-                      }
-                    }
-                    setConfirmModal({ ...confirmModal, show: false });
-                  }}
-                  className={`py-4 rounded-xl font-black uppercase text-[10px] tracking-widest text-white transition shadow-lg ${confirmModal.actionType === 'cancel'
-                    ? 'bg-red-500 hover:bg-red-600 shadow-red-200'
-                    : 'bg-black hover:bg-zinc-800 shadow-zinc-200'
-                    }`}
-                >
-                  {confirmModal.actionType === 'cancel' ? 'Yes, Cancel' : 'Submit Request'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )
-      }
+    )
+  }
 
     </div >
   );
