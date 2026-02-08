@@ -22,7 +22,8 @@ const EditProduct = () => {
     images: [],
     description: '',
     countInStock: 0,
-    isBestSeller: false
+    isBestSeller: false,
+    variants: [] // Initialize variants
   });
 
   const [newImageUrl, setNewImageUrl] = useState('');
@@ -41,7 +42,8 @@ const EditProduct = () => {
           images: data.images || [], // Load images array
           description: data.description || '',
           countInStock: data.countInStock || 0,
-          isBestSeller: data.isBestSeller || false
+          isBestSeller: data.isBestSeller || false,
+          variants: data.variants || [] // Load variants
         });
       } catch (error) {
         addToast("Failed to load product", "error");
@@ -175,16 +177,7 @@ const EditProduct = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">Stock Quantity</label>
-                <input
-                  type="number"
-                  className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black font-bold"
-                  value={formData.countInStock}
-                  onChange={e => setFormData({ ...formData, countInStock: e.target.value })}
-                  placeholder="0"
-                />
-              </div>
+
 
               {/* IMAGES SECTION */}
               <div className="space-y-4 border-t border-zinc-100 pt-8">
@@ -241,6 +234,95 @@ const EditProduct = () => {
                   value={formData.description}
                   onChange={e => setFormData({ ...formData, description: e.target.value })}
                 />
+              </div>
+
+              {/* --- VARIANTS & INVENTORY --- */}
+              <div className="space-y-6 pt-6 border-t border-zinc-100">
+                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b border-zinc-100 pb-2">Inventory Data</h3>
+
+                {/* VARIANTS SECTION */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-[10px] font-bold uppercase text-zinc-400 tracking-widest">Product Variants (Size/Color)</label>
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, variants: [...(formData.variants || []), { size: '', color: '', stock: 0 }] })}
+                      className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1 rounded-full hover:bg-zinc-800"
+                    >
+                      + Add Variant
+                    </button>
+                  </div>
+
+                  {formData.variants && formData.variants.length > 0 ? (
+                    <div className="space-y-2">
+                      {formData.variants.map((variant, idx) => (
+                        <div key={idx} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            placeholder="Size (e.g. 7)"
+                            className="w-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
+                            value={variant.size}
+                            onChange={(e) => {
+                              const newVar = [...formData.variants];
+                              newVar[idx].size = e.target.value;
+                              setFormData({ ...formData, variants: newVar });
+                            }}
+                          />
+                          <input
+                            type="text"
+                            placeholder="Color (e.g. Silver)"
+                            className="flex-1 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
+                            value={variant.color}
+                            onChange={(e) => {
+                              const newVar = [...formData.variants];
+                              newVar[idx].color = e.target.value;
+                              setFormData({ ...formData, variants: newVar });
+                            }}
+                          />
+                          <input
+                            type="number"
+                            placeholder="Qty"
+                            className="w-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold"
+                            value={variant.stock}
+                            onChange={(e) => {
+                              const newVar = [...formData.variants];
+                              newVar[idx].stock = Number(e.target.value);
+                              // Auto-update total stock
+                              const total = newVar.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
+                              setFormData({ ...formData, variants: newVar, countInStock: total });
+                            }}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newVar = formData.variants.filter((_, i) => i !== idx);
+                              const total = newVar.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
+                              setFormData({ ...formData, variants: newVar, countInStock: total });
+                            }}
+                            className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[10px] text-zinc-400 italic mb-4">No variants added. Using simple stock count below.</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">Total Stock Quantity</label>
+                  <input
+                    type="number"
+                    className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black font-bold"
+                    value={formData.countInStock}
+                    onChange={e => setFormData({ ...formData, countInStock: e.target.value })}
+                    placeholder="0"
+                    readOnly={formData.variants && formData.variants.length > 0} // Read-only if variants exist
+                  />
+                  {formData.variants && formData.variants.length > 0 && <p className="text-[9px] text-zinc-400 mt-1">Calculated automatically from variants.</p>}
+                </div>
               </div>
 
               <div className="flex items-center gap-4">
