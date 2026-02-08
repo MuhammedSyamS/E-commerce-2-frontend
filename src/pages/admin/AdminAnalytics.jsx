@@ -67,7 +67,9 @@ const AdminAnalytics = () => {
         return null;
     };
 
+    if (!user) return <div className="p-8 text-center">Please log in.</div>;
     if (!stats && loading) return <div className="flex h-96 items-center justify-center text-zinc-400 font-mono text-xs animate-pulse">LOADING ANALYTICS ENGINE...</div>;
+    if (!stats && !loading) return <div className="flex h-96 items-center justify-center text-red-500 font-mono text-xs">FAILED TO LOAD ANALYTICS DATA.</div>;
 
     return (
         <div className="space-y-8 animate-in fade-in duration-500 pb-12">

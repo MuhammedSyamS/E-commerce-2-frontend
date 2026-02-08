@@ -30,7 +30,9 @@ const AnalyticsOrders = () => {
         if (user?.token) fetchStats();
     }, [user]);
 
-    if (!stats && loading) return <div className="p-8 text-center">Loading...</div>;
+    if (!user) return <div className="p-8 text-center">Please log in.</div>;
+    if (!stats && loading) return <div className="p-8 text-center text-zinc-500 animate-pulse">Loading analytics...</div>;
+    if (!stats && !loading) return <div className="p-8 text-center text-red-500">Failed to load data.</div>;
 
     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 

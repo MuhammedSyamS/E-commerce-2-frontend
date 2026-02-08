@@ -300,110 +300,110 @@ const OrderDetails = () => {
           ))}
         </div>
       </div>
-    </div>
 
-      {/* CONFIRM MODAL (Same logic as before) */ }
-  {
-    confirmModal.show && (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 px-4">
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmModal({ ...confirmModal, show: false })} />
-        <div className="relative bg-white w-full max-w-md rounded-3xl p-8 animate-in zoom-in-95 shadow-2xl overflow-y-auto max-h-[90vh]">
-          <h3 className="text-2xl font-black uppercase italic mb-2 tracking-tighter">
-            {confirmModal.actionType === 'cancel' ? 'Confirm Cancellation' : 'Request Service'}
-          </h3>
 
-          {confirmModal.actionType === 'cancel' ? (
-            <p className="text-zinc-500 text-sm font-medium mb-6">
-              Are you sure you want to remove this item from your order? Refund will be processed to original source.
-            </p>
-          ) : (
-            <div className="space-y-4 mb-6">
-              {/* Type Selector */}
-              <div className="flex bg-zinc-100 p-1 rounded-xl">
-                {['Return', 'Exchange'].map(type => (
-                  <button
-                    key={type}
-                    onClick={() => setConfirmModal(prev => ({ ...prev, requestType: type }))}
-                    className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${(confirmModal.requestType || 'Return') === type ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'
-                      }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
+      {/* CONFIRM MODAL (Same logic as before) */}
+      {
+        confirmModal.show && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 px-4">
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmModal({ ...confirmModal, show: false })} />
+            <div className="relative bg-white w-full max-w-md rounded-3xl p-8 animate-in zoom-in-95 shadow-2xl overflow-y-auto max-h-[90vh]">
+              <h3 className="text-2xl font-black uppercase italic mb-2 tracking-tighter">
+                {confirmModal.actionType === 'cancel' ? 'Confirm Cancellation' : 'Request Service'}
+              </h3>
 
-              {/* Reason Select */}
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Reason</label>
-                <select
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-black appearance-none"
-                  value={returnReason}
-                  onChange={e => setReturnReason(e.target.value)}
+              {confirmModal.actionType === 'cancel' ? (
+                <p className="text-zinc-500 text-sm font-medium mb-6">
+                  Are you sure you want to remove this item from your order? Refund will be processed to original source.
+                </p>
+              ) : (
+                <div className="space-y-4 mb-6">
+                  {/* Type Selector */}
+                  <div className="flex bg-zinc-100 p-1 rounded-xl">
+                    {['Return', 'Exchange'].map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setConfirmModal(prev => ({ ...prev, requestType: type }))}
+                        className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${(confirmModal.requestType || 'Return') === type ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'
+                          }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Reason Select */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Reason</label>
+                    <select
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-black appearance-none"
+                      value={returnReason}
+                      onChange={e => setReturnReason(e.target.value)}
+                    >
+                      <option value="">Select a reason...</option>
+                      <option value="Damaged Product">Damaged Product</option>
+                      <option value="Wrong Item">Wrong Item Received</option>
+                      <option value="Size/Fit Issue">Size/Fit Issue</option>
+                      <option value="Quality Issue">Quality Issue</option>
+                      <option value="Change of Mind">Change of Mind</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  {/* Comment Area */}
+                  <div>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Additional Comments</label>
+                    <textarea
+                      className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 text-sm font-medium outline-none focus:border-black h-24 resize-none"
+                      placeholder="Please provide more details..."
+                      value={confirmModal.comment || ''}
+                      onChange={e => setConfirmModal(prev => ({ ...prev, comment: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setConfirmModal({ ...confirmModal, show: false })}
+                  className="flex-1 py-4 border border-zinc-200 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-zinc-50"
                 >
-                  <option value="">Select a reason...</option>
-                  <option value="Damaged Product">Damaged Product</option>
-                  <option value="Wrong Item">Wrong Item Received</option>
-                  <option value="Size/Fit Issue">Size/Fit Issue</option>
-                  <option value="Quality Issue">Quality Issue</option>
-                  <option value="Change of Mind">Change of Mind</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
+                  Dismiss
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      if (confirmModal.actionType === 'cancel') {
+                        await axios.put(`http://localhost:5000/api/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
+                        addToast("Cancelled Successfully", "success");
+                      } else {
+                        // Return / Exchange Request
+                        if (!returnReason) return addToast("Please select a reason", "error");
 
-              {/* Comment Area */}
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Additional Comments</label>
-                <textarea
-                  className="w-full bg-zinc-50 border border-zinc-200 rounded-xl p-4 text-sm font-medium outline-none focus:border-black h-24 resize-none"
-                  placeholder="Please provide more details..."
-                  value={confirmModal.comment || ''}
-                  onChange={e => setConfirmModal(prev => ({ ...prev, comment: e.target.value }))}
-                />
+                        await axios.post('http://localhost:5000/api/returns', {
+                          orderId: order._id,
+                          itemId: confirmModal.itemId,
+                          type: confirmModal.requestType || 'Return',
+                          reason: returnReason,
+                          comment: confirmModal.comment
+                        }, { headers: { Authorization: `Bearer ${user.token}` } });
+
+                        addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");
+                      }
+                      setTimeout(() => window.location.reload(), 1000); // Small delay to allow toast
+                    } catch (e) {
+                      addToast(e.response?.data?.message || "Action Failed", "error");
+                    }
+                  }}
+                  className={`flex-1 py-4 font-black uppercase tracking-widest text-[10px] rounded-xl text-white shadow-xl ${confirmModal.actionType === 'cancel' ? 'bg-red-500 hover:bg-red-600' : 'bg-black hover:bg-zinc-800'}`}
+                >
+                  Confirm
+                </button>
               </div>
             </div>
-          )}
-
-          <div className="flex gap-4">
-            <button
-              onClick={() => setConfirmModal({ ...confirmModal, show: false })}
-              className="flex-1 py-4 border border-zinc-200 font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-zinc-50"
-            >
-              Dismiss
-            </button>
-            <button
-              onClick={async () => {
-                try {
-                  if (confirmModal.actionType === 'cancel') {
-                    await axios.put(`http://localhost:5000/api/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
-                    addToast("Cancelled Successfully", "success");
-                  } else {
-                    // Return / Exchange Request
-                    if (!returnReason) return addToast("Please select a reason", "error");
-
-                    await axios.post('http://localhost:5000/api/returns', {
-                      orderId: order._id,
-                      itemId: confirmModal.itemId,
-                      type: confirmModal.requestType || 'Return',
-                      reason: returnReason,
-                      comment: confirmModal.comment
-                    }, { headers: { Authorization: `Bearer ${user.token}` } });
-
-                    addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");
-                  }
-                  setTimeout(() => window.location.reload(), 1000); // Small delay to allow toast
-                } catch (e) {
-                  addToast(e.response?.data?.message || "Action Failed", "error");
-                }
-              }}
-              className={`flex-1 py-4 font-black uppercase tracking-widest text-[10px] rounded-xl text-white shadow-xl ${confirmModal.actionType === 'cancel' ? 'bg-red-500 hover:bg-red-600' : 'bg-black hover:bg-zinc-800'}`}
-            >
-              Confirm
-            </button>
           </div>
-        </div>
-      </div>
-    )
-  }
+        )
+      }
 
     </div >
   );
