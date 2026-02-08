@@ -16,7 +16,59 @@ const CartDrawer = () => {
   const [allProducts, setAllProducts] = useState([]);
   const suggestions = []; // Fix ReferenceError
 
-  // ... removeItem ...
+  // --- CART ACTIONS ---
+  const updateQty = async (productId, currentQty, change, variant) => {
+    const newQty = currentQty + change;
+    if (newQty < 1) return; // Use remove for 0
+
+    // 1. Optimistic Update
+    const updatedCart = (user.cart || []).map(item => {
+      if (item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
+        return { ...item, quantity: newQty };
+      }
+      return item;
+    });
+    setUser({ ...user, cart: updatedCart });
+
+    // 2. Backend Sync
+    try {
+      if (change > 0) {
+        await axios.post('http://localhost:5000/api/cart/add', {
+          productId,
+          quantity: 1, // Add 1
+          selectedVariant: variant
+        }, { headers: { Authorization: `Bearer ${user.token}` } });
+      } else {
+        await axios.post('http://localhost:5000/api/cart/decrease', {
+          productId,
+          selectedVariant: variant
+        }, { headers: { Authorization: `Bearer ${user.token}` } });
+      }
+    } catch (err) {
+      console.error("Cart update failed:", err);
+      // Revert? For now, we trust sync will happen next reload or user will retry.
+    }
+  };
+
+  const removeItem = async (productId, variant) => {
+    // 1. Optimistic Update
+    const updatedCart = (user.cart || []).filter(item =>
+      !(item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant))
+    );
+    setUser({ ...user, cart: updatedCart });
+
+    // 2. Backend Sync
+    try {
+      await axios.post('http://localhost:5000/api/cart/remove', {
+        productId,
+        selectedVariant: variant
+      }, { headers: { Authorization: `Bearer ${user.token}` } });
+      addToast("Item removed", "info");
+    } catch (err) {
+      console.error("Remove failed:", err);
+      addToast("Failed to sync cart", "error");
+    }
+  };
 
   const cartItems = (user?.cart && Array.isArray(user.cart)) ? user.cart : [];
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
@@ -91,12 +143,12 @@ const CartDrawer = () => {
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
-                          <button onClick={() => updateQty(item.product, item.quantity, -1)} className="p-1 hover:text-black text-zinc-400"><Minus size={12} /></button>
+                          <button onClick={() => updateQty(item.product, item.quantity, -1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Minus size={12} /></button>
                           <span className="w-8 text-center text-[11px] font-black">{item.quantity}</span>
-                          <button onClick={() => updateQty(item.product, item.quantity, 1)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
+                          <button onClick={() => updateQty(item.product, item.quantity, 1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
                         </div>
                         <button
-                          onClick={() => removeItem(item.product)}
+                          onClick={() => removeItem(item.product, item.selectedVariant)}
                           className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
                           title="Remove Item"
                         >
