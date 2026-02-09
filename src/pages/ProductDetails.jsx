@@ -142,7 +142,13 @@ const ProductDetails = () => {
   );
 
   const isWishlisted = user?.wishlist?.some(item => (item._id || item).toString() === product?._id.toString());
-  const gallery = [product.image, ...(product.images || [])].filter(Boolean);
+
+  // MERGE IMAGES AND VIDEO INTO ONE GALLERY ARRAY
+  const mediaItems = [
+    ...([product.image, ...(product.images || [])].filter(Boolean).map(url => ({ type: 'image', url }))),
+    ...(product.video ? [{ type: 'video', url: product.video }] : [])
+  ];
+
   const suggestions = Array.isArray(allProducts) ? allProducts.filter(p => p.category === product?.category && p._id !== product?._id).slice(0, 4) : [];
 
   const displayReviews = product.reviews?.length > 0
@@ -207,17 +213,47 @@ const ProductDetails = () => {
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           <div className="flex flex-col-reverse lg:flex-row gap-3 lg:sticky lg:top-40">
+            {/* THUMBNAILS */}
             <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar">
-              {gallery.map((img, i) => (
+              {mediaItems.map((item, i) => (
                 <button key={i} onClick={() => setActiveImgIndex(i)}
-                  className={`flex-shrink-0 w-12 h-16 rounded-xl overflow-hidden border transition-all ${activeImgIndex === i ? 'border-black' : 'border-transparent opacity-40'}`}>
-                  <img src={img} className="w-full h-full object-cover" alt="" />
+                  className={`flex-shrink-0 w-12 h-16 rounded-xl overflow-hidden border transition-all flex items-center justify-center bg-zinc-50 ${activeImgIndex === i ? 'border-black opacity-100' : 'border-transparent opacity-40'}`}>
+                  {item.type === 'video' ? (
+                    <div className="bg-black/10 rounded-full p-1"><Zap size={14} fill="currentColor" /></div>
+                  ) : (
+                    <img src={item.url} className="w-full h-full object-cover" alt="" />
+                  )}
                 </button>
               ))}
             </div>
+
+            {/* MAIN DISPLAY */}
             <div className="relative flex-1 aspect-[4/5] bg-zinc-50 rounded-[2.5rem] overflow-hidden border border-zinc-100 shadow-sm group">
-              <img src={gallery.length > 0 ? gallery[activeImgIndex] : (product.image || "/placeholder.jpg")} className="w-full h-full object-cover" alt="" />
-              {product.countInStock === 0 && (
+              {mediaItems[activeImgIndex]?.type === 'video' ? (
+                <div className="w-full h-full bg-black flex items-center justify-center">
+                  {mediaItems[activeImgIndex].url.includes('youtube') || mediaItems[activeImgIndex].url.includes('youtu.be') ? (
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      src={mediaItems[activeImgIndex].url.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/')}
+                      title="Product Video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <video controls autoPlay className="w-full h-full object-contain">
+                      <source src={mediaItems[activeImgIndex].url} type="video/mp4" />
+                      Your browser does not support the video tag.
+                    </video>
+                  )}
+                </div>
+              ) : (
+                <img src={mediaItems[activeImgIndex]?.url || "/placeholder.jpg"} className="w-full h-full object-cover" alt="" />
+              )}
+
+              {/* Overlays only for Image */}
+              {mediaItems[activeImgIndex]?.type === 'image' && product.countInStock === 0 && (
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
                   <span className="bg-black text-white px-6 py-3 text-xs font-black uppercase tracking-widest shadow-xl transform rotate-0">
                     Out of Stock
@@ -228,26 +264,6 @@ const ProductDetails = () => {
                 <Heart size={18} fill={isWishlisted ? "black" : "none"} className={isWishlisted ? "text-black" : "text-zinc-300"} />
               </button>
             </div>
-            {product.video && (
-              <div className="mt-4 aspect-video rounded-3xl overflow-hidden border border-zinc-100 shadow-sm">
-                {product.video.includes('youtube') || product.video.includes('youtu.be') ? (
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    src={product.video.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/')}
-                    title="Product Video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
-                ) : (
-                  <video controls className="w-full h-full object-cover">
-                    <source src={product.video} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                )}
-              </div>
-            )}
           </div>
 
           <div className="space-y-6 pt-2 lg:pt-0">

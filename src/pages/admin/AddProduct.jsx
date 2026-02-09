@@ -450,7 +450,14 @@ const AddProduct = () => {
                     required
                     readOnly={formData.variants && formData.variants.length > 0} // Read-only if variants exist
                   />
-                  {formData.variants && formData.variants.length > 0 && <p className="text-[9px] text-zinc-400 mt-1">Calculated automatically from variants.</p>}
+                  {formData.variants && formData.variants.length > 0 && (
+                    <div className="bg-amber-50 border border-amber-200 p-3 rounded-xl mt-2 flex items-start gap-2">
+                      <div className="mt-0.5 text-amber-500"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg></div>
+                      <p className="text-[10px] text-amber-700 font-medium leading-relaxed">
+                        The <strong>Total Stock</strong> is automatically calculated as the sum of all variant quantities. You cannot edit it manually while variants exist.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* TAGS */}

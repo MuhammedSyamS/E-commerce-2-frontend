@@ -14,11 +14,29 @@ const CartDrawer = () => {
 
   const [couponCode, setCouponCode] = useState('');
   const [allProducts, setAllProducts] = useState([]);
-  const suggestions = []; // Fix ReferenceError
+  const [suggestions, setSuggestions] = useState([]); // Fix ReferenceError
+
+  // Fetch Suggestions
+  useEffect(() => {
+    if (isCartOpen) {
+      const fetchSuggestions = async () => {
+        try {
+          const { data } = await axios.get('http://localhost:5000/api/products');
+          // Shuffle and pick 4
+          const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 5);
+          setSuggestions(shuffled);
+        } catch (err) {
+          console.error("Failed to fetch suggestions", err);
+        }
+      };
+      fetchSuggestions();
+    }
+  }, [isCartOpen]);
 
   // --- CART ACTIONS ---
   const updateQty = async (productId, currentQty, change, variant) => {
-    const newQty = currentQty + change;
+    const parsedQty = Number(currentQty) || 1; // Ensure number
+    const newQty = parsedQty + change;
     if (newQty < 1) return; // Use remove for 0
 
     // 1. Optimistic Update
@@ -50,18 +68,20 @@ const CartDrawer = () => {
     }
   };
 
-  const removeItem = async (productId, variant) => {
+  const removeItem = async (productId, variant, itemId) => {
     // 1. Optimistic Update
-    const updatedCart = (user.cart || []).filter(item =>
-      !(item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant))
-    );
+    const updatedCart = (user.cart || []).filter(item => {
+      if (itemId) return item._id !== itemId;
+      return !(item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
+    });
     setUser({ ...user, cart: updatedCart });
 
     // 2. Backend Sync
     try {
       await axios.post('http://localhost:5000/api/cart/remove', {
         productId,
-        selectedVariant: variant
+        selectedVariant: variant,
+        _id: itemId // Send Cart Item ID
       }, { headers: { Authorization: `Bearer ${user.token}` } });
       addToast("Item removed", "info");
     } catch (err) {
@@ -71,7 +91,22 @@ const CartDrawer = () => {
   };
 
   const cartItems = (user?.cart && Array.isArray(user.cart)) ? user.cart : [];
-  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * (item.quantity || 1)), 0);
+
+  // DEBUG LOG
+  console.log("Cart Items Debug:", cartItems.map(i => ({
+    name: i.name,
+    price: i.price,
+    type_price: typeof i.price,
+    qty: i.quantity,
+    type_qty: typeof i.quantity
+  })));
+
+  // ROBUST CALCULATION
+  const subtotal = cartItems.reduce((acc, item) => {
+    const price = Number(item.price) || 0;
+    const qty = Number(item.quantity) || 1;
+    return acc + (price * qty);
+  }, 0);
 
   // Recalculate discount if percentage based? 
   // For now, backend returns absolute discount. 
@@ -105,7 +140,7 @@ const CartDrawer = () => {
   if (!isCartOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex justify-end">
+    <div className="fixed inset-0 z-[300] flex justify-end">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={() => toggleCart(false)} />
 
       <div className="relative w-full max-w-[420px] bg-[#fcfcfc] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
@@ -125,7 +160,7 @@ const CartDrawer = () => {
               {/* ITEM CARDS */}
               <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item.product || Math.random()} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100 flex gap-4">
+                  <div key={item._id || item.product || Math.random()} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100 flex gap-4">
                     <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-50 flex-shrink-0">
                       <img src={item.image || "/placeholder.jpg"} className="w-full h-full object-cover" alt={item.name} />
                     </div>
@@ -139,7 +174,7 @@ const CartDrawer = () => {
                             {item.selectedVariant.color}
                           </p>
                         )}
-                        <p className="font-black text-[11px] italic transform -skew-x-6">₹{typeof item.price === 'number' ? item.price.toLocaleString() : item.price}</p>
+                        <p className="font-black text-[11px] italic transform -skew-x-6">₹{Number(item.price || 0).toLocaleString()}</p>
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
@@ -148,7 +183,7 @@ const CartDrawer = () => {
                           <button onClick={() => updateQty(item.product, item.quantity, 1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
                         </div>
                         <button
-                          onClick={() => removeItem(item.product, item.selectedVariant)}
+                          onClick={() => removeItem(item.product, item.selectedVariant, item._id)}
                           className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
                           title="Remove Item"
                         >
