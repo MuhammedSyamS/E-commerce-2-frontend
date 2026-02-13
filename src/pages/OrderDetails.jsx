@@ -23,6 +23,40 @@ const OrderDetails = () => {
   // Modals for Actions
   const [confirmModal, setConfirmModal] = useState({ show: false, itemId: null, actionType: 'cancel' });
   const [returnReason, setReturnReason] = useState("");
+  const [returnFiles, setReturnFiles] = useState([]); // Array of URLs
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileUpload = async (e) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const formData = new FormData();
+    for (let i = 0; i < files.length; i++) {
+      formData.append('file', files[i]);
+    }
+
+    setUploading(true);
+    try {
+      // Upload one by one or modify backend to accept multiple. 
+      // Our backend /api/upload accepts .single('file'). So we loop.
+      const newUrls = [];
+      for (let i = 0; i < files.length; i++) {
+        const fd = new FormData();
+        fd.append('file', files[i]);
+        const { data } = await axios.post('http://localhost:5000/api/upload', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        newUrls.push(data.filePath); // Ensure backend returns full path or we prepend generic host
+        // Backend returns relative path "/uploads/filename". Frontend can use it directly if served statically.
+      }
+      setReturnFiles(prev => [...prev, ...newUrls]);
+    } catch (err) {
+      console.error("Upload failed", err);
+      addToast("Upload Failed. Video/Images only.", "error");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -100,7 +134,23 @@ const OrderDetails = () => {
               <div className="flex items-center gap-4">
                 <span className="text-xs font-mono text-zinc-400">ID: {order._id}</span>
                 <button
-                  onClick={() => window.open(`http://localhost:5000/api/orders/${order._id}/invoice?token=${user.token}`, '_blank')}
+                  onClick={async () => {
+                    try {
+                      const response = await axios.get(`http://localhost:5000/api/orders/${order._id}/invoice`, {
+                        headers: { Authorization: `Bearer ${user.token}` },
+                        responseType: 'blob'
+                      });
+                      const url = window.URL.createObjectURL(new Blob([response.data]));
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.setAttribute('download', `invoice-${order._id}.pdf`);
+                      document.body.appendChild(link);
+                      link.click();
+                      link.remove();
+                    } catch (err) {
+                      addToast("Failed to download invoice", "error");
+                    }
+                  }}
                   className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-black hover:text-zinc-600 border border-black px-3 py-1 rounded-full transition-colors"
                 >
                   <Copy size={12} /> Download Invoice
@@ -196,6 +246,7 @@ const OrderDetails = () => {
               {order.orderItems.map((item, i) => {
                 const productLink = item.product?.slug || item.product?._id || item.product;
                 const isLinkable = typeof productLink === 'string'; // Fallback check
+                console.log("DEBUG ORDER ITEM:", { name: item.name, product: item.product, productLink });
 
                 return (
                   <tr key={i} className="hover:bg-zinc-50/50 transition-colors group">
@@ -239,18 +290,33 @@ const OrderDetails = () => {
                         )}
                         {order.isDelivered && item.status === 'Ordered' && (
                           <>
-                            <button
-                              onClick={() => navigate(`/product/${productLink}#reviews`)}
-                              className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
-                            >
-                              Review
-                            </button>
-                            <button
-                              onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })}
-                              className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
-                            >
-                              Return
-                            </button>
+                            {/* Check if product exists before showing review - Strict Desktop */}
+                            {productLink ? (
+                              <button
+                                onClick={() => navigate(`/product/${productLink}#reviews`)}
+                                className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
+                              >
+                                Review
+                              </button>
+                            ) : (
+                              <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider px-4 py-2">Unavailable</span>
+                            )}
+                            {(() => {
+                              const deliveryDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.updatedAt);
+                              const isReturnable = (new Date() - deliveryDate) < (7 * 24 * 60 * 60 * 1000);
+
+                              if (isReturnable) {
+                                return (
+                                  <button
+                                    onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })}
+                                    className="text-[9px] font-bold uppercase tracking-wider text-zinc-600 border border-zinc-200 px-4 py-2 rounded-full hover:bg-zinc-100 transition"
+                                  >
+                                    Return
+                                  </button>
+                                );
+                              }
+                              return null;
+                            })()}
                           </>
                         )}
                       </div>
@@ -264,40 +330,55 @@ const OrderDetails = () => {
 
         {/* MOBILE LIST VIEW (Visible on < lg) */}
         <div className="lg:hidden divide-y divide-zinc-100">
-          {order.orderItems.map((item, i) => (
-            <div key={i} className="p-6 flex flex-col gap-4">
-              <div className="flex gap-4">
-                <div className="w-20 h-24 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
-                  <p className="text-xs text-zinc-500 font-mono mb-2">₹{item.price.toLocaleString()} x {item.qty}</p>
-                  <p className="font-black text-sm">Total: ₹{(item.price * item.qty).toLocaleString()}</p>
+          {order.orderItems.map((item, i) => {
+            const productLink = item.product?.slug || item.product?._id || item.product;
+            return (
+              <div key={i} className="p-6 flex flex-col gap-4">
+                <div className="flex gap-4">
+                  <div className="w-20 h-24 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
+                    <p className="text-xs text-zinc-500 font-mono mb-2">₹{item.price.toLocaleString()} x {item.qty}</p>
+                    <p className="font-black text-sm">Total: ₹{(item.price * item.qty).toLocaleString()}</p>
 
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {item.status === 'Cancelled' ? (
-                      <span className="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded font-bold uppercase">Cancelled</span>
-                    ) : (
-                      !order.isDispatched ? (
-                        <button
-                          onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'cancel' })}
-                          className="text-[9px] font-bold text-red-500 uppercase border border-red-200 px-3 py-1.5 rounded-full"
-                        >
-                          Cancel Item
-                        </button>
-                      ) : order.isDelivered ? (
-                        <div className="flex gap-2">
-                          <button onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })} className="text-[9px] font-bold border px-3 py-1.5 rounded-full uppercase">Return</button>
-                          <button onClick={() => navigate(`/product/${item.product?.slug || item.product}#reviews`)} className="text-[9px] font-bold bg-black text-white px-3 py-1.5 rounded-full uppercase">Review</button>
-                        </div>
-                      ) : null
-                    )}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {item.status === 'Cancelled' ? (
+                        <span className="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded font-bold uppercase">Cancelled</span>
+                      ) : (
+                        !order.isDispatched ? (
+                          <button
+                            onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'cancel' })}
+                            className="text-[9px] font-bold text-red-500 uppercase border border-red-200 px-3 py-1.5 rounded-full"
+                          >
+                            Cancel Item
+                          </button>
+                        ) : order.isDelivered ? (
+                          <div className="flex gap-2">
+                            {(() => {
+                              const deliveryDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.updatedAt);
+                              const isReturnable = (new Date() - deliveryDate) < (7 * 24 * 60 * 60 * 1000);
+                              return isReturnable ? (
+                                <button onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })} className="text-[9px] font-bold border px-3 py-1.5 rounded-full uppercase">Return</button>
+                              ) : null;
+                            })()}
+                            {/* ALWAYS SHOW REVIEW BUTTON (Mobile) */}
+                            {/* ALWAYS SHOW REVIEW BUTTON (Mobile) - Strict Check */}
+                            {productLink ? (
+                              <button onClick={() => navigate(`/product/${productLink}#reviews`)} className="text-[9px] font-bold bg-black text-white px-3 py-1.5 rounded-full uppercase">Review</button>
+                            ) : (
+                              <span className="text-[9px] text-zinc-400 font-bold uppercase">Unavailable</span>
+                            )}
+                          </div>
+                        ) : null
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -360,6 +441,47 @@ const OrderDetails = () => {
                       onChange={e => setConfirmModal(prev => ({ ...prev, comment: e.target.value }))}
                     />
                   </div>
+
+                  {/* UNBOXING VIDEO UPLOAD */}
+                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
+                    <label className="text-[10px] font-black uppercase tracking-widest text-orange-600 block mb-2">
+                      Unboxing Video (Mandatory)
+                    </label>
+                    <input
+                      type="file"
+                      accept="video/*,image/*"
+                      multiple
+                      onChange={handleFileUpload}
+                      className="block w-full text-xs text-zinc-500
+                          file:mr-4 file:py-2 file:px-4
+                          file:rounded-full file:border-0
+                          file:text-[10px] file:font-black file:uppercase
+                          file:bg-orange-100 file:text-orange-700
+                          hover:file:bg-orange-200 transaction"
+                    />
+                    {uploading && <p className="text-[10px] font-bold text-zinc-400 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={12} /> Uploading Proof...</p>}
+
+                    {/* PREVIEW FILES */}
+                    {returnFiles.length > 0 && (
+                      <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+                        {returnFiles.map((url, idx) => (
+                          <div key={idx} className="w-16 h-16 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0 relative group">
+                            {url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                              <video src={url} className="w-full h-full object-cover" />
+                            ) : (
+                              <img src={url} alt="proof" className="w-full h-full object-cover" />
+                            )}
+                            <button
+                              onClick={() => setReturnFiles(prev => prev.filter((_, i) => i !== idx))}
+                              className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-bl-lg opacity-0 group-hover:opacity-100 transition"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
@@ -385,7 +507,8 @@ const OrderDetails = () => {
                           itemId: confirmModal.itemId,
                           type: confirmModal.requestType || 'Return',
                           reason: returnReason,
-                          comment: confirmModal.comment
+                          comment: confirmModal.comment,
+                          images: returnFiles
                         }, { headers: { Authorization: `Bearer ${user.token}` } });
 
                         addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");

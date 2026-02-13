@@ -78,6 +78,21 @@ const Account = () => {
             onClick={() => navigate('/my-orders')}
           />
 
+          <div className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Star size={100} fill="black" />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-black/10 p-2 rounded-full"><Star size={20} fill="black" /></div>
+                <h3 className="font-black uppercase tracking-widest text-xs">SLOOK Coins</h3>
+              </div>
+              <p className="text-4xl font-black mb-1">{user.loyaltyPoints || 0}</p>
+              <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Available Balance</p>
+              <p className="text-[10px] mt-4 font-medium opacity-60">1 Coin = ₹1. Redeem at checkout.</p>
+            </div>
+          </div>
+
           <AccountCard
             icon={Heart}
             title="Wishlist"

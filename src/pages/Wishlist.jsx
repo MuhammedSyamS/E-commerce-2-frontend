@@ -5,7 +5,7 @@ import { useStore } from '../store/useStore';
 import axios from 'axios';
 
 const Wishlist = () => {
-  const { user } = useStore();
+  const { user, setUser } = useStore();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -21,11 +21,13 @@ const Wishlist = () => {
         const config = {
           headers: { Authorization: `Bearer ${user.token}` },
         };
-        
+
         // --- UPDATED ENDPOINT: Using the dedicated wishlist route ---
         const { data } = await axios.get('http://localhost:5000/api/wishlist', config);
-        
+
         setWishlistItems(data);
+        // SYNC GLOBAL STATE: Ensure navbar badge matches valid items (removes ghost IDs)
+        if (user) setUser({ ...user, wishlist: data });
       } catch (error) {
         console.error("Error fetching wishlist:", error.response?.data?.message || error.message);
       } finally {
@@ -34,7 +36,7 @@ const Wishlist = () => {
     };
 
     fetchWishlist();
-  }, [user?.wishlist, user?.token]); 
+  }, [user?.wishlist, user?.token]);
 
   if (loading && user) {
     return <div className="min-h-screen pt-52 text-center uppercase font-black tracking-widest text-[10px] text-zinc-400">Loading Vault...</div>;
@@ -43,7 +45,7 @@ const Wishlist = () => {
   return (
     <div className="bg-white min-h-screen pt-52 pb-20">
       <div className="container mx-auto px-6 max-w-7xl">
-        
+
         <div className="mb-16 text-center">
           <h1 className="text-4xl font-black uppercase tracking-tighter mb-2 italic transform -skew-x-3">
             Your Wishlist
@@ -64,7 +66,21 @@ const Wishlist = () => {
         ) : wishlistItems.length > 0 ? (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-16">
             {wishlistItems.map((product) => (
-              <ProductCard key={product._id} product={product} />
+              <ProductCard
+                key={product._id}
+                product={product}
+                onAddToCart={async () => {
+                  // Move to Cart Logic: Remove from Wishlist after adding to cart
+                  try {
+                    const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                    const { data } = await axios.post('http://localhost:5000/api/wishlist', { productId: product._id }, config);
+                    // Update global user state (which triggers effect)
+                    setUser({ ...user, wishlist: data });
+                  } catch (err) {
+                    console.error("Failed to remove from wishlist", err);
+                  }
+                }}
+              />
             ))}
           </div>
         ) : (

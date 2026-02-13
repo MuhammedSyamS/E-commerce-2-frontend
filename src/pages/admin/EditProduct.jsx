@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Trash2, Loader2, Plus, X, Upload } from 'lucide-react';
 import axios from 'axios';
+import StockHistory from '../../components/StockHistory';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 
@@ -270,7 +271,7 @@ const EditProduct = () => {
                           />
                           <input
                             type="text"
-                            placeholder="Color (e.g. Silver)"
+                            placeholder="Color (e.g. Black)"
                             className="flex-1 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
                             value={variant.color}
                             onChange={(e) => {
@@ -395,7 +396,12 @@ const EditProduct = () => {
 
         </div>
       </div>
+
+      <div className="mt-12">
+        <StockHistory productId={id} />
+      </div>
     </div>
+    </div >
   );
 };
 

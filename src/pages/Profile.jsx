@@ -74,7 +74,7 @@ const Profile = () => {
             {/* Nav Links */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { label: "Order History", icon: <Package size={18} />, desc: "Check your silver shipments" },
+                { label: "Order History", icon: <Package size={18} />, desc: "Check your shipments" },
                 { label: "Saved Addresses", icon: <MapPin size={18} />, desc: "Manage delivery locations" },
                 { label: "My Wishlist", icon: <Heart size={18} />, desc: "View your saved pieces" },
                 { label: "Account Settings", icon: <Settings size={18} />, desc: "Update password & privacy" }

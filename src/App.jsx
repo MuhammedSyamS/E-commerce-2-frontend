@@ -1,70 +1,91 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useStore } from './store/useStore';
 import { ToastProvider } from './context/ToastContext';
 import axios from 'axios';
+import { Loader2 } from 'lucide-react';
 
-// Components
+// Components (Keep Critical Components Static for LCP)
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
+import ErrorBoundary from './components/ErrorBoundary';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
 
-// Pages
-import Home from './pages/Home';
-import Shop from './pages/Shop';
-import ProductDetails from './pages/ProductDetails';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import Account from './pages/Account';
-import EditProfile from './pages/EditProfile';
-import AddressBook from './pages/settings/AddressBook';
-import Notifications from './pages/settings/Notifications';
-import Payments from './pages/settings/Payments';
-import Security from './pages/settings/Security';
-import Settings from './pages/settings/Settings'; // Added Import
+// Lazy Load Pages
+const Home = lazy(() => import('./pages/Home'));
+const Shop = lazy(() => import('./pages/Shop'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 
-// --- ADDED MISSING IMPORTS TO FIX WHITE PAGE ---
-import Orders from './pages/Orders';
-import Wishlist from './pages/Wishlist';
-import Checkout from './pages/Checkout';
-import OrderSuccess from './pages/OrderSuccess';
-import OrderDetails from './pages/OrderDetails';
-import TrackOrder from './pages/TrackOrder';
-import Returns from './pages/Returns';
-import MyReturns from './pages/MyReturns'; // New Dashboard
-import Contact from './pages/support/Contact';
-import UserReviews from './pages/UserReviews'; // Added import
-import NotFound from './pages/NotFound'; // Restored import
+// Account & Settings
+const Account = lazy(() => import('./pages/Account'));
+const EditProfile = lazy(() => import('./pages/EditProfile'));
+const AddressBook = lazy(() => import('./pages/settings/AddressBook'));
+const Notifications = lazy(() => import('./pages/settings/Notifications'));
+const Payments = lazy(() => import('./pages/settings/Payments'));
+const Security = lazy(() => import('./pages/settings/Security'));
+const Settings = lazy(() => import('./pages/settings/Settings'));
+
+// Orders & Checkout
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Orders = lazy(() => import('./pages/Orders'));
+const OrderDetails = lazy(() => import('./pages/OrderDetails'));
+const MyReturns = lazy(() => import('./pages/MyReturns'));
+const UserReviews = lazy(() => import('./pages/UserReviews'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder')); // NEW
+const Returns = lazy(() => import('./pages/Returns'));
+const Contact = lazy(() => import('./pages/support/Contact'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Reviews = lazy(() => import('./pages/Reviews')); // NEW
+
+// Content Pages
+const About = lazy(() => import('./pages/About'));
+const Shipping = lazy(() => import('./pages/Shipping'));
+const CareGuide = lazy(() => import('./pages/CareGuide'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const HelpCenter = lazy(() => import('./pages/support/HelpCenter')); // NEW: Added HelpCenter lazy import
 
 // Admin Pages
-import AdminProducts from './pages/admin/Admin'; // Renamed from Admin
-import AddProduct from './pages/admin/AddProduct';
-import EditProduct from './pages/admin/EditProduct';
-import AdminLayout from './pages/admin/AdminLayout';
-import AdminDashboard from './pages/admin/Dashboard';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminReturns from './pages/admin/AdminReturns';
-import AdminUsers from './pages/admin/AdminUsers';
-import AdminSettings from './pages/admin/AdminSettings';
-import AdminReviews from './pages/admin/AdminReviews';
-import AdminPayments from './pages/admin/AdminPayments';
-import AdminMarketing from './pages/admin/AdminMarketing';
-import AdminLogs from './pages/admin/AdminLogs';
-import AdminReports from './pages/admin/AdminReports'; // Added import
-import AdminAnalytics from './pages/admin/AdminAnalytics'; // Added Import
-import AnalyticsRevenue from './pages/admin/analytics/AnalyticsRevenue';
-import AnalyticsOrders from './pages/admin/analytics/AnalyticsOrders';
-import AnalyticsUsers from './pages/admin/analytics/AnalyticsUsers';
+const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
+const AnalyticsRevenue = lazy(() => import('./pages/admin/analytics/AnalyticsRevenue')); // Explicit Import
+const AnalyticsOrders = lazy(() => import('./pages/admin/analytics/AnalyticsOrders'));
+const AnalyticsUsers = lazy(() => import('./pages/admin/analytics/AnalyticsUsers'));
+const AdminProducts = lazy(() => import('./pages/admin/Admin'));
+const AddProduct = lazy(() => import('./pages/admin/AddProduct'));
+const EditProduct = lazy(() => import('./pages/admin/EditProduct'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminReturns = lazy(() => import('./pages/admin/AdminReturns'));
+const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
+const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
+const AdminMarketing = lazy(() => import('./pages/admin/AdminMarketing'));
+const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
+const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
 
-import ErrorBoundary from './components/ErrorBoundary'; // Import ErrorBoundary
+
+// Loading Fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen bg-white">
+    <Loader2 className="animate-spin text-zinc-300" size={40} />
+  </div>
+);
 
 const App = () => {
-  const { isCartOpen, user, setUser } = useStore();
+  const { isCartOpen, user, setUser, fetchFlashSale } = useStore();
   const location = useLocation();
 
   // --- SYNC LOCAL STORAGE WITH DATABASE ON MOUNT ---
   React.useEffect(() => {
+    fetchFlashSale(); // Fetch Active Sale Global
     const syncUserData = async () => {
       // Check both state user token and localStorage token
       const token = user?.token || localStorage.getItem('token');
@@ -85,6 +106,10 @@ const App = () => {
       }
     };
     syncUserData();
+
+    // Refresh Flash Sale every minute
+    const interval = setInterval(fetchFlashSale, 60000);
+    return () => clearInterval(interval);
   }, []); // Run once on mount
 
   return (
@@ -96,64 +121,78 @@ const App = () => {
           <Navbar />
 
           <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/shop" element={<Shop />} />
-              <Route path="/product/:slug" element={<ProductDetails />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/faq" element={<HelpCenter />} />
+                <Route path="/track-order" element={<TrackOrder />} />
+                <Route path="/product/:slug" element={<ProductDetails />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* USER ACCOUNT ROUTES */}
-              <Route path="/account" element={<Account />} />
-              <Route path="/account/edit" element={<EditProfile />} />
-              <Route path="/account/addresses" element={<AddressBook />} />
-              <Route path="/account/notifications" element={<Notifications />} />
-              <Route path="/account/payments" element={<Payments />} />
-              <Route path="/account/security" element={<Security />} />
-              <Route path="/account/settings" element={<Settings />} /> {/* Shared Settings Hub */}
+                {/* USER ACCOUNT ROUTES */}
+                <Route path="/account" element={<Account />} />
+                <Route path="/account/edit" element={<EditProfile />} />
+                <Route path="/account/addresses" element={<AddressBook />} />
+                <Route path="/account/notifications" element={<Notifications />} />
+                <Route path="/account/payments" element={<Payments />} />
+                <Route path="/account/security" element={<Security />} />
+                <Route path="/account/settings" element={<Settings />} /> {/* Shared Settings Hub */}
 
-              <Route path="/wishlist" element={<Wishlist />} />
-              <Route path="/my-orders" element={<Orders />} />
-              <Route path="/order/:id" element={<OrderDetails />} />
-              <Route path="/my-returns" element={<MyReturns />} /> {/* New Route */}
-              <Route path="/my-reviews" element={<UserReviews />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/my-orders" element={<Orders />} />
+                <Route path="/order/:id" element={<OrderDetails />} />
+                <Route path="/my-returns" element={<MyReturns />} /> {/* New Route */}
+                <Route path="/my-reviews" element={<UserReviews />} />
 
-              <Route path="/track-order" element={<TrackOrder />} />
-              <Route path="/returns" element={<Returns />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/track-order" element={<TrackOrder />} />
+                <Route path="/returns" element={<Returns />} />
+                <Route path="/returns" element={<Returns />} />
+                <Route path="/reviews" element={<Reviews />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
 
-              {/* ADMIN DASHBOARD ROUTES */}
-              <Route path="/admin/*" element={<AdminLayout />}>
-                <Route index element={<AdminDashboard />} /> {/* Admin Dashboard */}
-                <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="analytics/revenue" element={<AnalyticsRevenue />} />
-                <Route path="analytics/orders" element={<AnalyticsOrders />} />
-                <Route path="analytics/users" element={<AnalyticsUsers />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="products/add" element={<AddProduct />} />
-                <Route path="products/edit/:id" element={<EditProduct />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="returns" element={<AdminReturns />} /> {/* NEW ROUTE */}
-                <Route path="payments" element={<AdminPayments />} />
-                <Route path="marketing" element={<AdminMarketing />} />
-                <Route path="users" element={<AdminUsers />} />
-                <Route path="reviews" element={<AdminReviews />} />
-                <Route path="logs" element={<AdminLogs />} />
-                <Route path="settings" element={<AdminSettings />} />
-                <Route path="reports" element={<AdminReports />} />
-                {/* <Route path="analytics" element={<AdminAnalytics />} /> */}
-              </Route>
+                {/* CONTENT ROUTES */}
+                <Route path="/about" element={<About />} />
+                <Route path="/shipping" element={<Shipping />} />
+                <Route path="/care-guide" element={<CareGuide />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
 
-              {/* CATCH ALL */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* ADMIN DASHBOARD ROUTES */}
+                <Route path="/admin/*" element={<AdminLayout />}>
+                  <Route index element={<AdminDashboard />} /> {/* Admin Dashboard */}
+                  <Route path="analytics" element={<AdminAnalytics />} />
+                  <Route path="analytics/revenue" element={<AnalyticsRevenue />} />
+                  <Route path="analytics/orders" element={<AnalyticsOrders />} />
+                  <Route path="analytics/users" element={<AnalyticsUsers />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="products/add" element={<AddProduct />} />
+                  <Route path="products/edit/:id" element={<EditProduct />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="returns" element={<AdminReturns />} /> {/* NEW ROUTE */}
+                  <Route path="payments" element={<AdminPayments />} />
+                  <Route path="marketing" element={<AdminMarketing />} />
+                  <Route path="users" element={<AdminUsers />} />
+                  <Route path="reviews" element={<AdminReviews />} />
+                  <Route path="logs" element={<AdminLogs />} />
+                  <Route path="settings" element={<AdminSettings />} />
+                  <Route path="reports" element={<AdminReports />} />
+                  {/* <Route path="analytics" element={<AdminAnalytics />} /> */}
+                </Route>
+
+                {/* CATCH ALL */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </main>
 
           {!location.pathname.startsWith('/admin') && <Footer />}
           {isCartOpen && <CartDrawer />}
+          <PWAInstallPrompt />
         </div>
       </ToastProvider>
     </ErrorBoundary>

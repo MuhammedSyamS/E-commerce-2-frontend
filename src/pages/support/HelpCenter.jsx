@@ -7,11 +7,11 @@ const HelpCenter = () => {
   const [searchQuery, setSearchQuery] = useState("");
 
   const faqs = [
-    { q: "How do I care for 925 Sterling Silver?", a: "To prevent tarnishing, store your jewelry in a cool, dry place and clean it regularly with a soft polishing cloth." },
+    { q: "How do I care for my product?", a: "Each item comes with specific care instructions. Please refer to label or product page for details." },
     { q: "What is your shipping timeline?", a: "Standard shipping takes 3-5 business days. Express delivery is available for most metropolitan cities." },
-    { q: "Do you provide authenticity certificates?", a: "Yes, every HighPhaus piece comes with an MNC-standard Hallmark Authenticity Certificate." },
-    { q: "Can I return a customized ring?", a: "Customized or engraved pieces are final sale and cannot be returned unless there is a manufacturing defect." },
-    { q: "How do I find my ring size?", a: "We provide a printable size guide on our product pages. You can also order a physical sizer for a small fee." }
+    { q: "Do you provide warranty?", a: "Yes, all SLOOK products come with a standard manufacturer warranty against defects." },
+    { q: "Can I return a customized item?", a: "Customized or personalized items are final sale and cannot be returned unless there is a manufacturing defect." },
+    { q: "How do I find my size?", a: "We provide detailed size guides on all apparel and accessory product pages." }
   ];
 
   // --- LIVE SEARCH LOGIC ---
@@ -27,14 +27,14 @@ const HelpCenter = () => {
         {/* HEADER & SEARCH */}
         <div className="text-center mb-20">
           <p className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 mb-4">Concierge</p>
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-12">Studio Support</h1>
+          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-12">Store Support</h1>
 
           <div className="relative max-w-xl mx-auto group">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="SEARCH TOPICS (E.G. 'SHIPPING', 'SILVER')..."
+              placeholder="SEARCH TOPICS (E.G. 'SHIPPING', 'RETURNS')..."
               className="w-full border-b-2 border-black py-5 px-2 text-[11px] font-black uppercase tracking-widest outline-none transition-all focus:placeholder-transparent"
             />
             <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
@@ -52,7 +52,7 @@ const HelpCenter = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
           {[
             { icon: <Truck size={20} />, label: "Logistics" },
-            { icon: <ShieldCheck size={20} />, label: "Hallmarking" },
+            { icon: <ShieldCheck size={20} />, label: "Warranty" },
             { icon: <CreditCard size={20} />, label: "Billing" },
             { icon: <MessageSquare size={20} />, label: "Exchanges" }
           ].map((cat, i) => (

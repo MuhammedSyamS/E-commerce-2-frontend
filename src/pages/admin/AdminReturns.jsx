@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useStore } from '../../store/useStore';
 import { RefreshCw, Search, Filter, Eye, Truck, Check, X, AlertCircle } from 'lucide-react';
+import AlertModal from '../../components/ui/AlertModal';
 
 const AdminReturns = () => {
     const { user } = useStore();
@@ -10,6 +11,13 @@ const AdminReturns = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
+
+    const [viewMedia, setViewMedia] = useState(null);
+
+    const [alertState, setAlertState] = useState({ show: false, title: '', message: '', type: 'info' });
+    const showAlert = (title, message, type = 'info') => {
+        setAlertState({ show: true, title, message, type });
+    };
 
     const fetchReturns = async () => {
         try {
@@ -21,6 +29,7 @@ const AdminReturns = () => {
         } catch (error) {
             console.error(error);
             setLoading(false);
+            showAlert('Error', 'Failed to fetch returns data', 'error');
         }
     };
 
@@ -42,8 +51,26 @@ const AdminReturns = () => {
         setFilteredReturns(result);
     }, [activeTab, searchTerm, returns]);
 
+    const [rejectModal, setRejectModal] = useState({ show: false, returnId: null, reason: '' });
+
     const handleAction = async (id, action, extraData = {}) => {
+        if (action === 'Reject') {
+            setRejectModal({ show: true, returnId: id, reason: '' });
+            return;
+        }
+
         if (!window.confirm(`Are you sure you want to ${action}?`)) return;
+
+        await executeAction(id, action, extraData);
+    };
+
+    const confirmReject = async () => {
+        if (!rejectModal.returnId || !rejectModal.reason) return;
+        await executeAction(rejectModal.returnId, 'Reject', { adminComment: rejectModal.reason });
+        setRejectModal({ show: false, returnId: null, reason: '' });
+    };
+
+    const executeAction = async (id, action, extraData = {}) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             let status = '';
@@ -63,15 +90,116 @@ const AdminReturns = () => {
             }
 
             fetchReturns();
+            showAlert('Success', `${action} completed successfully`, 'success');
         } catch (error) {
-            alert(error.response?.data?.message || 'Action failed');
+            const msg = error.response?.data?.message || 'Action failed';
+            showAlert('Action Failed', msg, 'error');
         }
     };
 
     const tabs = ['All', 'Requested', 'Approved', 'Pickup Scheduled', 'QC Pending', 'QC Passed', 'QC Failed', 'Refund Completed', 'Replacement Sent', 'Rejected'];
+    const toggleMediaKey = (key) => {
+        // Simple distinct locking if needed, else just use activeTab logic
+    }
+
+    const getMediaUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        // Backend runs on port 5000 in dev
+        return `http://localhost:5000${path}`;
+    };
 
     return (
-        <div className="p-8 max-w-[1600px] mx-auto">
+        <div className="p-8 pt-24 min-h-screen max-w-[1600px] mx-auto relative bg-zinc-50/50">
+            <AlertModal
+                isOpen={alertState.show}
+                onClose={() => setAlertState({ ...alertState, show: false })}
+                title={alertState.title}
+                message={alertState.message}
+                type={alertState.type}
+            />
+            {/* REJECTION MODAL */}
+            {rejectModal.show && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-red-600">Reject Return Request</h3>
+                            <button onClick={() => setRejectModal({ show: false, returnId: null, reason: '' })} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
+                        </div>
+
+                        <p className="text-sm text-zinc-500 mb-4">
+                            Please provide a reason for rejection. This will be sent to the customer via email.
+                        </p>
+
+                        <textarea
+                            className="w-full h-32 p-3 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:border-red-500 transition-colors resize-none mb-4"
+                            placeholder="Enter rejection reason (e.g., mismatched item, policy violation)..."
+                            value={rejectModal.reason}
+                            onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+                        />
+
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => setRejectModal({ show: false, returnId: null, reason: '' })}
+                                className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmReject}
+                                disabled={!rejectModal.reason.trim()}
+                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Confirm Rejection
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* MEDIA VIEWER MODAL */}
+            {viewMedia && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewMedia(null)}>
+                    <div className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-black uppercase tracking-tighter">Return Proofs</h3>
+                            <button onClick={() => setViewMedia(null)} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
+                        </div>
+
+                        {(!viewMedia.images || viewMedia.images.length === 0) ? (
+                            <div className="text-center py-12 text-zinc-400">No media uploaded</div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {viewMedia.images.map((url, idx) => {
+                                    const isVideo = url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
+                                    const fullUrl = getMediaUrl(url);
+                                    return (
+                                        <div key={idx} className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 shadow-md">
+                                            {isVideo ? (
+                                                <video
+                                                    src={fullUrl}
+                                                    controls
+                                                    playsInline
+                                                    className="w-full h-64 object-contain bg-black"
+                                                />
+                                            ) : (
+                                                <img src={fullUrl} alt="proof" className="w-full h-64 object-contain bg-black" />
+                                            )}
+                                            <div className="p-2 bg-white text-[10px] font-mono text-center border-t border-zinc-200 truncate">
+                                                {url.split(/[/\\]/).pop()}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        <div className="mt-6 flex justify-end">
+                            <button onClick={() => setViewMedia(null)} className="px-6 py-2 bg-black text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 transition-colors">Close Viewer</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="flex justify-between items-center mb-8">
                 <div>
                     <h1 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
@@ -112,16 +240,16 @@ const AdminReturns = () => {
                 <table className="w-full text-left min-w-[1000px]">
                     <thead className="bg-zinc-50 border-b border-zinc-100">
                         <tr>
-                            {['Sl No', 'Order / Date', 'Customer', 'Product', 'Type / Reason', 'Status', 'Logistics', 'Actions'].map(h => (
+                            {['Sl No', 'Order / Date', 'Customer', 'Product', 'Proof', 'Type / Reason', 'Status', 'Logistics', 'Actions'].map(h => (
                                 <th key={h} className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-zinc-400">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-zinc-50">
                         {loading ? (
-                            <tr><td colSpan="8" className="text-center py-8">Loading Returns...</td></tr>
+                            <tr><td colSpan="9" className="text-center py-8">Loading Returns...</td></tr>
                         ) : filteredReturns.length === 0 ? (
-                            <tr><td colSpan="8" className="text-center py-8 text-zinc-400">No returns found</td></tr>
+                            <tr><td colSpan="9" className="text-center py-8 text-zinc-400">No returns found</td></tr>
                         ) : (
                             filteredReturns.map((ret, index) => (
                                 <tr key={ret._id} className="hover:bg-zinc-50/50 transition-colors group">
@@ -149,6 +277,24 @@ const AdminReturns = () => {
                                             </div>
                                         </div>
                                     </td>
+
+                                    {/* PROOF COLUMN */}
+                                    <td className="px-6 py-4">
+                                        {ret.images && ret.images.length > 0 ? (
+                                            <button
+                                                onClick={() => setViewMedia(ret)}
+                                                className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 hover:bg-black hover:text-white transition-colors rounded-lg group/btn"
+                                            >
+                                                <Eye size={14} />
+                                                <span className="text-[9px] font-black uppercase tracking-wide">
+                                                    View ({ret.images.length})
+                                                </span>
+                                            </button>
+                                        ) : (
+                                            <span className="text-[9px] font-bold text-red-400 uppercase tracking-widest">No Proof</span>
+                                        )}
+                                    </td>
+
                                     <td className="px-6 py-4">
                                         <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
                                             {ret.type}

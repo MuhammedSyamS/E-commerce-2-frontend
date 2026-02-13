@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 
 const AdminLayout = () => {
@@ -114,6 +114,9 @@ const AdminLayout = () => {
                     </nav>
                 </div>
 
+                <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
+                    <HelpCircle size={18} className="flex-shrink-0" /> Help & Support
+                </a>
                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition whitespace-nowrap">
                     <LogOut size={18} className="flex-shrink-0" /> Logout
                 </button>
@@ -219,7 +222,10 @@ const AdminLayout = () => {
                     </div>
 
                     {/* LOGOUT */}
-                    <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0">
+                    <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0 space-y-2">
+                        <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
+                            <HelpCircle size={18} /> Help & Support
+                        </a>
                         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition w-full">
                             <LogOut size={18} /> Logout
                         </button>

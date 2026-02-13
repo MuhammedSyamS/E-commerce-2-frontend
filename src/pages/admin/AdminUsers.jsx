@@ -54,6 +54,7 @@ const AdminUsers = () => {
     const updateRoleDirectly = async (userToUpdate, value) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            console.log("Attempting Role Update:", userToUpdate.email, "->", value);
 
             let newRole = 'customer';
             let newPermissions = [];
@@ -73,6 +74,7 @@ const AdminUsers = () => {
             };
 
             const { data } = await axios.put(`http://localhost:5000/api/users/${userToUpdate._id}/role`, payload, config);
+            console.log("Role Update Response:", data);
 
             // Update local list
             setUsers(users.map(u =>
@@ -90,6 +92,7 @@ const AdminUsers = () => {
 
             addToast(`Role Updated to ${value.replace('_', ' ').toUpperCase()}`, "success");
         } catch (err) {
+            console.error("Role Update Failed:", err);
             // Handle specific "Last Admin" error
             const errorMessage = err.response?.data?.message || "Update failed";
             addToast(errorMessage, "error");
@@ -127,9 +130,13 @@ const AdminUsers = () => {
 
     const filteredUsers = users.filter(u => {
         if (!u) return false;
+        const search = searchTerm.toLowerCase();
+        const fullName = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase();
         return (
-            (u.firstName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-            (u.email || "").toLowerCase().includes(searchTerm.toLowerCase())
+            (u.firstName || "").toLowerCase().includes(search) ||
+            (u.lastName || "").toLowerCase().includes(search) ||
+            fullName.includes(search) ||
+            (u.email || "").toLowerCase().includes(search)
         );
     });
 
@@ -281,8 +288,12 @@ const AdminUsers = () => {
                                         )}
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <button onClick={() => deleteUser(u._id)} className="p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors text-zinc-300">
-                                            <Trash2 size={16} />
+                                        <button
+                                            onClick={() => deleteUser(u._id)}
+                                            className="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors flex items-center gap-1.5 ml-auto"
+                                        >
+                                            <Trash2 size={12} />
+                                            <span className="text-[9px] font-black uppercase tracking-widest">Delete</span>
                                         </button>
                                     </td>
                                 </tr>

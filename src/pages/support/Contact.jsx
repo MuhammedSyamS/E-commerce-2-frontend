@@ -103,7 +103,7 @@ const Contact = () => {
                   <h3 className="text-[10px] font-black uppercase tracking-widest">Our Studio</h3>
                 </div>
                 <p className="text-zinc-500 text-sm leading-relaxed">
-                  123 Silver Street, Design District<br />
+                  123 Studio Street, Design District<br />
                   New York, NY 10001
                 </p>
               </div>

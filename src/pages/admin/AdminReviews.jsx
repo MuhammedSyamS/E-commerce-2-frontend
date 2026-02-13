@@ -221,19 +221,25 @@ const AdminReviews = () => {
                                         )}
                                     </div>
 
-                                    {item.review.images && item.review.images.length > 0 && (
-                                        <div className="flex gap-2 mt-3 pl-8">
-                                            {item.review.images.map((img, i) => (
-                                                <img
-                                                    key={i}
-                                                    src={img}
-                                                    onClick={() => setSelectedImage(img)}
-                                                    className="w-10 h-10 rounded-lg object-cover border border-zinc-100 cursor-zoom-in hover:scale-110 transition-transform"
-                                                    alt="review"
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
+                                    {/* Unified Media Render for Admin */}
+                                    <div className="flex gap-2 mt-3 pl-8 flex-wrap">
+                                        {/* Videos */}
+                                        {(item.review.videos || (item.review.video ? [item.review.video] : [])).map((vid, i) => (
+                                            <div key={`v-${i}`} className="w-24 h-16 bg-black rounded-lg overflow-hidden">
+                                                <video src={vid} controls className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                        {/* Images */}
+                                        {item.review.images && item.review.images.map((img, i) => (
+                                            <img
+                                                key={`i-${i}`}
+                                                src={img}
+                                                onClick={() => setSelectedImage(img)}
+                                                className="w-16 h-16 rounded-lg object-cover border border-zinc-100 cursor-zoom-in hover:scale-110 transition-transform"
+                                                alt="review"
+                                            />
+                                        ))}
+                                    </div>
                                 </div>
 
                                 {/* Actions */}

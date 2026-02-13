@@ -8,7 +8,7 @@ import {
 } from 'recharts';
 import {
     TrendingUp, Users, ShoppingBag, IndianRupee, Package, AlertCircle,
-    ArrowUpRight, ArrowDownRight, Activity, Calendar, Truck, BarChart2
+    ArrowUpRight, ArrowDownRight, Activity, Calendar, Truck, BarChart2, Download
 } from 'lucide-react';
 
 const AdminAnalytics = () => {
@@ -34,6 +34,33 @@ const AdminAnalytics = () => {
         };
         if (user?.token) fetchStats();
     }, [user, timeRange]);
+
+    const downloadReport = () => {
+        if (!stats) return;
+
+        const headers = ["Date", "Revenue", "Profit", "Expenses", "Orders"];
+        const rows = stats.chartData.map(d => [
+            d.date,
+            d.sales,
+            d.profit,
+            d.loss,
+            d.orderCount
+        ]);
+
+        const csvContent = [
+            headers.join(","),
+            ...rows.map(e => e.join(","))
+        ].join("\n");
+
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", `analytics_report_${timeRange}_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     // COLORS
     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
@@ -84,19 +111,27 @@ const AdminAnalytics = () => {
                 </div>
 
                 {/* TIME RANGE SELECTOR */}
-                <div className="flex items-center gap-2 bg-zinc-50 p-1 rounded-xl border border-zinc-100">
-                    {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
-                        <button
-                            key={range}
-                            onClick={() => setTimeRange(range)}
-                            className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition ${timeRange === range
-                                ? 'bg-black text-white shadow-md'
-                                : 'text-zinc-500 hover:text-black hover:bg-zinc-200'
-                                }`}
-                        >
-                            {range}
-                        </button>
-                    ))}
+                <div className="flex items-center gap-4">
+                    <button
+                        onClick={downloadReport}
+                        className="flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition"
+                    >
+                        <Download size={14} /> Download Report
+                    </button>
+                    <div className="flex items-center gap-2 bg-zinc-50 p-1 rounded-xl border border-zinc-100">
+                        {['daily', 'weekly', 'monthly', 'yearly'].map((range) => (
+                            <button
+                                key={range}
+                                onClick={() => setTimeRange(range)}
+                                className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition ${timeRange === range
+                                    ? 'bg-black text-white shadow-md'
+                                    : 'text-zinc-500 hover:text-black hover:bg-zinc-200'
+                                    }`}
+                            >
+                                {range}
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 

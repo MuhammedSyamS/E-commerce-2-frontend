@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite'
+// Force restart timestamp: 2026-02-11
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/

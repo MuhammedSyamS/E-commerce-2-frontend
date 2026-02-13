@@ -8,6 +8,8 @@ export const useStore = create(
       user: null,
       isCartOpen: false,
       isSearchOpen: false,
+      toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
+
       isDesktopSidebarOpen: true, // Desktop default OPEN
       isMobileSidebarOpen: false, // Mobile default CLOSED
 
@@ -125,8 +127,20 @@ export const useStore = create(
       applyCoupon: (data) => set({ coupon: data }),
       removeCoupon: () => set({ coupon: null }),
 
+      // FLASH SALE STATE
+      flashSale: null,
+      fetchFlashSale: async () => {
+        try {
+          const { data } = await axios.get('http://localhost:5000/api/marketing/flash-sale');
+          set({ flashSale: data });
+        } catch (err) {
+          console.error("Failed to fetch flash sale", err);
+          set({ flashSale: null });
+        }
+      },
+
       logout: () => {
-        set({ user: null, coupon: null });
+        set({ user: null, coupon: null, flashSale: null });
         localStorage.removeItem('slook-storage');
       }
     }),

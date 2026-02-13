@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useStore } from '../../store/useStore';
 import { IndianRupee, Package, TrendingUp, Truck, AlertCircle } from 'lucide-react';
+import TopCartProducts from '../../components/admin/TopCartProducts';
 
 const Dashboard = () => {
     const { user } = useStore();
@@ -99,29 +100,35 @@ const Dashboard = () => {
                     </div>
                 </div>
 
-                {/* LOW STOCK ACTION ALERTS (1/3) */}
-                <div className="bg-white border border-zinc-100 p-6 md:p-8 rounded-3xl">
-                    <div className="flex items-center gap-2 mb-6 md:mb-8">
-                        <AlertCircle size={18} className="text-red-500" />
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-900">Action Required</h3>
-                    </div>
-                    <div className="space-y-4">
-                        {stats.lowStockProducts?.map(p => (
-                            <div key={p._id} className="flex items-center justify-between p-3 border border-red-100 bg-red-50/50 rounded-lg">
-                                <div>
-                                    <p className="text-xs font-bold truncate w-32 md:w-auto">{p.name}</p>
-                                    <button onClick={() => navigate('/admin/products')} className="text-[9px] text-red-500 font-black underline mt-1">Restock</button>
+                {/* RIGHT COLUMN (1/3) - ACTIONS & INSIGHTS */}
+                <div className="space-y-6 md:space-y-8">
+                    {/* LOW STOCK */}
+                    <div className="bg-white border border-zinc-100 p-6 md:p-8 rounded-3xl">
+                        <div className="flex items-center gap-2 mb-6 md:mb-8">
+                            <AlertCircle size={18} className="text-red-500" />
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-zinc-900">Action Required</h3>
+                        </div>
+                        <div className="space-y-4">
+                            {stats.lowStockProducts?.map(p => (
+                                <div key={p._id} className="flex items-center justify-between p-3 border border-red-100 bg-red-50/50 rounded-lg">
+                                    <div>
+                                        <p className="text-xs font-bold truncate w-32 md:w-auto">{p.name}</p>
+                                        <button onClick={() => navigate('/admin/products')} className="text-[9px] text-red-500 font-black underline mt-1">Restock</button>
+                                    </div>
+                                    <span className="text-xs font-black text-red-600 bg-white px-2 py-1 rounded shadow-sm">{p.stock}</span>
                                 </div>
-                                <span className="text-xs font-black text-red-600 bg-white px-2 py-1 rounded shadow-sm">{p.stock}</span>
-                            </div>
-                        ))}
-                        {stats.lowStockProducts?.length === 0 && (
-                            <div className="text-center py-12 text-zinc-400 text-xs">
-                                <p>Everything looks good.</p>
-                                <p className="mt-2 text-[10px] opacity-70">No immediate actions required.</p>
-                            </div>
-                        )}
+                            ))}
+                            {stats.lowStockProducts?.length === 0 && (
+                                <div className="text-center py-12 text-zinc-400 text-xs">
+                                    <p>Everything looks good.</p>
+                                    <p className="mt-2 text-[10px] opacity-70">No immediate actions required.</p>
+                                </div>
+                            )}
+                        </div>
                     </div>
+
+                    {/* TOP CART PRODUCTS */}
+                    <TopCartProducts />
                 </div>
             </div>
         </div>

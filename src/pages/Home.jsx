@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 import axios from 'axios';
+import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/ProductCard';
 import FeaturedReviews from '../components/FeaturedReviews';
+import FlashSaleBanner from '../components/FlashSaleBanner';
 
 const Home = () => {
   const location = useLocation();
@@ -17,9 +19,9 @@ const Home = () => {
   const bestSellersSectionRef = useRef(null);
 
   const slides = [
-    { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Authentic 925 Silver" },
-    { id: 2, img: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Luxury Streetwear", subtitle: "Handcrafted Designs" },
-    { id: 3, img: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Hallmarked Quality", subtitle: "Lifetime Purity" },
+    { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Modern Essentials" },
+    { id: 2, img: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Urban Living", subtitle: "Curated Design" },
+    { id: 3, img: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Premium Quality", subtitle: "Built to Last" },
   ];
 
   const scrollToProducts = () => {
@@ -30,6 +32,12 @@ const Home = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get('http://localhost:5000/api/products');
+        if (Array.isArray(res.data)) {
+          const newArrivalsDebug = res.data.filter(p =>
+            (Array.isArray(p.tags) && (p.tags.includes('New Arrival') || p.tags.includes('New'))) ||
+            p.isNewArrival
+          );
+        }
         setProducts(Array.isArray(res.data) ? res.data : []);
       } catch (err) {
         console.error("Home Data Fetch Error:", err);
@@ -100,6 +108,14 @@ const Home = () => {
 
   return (
     <div className="bg-white min-h-screen selection:bg-black selection:text-white overflow-x-hidden">
+      <Helmet>
+        <title>SLOOK | Modern Essentials & Curated Goods</title>
+        <meta name="description" content="Discover premium essentials at SLOOK. Curated designs for the modern aesthetic. Shop home goods, accessories, and more." />
+        <meta name="keywords" content="essentials, home decor, modern accessories, SLOOK, curated goods" />
+      </Helmet>
+
+      {/* FLASH SALE BANNER */}
+      <FlashSaleBanner />
 
       {/* --- MAIN HERO --- */}
       {activeView === 'all' && (
@@ -111,7 +127,7 @@ const Home = () => {
                 <div className="text-center">
                   <p className="text-white/80 text-[10px] font-black uppercase tracking-[0.8em] mb-6">{slide.subtitle}</p>
                   <h2 className="text-white text-4xl md:text-7xl font-black uppercase tracking-[0.05em] mb-10 leading-tight">{slide.title}</h2>
-                  <button onClick={scrollToProducts} className="bg-white text-black px-12 py-4 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore Studio</button>
+                  <button onClick={scrollToProducts} className="bg-white text-black px-12 py-4 text-[10px] font-black uppercase tracking-[0.4em] hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
                 </div>
               </div>
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 z-10"></div>
@@ -174,15 +190,16 @@ const Home = () => {
               src="https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600"
               className="w-full h-full object-cover opacity-70"
               alt="Brand Heritage"
+              loading="lazy"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent"></div>
           </div>
           <div className="container mx-auto px-6 md:px-16 relative z-10 text-white">
             <div className="max-w-3xl">
-              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.6em] mb-4">Miso Studio Heritage</p>
-              <h2 className="text-5xl md:text-9xl font-black uppercase leading-[0.85] mb-8 tracking-tighter italic">Timeless <br /> Purity.</h2>
+              <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.6em] mb-4">SLOOK Heritage</p>
+              <h2 className="text-5xl md:text-9xl font-black uppercase leading-[0.85] mb-8 tracking-tighter italic">Timeless <br /> Quality.</h2>
               <p className="text-white/80 text-sm md:text-base font-medium max-w-md mb-10 leading-relaxed">
-                Every piece is hallmarked for 925 purity, designed in our boutique studio to merge industrial minimalism with luxury craftsmanship.
+                Every piece is selected for durability and style, designed to merge industrial minimalism with everyday utility.
               </p>
               <Link to="/shop" className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.4em] hover:gap-10 transition-all duration-500">
                 Shop Full Collection <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" />

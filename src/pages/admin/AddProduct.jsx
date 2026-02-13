@@ -398,7 +398,7 @@ const AddProduct = () => {
                           />
                           <input
                             type="text"
-                            placeholder="Color (e.g. Silver)"
+                            placeholder="Color (e.g. Black)"
                             className="flex-1 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
                             value={variant.color}
                             onChange={(e) => {

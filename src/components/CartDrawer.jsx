@@ -121,7 +121,8 @@ const CartDrawer = () => {
     try {
       const { data } = await axios.post('http://localhost:5000/api/marketing/verify-coupon', {
         code: couponCode,
-        cartTotal: subtotal
+        cartTotal: subtotal,
+        userId: user?._id || user?.id
       });
 
       applyCoupon({ code: data.code, discount: data.discount });

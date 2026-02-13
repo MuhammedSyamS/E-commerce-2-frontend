@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import { Heart, Loader2 } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
+import { Heart, Loader2, Star, Zap } from 'lucide-react';
 import axios from 'axios';
 
-const ProductCard = ({ product }) => {
-  const { user, setUser, toggleCart } = useStore();
+const ProductCard = ({ product, onAddToCart }) => {
+  const { user, setUser, toggleCart, flashSale } = useStore();
   const navigate = useNavigate();
+  const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
+
+  // --- FLASH SALE LOGIC ---
+  const isFlashSale = flashSale && flashSale.products && flashSale.products.some(p => (p._id || p) === product._id);
+  const discountPrice = isFlashSale
+    ? Math.round(product.price * (1 - flashSale.discountPercentage / 100))
+    : null;
 
   // --- 1. ROBUST WISHLIST CHECK ---
   const wishlist = Array.isArray(user?.wishlist) ? user.wishlist : [];
@@ -20,7 +28,10 @@ const ProductCard = ({ product }) => {
   // --- 2. DATABASE WISHLIST TOGGLE ---
   const handleWishlist = async (e) => {
     e.preventDefault();
-    if (!user) return navigate('/login'); // Redirect instead of alert
+    if (!user) {
+      error("Please login to save favorites");
+      return navigate('/login');
+    }
 
     setLoading(true);
     try {
@@ -30,8 +41,15 @@ const ProductCard = ({ product }) => {
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
       setUser({ ...user, wishlist: data });
+
+      // Toast Feedback
+      const isNowFav = data.some(item => (item?._id || item)?.toString() === product._id?.toString());
+      if (isNowFav) success("Saved to Wishlist");
+      else info("Removed from Wishlist");
+
     } catch (err) {
       console.error("Wishlist error:", err);
+      error("Failed to update wishlist");
     } finally {
       setLoading(false);
     }
@@ -40,7 +58,10 @@ const ProductCard = ({ product }) => {
   // --- 3. DATABASE ADD TO CART ---
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    if (!user) return navigate('/login'); // Redirect instead of alert
+    if (!user) {
+      error("Please login to shop");
+      return navigate('/login');
+    }
 
     setCartLoading(true);
     try {
@@ -49,7 +70,7 @@ const ProductCard = ({ product }) => {
         {
           productId: product._id,
           name: product.name,
-          price: product.price,
+          price: isFlashSale ? discountPrice : product.price, // Use Item Price (Discounted if sale)
           image: product.image
         },
         { headers: { Authorization: `Bearer ${user.token}` } }
@@ -57,9 +78,12 @@ const ProductCard = ({ product }) => {
 
       // Sync user state with the new cart from database
       setUser({ ...user, cart: data });
+      success(`Added ${product.name} to bag`); // TOAST
       toggleCart(true); // Open sidebar
+      if (onAddToCart) onAddToCart(); // Custom Callback (e.g. for Wishlist Move)
     } catch (err) {
       console.error("Cart error:", err.response?.data?.message || err.message);
+      error(err.response?.data?.message || "Failed to add to bag");
     } finally {
       setCartLoading(false);
     }
@@ -76,8 +100,18 @@ const ProductCard = ({ product }) => {
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
           />
         </Link>
+
+        {/* FLASH SALE BADGE */}
+        {isFlashSale && (
+          <div className="absolute top-0 left-0 bg-red-600 text-white px-3 py-1.5 z-20">
+            <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+              <Zap size={10} fill="currentColor" /> Flash Sale
+            </p>
+          </div>
+        )}
 
         {/* OOS OVERLAY */}
         {product.countInStock === 0 && (
@@ -121,10 +155,36 @@ const ProductCard = ({ product }) => {
       <div className="px-1">
         <div className="flex justify-between items-start">
           <h3 className="text-[12px] font-black uppercase truncate pr-2">{product.name}</h3>
-          <p className="text-[12px] font-black">{typeof product.price === 'number' ? `₹${product.price.toLocaleString()}` : 'Price Unavailable'}</p>
+
+          <div className="text-right">
+            {isFlashSale ? (
+              <>
+                <p className="text-[12px] font-black text-red-600">₹{discountPrice.toLocaleString()}</p>
+                <p className="text-[10px] text-zinc-400 line-through decoration-red-500/50">₹{product.price.toLocaleString()}</p>
+              </>
+            ) : (
+              <p className="text-[12px] font-black">{typeof product.price === 'number' ? `₹${product.price.toLocaleString()}` : 'Price Unavailable'}</p>
+            )}
+          </div>
         </div>
+
+        {/* RATING */}
+        <div className="flex items-center gap-1 mt-1">
+          <div className="flex">
+            {[...Array(5)].map((_, i) => (
+              <Star
+                key={i}
+                size={10}
+                fill={i < Math.round(product.rating || 0) ? "black" : "transparent"}
+                className={i < Math.round(product.rating || 0) ? "text-black" : "text-zinc-300"}
+              />
+            ))}
+          </div>
+          <span className="text-[9px] font-bold text-zinc-400">({product.numReviews || 0})</span>
+        </div>
+
         <div className="flex justify-between items-center mt-1">
-          <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">925 Sterling Silver</p>
+
           {product.countInStock > 0 && product.countInStock < 5 && (
             <span className="text-[9px] text-red-500 font-black uppercase tracking-widest">Only {product.countInStock} Left</span>
           )}

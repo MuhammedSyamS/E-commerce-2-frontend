@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { Instagram, Facebook, Mail, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 const XIcon = ({ className }) => (
@@ -9,6 +10,29 @@ const XIcon = ({ className }) => (
 );
 
 const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState('idle'); // idle, loading, success, error
+  const [message, setMessage] = useState('');
+
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+
+    setStatus('loading');
+    try {
+      const { data } = await axios.post('http://localhost:5000/api/marketing/subscribe', { email });
+      setStatus('success');
+      setMessage(data.message);
+      setEmail('');
+    } catch (error) {
+      console.error("Subscription Error:", error);
+      const errMsg = error.response?.data?.message || error.message || 'Something went wrong';
+      setStatus('error');
+      setMessage(errMsg);
+      setTimeout(() => setStatus('idle'), 3000);
+    }
+  };
+
   return (
     <footer className="bg-[#0a0a0a] text-white border-t border-zinc-900">
 
@@ -17,11 +41,11 @@ const Footer = () => {
         <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div className="flex flex-col items-center gap-2 group cursor-default">
             <Truck size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Free Global Shipping</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Free Shipping</p>
           </div>
           <div className="flex flex-col items-center gap-2 group cursor-default">
             <ShieldCheck size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">925 Hallmarked Silver</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Secured</p>
           </div>
           <div className="flex flex-col items-center gap-2 group cursor-default">
             <RotateCcw size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
@@ -37,8 +61,8 @@ const Footer = () => {
           <div className="lg:col-span-4 space-y-6">
             <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white">SLOOK</h2>
             <p className="text-zinc-500 text-xs leading-relaxed max-w-sm font-medium">
-              Authentic 925 Sterling Silver for the modern rebel.
-              Designed in the studio, worn on the streets. No fillers, no fakes.
+              Premium essentials for the modern lifestyle.
+              Curated for quality, designed for life. No fillers, just substance.
             </p>
             <div className="flex gap-6 pt-4">
               <Instagram className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
@@ -54,8 +78,7 @@ const Footer = () => {
             <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/shop" className="hover:text-white transition-colors">New Arrivals</Link></li>
               <li><Link to="/shop?filter=best-sellers" className="hover:text-white transition-colors">Best Sellers</Link></li>
-              <li><Link to="/shop?category=Rings" className="hover:text-white transition-colors">Rings</Link></li>
-              <li><Link to="/shop?category=Earrings" className="hover:text-white transition-colors">Earrings</Link></li>
+              <li><Link to="/shop" className="hover:text-white transition-colors">All Products</Link></li>
             </ul>
           </div>
 
@@ -63,7 +86,9 @@ const Footer = () => {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
             <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
-              <li><Link to="/track-order" className="hover:text-white transition-colors">Track Order</Link></li>
+              <li><Link to="/about" className="hover:text-white transition-colors">Our Story</Link></li>
+              <li><Link to="/track-order" className="hover:text-white transition-colors">Track Your Order</Link></li>
+              <li><Link to="/shipping" className="hover:text-white transition-colors">Shipping & Delivery</Link></li>
               <li><Link to="/returns" className="hover:text-white transition-colors">Returns</Link></li>
               <li><Link to="/care-guide" className="hover:text-white transition-colors">Care Guide</Link></li>
               <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
@@ -74,17 +99,35 @@ const Footer = () => {
           <div className="lg:col-span-4 space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
             <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-loose">
-              Join for early access to drops and exclusive studio updates.
+              Join for early access to drops and exclusive updates.
             </p>
             <div className="relative group">
-              <input
-                type="email"
-                placeholder="EMAIL ADDRESS"
-                className="w-full bg-transparent border-b border-zinc-800 py-4 text-[10px] font-black text-white outline-none focus:border-white transition-all placeholder:text-zinc-700"
-              />
-              <button className="absolute right-0 bottom-4 text-[10px] font-black uppercase tracking-widest text-white hover:translate-x-1 transition-transform">
-                Join →
-              </button>
+              {status === 'success' ? (
+                <div className="py-4 text-[10px] font-black uppercase tracking-widest text-green-500 animate-in fade-in">
+                  {message}
+                </div>
+              ) : (
+                <form onSubmit={handleSubscribe}>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    disabled={status === 'loading'}
+                    placeholder="EMAIL ADDRESS"
+                    className="w-full bg-transparent border-b border-zinc-800 py-4 text-[10px] font-black text-white outline-none focus:border-white transition-all placeholder:text-zinc-700 disabled:opacity-50"
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === 'loading' || !email}
+                    className="absolute right-0 bottom-4 text-[10px] font-black uppercase tracking-widest text-white hover:translate-x-1 transition-transform disabled:opacity-50"
+                  >
+                    {status === 'loading' ? 'Joining...' : 'Join →'}
+                  </button>
+                  {status === 'error' && (
+                    <p className="absolute -bottom-6 left-0 text-[9px] font-bold text-red-500 uppercase tracking-wider">{message}</p>
+                  )}
+                </form>
+              )}
             </div>
           </div>
 
@@ -93,7 +136,7 @@ const Footer = () => {
         {/* BOTTOM BAR */}
         <div className="mt-24 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em]">
-            © 2026 SLOOK Studio. All rights reserved.
+            © 2026 SLOOK. All rights reserved.
           </p>
           <div className="flex gap-8 text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em]">
             <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>

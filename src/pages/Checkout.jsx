@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star } from 'lucide-react';
 import axios from 'axios';
 
 const Checkout = () => {
@@ -14,6 +14,54 @@ const Checkout = () => {
 
   // Robust cart item resolution
   const cartItems = user?.cart || [];
+  const [couponCode, setCouponCode] = useState('');
+  const [couponApplied, setCouponApplied] = useState(null); // { code, discountAmount }
+  const [discountError, setDiscountError] = useState('');
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [pointsRedeemed, setPointsRedeemed] = useState(0); // NEW: Loyalty Logic
+
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setIsValidatingCoupon(true);
+    setDiscountError('');
+    try {
+      const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` } };
+      const { data } = await axios.post('http://localhost:5000/api/marketing/verify-coupon', {
+        code: couponCode,
+        cartTotal: calculateSubtotal(),
+        userId: user?._id || user?.id
+      }, config);
+
+      setCouponApplied({ code: data.code, discountAmount: data.discount }); // mapped from 'discount'
+      addToast('Coupon Applied Successfully!', 'success');
+    } catch (error) {
+      setDiscountError(error.response?.data?.message || 'Invalid Coupon');
+      setCouponApplied(null);
+      addToast(error.response?.data?.message || 'Invalid Coupon', 'error');
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setCouponApplied(null);
+    setCouponCode('');
+    setDiscountError('');
+  };
+
+  const calculateSubtotal = () => {
+    return cartItems.reduce((acc, item) => {
+      const price = item.price || item.product?.price || 0;
+      const qty = item.quantity || 1;
+      return acc + (price * qty);
+    }, 0);
+  };
+
+  const calculateTotal = () => {
+    const sub = calculateSubtotal();
+    const discount = couponApplied ? couponApplied.discountAmount : 0;
+    return sub - discount; // Shipping is free?
+  };
   const subtotal = cartItems.reduce((acc, item) => {
     const price = item.price || item.product?.price || 0;
     const qty = item.quantity || 1;
@@ -81,12 +129,58 @@ const Checkout = () => {
           phone: formData.phone
         },
         paymentMethod: step,
-        totalPrice: total,
+        totalPrice: total - (pointsRedeemed || 0), // Deduct points from total sent to backend
+        pointsToRedeem: pointsRedeemed, // Backend handles deduction from user
       };
 
-      // 2. Branch: Online Payment (Razorpay)
-      if (step === 'razorpay' || step === 'card' || step === 'upi') {
-        // A. Load SDK
+      // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
+      if (step !== 'cod') {
+        const config = { headers: { Authorization: `Bearer ${user.token}` } };
+
+        console.log("PAYMENT: Starting Flow for method:", step);
+        // A. Fetch Key
+        const { data: { key } } = await axios.get('http://localhost:5000/api/payments/key');
+        console.log("PAYMENT: Key Fetched:", key);
+
+        // B. Create Order on Server
+        const { data: paymentOrder } = await axios.post('http://localhost:5000/api/payments/create-order', { amount: total }, config);
+        console.log("PAYMENT: Order Created:", paymentOrder);
+
+        // C. Check for MOCK Mode
+        if (key === 'rzp_test_placeholder' || paymentOrder.id.startsWith('order_mock_')) {
+          console.log("PAYMENT: Mock Mode Detected - Simulating...");
+          addToast("Simulating Secure Payment...", "success");
+
+          // Simulate Delay
+          setTimeout(async () => {
+            try {
+              // Create Local Order First
+              const orderRes = await axios.post('http://localhost:5000/api/orders', orderData, config);
+              console.log("PAYMENT: Local Order Created:", orderRes.data._id);
+
+              // Verify Mock
+              await axios.post('http://localhost:5000/api/payments/verify', {
+                razorpay_order_id: paymentOrder.id,
+                razorpay_payment_id: `pay_mock_${Date.now()}`,
+                razorpay_signature: 'mock_signature_bypass', // Backend ignores this for mock orders
+                orderId: orderRes.data._id
+              }, config);
+              console.log("PAYMENT: Verification Success");
+
+              // Clear Cart & Redirect
+              await axios.delete('http://localhost:5000/api/cart/clear', config);
+              setUser({ ...user, cart: [] });
+              navigate('/order-success', { state: { orderId: orderRes.data._id }, replace: true });
+            } catch (mockErr) {
+              console.error("PAYMENT: Mock Error:", mockErr);
+              addToast("Mock Payment Failed", "error");
+              setIsSubmitting(false);
+            }
+          }, 2000);
+          return;
+        }
+
+        // D. REAL RAZORPAY FLOW
         const res = await loadRazorpay();
         if (!res) {
           addToast("Razorpay SDK failed to load. Are you online?", "error");
@@ -94,31 +188,20 @@ const Checkout = () => {
           return;
         }
 
-        // B. Create Order on Server (Razorpay)
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const { data: paymentOrder } = await axios.post('http://localhost:5000/api/payments/create-order', { amount: total }, config);
-
-        // C. Open Razorpay Options
         const options = {
-          key: "rzp_test_placeholder", // REPLACE WITH ENV VAR IN PROD
+          key: key,
           amount: paymentOrder.amount,
           currency: paymentOrder.currency,
-          name: "HighPhaus",
+          name: "SLOOK",
           description: "Luxury Purchase",
-          image: "https://example.com/logo.png", // Add your logo here
+          image: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png", // Use valid image
           order_id: paymentOrder.id,
           handler: async function (response) {
             try {
-              // D. Verify Payment on Server & Create Local Order
-              // Wait, usually we create local order FIRST as 'Pending', then update to 'Paid'.
-              // But effectively, let's create the order properly now.
-
-              // Strategy: Create Order DB -> then Verify? 
-              // Or Verify -> then Create Order DB?
-              // Standard: Create Order (Pending) -> Pay -> Update to Paid.
-
+              // Create Local Order (Pending)
               const orderRes = await axios.post('http://localhost:5000/api/orders', orderData, config);
 
+              // Verify
               await axios.post('http://localhost:5000/api/payments/verify', {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
@@ -144,13 +227,22 @@ const Checkout = () => {
           },
           theme: {
             color: "#000000"
+          },
+          modal: {
+            ondismiss: function () {
+              setIsSubmitting(false);
+              addToast("Payment Cancelled", "info");
+            }
           }
         };
 
         const rzp1 = new window.Razorpay(options);
+        rzp1.on('payment.failed', function (response) {
+          addToast(response.error.description || "Payment Failed", "error");
+          setIsSubmitting(false);
+        });
         rzp1.open();
-        setIsSubmitting(false); // Modal is open, we can unblock UI or keep it blocked? 
-        // Usually keep blocked or let modal handle it.
+        // setIsSubmitting(false); // Valid to keep true until modal behaves
 
       } else {
         // 3. Branch: COD / Manual
@@ -295,6 +387,8 @@ const Checkout = () => {
                   {[
                     { id: 'upi', name: 'UPI / QR Code', icon: <Smartphone />, desc: 'Google Pay, PhonePe, Paytm' },
                     { id: 'card', name: 'Credit / Debit Card', icon: <CreditCard />, desc: 'Visa, Mastercard, RuPay' },
+                    { id: 'netbanking', name: 'Net Banking', icon: <Landmark />, desc: 'All Indian Banks' },
+                    { id: 'wallet', name: 'Wallets', icon: <Wallet />, desc: 'Paytm, PhonePe, Amazon Pay' },
                     { id: 'cod', name: 'Cash On Delivery', icon: <Truck />, desc: 'Pay with cash upon delivery' }
                   ].map(method => (
                     <div key={method.id} onClick={() => step !== 'selection' && setStep(method.id)} className={`
@@ -387,9 +481,41 @@ const Checkout = () => {
                 )}
                 <div className="flex justify-between text-xl font-black uppercase italic transform -skew-x-2 pt-2">
                   <span>Total</span>
-                  <span>₹{total.toLocaleString()}</span>
+                  <span>₹{(total - (pointsRedeemed || 0)).toLocaleString()}</span>
                 </div>
               </div>
+
+              {/* LOYALTY POINTS REDEMPTION */}
+              {user?.loyaltyPoints > 0 && (
+                <div className="mt-8 bg-gradient-to-r from-amber-100 to-yellow-50 p-6 rounded-2xl border border-amber-200">
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-black text-white p-1.5 rounded-full"><Star size={12} /></div>
+                      <span className="font-black uppercase text-xs tracking-widest">SLOOK Coins</span>
+                    </div>
+                    <span className="text-sm font-bold">{user.loyaltyPoints} Available</span>
+                  </div>
+
+                  {!pointsRedeemed ? (
+                    <button
+                      onClick={() => {
+                        if (total === 0) return addToast("Cart total is 0", "info");
+                        const redeemable = Math.min(user.loyaltyPoints, total);
+                        setPointsRedeemed(redeemable);
+                        addToast(`Redeemed ${redeemable} Coins!`, "success");
+                      }}
+                      className="w-full bg-black text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition"
+                    >
+                      Redeem Now (Save ₹{Math.min(user.loyaltyPoints, total)})
+                    </button>
+                  ) : (
+                    <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-amber-200">
+                      <span className="text-[10px] font-bold uppercase text-green-600">Redeemed ₹{pointsRedeemed}</span>
+                      <button onClick={() => setPointsRedeemed(0)} className="text-[9px] font-bold underline text-zinc-400 hover:text-red-500">Remove</button>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* DESKTOP ACTION BUTTON */}
               <div className="hidden lg:block mt-8">

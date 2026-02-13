@@ -15,14 +15,18 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+import { HelmetProvider } from 'react-helmet-async';
+
 if (!rootElement) {
   console.error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
 } else {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <HelmetProvider>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </HelmetProvider>
     </React.StrictMode>
   );
 }

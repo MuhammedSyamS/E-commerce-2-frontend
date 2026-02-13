@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart, Shield, Bell } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart, Shield, Bell, Info } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import axios from 'axios'; // We need axios directly for fetch
 
@@ -15,8 +15,14 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const searchInputRef = React.useRef(null);
 
   const isAdminRoute = location.pathname.startsWith('/admin');
+
+  // ... (existing code)
+
+  // SEARCH OVERLAY
+
 
   // --- TOP BANNER LOGIC ---
   const messages = ["Save 5% on prepaid orders!", "Free Shipping on orders over ₹1999", "New Collection Drops Every Friday"];
@@ -54,14 +60,53 @@ const Navbar = () => {
     return () => clearInterval(interval);
   }, [user?.token]);
 
-  const markRead = async (id) => {
-    try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/users/notifications/${id}/read`, {}, config);
-      // Update local state
-      setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
-    } catch (err) { }
+  const handleNotificationClick = async (notif) => {
+    // 1. Mark as read
+    if (!notif.isRead) {
+      try {
+        const config = { headers: { Authorization: `Bearer ${user.token}` } };
+        await axios.put(`http://localhost:5000/api/users/notifications/${notif._id}/read`, {}, config);
+        setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
+      } catch (err) { }
+    }
+
+    // 2. Navigate if URL exists
+    // Robust check for data object
+    const data = notif.data || {};
+    let targetUrl = data.url || data.link;
+
+    // FIX COLD DATA: If backend sent wrong URL structure, fix it here
+    if (targetUrl && targetUrl.includes('/account/orders/')) {
+      targetUrl = targetUrl.replace('/account/orders/', '/order/');
+    }
+
+    if (targetUrl) {
+      console.log("Navigating to:", targetUrl);
+      navigate(targetUrl);
+      setShowNotif(false);
+    } else if (notif.type === 'order') {
+      // Fallback: If we have orderId but no URL, make one
+      if (data.orderId) {
+        navigate(`/order/${data.orderId}`);
+      } else {
+        navigate('/my-orders');
+      }
+      setShowNotif(false);
+    } else {
+      console.log("No URL found in notification", notif);
+    }
   };
+
+  // --- CLICK OUTSIDE TO CLOSE DROPDOWNS ---
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showNotif && !event.target.closest('.group')) {
+        setShowNotif(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotif]);
 
   const handleNext = () => {
     setIsAnimating(true);
@@ -169,10 +214,10 @@ const Navbar = () => {
             {/* NOTIFICATIONS BELL */}
             {user && (
               <div className="relative group">
-                <button onClick={() => setShowNotif(!showNotif)} className="relative outline-none flex items-center justify-center">
-                  <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white hover:text-zinc-400'}`} />
+                <button onClick={() => setShowNotif(!showNotif)} className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all">
+                  <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-black animate-pulse">
+                    <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
                       {unreadCount}
                     </span>
                   )}
@@ -180,33 +225,42 @@ const Navbar = () => {
 
                 {/* NOTIFICATION DROPDOWN */}
                 {showNotif && (
-                  <div className="absolute right-0 top-full pt-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl w-80 border border-zinc-100 animate-in slide-in-from-top-4 overflow-hidden">
-                      <div className="p-4 border-b border-zinc-50 flex justify-between items-center bg-zinc-50">
-                        <h3 className="text-xs font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
-                        <button onClick={() => setShowNotif(false)}><X size={14} /></button>
+                  <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-80 border border-white/20 overflow-hidden ring-1 ring-black/5">
+                      <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
+                        <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
+                        <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
                       </div>
-                      <div className="max-h-64 overflow-y-auto custom-scrollbar">
+                      <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
                         {!Array.isArray(notifications) || notifications.length === 0 ? (
-                          <p className="p-6 text-center text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
+                          <div className="p-8 text-center flex flex-col items-center gap-2">
+                            <Bell size={24} className="text-zinc-200" />
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
+                          </div>
                         ) : (
                           notifications.map(n => (
                             <div
                               key={n._id}
-                              onClick={() => markRead(n._id)}
-                              className={`p-4 border-b border-zinc-50 hover:bg-zinc-50 transition cursor-pointer ${n.isRead ? 'opacity-50' : 'bg-white'}`}
+                              onClick={() => handleNotificationClick(n)}
+                              className={`p-4 border-b border-zinc-50 hover:bg-white/80 transition cursor-pointer relative group/item ${n.isRead ? 'opacity-60 bg-transparent' : 'bg-white/60'}`}
                             >
-                              <div className="flex gap-3">
-                                <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.type === 'promo' ? 'bg-purple-500' : (n.type === 'order' ? 'bg-black' : 'bg-blue-500')}`}></div>
-                                <div>
-                                  <p className="text-xs font-bold text-black mb-1">{n.title}</p>
-                                  <p className="text-[10px] text-zinc-500 leading-tight">{n.message}</p>
+                              {!n.isRead && <div className="absolute right-4 top-4 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
+                              <div className="flex gap-4">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.type === 'promo' ? 'bg-purple-100 text-purple-600' : (n.type === 'order' ? 'bg-zinc-100 text-black' : 'bg-blue-50 text-blue-600')}`}>
+                                  {n.type === 'order' ? <ShoppingBag size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />)}
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-[11px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
+                                  <p className="text-[10px] text-zinc-600 leading-relaxed">{n.message}</p>
                                   <p className="text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                                 </div>
                               </div>
                             </div>
                           ))
                         )}
+                      </div>
+                      <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
+                        <Link to="/account/notifications" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
                       </div>
                     </div>
                   </div>
@@ -310,13 +364,19 @@ const Navbar = () => {
 
         {/* SEARCH OVERLAY */}
         {isSearchOpen && (
-          <div className="absolute top-0 left-0 w-full h-20 bg-white text-black rounded-2xl flex items-center px-8 z-[110] animate-in slide-in-from-top duration-300">
+          <div className="absolute top-0 left-0 w-full h-20 bg-white text-black rounded-2xl flex items-center px-8 z-[200] shadow-2xl animate-in slide-in-from-top duration-300">
             <Search className="text-zinc-400 w-5 h-5" />
             <input
               autoFocus
               type="text"
-              placeholder="SEARCH THE SILVER STUDIO..."
+              placeholder="SEARCH SLOOK..."
               className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  toggleSearch();
+                  navigate(`/shop?keyword=${e.target.value}`);
+                }
+              }}
             />
             <button onClick={toggleSearch}><X className="w-5 h-5 text-black" /></button>
           </div>

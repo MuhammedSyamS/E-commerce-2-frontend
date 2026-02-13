@@ -2,15 +2,15 @@ export const faqData = [
   {
     category: "Orders",
     questions: [
-      { q: "How do I track my silver order?", a: "Once shipped, you will receive a tracking ID via email. You can also track it in your 'My Studio' dashboard." },
-      { q: "Can I cancel my order after 24 hours?", a: "Orders enter the 'Crafting' stage after 12 hours. Cancellations are only possible before the piece is hallmarked." }
+      { q: "How do I track my order?", a: "Once shipped, you will receive a tracking ID via email. You can also track it in your 'My Account' dashboard." },
+      { q: "Can I cancel my order?", a: "Orders enter the 'Processing' stage after 12 hours. Cancellations are only possible before the item is dispatched." }
     ]
   },
   {
     category: "Product & Care",
     questions: [
-      { q: "Is HighPhaus silver 925 Hallmarked?", a: "Yes, every single piece is certified 925 Sterling Silver and comes with an authenticity card." },
-      { q: "Will my jewelry tarnish?", a: "Silver naturally oxidizes over time. We provide a luxury polishing cloth with every order to maintain the shine." }
+      { q: "Are your products authentic?", a: "Yes, every SLOOK product is sourced directly from verifying manufacturers and comes with a quality guarantee." },
+      { q: "How do I care for my items?", a: "Care instructions vary by product. Please refer to the specific care label or guide provided with your purchase." }
     ]
   },
   {
