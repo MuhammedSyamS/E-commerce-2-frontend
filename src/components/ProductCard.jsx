@@ -117,6 +117,18 @@ const ProductCard = ({ product, onAddToCart }) => {
           </div>
         )}
 
+        {product.isNewArrival && !isFlashSale && (
+          <div className="absolute top-0 left-0 bg-black text-white px-3 py-1.5 z-20">
+            <p className="text-[10px] font-black uppercase tracking-widest">New Arrival</p>
+          </div>
+        )}
+
+        {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
+          <div className="absolute top-0 left-0 bg-zinc-800 text-white px-3 py-1.5 z-20">
+            <p className="text-[10px] font-black uppercase tracking-widest">Elite Choice</p>
+          </div>
+        )}
+
         {product.countInStock === 0 && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
             <span className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
