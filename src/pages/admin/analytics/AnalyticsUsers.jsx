@@ -20,7 +20,7 @@ const AnalyticsUsers = () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
                 // Fetch stats with a long range to get good user growth data
-                const { data } = await axios.get(`http://localhost:5000/api/orders/admin/stats?timeRange=yearly`, config);
+                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=yearly`, config);
                 setStats(data);
                 setLoading(false);
             } catch (error) {
@@ -75,10 +75,16 @@ const AnalyticsUsers = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold text-zinc-900">{customer.name}</p>
-                                        <p className="text-[10px] text-zinc-400">{customer.email}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[10px] text-zinc-400">{customer.email}</p>
+                                            <span className="text-[10px] font-black bg-blue-50 text-blue-600 px-1.5 rounded uppercase">{customer.orderCount} Orders</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <span className="font-mono text-sm font-black text-zinc-900">₹{customer.totalSpend.toLocaleString()}</span>
+                                <div className="text-right">
+                                    <p className="font-mono text-sm font-black text-zinc-900">₹{customer.totalSpend.toLocaleString()}</p>
+                                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-tighter">Avg: ₹{customer.avgOrderValue}</p>
+                                </div>
                             </div>
                         ))}
                         {(!stats?.topCustomers || stats.topCustomers.length === 0) && (

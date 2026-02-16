@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useStore } from '../../store/useStore';
-import { Package, Truck, Check, Eye, Trash2, AlertCircle } from 'lucide-react';
+import { Package, Truck, Check, Eye, Trash2, AlertCircle, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 
@@ -10,13 +10,19 @@ const AdminOrders = () => {
     const { addToast } = useToast();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [pages, setPages] = useState(1);
+    const [total, setTotal] = useState(0);
 
-    const fetchOrders = async () => {
+    const fetchOrders = async (p = page) => {
         try {
             // Add timestamp to prevent caching
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get(`http://localhost:5000/api/orders/admin/all?t=${Date.now()}`, config);
-            setOrders(data);
+            const { data } = await axios.get(`/api/orders/admin/all?page=${p}&t=${Date.now()}`, config);
+            setOrders(data.orders);
+            setPages(data.pages);
+            setTotal(data.total);
+            setPage(data.page);
         } catch (err) {
             console.error("Orders Error", err);
         } finally {
@@ -47,7 +53,7 @@ const AdminOrders = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             // endpointSuffix: action, logistics, qc, resolve
-            await axios.put(`http://localhost:5000/api/orders/${requestModal.orderId}/return/${requestModal.itemId}/${endpoint}`, payload, config);
+            await axios.put(`/api/orders/${requestModal.orderId}/return/${requestModal.itemId}/${endpoint}`, payload, config);
 
             addToast("Update Successful", "success");
             setRequestModal({ open: false, orderId: null, itemId: null, request: null, itemName: '', mode: 'review' });
@@ -80,7 +86,7 @@ const AdminOrders = () => {
     const updateStatus = async (id, status, extraData = {}) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`http://localhost:5000/api/orders/${id}/status`, { status, ...extraData }, config);
+            await axios.put(`/api/orders/${id}/status`, { status, ...extraData }, config);
             fetchOrders();
             addToast(`Order marked as ${status}`, "success");
         } catch (err) {
@@ -91,7 +97,7 @@ const AdminOrders = () => {
         if (!window.confirm("Are you sure you want to delete this order?")) return;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`http://localhost:5000/api/orders/${id}`, config);
+            await axios.delete(`/api/orders/${id}`, config);
             setOrders(orders.filter(o => o._id !== id));
             addToast("Order deleted", "success");
         } catch (err) {
@@ -345,6 +351,12 @@ const AdminOrders = () => {
                                     <td className="px-4 py-4 md:px-8 md:py-6">
                                         <div className="text-xs font-bold uppercase">{order.user?.firstName || 'Guest'} {order.user?.lastName || ''}</div>
                                         <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wide">{order.user?.email || 'No Email'}</div>
+                                        {order.orderNote && (
+                                            <div className="mt-2 flex items-center gap-1.5 text-amber-600 bg-amber-50 px-2 py-1 rounded w-max">
+                                                <AlertCircle size={10} />
+                                                <span className="text-[9px] font-black uppercase tracking-tight">HAS NOTE</span>
+                                            </div>
+                                        )}
                                     </td>
                                     <td className="px-4 py-4 md:px-8 md:py-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                                         {new Date(order.createdAt).toLocaleDateString()}
@@ -406,14 +418,14 @@ const AdminOrders = () => {
                                                 if (rStatus === 'Pickup Scheduled') return (
                                                     <button key={item._id} onClick={() => {
                                                         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                                                        axios.put(`http://localhost:5000/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Picked Up' }, config).then(fetchOrders);
+                                                        axios.put(`/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Picked Up' }, config).then(fetchOrders);
                                                     }} className="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest mb-1">Mark Picked Up</button>
                                                 );
 
                                                 if (rStatus === 'Picked Up') return (
                                                     <button key={item._id} onClick={() => {
                                                         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                                                        axios.put(`http://localhost:5000/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Received' }, config).then(fetchOrders);
+                                                        axios.put(`/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Received' }, config).then(fetchOrders);
                                                     }} className="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest mb-1">Mark Received</button>
                                                 );
 
@@ -458,6 +470,54 @@ const AdminOrders = () => {
                                     </td>
                                     <td className="px-4 py-4 md:px-8 md:py-6 text-right">
                                         <div className="flex justify-end gap-2">
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const response = await axios.get(`/api/orders/${order._id}/invoice`, {
+                                                            headers: { Authorization: `Bearer ${user.token}` },
+                                                            responseType: 'blob'
+                                                        });
+                                                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                                                        const link = document.createElement('a');
+                                                        link.href = url;
+                                                        link.setAttribute('download', `invoice-${order._id}.pdf`);
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        link.remove();
+                                                    } catch (err) {
+                                                        addToast("Failed to download invoice", "error");
+                                                    }
+                                                }}
+                                                className="p-2 bg-white border border-zinc-100 rounded-lg hover:border-black transition-colors"
+                                                title="Download Invoice"
+                                            >
+                                                <FileText size={14} />
+                                            </button>
+
+                                            <button
+                                                onClick={async () => {
+                                                    try {
+                                                        const response = await axios.get(`/api/orders/${order._id}/manifest`, {
+                                                            headers: { Authorization: `Bearer ${user.token}` },
+                                                            responseType: 'blob'
+                                                        });
+                                                        const url = window.URL.createObjectURL(new Blob([response.data]));
+                                                        const link = document.createElement('a');
+                                                        link.href = url;
+                                                        link.setAttribute('download', `manifest-${order._id}.pdf`);
+                                                        document.body.appendChild(link);
+                                                        link.click();
+                                                        link.remove();
+                                                    } catch (err) {
+                                                        addToast("Failed to download manifest", "error");
+                                                    }
+                                                }}
+                                                className="p-2 bg-white border border-zinc-100 rounded-lg hover:border-black transition-colors text-amber-600 hover:bg-amber-50"
+                                                title="Download Shipping Manifest"
+                                            >
+                                                <Truck size={14} />
+                                            </button>
+
                                             <Link to={`/order/${order._id}`} className="p-2 bg-white border border-zinc-100 rounded-lg hover:border-black transition-colors" title="View Details">
                                                 <Eye size={14} />
                                             </Link>
@@ -475,6 +535,31 @@ const AdminOrders = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* PAGINATION CONTROLS */}
+                {pages > 1 && (
+                    <div className="bg-zinc-50 border-t border-zinc-100 px-8 py-4 flex items-center justify-between">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                            Showing page {page} of {pages} ({total} Orders)
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => { setPage(page - 1); fetchOrders(page - 1); }}
+                                disabled={page === 1}
+                                className="px-4 py-2 bg-white border border-zinc-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-all"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => { setPage(page + 1); fetchOrders(page + 1); }}
+                                disabled={page === pages}
+                                className="px-4 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

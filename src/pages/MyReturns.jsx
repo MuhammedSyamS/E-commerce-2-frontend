@@ -14,7 +14,7 @@ const MyReturns = () => {
         const fetchReturns = async () => {
             if (!user?.token) return;
             try {
-                const { data } = await axios.get('http://localhost:5000/api/returns/my', {
+                const { data } = await axios.get('/api/returns/my', {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 setReturns(data);

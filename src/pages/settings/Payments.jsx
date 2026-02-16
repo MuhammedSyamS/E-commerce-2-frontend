@@ -43,7 +43,7 @@ const Payments = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/users/cards', cardToSave, config);
+      const { data } = await axios.post('/api/users/cards', cardToSave, config);
 
       // Update Store and State
       setCards(data);
@@ -69,7 +69,7 @@ const Payments = () => {
   const handleDelete = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.delete(`http://localhost:5000/api/users/cards/${deleteModal.cardId}`, config);
+      const { data } = await axios.delete(`/api/users/cards/${deleteModal.cardId}`, config);
       setCards(data);
       setUser({ ...user, savedCards: data });
       addToast("Card Removed", "success");

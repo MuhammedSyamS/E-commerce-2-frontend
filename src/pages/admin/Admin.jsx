@@ -12,40 +12,38 @@ const Admin = () => {
 
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(''); // New State
+  const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [total, setTotal] = useState(0);
 
   // FETCH LIVE PRODUCTS FROM BACKEND
   useEffect(() => {
-    const fetchAdminData = async () => {
-      try {
-        setLoading(true);
-        // Add timestamp to bust cache
-        const res = await axios.get(`http://localhost:5000/api/products?t=${Date.now()}`);
-        setProducts(Array.isArray(res.data) ? res.data : []);
-      } catch (err) {
-        console.error("Admin Fetch Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAdminData();
-  }, [user]); // Re-fetch on auth change
+    fetchAdminData(1, searchTerm);
+  }, [user, searchTerm]); // Re-fetch on auth or search change
+
+  const fetchAdminData = async (p = 1, search = '') => {
+    try {
+      setLoading(true);
+      // Add timestamp to bust cache
+      const res = await axios.get(`/api/products?page=${p}&search=${search}&t=${Date.now()}`);
+
+      const data = res.data;
+      setProducts(data.products || []);
+      setPage(data.page || 1);
+      setPages(data.pages || 1);
+      setTotal(data.total || 0);
+
+    } catch (err) {
+      console.error("Admin Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleRefresh = () => {
-    // Re-trigger fetch manually
-    const fetchAdminData = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/products?t=${Date.now()}`);
-        setProducts(Array.isArray(res.data) ? res.data : []);
-        addToast("Inventory Refreshed", "success");
-      } catch (err) {
-        addToast("Refresh Failed", "error");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAdminData();
+    fetchAdminData(page, searchTerm);
+    addToast("Inventory Refreshed", "success");
   };
 
 
@@ -53,7 +51,7 @@ const Admin = () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
         const config = { headers: { Authorization: `Bearer ${useStore.getState().user.token}` } }; // Ensure auth
-        await axios.delete(`http://localhost:5000/api/products/${id}`, config);
+        await axios.delete(`/api/products/${id}`, config);
         setProducts(products.filter(p => p._id !== id));
         addToast("Product removed from Studio", "success");
       } catch (err) {
@@ -139,14 +137,10 @@ const Admin = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
-                {products.filter(p =>
-                  (p.name && p.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                  (p.slug && p.slug.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                  (p.category && p.category.toLowerCase().includes(searchTerm.toLowerCase()))
-                ).map((product, index) => (
+                {products.map((product, index) => (
                   <tr key={product._id} className="hover:bg-zinc-50 transition-colors">
                     <td className="px-4 py-4 md:px-6 md:py-6 text-[10px] font-bold text-zinc-400">
-                      {(index + 1).toString().padStart(2, '0')}
+                      {((page - 1) * 20 + index + 1).toString().padStart(2, '0')}
                     </td>
                     <td className="px-4 py-4 md:px-6 md:py-6">
                       <div className="flex items-center gap-4">
@@ -173,7 +167,6 @@ const Admin = () => {
                     </td>
                     <td className="px-4 py-4 md:px-6 md:py-6 text-right">
                       <div className="flex justify-end gap-2 md:gap-3">
-                        {/* VIEW BUTTON - Removed target="_blank" for SPA feel */}
                         <button
                           onClick={() => navigate(`/product/${product.slug}`)}
                           className="p-2 text-zinc-400 hover:text-black transition-colors"
@@ -201,6 +194,31 @@ const Admin = () => {
               </tbody>
             </table>
           </div>
+
+          {/* PAGINATION CONTROLS */}
+          {pages > 1 && (
+            <div className="bg-zinc-50 border-t border-zinc-100 px-8 py-4 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                Showing page {page} of {pages} ({total} pieces)
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setPage(page - 1); fetchAdminData(page - 1, searchTerm); }}
+                  disabled={page === 1}
+                  className="px-4 py-2 bg-white border border-zinc-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-all"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => { setPage(page + 1); fetchAdminData(page + 1, searchTerm); }}
+                  disabled={page === pages}
+                  className="px-4 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

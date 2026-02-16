@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // Added useNavigate
-import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../api/instance';
 import ProductCard from '../components/ProductCard';
-import { Search, SlidersHorizontal, ChevronDown, X } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, X, RotateCcw } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { Skeleton } from '../components/ui/Skeleton';
 
 const Shop = () => {
   const [products, setProducts] = useState([]);
@@ -12,33 +13,54 @@ const Shop = () => {
   // Filter States
   const [keyword, setKeyword] = useState('');
   const [category, setCategory] = useState('All');
+  const [subcategory, setSubcategory] = useState('All');
   const [sort, setSort] = useState('newest');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' }); // Changed defaults to empty strings
-  const [filters, setFilters] = useState({ size: '', color: '' }); // NEW State
+  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
+  const [filters, setFilters] = useState({ size: '', color: '', minRating: 0 });
+  const [flags, setFlags] = useState({ inStock: false, isNewArrival: false, isBestSeller: false });
 
   // UI States
-  const [showFilters, setShowFilters] = useState(false);
-  const [categories, setCategories] = useState(['All', 'Rings', 'Earrings', 'Necklaces', 'Bracelets', 'Men']); // Hardcoded or Fetched
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [categories, setCategories] = useState(['All']);
+  const [subcategories, setSubcategories] = useState([]);
+  const [availableSizes, setAvailableSizes] = useState([]);
+  const [availableColors, setAvailableColors] = useState([]);
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Parse URL Params on Mount/Update
+  // Parse URL Params
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const catParam = params.get('category');
-    const filterParam = params.get('filter'); // legacy support
     const searchParam = params.get('keyword') || params.get('search');
+    const newParam = params.get('new') || params.get('isNewArrival') || params.get('filter') === 'new-arrival';
+    const bestParam = params.get('best') || params.get('isBestSeller') || params.get('filter') === 'best-seller';
+    const mostViewedParam = params.get('mostViewed') || params.get('filter') === 'most-viewed';
+    const sortParam = params.get('sort');
 
     if (catParam) setCategory(catParam);
     if (searchParam) setKeyword(searchParam);
+    if (newParam) setFlags(f => ({ ...f, isNewArrival: true }));
+    if (bestParam) setFlags(f => ({ ...f, isBestSeller: true }));
+    if (mostViewedParam || sortParam === 'mostViewed') setSort('mostViewed');
+    else if (sortParam) setSort(sortParam);
 
-    // Legacy mapping
-    if (filterParam === 'best-seller') { /* Logic to handle if needed, or separate state */ }
-
+    const fetchFilterData = async () => {
+      try {
+        const { data } = await api.get('/products/filters');
+        setCategories(['All', ...data.categories.filter(c => c !== 'All')]);
+        setSubcategories(data.subcategories || []);
+        setAvailableSizes(data.sizes);
+        setAvailableColors(data.colors);
+      } catch (err) {
+        console.error("Filter Data Fetch Fail");
+      }
+    };
+    fetchFilterData();
   }, [location.search]);
 
-  // Fetch Products with Debounce for Search
+  // Fetch Products with Debounce
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -47,18 +69,19 @@ const Shop = () => {
 
         if (keyword) params.append('keyword', keyword);
         if (category !== 'All') params.append('category', category);
-        if (sort) params.append('sort', sort);
+        if (subcategory !== 'All') params.append('subcategory', subcategory);
         if (sort) params.append('sort', sort);
         if (priceRange.min) params.append('minPrice', priceRange.min);
         if (priceRange.max) params.append('maxPrice', priceRange.max);
         if (filters.size) params.append('size', filters.size);
         if (filters.color) params.append('color', filters.color);
+        if (filters.minRating > 0) params.append('minRating', filters.minRating);
+        if (flags.inStock) params.append('inStock', 'true');
+        if (flags.isNewArrival) params.append('isNewArrival', 'true');
+        if (flags.isBestSeller) params.append('isBestSeller', 'true');
 
-        console.log("Fetching with params:", params.toString());
-
-        const { data } = await axios.get(`http://localhost:5000/api/products?${params.toString()}`);
+        const { data } = await api.get(`/products?${params.toString()}`);
         setProducts(data);
-
       } catch (err) {
         console.error("Shop Fetch Error:", err);
       } finally {
@@ -68,199 +91,304 @@ const Shop = () => {
 
     const debounceTimer = setTimeout(() => {
       fetchProducts();
-    }, 500); // 500ms Debounce
+    }, 400);
 
     return () => clearTimeout(debounceTimer);
-  }, [keyword, category, sort, priceRange, filters]);
+  }, [keyword, category, subcategory, sort, priceRange, filters, flags]);
 
+  const handleSearchChange = (e) => setKeyword(e.target.value);
 
-  const handleSearchChange = (e) => {
-    setKeyword(e.target.value);
-    // Optional: Update URL
+  const resetFilters = () => {
+    setPriceRange({ min: '', max: '' });
+    setFilters({ color: '', size: '', minRating: 0 });
+    setFlags({ inStock: false, isNewArrival: false, isBestSeller: false });
+    setCategory('All');
+    setSubcategory('All');
+    setKeyword('');
   };
 
   return (
-    <div className="bg-white min-h-screen pt-32 pb-20">
+    <div className="bg-white min-h-screen pt-40 pb-20 selection:bg-black selection:text-white">
       <Helmet>
-        <title>Shop Collection | SLOOK</title>
-        <meta name="description" content="Browse our curated collection of premium essentials. Filter by category, price, and more." />
+        <title>The Collection | SLOOK Elite</title>
+        <meta name="description" content="Explore SLOOK's premium collection of hand-picked artifacts." />
       </Helmet>
+
       <div className="container mx-auto px-6 md:px-12">
+        {/* --- CONTROL BAR --- */}
+        <div className="flex flex-wrap items-center justify-between gap-8 border-b border-zinc-100 py-6 mb-12">
+          {/* Categories Scroller */}
+          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar mask-gradient pr-10">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCategory(cat); setSubcategory('All'); }}
+                className={`text-[10px] font-black uppercase tracking-[0.25em] whitespace-nowrap transition-all ${category === cat ? 'text-black scale-110' : 'text-zinc-300 hover:text-zinc-600'
+                  }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
 
-        {/* --- HEADER & CONTROLS --- */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-8">
-            <div>
-              <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-black mb-2">
-                The Collection
-              </h1>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">
-                {products.length} Artifacts Found
-              </p>
-            </div>
-
-            {/* SEARCH BAR */}
-            <div className="relative w-full md:w-96 group">
+          <div className="flex items-center gap-8 shrink-0">
+            {/* Search Input - Minimalist */}
+            <div className="relative group">
               <input
                 type="text"
-                placeholder="Refine Search..."
+                placeholder="Find Artifact..."
                 value={keyword}
                 onChange={handleSearchChange}
-                className="w-full bg-transparent border-b border-zinc-300 py-3 pl-0 pr-10 text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-zinc-300"
+                className="bg-transparent border-b border-zinc-100 py-2 px-1 text-[10px] font-black uppercase tracking-widest outline-none focus:border-black transition-all placeholder:text-zinc-300 w-32 focus:w-48"
               />
-              <Search className="absolute right-0 top-3 text-zinc-300 group-focus-within:text-black transition-colors" size={16} />
-            </div>
-          </div>
-
-          {/* FILTER BAR */}
-          <div className="flex flex-wrap items-center justify-between gap-6 border-y border-zinc-100 py-4">
-
-            {/* Categories */}
-            <div className="flex items-center gap-6 overflow-x-auto no-scrollbar mask-gradient">
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setCategory(cat)}
-                  className={`text-[10px] font-bold uppercase tracking-[0.2em] whitespace-nowrap transition-colors ${category === cat ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'
-                    }`}
-                >
-                  {cat}
-                </button>
-              ))}
+              <Search className="absolute right-0 top-1/2 -translate-y-1/2 text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
             </div>
 
-            {/* Sort & Filter Trigger */}
-            <div className="flex items-center gap-6 shrink-0">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] transition-colors ${showFilters ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
+            {/* Sort Dropdown */}
+            <div className="relative group">
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="appearance-none bg-transparent text-[10px] font-black uppercase tracking-[0.2em] pr-8 outline-none cursor-pointer text-zinc-500 hover:text-black transition-colors"
               >
-                <SlidersHorizontal size={14} /> Filters
-              </button>
-
-              <div className="relative group">
-                <select
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value)}
-                  className="appearance-none bg-transparent text-[10px] font-bold uppercase tracking-[0.2em] pr-6 outline-none cursor-pointer text-zinc-500 hover:text-black transition-colors"
-                >
-                  <option value="newest">New Arrivals</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                </select>
-                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400" size={12} />
-              </div>
+                <option value="newest">Latest</option>
+                <option value="price-asc">Value: Low-High</option>
+                <option value="price-desc">Value: High-Low</option>
+                <option value="rating">Top Rated</option>
+              </select>
+              <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-300 group-hover:text-black" size={12} />
             </div>
+
+            {/* Filter Trigger */}
+            <button
+              onClick={() => setIsDrawerOpen(true)}
+              className="flex items-center gap-3 bg-black text-white px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl shadow-black/10"
+            >
+              <SlidersHorizontal size={14} strokeWidth={3} /> Filters
+            </button>
+          </div>
+        </div>
+
+        {/* --- PRODUCT GRID --- */}
+        {loading ? (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="space-y-6">
+                <Skeleton className="aspect-square w-full rounded-xl bg-zinc-50" />
+                <div className="space-y-3 px-2">
+                  <Skeleton className="h-4 w-3/4 rounded-full" />
+                  <Skeleton className="h-3 w-1/4 rounded-full" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
+            {products.length > 0 ? (
+              products.map((product) => (
+                <div key={product._id} className="group/item animate-in fade-in slide-in-from-bottom-8 duration-700">
+                  <ProductCard product={product} />
+                </div>
+              ))
+            ) : (
+              <div className="col-span-full py-40 text-center rounded-[3rem] bg-zinc-50 border-2 border-dashed border-zinc-100">
+                <RotateCcw size={40} className="mx-auto text-zinc-200 mb-6" />
+                <h3 className="text-xl font-black uppercase tracking-tighter mb-2">No Artifacts Found</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8">Refine your parameters or reset</p>
+                <button
+                  onClick={resetFilters}
+                  className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+                >
+                  Reset Discovery
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* --- FILTER DRAWER (ELITE BLACK THEME) --- */}
+      <div
+        className={`fixed inset-0 z-[150] transition-visibility duration-300 ${isDrawerOpen ? 'visible' : 'invisible'}`}
+      >
+        {/* Backdrop */}
+        <div
+          className={`absolute inset-0 bg-black/70 backdrop-blur-xl transition-opacity duration-500 ${isDrawerOpen ? 'opacity-100' : 'opacity-0'}`}
+          onClick={() => setIsDrawerOpen(false)}
+        />
+
+        {/* Sidebar */}
+        <div
+          className={`absolute top-0 right-0 w-full max-w-[480px] h-full bg-zinc-950 text-white shadow-3xl transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1) p-10 md:p-14 flex flex-col ${isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}
+        >
+          <div className="flex items-center justify-between mb-12">
+            <div>
+              <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white leading-none">Catalog</h2>
+              <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Explorer / Elite Specification</p>
+            </div>
+            <button
+              onClick={() => setIsDrawerOpen(false)}
+              className="p-4 bg-zinc-900/50 text-zinc-400 rounded-full hover:bg-white hover:text-black transition-all hover:rotate-90"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          {/* --- EXPANDABLE FILTERS --- */}
-          {showFilters && (
-            <div className="mb-8 p-6 bg-zinc-50 border border-zinc-100 rounded-xl animate-in fade-in slide-in-from-top-2">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="flex-1 overflow-y-auto no-scrollbar space-y-14 pr-2 border-t border-zinc-900 pt-10">
+            {/* Status Section */}
+            <section className="space-y-6">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Artifact Status</h4>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { id: 'inStock', label: 'Stock' },
+                  { id: 'isNewArrival', label: 'New' },
+                  { id: 'isBestSeller', label: 'Best' }
+                ].map(flag => (
+                  <button
+                    key={flag.id}
+                    onClick={() => setFlags({ ...flags, [flag.id]: !flags[flag.id] })}
+                    className={`py-3 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${flags[flag.id] ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+                  >
+                    {flag.label}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-                {/* Price Range */}
-                <div className="space-y-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Price Range</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      placeholder="Min"
-                      value={priceRange.min}
-                      onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                      className="w-full bg-white border border-zinc-200 p-2 text-xs font-bold outline-none focus:border-black"
-                    />
-                    <span className="text-zinc-400">-</span>
-                    <input
-                      type="number"
-                      placeholder="Max"
-                      onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                      value={priceRange.max}
-                      className="w-full bg-white border border-zinc-200 p-2 text-xs font-bold outline-none focus:border-black"
-                    />
-                  </div>
+            {/* General Specs - Category & Style */}
+            <section className="space-y-8">
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Main Category</h4>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => { setCategory(cat); setSubcategory('All'); }}
+                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${category === cat ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
                 </div>
+              </div>
 
-                {/* Color */}
-                <div className="space-y-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Metal / Color</span>
+              {subcategories.length > 0 && (
+                <div className="space-y-6">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Sub-Style</h4>
                   <div className="flex flex-wrap gap-2">
-                    {['Black', 'White', 'Blue', 'Red'].map(c => (
-                      <button
-                        key={c}
-                        onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
-                        className={`px-3 py-1 border text-[10px] font-bold uppercase tracking-widest transition-all ${filters.color === c ? 'bg-black text-white border-black' : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400'}`}
-                      >
-                        {c}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Size */}
-                <div className="space-y-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Size</span>
-                  <div className="flex flex-wrap gap-2">
-                    {['6', '7', '8', '9', '10', '11'].map(s => (
+                    <button
+                      onClick={() => setSubcategory('All')}
+                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === 'All' ? 'bg-zinc-800 text-white border-zinc-700' : 'text-zinc-400 border-zinc-900 hover:border-zinc-700'}`}
+                    >
+                      Default
+                    </button>
+                    {subcategories.map(s => (
                       <button
                         key={s}
-                        onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
-                        className={`w-8 h-8 flex items-center justify-center border text-[10px] font-bold transition-all ${filters.size === s ? 'bg-black text-white border-black' : 'bg-white text-zinc-500 border-zinc-200 hover:border-zinc-400'}`}
+                        onClick={() => setSubcategory(subcategory === s ? 'All' : s)}
+                        className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === s ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
                       >
                         {s}
                       </button>
                     ))}
                   </div>
                 </div>
+              )}
+            </section>
 
-                {/* Clear Actions */}
-                <div className="flex items-end justify-end">
+            {/* Technical Coloring */}
+            <section className="space-y-6">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Visual Tints (Color Spec)</h4>
+              <div className="flex flex-wrap gap-3">
+                {availableColors.map(c => (
                   <button
-                    onClick={() => {
-                      setPriceRange({ min: '', max: '' });
-                      setFilters({ color: '', size: '' });
-                      setCategory('All');
-                      setKeyword('');
-                    }}
-                    className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+                    key={c}
+                    onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
+                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${filters.color === c ? 'bg-white text-black border-white' : 'bg-zinc-900/40 text-zinc-500 border-zinc-900 hover:border-zinc-700'
+                      }`}
                   >
-                    Reset All
+                    <div className="w-2 h-2 rounded-full border border-white/20" style={{ backgroundColor: c.toLowerCase() }}></div>
+                    {c}
                   </button>
-                </div>
-
+                ))}
               </div>
-            </div>
-          )}
+            </section>
+
+            {/* Dimensioning / Sizing */}
+            <section className="space-y-6">
+              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Dimension Spec (Size)</h4>
+              <div className="flex flex-wrap gap-3">
+                {availableSizes.length > 0 ? availableSizes.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
+                    className={`w-14 h-14 flex items-center justify-center rounded-2xl border text-[11px] font-black transition-all ${filters.size === s ? 'bg-white text-black border-white shadow-xl scale-110' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'
+                      }`}
+                  >
+                    {s}
+                  </button>
+                )) : (
+                  <p className="text-[10px] font-black uppercase text-zinc-800 italic">No Size Specifications Found</p>
+                )}
+              </div>
+            </section>
+
+            {/* Valuation & Reputation */}
+            <section className="grid grid-cols-1 gap-12">
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Valuation Range (₹)</h4>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={priceRange.min}
+                    onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
+                  />
+                  <div className="w-2 h-[2px] bg-zinc-800 shrink-0"></div>
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={priceRange.max}
+                    onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Public Reputation</h4>
+                <div className="grid grid-cols-4 gap-2">
+                  {[1, 2, 3, 4].map(star => (
+                    <button
+                      key={star}
+                      onClick={() => setFilters({ ...filters, minRating: filters.minRating === star ? 0 : star })}
+                      className={`py-4 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${filters.minRating === star ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+                    >
+                      {star}+ ★
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div className="pt-10 flex items-center gap-4 border-t border-zinc-900 mt-auto bg-zinc-950 pb-6">
+            <button
+              onClick={resetFilters}
+              className="flex-1 py-5 text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 hover:text-white transition-colors"
+            >
+              Reset All
+            </button>
+            <button
+              onClick={() => setIsDrawerOpen(false)}
+              className="flex-[2] py-5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-100 active:scale-95 transition-all font-black shadow-2xl shadow-white/5"
+            >
+              Analyze {products.length} Items
+            </button>
+          </div>
         </div>
-
-        {/* --- PRODUCT GRID --- */}
-        {loading ? (
-          <div className="h-96 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-zinc-200 border-t-black rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-12 md:gap-y-20">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <div key={product._id} className="animate-in fade-in zoom-in-95 duration-500">
-                  <ProductCard product={product} />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full py-32 text-center border-t border-dashed border-zinc-200">
-                <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-zinc-300 mb-4">
-                  0 Artifacts Found
-                </p>
-                <button
-                  onClick={() => { setKeyword(''); setCategory('All'); }}
-                  className="text-[10px] font-black underline uppercase tracking-widest text-black"
-                >
-                  Clear Filters
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
       </div>
     </div>
   );

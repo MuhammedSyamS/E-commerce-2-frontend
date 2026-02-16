@@ -14,7 +14,7 @@ const TopCartProducts = () => {
         const fetchTopCart = async () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('http://localhost:5000/api/reports/top-cart', config);
+                const { data } = await axios.get('/api/reports/top-cart', config);
                 setProducts(data);
                 setLoading(false);
             } catch (err) {

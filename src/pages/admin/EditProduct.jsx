@@ -32,7 +32,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data } = await axios.get(`http://localhost:5000/api/products/${id}`);
+        const { data } = await axios.get(`/api/products/${id}`);
         setFormData({
           name: data.name,
           price: data.price,
@@ -72,7 +72,7 @@ const EditProduct = () => {
     e.preventDefault();
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/products/${id}`, formData, config);
+      await axios.put(`/api/products/${id}`, formData, config);
       addToast("Product Updated Successfully", "success");
       navigate('/admin/products');
     } catch (err) {
@@ -84,13 +84,33 @@ const EditProduct = () => {
     if (!window.confirm("Delete this product permanently?")) return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.delete(`http://localhost:5000/api/products/${id}`, config);
+      await axios.delete(`/api/products/${id}`, config);
       addToast("Product Deleted", "success");
       navigate('/admin/products');
     } catch (err) {
       addToast("Delete Failed", "error");
     }
   };
+
+  /* --- NEW: NEXT/PREV NAVIGATION LOGIC --- */
+  const [allProducts, setAllProducts] = useState([]);
+
+  // Fetch all products to determine Next/Prev
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const { data } = await axios.get('/api/products');
+        setAllProducts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load product list for navigation");
+      }
+    };
+    fetchAll();
+  }, []);
+
+  const currentIndex = allProducts.findIndex(p => p._id === id);
+  const prevProduct = currentIndex > 0 ? allProducts[currentIndex - 1] : null;
+  const nextProduct = currentIndex !== -1 && currentIndex < allProducts.length - 1 ? allProducts[currentIndex + 1] : null;
 
   if (loading) return (
     <div className="h-screen flex items-center justify-center">
@@ -109,9 +129,31 @@ const EditProduct = () => {
             </button>
             <h1 className="text-3xl font-black uppercase tracking-tighter italic">Edit <span className="text-zinc-400">Inventory</span></h1>
           </div>
-          <button onClick={handleDelete} className="text-red-500 hover:text-red-700 p-3 bg-white rounded-xl shadow hover:bg-red-50 transition">
-            <Trash2 size={20} />
-          </button>
+
+          <div className="flex items-center gap-4">
+            {/* NAVIGATION BUTTONS */}
+            <div className="flex bg-white rounded-xl shadow p-1">
+              <button
+                disabled={!prevProduct}
+                onClick={() => navigate(`/admin/products/edit/${prevProduct._id}`)}
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest disabled:opacity-30 hover:bg-zinc-50 rounded-lg transition"
+              >
+                Prev
+              </button>
+              <div className="w-px bg-zinc-100 my-1"></div>
+              <button
+                disabled={!nextProduct}
+                onClick={() => navigate(`/admin/products/edit/${nextProduct._id}`)}
+                className="px-4 py-2 text-xs font-bold uppercase tracking-widest disabled:opacity-30 hover:bg-zinc-50 rounded-lg transition"
+              >
+                Next
+              </button>
+            </div>
+
+            <button onClick={handleDelete} className="text-red-500 hover:text-red-700 p-3 bg-white rounded-xl shadow hover:bg-red-50 transition">
+              <Trash2 size={20} />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -401,7 +443,7 @@ const EditProduct = () => {
         <StockHistory productId={id} />
       </div>
     </div>
-    </div >
+
   );
 };
 

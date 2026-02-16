@@ -1,13 +1,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/instance';
+import Price from '../components/Price';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import {
   ArrowLeft, MapPin, CreditCard, Truck, Package,
   Loader2, ChevronRight, Star, AlertTriangle, RotateCcw,
-  Calendar, CheckCircle2, Copy
+  Calendar, CheckCircle2, Copy, Clock
 } from 'lucide-react';
 
 const OrderDetails = () => {
@@ -43,7 +44,7 @@ const OrderDetails = () => {
       for (let i = 0; i < files.length; i++) {
         const fd = new FormData();
         fd.append('file', files[i]);
-        const { data } = await axios.post('http://localhost:5000/api/upload', fd, {
+        const { data } = await api.post('/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
         newUrls.push(data.filePath); // Ensure backend returns full path or we prepend generic host
@@ -63,7 +64,7 @@ const OrderDetails = () => {
       if (!user?.token) return;
       try {
         setLoading(true);
-        const { data } = await axios.get(`http://localhost:5000/api/orders/${id}`, {
+        const { data } = await api.get(`/orders/${id}`, {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         setOrder(data);
@@ -128,15 +129,23 @@ const OrderDetails = () => {
                   Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic mb-2">
+              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic mb-4">
                 Order #{order._id?.slice(-6).toUpperCase()}
               </h1>
-              <div className="flex items-center gap-4">
-                <span className="text-xs font-mono text-zinc-400">ID: {order._id}</span>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-lg border border-zinc-200">
+                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{order._id}</span>
+                  <button onClick={() => { navigator.clipboard.writeText(order._id); addToast("ID Copied!", "success") }} className="text-zinc-400 hover:text-black transition-colors" title="Copy ID">
+                    <Copy size={12} />
+                  </button>
+                </div>
+
                 <button
                   onClick={async () => {
                     try {
-                      const response = await axios.get(`http://localhost:5000/api/orders/${order._id}/invoice`, {
+                      addToast("Generating Invoice...", "info");
+                      const response = await api.get(`/orders/${order._id}/invoice`, {
                         headers: { Authorization: `Bearer ${user.token}` },
                         responseType: 'blob'
                       });
@@ -151,23 +160,92 @@ const OrderDetails = () => {
                       addToast("Failed to download invoice", "error");
                     }
                   }}
-                  className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-black hover:text-zinc-600 border border-black px-3 py-1 rounded-full transition-colors"
+                  className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-black text-white px-5 py-2 rounded-full hover:bg-zinc-800 transition-all shadow-md active:scale-95"
                 >
-                  <Copy size={12} /> Download Invoice
+                  <Package size={14} /> Download Invoice
                 </button>
               </div>
-              <span>ID: {order._id}</span>
-              <button onClick={() => navigator.clipboard.writeText(order._id)} className="hover:text-black" title="Copy ID">
-                <Copy size={12} />
-              </button>
             </div>
           </div>
 
           <div className="flex flex-col items-start lg:items-end gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
-            <span className="text-4xl md:text-5xl font-black tracking-tighter italic">
-              ₹{order.totalPrice?.toLocaleString()}
-            </span>
+            <Price amount={order.totalPrice} className="text-4xl md:text-5xl font-black tracking-tighter italic" />
+          </div>
+        </div>
+
+        {/* UNBOXING REMINDER FOR DELIVERED ORDERS */}
+        {order.orderStatus === 'Delivered' && (
+          <div className="bg-orange-50 border border-orange-100 rounded-3xl p-6 mb-8 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center shrink-0 text-orange-600">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-700 mb-1">Unboxing Reminder</h4>
+              <p className="text-[11px] font-bold text-orange-800 leading-relaxed uppercase tracking-tight">
+                Please ensure you have recorded an <strong>Unboxing Video</strong>. It is <strong>Mandatory</strong> for any return or exchange requests.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ORDER STATUS TIMELINE */}
+        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-x-auto">
+          <div className="min-w-[600px] relative">
+            {/* Timeline Line */}
+            <div className="absolute top-1/2 left-0 w-full h-1 bg-zinc-100 -translate-y-1/2 z-0"></div>
+            <div
+              className="absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 z-0 transition-all duration-1000"
+              style={{
+                width: (() => {
+                  const status = order.orderStatus;
+                  if (status === 'Pending' || status === 'Processing') return '0%';
+                  if (status === 'Confirmed') return '33%';
+                  if (status === 'Dispatched' || status === 'Shipped') return '66%';
+                  if (status === 'Delivered') return '100%';
+                  return '0%';
+                })()
+              }}
+            ></div>
+
+            {/* Timeline Steps */}
+            <div className="relative z-10 flex justify-between">
+              {[
+                { id: 'Pending', label: 'Order Placed', icon: <Package size={16} /> },
+                { id: 'Confirmed', label: 'Confirmed', icon: <CheckCircle2 size={16} /> },
+                { id: 'Shipped', label: 'Shipped', icon: <Truck size={16} /> },
+                { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} /> }
+              ].map((step, idx) => {
+                const status = order.orderStatus;
+                const isCompleted = (() => {
+                  const statusList = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
+                  const normalizedStatus = status === 'Processing' ? 'Pending' : status === 'Dispatched' ? 'Shipped' : status;
+                  const currentIdx = statusList.indexOf(normalizedStatus);
+                  return idx <= currentIdx;
+                })();
+                const isActive = (status === step.id) || (status === 'Processing' && step.id === 'Pending') || (status === 'Dispatched' && step.id === 'Shipped');
+
+                return (
+                  <div key={step.id} className="flex flex-col items-center gap-3">
+                    <div className={`
+                      w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500
+                      ${isCompleted ? 'bg-black text-white' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
+                      ${isActive ? 'ring-4 ring-zinc-100 scale-110' : ''}
+                    `}>
+                      {isCompleted && !isActive && step.id !== 'Delivered' ? <CheckCircle2 size={16} /> : step.icon}
+                    </div>
+                    <div className="text-center">
+                      <p className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
+                        {step.label}
+                      </p>
+                      {isActive && (
+                        <p className="text-[8px] font-bold text-zinc-400 mt-1 uppercase animate-pulse">In Progress</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -222,6 +300,21 @@ const OrderDetails = () => {
             </div>
           </div>
         </div>
+
+        {/* SPECIAL INSTRUCTIONS / NOTES */}
+        {order.orderNote && (
+          <div className="mt-8 pt-8 border-t border-zinc-100">
+            <div className="flex items-center gap-2 text-zinc-400 mb-3">
+              <Clock size={16} />
+              <span className="text-[10px] font-black uppercase tracking-widest">Special Delivery Instructions</span>
+            </div>
+            <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
+              <p className="text-xs font-bold text-zinc-600 leading-relaxed uppercase tracking-tight italic">
+                "{order.orderNote}"
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ITEMS SECTION */}
@@ -274,9 +367,9 @@ const OrderDetails = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="py-6 px-4 text-sm font-medium font-mono">₹{item.price.toLocaleString()}</td>
+                    <td className="py-6 px-4 text-sm font-medium font-mono"><Price amount={item.price} /></td>
                     <td className="py-6 px-4 text-center text-sm font-bold">x {item.qty}</td>
-                    <td className="py-6 px-4 text-sm font-bold font-mono">₹{(item.price * item.qty).toLocaleString()}</td>
+                    <td className="py-6 px-4 text-sm font-bold font-mono"><Price amount={item.price * item.qty} /></td>
                     <td className="py-6 px-8 text-right">
                       <div className="flex justify-end gap-3 opacity-100 lg:opacity-50 lg:group-hover:opacity-100 transition-opacity">
                         {/* Logic for Cancel/Return Buttons */}
@@ -340,8 +433,8 @@ const OrderDetails = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
-                    <p className="text-xs text-zinc-500 font-mono mb-2">₹{item.price.toLocaleString()} x {item.qty}</p>
-                    <p className="font-black text-sm">Total: ₹{(item.price * item.qty).toLocaleString()}</p>
+                    <p className="text-xs text-zinc-500 font-mono mb-2"><Price amount={item.price} /> x {item.qty}</p>
+                    <p className="font-black text-sm">Total: <Price amount={item.price * item.qty} /></p>
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       {item.status === 'Cancelled' ? (
@@ -496,13 +589,13 @@ const OrderDetails = () => {
                   onClick={async () => {
                     try {
                       if (confirmModal.actionType === 'cancel') {
-                        await axios.put(`http://localhost:5000/api/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
+                        await api.put(`/orders/${order._id}/cancel/${confirmModal.itemId}`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
                         addToast("Cancelled Successfully", "success");
                       } else {
                         // Return / Exchange Request
                         if (!returnReason) return addToast("Please select a reason", "error");
 
-                        await axios.post('http://localhost:5000/api/returns', {
+                        await api.post('/returns', {
                           orderId: order._id,
                           itemId: confirmModal.itemId,
                           type: confirmModal.requestType || 'Return',

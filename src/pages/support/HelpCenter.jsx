@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Search, ChevronDown, MessageSquare, Truck, ShieldCheck, CreditCard, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const HelpCenter = () => {
   const [activeFaq, setActiveFaq] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const faqs = [
     { q: "How do I care for my product?", a: "Each item comes with specific care instructions. Please refer to label or product page for details." },
@@ -51,12 +52,12 @@ const HelpCenter = () => {
         {/* CATEGORIES GRID */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-24">
           {[
-            { icon: <Truck size={20} />, label: "Logistics" },
-            { icon: <ShieldCheck size={20} />, label: "Warranty" },
-            { icon: <CreditCard size={20} />, label: "Billing" },
-            { icon: <MessageSquare size={20} />, label: "Exchanges" }
+            { icon: <Truck size={20} />, label: "Logistics", path: "/shipping" },
+            { icon: <ShieldCheck size={20} />, label: "Warranty", path: "/faq" },
+            { icon: <CreditCard size={20} />, label: "Billing", path: "/faq" },
+            { icon: <MessageSquare size={20} />, label: "Exchanges", path: "/returns" }
           ].map((cat, i) => (
-            <div key={i} className="border border-zinc-100 p-10 flex flex-col items-center hover:bg-black hover:text-white transition-all duration-500 cursor-pointer group">
+            <div key={i} className="border border-zinc-100 p-10 flex flex-col items-center hover:bg-black hover:text-white transition-all duration-500 cursor-pointer group" onClick={() => navigate(cat.path)}>
               <div className="mb-6 transform group-hover:scale-110 transition-transform">{cat.icon}</div>
               <p className="text-[10px] font-black uppercase tracking-[0.2em]">{cat.label}</p>
             </div>

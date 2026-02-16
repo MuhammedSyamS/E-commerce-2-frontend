@@ -14,13 +14,49 @@ const Security = () => {
         confirmPassword: ''
     });
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
+    const [sendingOtp, setSendingOtp] = useState(false);
     const [message, setMessage] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+
+    const handleSendOTP = async () => {
+        if (!formData.currentPassword || !formData.newPassword || !formData.confirmPassword) {
+            setMessage({ type: 'error', text: "Please fill all password fields first" });
+            return;
+        }
+        if (formData.newPassword !== formData.confirmPassword) {
+            setMessage({ type: 'error', text: "New passwords do not match!" });
+            return;
+        }
+
+        try {
+            setSendingOtp(true);
+            const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            await axios.post('/api/users/security/send-otp', {}, config);
+            setOtpSent(true);
+            setMessage({ type: 'success', text: "Verification code sent to your email!" });
+        } catch (err) {
+            setMessage({ type: 'error', text: err.response?.data?.message || "Failed to send code" });
+        } finally {
+            setSendingOtp(false);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage(null);
+
+        if (!otpSent) {
+            setMessage({ type: 'error', text: "Please request a verification code first" });
+            return;
+        }
+
+        if (!otp) {
+            setMessage({ type: 'error', text: "Please enter the verification code" });
+            return;
+        }
 
         // Basic Validation
         if (formData.newPassword !== formData.confirmPassword) {
@@ -38,24 +74,28 @@ const Security = () => {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
 
             const updateData = {
-                password: formData.newPassword
+                firstName: user.firstName,
+                lastName: user.lastName,
+                password: formData.newPassword,
+                currentPassword: formData.currentPassword,
+                otp: otp
             };
 
-            // Note: Backend 'updateProfile' handles password update. 
-            // Ideally backend should check current password, but current simple implementation might not. 
-            // For now we assume we just set the new password securely.
+            const { data } = await axios.put('/api/users/profile', updateData, config);
 
-            const { data } = await axios.put('http://localhost:5000/api/users/profile', updateData, config);
-
-            // Update Global Store (Token remains same usually, or should be refreshed)
+            // Update Global Store
             setUser({ ...data, token: user.token });
 
             setMessage({ type: 'success', text: "Security Updated Successfully!" });
             setLoading(false);
+            setOtpSent(false);
+            setOtp('');
             setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
         } catch (err) {
-            setMessage({ type: 'error', text: err.response?.data?.message || "Update failed" });
+            console.error("Security Update Error:", err);
+            const errorMsg = err.response?.data?.message || err.message || "Update failed";
+            setMessage({ type: 'error', text: errorMsg });
             setLoading(false);
         }
     };
@@ -87,16 +127,19 @@ const Security = () => {
                 <div className="bg-zinc-50 p-8 rounded-3xl border border-zinc-100">
                     <form onSubmit={handleSubmit} className="space-y-6">
 
-                        {/* 
-                <div>
-                   <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Current Password</label>
-                   <input 
-                      type="password" 
-                      placeholder="Verify current password"
-                      className="w-full bg-white border border-transparent focus:border-black rounded-xl py-3 px-4 outline-none font-bold text-sm transition"
-                   />
-                </div>
-                */}
+                        <div>
+                            <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Current Password</label>
+                            <div className="relative">
+                                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" />
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    value={formData.currentPassword}
+                                    onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
+                                    className="w-full bg-white border border-transparent focus:border-black rounded-xl py-3 pl-12 pr-12 outline-none font-bold text-sm transition"
+                                    placeholder="Verify current password"
+                                />
+                            </div>
+                        </div>
 
                         <div>
                             <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">New Password</label>
@@ -129,13 +172,49 @@ const Security = () => {
                             </div>
                         </div>
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-zinc-800 transition flex items-center justify-center gap-3 mt-4 shadow-xl"
-                        >
-                            {loading ? 'Updating...' : <><Save size={16} /> Update Password</>}
-                        </button>
+                        {otpSent && (
+                            <div className="animate-in slide-in-from-top-2 duration-300">
+                                <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Verification Code (OTP)</label>
+                                <input
+                                    type="text"
+                                    maxLength={6}
+                                    value={otp}
+                                    onChange={(e) => setOtp(e.target.value)}
+                                    className="w-full bg-white border border-transparent focus:border-black rounded-xl py-3 px-4 outline-none font-black text-center text-lg tracking-[0.5em] transition"
+                                    placeholder="000000"
+                                />
+                                <p className="text-[9px] text-zinc-400 mt-2 font-bold uppercase text-center">Check your email for the 6-digit code</p>
+                            </div>
+                        )}
+
+                        {!otpSent ? (
+                            <button
+                                type="button"
+                                onClick={handleSendOTP}
+                                disabled={sendingOtp}
+                                className="w-full bg-zinc-900 text-white py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-black transition flex items-center justify-center gap-3 mt-4 shadow-xl"
+                            >
+                                {sendingOtp ? 'Sending...' : <><Lock size={16} /> Send Verification Code</>}
+                            </button>
+                        ) : (
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-xs tracking-[0.2em] hover:bg-zinc-800 transition flex items-center justify-center gap-3 mt-4 shadow-xl border-2 border-white/10"
+                            >
+                                {loading ? 'Updating...' : <><Save size={16} /> Update Password</>}
+                            </button>
+                        )}
+
+                        {otpSent && (
+                            <button
+                                type="button"
+                                onClick={handleSendOTP}
+                                className="w-full text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition"
+                            >
+                                Resend Code
+                            </button>
+                        )}
                     </form>
                 </div>
 

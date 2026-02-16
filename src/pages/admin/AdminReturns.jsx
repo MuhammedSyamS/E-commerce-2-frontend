@@ -22,7 +22,7 @@ const AdminReturns = () => {
     const fetchReturns = async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('http://localhost:5000/api/returns/admin', config);
+            const { data } = await axios.get('/api/returns/admin', config);
             setReturns(data);
             setFilteredReturns(data);
             setLoading(false);
@@ -84,9 +84,9 @@ const AdminReturns = () => {
             if (action === 'Fail QC') status = 'QC Failed';
 
             if (status) {
-                await axios.put(`http://localhost:5000/api/returns/${id}/status`, { status, ...extraData }, config);
+                await axios.put(`/api/returns/${id}/status`, { status, ...extraData }, config);
             } else if (action === 'Resolve') {
-                await axios.put(`http://localhost:5000/api/returns/${id}/resolve`, {}, config);
+                await axios.put(`/api/returns/${id}/resolve`, {}, config);
             }
 
             fetchReturns();
@@ -106,7 +106,7 @@ const AdminReturns = () => {
         if (!path) return '';
         if (path.startsWith('http')) return path;
         // Backend runs on port 5000 in dev
-        return `http://localhost:5000${path}`;
+        return `${path}`;
     };
 
     return (

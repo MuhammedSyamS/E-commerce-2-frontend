@@ -24,7 +24,7 @@ const AdminAnalytics = () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
                 // Pass timeRange to backend
-                const { data } = await axios.get(`http://localhost:5000/api/orders/admin/stats?timeRange=${timeRange}`, config);
+                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=${timeRange}`, config);
                 setStats(data);
                 setLoading(false);
             } catch (error) {
@@ -172,18 +172,28 @@ const AdminAnalytics = () => {
                         bg="bg-amber-50"
                     />
                 </div>
-                <div onClick={() => navigate('/admin/analytics/orders')} className="cursor-pointer">
+                <div onClick={() => navigate('/admin/marketing')} className="cursor-pointer">
                     <StatCard
-                        title="Orders"
-                        value={stats?.totalOrders}
-                        icon={ShoppingBag}
-                        trend="Volume"
-                        trendUp={true}
-                        color="text-blue-600"
-                        bg="bg-blue-50"
+                        title="Total Discounts"
+                        value={`₹${stats?.totalDiscounts?.toLocaleString()}`}
+                        icon={Package}
+                        trend="Savings Given"
+                        trendUp={false}
+                        color="text-red-600"
+                        bg="bg-red-50"
                     />
                 </div>
-                {/* Optional: Add a 5th card or button for Users if not fitting in 4 cols */}
+                <div onClick={() => navigate('/admin/marketing')} className="cursor-pointer">
+                    <StatCard
+                        title="Referral Revenue"
+                        value={`₹${stats?.referralRevenue?.toLocaleString()}`}
+                        icon={Users}
+                        trend="Growth Engine"
+                        trendUp={true}
+                        color="text-pink-600"
+                        bg="bg-pink-50"
+                    />
+                </div>
             </div>
 
             {/* LINK FOR USERS ANALYTICS */}

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../store/useStore';
+import { useToast } from '../context/ToastContext';
+import { Share2 } from 'lucide-react';
 import axios from 'axios';
 
 const Wishlist = () => {
   const { user, setUser } = useStore();
+  const { success } = useToast();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -23,7 +26,7 @@ const Wishlist = () => {
         };
 
         // --- UPDATED ENDPOINT: Using the dedicated wishlist route ---
-        const { data } = await axios.get('http://localhost:5000/api/wishlist', config);
+        const { data } = await axios.get('/api/wishlist', config);
 
         setWishlistItems(data);
         // SYNC GLOBAL STATE: Ensure navbar badge matches valid items (removes ghost IDs)
@@ -38,6 +41,12 @@ const Wishlist = () => {
     fetchWishlist();
   }, [user?.wishlist, user?.token]);
 
+  const handleShare = () => {
+    const link = `${window.location.origin}/wishlist/shared/${user._id}`;
+    navigator.clipboard.writeText(link);
+    success("Link copied to clipboard");
+  };
+
   if (loading && user) {
     return <div className="min-h-screen pt-52 text-center uppercase font-black tracking-widest text-[10px] text-zinc-400">Loading Vault...</div>;
   }
@@ -51,9 +60,14 @@ const Wishlist = () => {
             Your Wishlist
           </h1>
           <div className="h-1 w-12 bg-black mx-auto mb-4"></div>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">
+          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
             {wishlistItems.length} items saved in your vault
           </p>
+          {wishlistItems.length > 0 && (
+            <button onClick={handleShare} className="mx-auto flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-black border border-black px-4 py-2 hover:bg-black hover:text-white transition-all">
+              <Share2 size={12} /> Share Collection
+            </button>
+          )}
         </div>
 
         {!user ? (
@@ -73,7 +87,7 @@ const Wishlist = () => {
                   // Move to Cart Logic: Remove from Wishlist after adding to cart
                   try {
                     const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                    const { data } = await axios.post('http://localhost:5000/api/wishlist', { productId: product._id }, config);
+                    const { data } = await axios.post('/api/wishlist', { productId: product._id }, config);
                     // Update global user state (which triggers effect)
                     setUser({ ...user, wishlist: data });
                   } catch (err) {

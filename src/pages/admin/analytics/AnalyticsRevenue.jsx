@@ -20,7 +20,7 @@ const AnalyticsRevenue = () => {
             setLoading(true);
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`http://localhost:5000/api/orders/admin/stats?timeRange=${timeRange}`, config);
+                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=${timeRange}`, config);
                 setStats(data);
                 setLoading(false);
             } catch (error) {
@@ -62,7 +62,7 @@ const AnalyticsRevenue = () => {
                 </div>
             </div>
 
-            {/* 1. SALES BY CATEGORY */}
+            {/* 1. SALES BY CATEGORY & SUBCATEGORY */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 flex flex-col h-[400px]">
                     <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6">Sales by Category</h3>
@@ -89,9 +89,9 @@ const AnalyticsRevenue = () => {
                 </div>
 
                 <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 flex flex-col h-[400px]">
-                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6">Category Performance (Bar)</h3>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6">Subcategory Performance</h3>
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={stats?.salesByCategory || []} layout="vertical">
+                        <BarChart data={stats?.subcategorySales || []} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
                             <XAxis type="number" hide />
                             <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 10 }} />
@@ -104,7 +104,14 @@ const AnalyticsRevenue = () => {
 
             {/* 2. REVENUE TREND DETAIL */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 h-[500px]">
-                <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900 mb-6">Detailed Revenue Stream</h3>
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-sm font-black uppercase tracking-widest text-zinc-900">Revenue & Profit Margin</h3>
+                    {stats?.totalDiscounts > 0 && (
+                        <div className="bg-red-50 px-3 py-1 rounded-full text-[10px] font-black text-red-600 uppercase tracking-wider">
+                            Discount Impact: ₹{stats.totalDiscounts.toLocaleString()}
+                        </div>
+                    )}
+                </div>
                 <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={stats?.chartData || []}>
                         <defs>
@@ -116,9 +123,13 @@ const AnalyticsRevenue = () => {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f4f4f5" />
                         <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10 }} dy={10} />
                         <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10 }} tickFormatter={(val) => `₹${val / 1000}k`} />
-                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }} />
+                        <Tooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                            formatter={(value, name) => [name === 'profitMargin' ? `${value}%` : `₹${value.toLocaleString()}`, name]}
+                        />
                         <Area type="monotone" dataKey="sales" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorSales2)" name="Revenue" />
                         <Area type="monotone" dataKey="profit" stroke="#3b82f6" strokeWidth={3} fillOpacity={0} strokeDasharray="5 5" name="Profit" />
+                        <Area type="monotone" dataKey="profitMargin" stroke="#f59e0b" strokeWidth={2} fillOpacity={0} name="Margin %" />
                     </AreaChart>
                 </ResponsiveContainer>
             </div>

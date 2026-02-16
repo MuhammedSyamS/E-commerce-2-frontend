@@ -18,7 +18,7 @@ const Notifications = () => {
   const fetchNotifs = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('http://localhost:5000/api/users/notifications', config);
+      const { data } = await axios.get('/api/users/notifications', config);
       setNotifications(data);
     } catch (err) {
       console.error("Fetch Notifs Error", err);
@@ -43,7 +43,7 @@ const Notifications = () => {
   const markAsRead = async (id) => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/notifications/${id}/read`, {}, config);
+      await axios.put(`/api/notifications/${id}/read`, {}, config);
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (err) {
       console.error("Error marking read", err);
@@ -53,7 +53,7 @@ const Notifications = () => {
   const markAllAsRead = async () => {
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`http://localhost:5000/api/notifications/read-all`, {}, config);
+      await axios.put(`/api/notifications/read-all`, {}, config);
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (err) {
       console.error("Error marking all read", err);
@@ -85,7 +85,7 @@ const Notifications = () => {
       });
 
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('http://localhost:5000/api/notifications/subscribe', subscription, config);
+      await axios.post('/api/notifications/subscribe', subscription, config);
 
       setIsSubscribed(true); // Update UI
       alert('Notifications Enabled! You will now receive alerts for new drops.');

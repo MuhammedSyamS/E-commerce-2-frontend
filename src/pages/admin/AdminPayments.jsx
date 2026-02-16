@@ -21,7 +21,7 @@ const AdminPayments = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             // Using existing getAllOrders logic, we will filter client-side for now
-            const { data } = await axios.get('http://localhost:5000/api/orders/admin/all', config);
+            const { data } = await axios.get('/api/orders/admin/all', config);
             setOrders(data);
         } catch (err) {
             addToast("Failed to fetch payments", "error");
@@ -42,7 +42,7 @@ const AdminPayments = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const endpoint = action === 'pay' ? 'pay' : 'refund';
-            const { data } = await axios.put(`http://localhost:5000/api/orders/${id}/${endpoint}`, {}, config);
+            const { data } = await axios.put(`/api/orders/${id}/${endpoint}`, {}, config);
 
             // Update local state
             setOrders(orders.map(o => o._id === id ? data : o));

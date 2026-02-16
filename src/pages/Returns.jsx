@@ -25,12 +25,18 @@ const Returns = () => {
           </ol>
         </div>
 
-        <div className="space-y-4">
-          <h2 className="text-xl font-black uppercase tracking-tight">Condition</h2>
-          <p className="text-xs text-zinc-500 leading-relaxed">
-            Items must be unworn, devoid of any scratches or damage, and in their original packaging to be eligible for a refund.
-            <br /><br />
-            <strong>IMPORTANT:</strong> Returns and exchanges will <strong>ONLY</strong> be accepted if you provide an <strong>Unboxing Video</strong> showing the package condition and the product defect clearly. Requests without video proof will be rejected.
+        <div className="bg-orange-50 border border-orange-100 rounded-3xl p-8 space-y-4">
+          <h2 className="text-xl font-black uppercase tracking-tight text-orange-900 flex items-center gap-3 italic">
+            <span className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center text-orange-700">!</span>
+            Mandatory Requirement
+          </h2>
+          <p className="text-sm font-bold text-orange-800 leading-relaxed uppercase tracking-tight">
+            Returns and exchanges will <strong>ONLY</strong> be accepted if you provide an <strong>Unboxing Video</strong> showing the package condition and the product defect clearly from start to finish.
+          </p>
+          <p className="text-[10px] font-medium text-orange-700 uppercase tracking-widest leading-loose">
+            • Record the unboxing from the moment you receive the package.<br />
+            • Ensure the shipping label is clearly visible.<br />
+            • Requests without video and picture proof will be automatically rejected.
           </p>
         </div>
       </div>

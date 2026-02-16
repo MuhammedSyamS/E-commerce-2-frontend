@@ -1,15 +1,42 @@
 import React, { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity } from 'lucide-react';
 import { useStore } from '../../store/useStore';
+import { useToast } from '../../context/ToastContext';
+import { io } from 'socket.io-client';
 
 const AdminLayout = () => {
     // GLOBAL STATE CONTROL (YouTube Style)
     // isDesktopSidebarOpen -> Controls Width (64 vs 0) on Desktop
     // isMobileSidebarOpen -> Controls Overlay on Mobile
     const { user, logout, isDesktopSidebarOpen, isMobileSidebarOpen, closeMobileSidebar } = useStore();
+    const { addToast } = useToast();
     const navigate = useNavigate();
     const location = useLocation();
+
+    // --- SOCKET.IO LISTENER ---
+    useEffect(() => {
+        const socket = io();
+
+        socket.on('connect', () => {
+            console.log("Connected to Socket.IO Server");
+        });
+
+        socket.on('new-order', (data) => {
+            addToast(`New Order: ₹${data.totalPrice} from ${data.user.firstName}`, "success");
+            // Optional: Refresh data if we are on Orders page?
+            // For now just notification is enough.
+        });
+
+        socket.on('new-review', (data) => {
+            addToast(`New Review (${data.rating}★) on ${data.productName}`, "info");
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [addToast]);
+    // --------------------------
 
     // CLOSE MOBILE DRAWER ON NAVIGATE
     useEffect(() => {
@@ -59,9 +86,14 @@ const AdminLayout = () => {
                         )}
 
                         {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
-                            <NavLink to="/admin/products" className={navClass}>
-                                <Package size={18} className="flex-shrink-0" /> Inventory
-                            </NavLink>
+                            <>
+                                <NavLink to="/admin/products" className={navClass}>
+                                    <Package size={18} className="flex-shrink-0" /> Inventory
+                                </NavLink>
+                                <NavLink to="/admin/products/bulk" className={navClass}>
+                                    <Edit3 size={18} className="flex-shrink-0" /> Bulk Editor
+                                </NavLink>
+                            </>
                         )}
 
                         {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_orders')) && (
@@ -90,6 +122,9 @@ const AdminLayout = () => {
                                 <NavLink to="/admin/marketing" className={navClass}>
                                     <Tag size={18} className="flex-shrink-0" /> Offers
                                 </NavLink>
+                                <NavLink to="/admin/blog" className={navClass}>
+                                    <FileText size={18} className="flex-shrink-0" /> Blog
+                                </NavLink>
                             </>
                         )}
 
@@ -108,6 +143,9 @@ const AdminLayout = () => {
                                 </NavLink>
                                 <NavLink to="/admin/settings" className={navClass}>
                                     <Settings size={18} className="flex-shrink-0" /> Settings
+                                </NavLink>
+                                <NavLink to="/admin/health" className={navClass}>
+                                    <Activity size={18} className="flex-shrink-0" /> System Health
                                 </NavLink>
                             </>
                         )}
@@ -174,9 +212,14 @@ const AdminLayout = () => {
                             )}
 
                             {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
-                                <NavLink to="/admin/products" className={navClass}>
-                                    <Package size={18} /> Inventory
-                                </NavLink>
+                                <>
+                                    <NavLink to="/admin/products" className={navClass}>
+                                        <Package size={18} /> Inventory
+                                    </NavLink>
+                                    <NavLink to="/admin/products/bulk" className={navClass}>
+                                        <Edit3 size={18} /> Bulk Editor
+                                    </NavLink>
+                                </>
                             )}
 
                             {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_orders')) && (
@@ -215,6 +258,9 @@ const AdminLayout = () => {
                                     </NavLink>
                                     <NavLink to="/admin/settings" className={navClass}>
                                         <Settings size={18} /> Settings
+                                    </NavLink>
+                                    <NavLink to="/admin/health" className={navClass}>
+                                        <Activity size={18} /> System Health
                                     </NavLink>
                                 </>
                             )}

@@ -14,7 +14,7 @@ const Reviews = () => {
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/products/reviews/all');
+                const { data } = await axios.get('/api/products/reviews/all');
                 setReviews(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error("Failed to fetch reviews", err);

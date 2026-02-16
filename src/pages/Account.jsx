@@ -12,7 +12,11 @@ import {
   ChevronRight,
   ShieldCheck,
   Star,
-  RotateCcw
+  RotateCcw,
+  MessageSquare,
+  Trophy,
+  Crown,
+  Info
 } from 'lucide-react';
 
 const Account = () => {
@@ -78,7 +82,10 @@ const Account = () => {
             onClick={() => navigate('/my-orders')}
           />
 
-          <div className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all">
+          <div
+            onClick={() => navigate('/account/loyalty-ledger')}
+            className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer"
+          >
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
               <Star size={100} fill="black" />
             </div>
@@ -100,11 +107,46 @@ const Account = () => {
             onClick={() => navigate('/wishlist')}
           />
 
+          {/* New "My Tickets" Card */}
           <AccountCard
-            icon={RotateCcw}
-            title="Returns & Exchanges"
-            subtext="Track your requests"
-            onClick={() => navigate('/my-returns')}
+            icon={MessageSquare}
+            title="My Tickets"
+            subtext="View and manage support requests"
+            onClick={() => navigate('/support-tickets')}
+          />
+
+          <div className={`rounded-xl p-6 text-white shadow-lg relative overflow-hidden group hover:shadow-xl transition-all ${user.membershipTier === 'Platinum' ? 'bg-zinc-900' :
+            user.membershipTier === 'Gold' ? 'bg-amber-600' :
+              user.membershipTier === 'Silver' ? 'bg-blue-600' : 'bg-green-600'
+            }`}>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <Crown size={100} fill="white" />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="bg-white/10 p-2 rounded-full"><Trophy size={20} fill="white" /></div>
+                <h3 className="font-black uppercase tracking-widest text-xs">{user.membershipTier || 'Bronze'} Member</h3>
+              </div>
+              <p className="text-4xl font-black mb-1">{user.membershipTier || 'Bronze'}</p>
+              <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Tier Status</p>
+
+              {/* Progress to next tier */}
+              <div className="mt-4">
+                <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
+                  <div className="bg-white h-full" style={{ width: `${Math.min(100, (user.totalSpent / 50000) * 100)}%` }}></div>
+                </div>
+                <p className="text-[9px] mt-2 font-bold uppercase tracking-widest opacity-60">
+                  {user.membershipTier === 'Platinum' ? 'Highest Tier Reached' : `₹${user.totalSpent?.toLocaleString() || 0} lifetime spend`}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <AccountCard
+            icon={Info}
+            title="Help Center"
+            subtext="FAQ & Support Hub"
+            onClick={() => navigate('/support')}
           />
 
           <AccountCard

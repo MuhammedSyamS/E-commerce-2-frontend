@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import axios from 'axios';
+import api from '../api/instance';
 
 export const useStore = create(
   persist(
@@ -57,8 +57,9 @@ export const useStore = create(
 
         // 2. Background Sync
         try {
-          const config = { headers: { Authorization: `Bearer ${state.user.token}` } };
-          const { data } = await axios.post('http://localhost:5000/api/wishlist', { productId }, config);
+          const { data } = await api.post('/wishlist', { productId }, {
+            headers: { Authorization: `Bearer ${state.user.token}` }
+          });
 
           // 3. Final Sync (Optional, keeps consistent with DB)
           set({ user: { ...get().user, wishlist: data } });
@@ -100,7 +101,7 @@ export const useStore = create(
         // 2. Backend Sync
         if (state.user?.token) {
           try {
-            await axios.post('http://localhost:5000/api/cart/add', {
+            await api.post('/cart/add', {
               productId: product._id,
               name: product.name,
               price: product.price,
@@ -131,13 +132,20 @@ export const useStore = create(
       flashSale: null,
       fetchFlashSale: async () => {
         try {
-          const { data } = await axios.get('http://localhost:5000/api/marketing/flash-sale');
+          const { data } = await api.get('/marketing/flash-sale');
           set({ flashSale: data });
         } catch (err) {
           console.error("Failed to fetch flash sale", err);
           set({ flashSale: null });
         }
       },
+
+      // GLOBAL SCALE STATE (Phase 11)
+      currency: 'INR',
+      currencyRates: { 'INR': 1, 'USD': 0.012, 'EUR': 0.011, 'GBP': 0.0093 },
+
+      setCurrency: (currency) => set({ currency }),
+      setCurrencyRates: (rates) => set({ currencyRates: rates }),
 
       logout: () => {
         set({ user: null, coupon: null, flashSale: null });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Price from '../components/Price';
 import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
@@ -25,7 +26,7 @@ const Orders = () => {
           }
         };
 
-        const res = await axios.get(`http://localhost:5000/api/orders/myorders?t=${Date.now()}`, config);
+        const res = await axios.get(`/api/orders/myorders?t=${Date.now()}`, config);
 
         const data = Array.isArray(res.data) ? res.data : (res.data.orders || []);
         setOrders(data);
@@ -120,7 +121,7 @@ const Orders = () => {
                   <div className="flex flex-col justify-between items-end gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-6 lg:pt-0 lg:pl-10">
                     <div className="text-right">
                       <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
-                      <p className="text-3xl font-black italic tracking-tighter transform -skew-x-3">₹{order.totalPrice?.toLocaleString()}</p>
+                      <Price amount={order.totalPrice} className="text-3xl font-black italic tracking-tighter transform -skew-x-3" />
                     </div>
 
                     <button

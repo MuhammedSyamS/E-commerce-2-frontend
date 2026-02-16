@@ -54,9 +54,50 @@ const AddProduct = () => {
         },
       };
 
-      await axios.post('http://localhost:5000/api/products', formData, config);
+      await axios.post('/api/products', formData, config);
       addToast('Product Published Successfully!', 'success');
       navigate('/admin/dashboard');
+    } catch (error) {
+      addToast(error.response?.data?.message || 'Failed to create product', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAndAddNext = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.token}`,
+        },
+      };
+
+      await axios.post('/api/products', formData, config);
+      addToast('Product Saved! Ready for next.', 'success');
+
+      // Reset Form but keep Category/Subcategory/Tags for speed
+      setFormData(prev => ({
+        ...prev,
+        name: '',
+        price: '',
+        discountPrice: '',
+        image: '',
+        images: [],
+        description: '',
+        specs: [],
+        countInStock: 0,
+        isBestSeller: false,
+        video: '',
+        variants: [],
+        seo: { metaTitle: '', metaDescription: '' }
+        // Keep category, subcategory, tags
+      }));
+      setNewImageUrl('');
+      window.scrollTo(0, 0);
+
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to create product', 'error');
     } finally {
@@ -78,6 +119,13 @@ const AddProduct = () => {
           <div className="flex gap-3">
             <button onClick={() => navigate('/admin/dashboard')} className="px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-zinc-400 hover:text-black">
               Cancel
+            </button>
+            <button
+              onClick={handleSaveAndAddNext}
+              disabled={loading}
+              className="hidden md:block bg-zinc-100 text-zinc-900 border border-zinc-200 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition disabled:opacity-50"
+            >
+              Save & Add Next
             </button>
             <button
               onClick={handleSubmit}
@@ -214,11 +262,11 @@ const AddProduct = () => {
                         setLoading(true);
 
                         try {
-                          const { data } = await axios.post('http://localhost:5000/api/upload', uploadData, {
+                          const { data } = await axios.post('/api/upload', uploadData, {
                             headers: { 'Content-Type': 'multipart/form-data' }
                           });
                           // Prepend server URL for consistency
-                          const fullUrl = `http://localhost:5000${data.filePath}`;
+                          const fullUrl = `${data.filePath}`;
                           setFormData(prev => ({ ...prev, video: fullUrl }));
                           addToast("Video uploaded successfully", "success");
                         } catch (err) {

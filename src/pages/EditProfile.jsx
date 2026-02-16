@@ -42,7 +42,7 @@ const EditProfile = () => {
         lastName: formData.lastName,
       };
 
-      const { data } = await axios.put('http://localhost:5000/api/users/profile', updateData, config);
+      const { data } = await axios.put('/api/users/profile', updateData, config);
 
       // Update Global Store
       setUser({ ...data, token: user.token }); // Maintain token

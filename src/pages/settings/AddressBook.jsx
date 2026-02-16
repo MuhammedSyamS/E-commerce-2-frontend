@@ -35,7 +35,7 @@ const AddressBook = () => {
 
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/users/addresses', formData, config);
+      const { data } = await axios.post('/api/users/addresses', formData, config);
 
       // Update local and store
       setAddresses(data);
@@ -55,7 +55,7 @@ const AddressBook = () => {
     if (!window.confirm("Delete this address?")) return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.delete(`http://localhost:5000/api/users/addresses/${id}`, config);
+      const { data } = await axios.delete(`/api/users/addresses/${id}`, config);
       setAddresses(data);
       setUser({ ...user, addresses: data });
     } catch (err) {

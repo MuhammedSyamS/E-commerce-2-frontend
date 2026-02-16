@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ChevronLeft, ChevronRight, Heart, Shield, Bell, Info } from 'lucide-react';
+import {
+  Search, Heart, Bell, User, ShoppingBag, Menu, X,
+  ChevronLeft, ChevronRight, Shield,
+  BadgePercent, Info
+} from 'lucide-react';
 import { useStore } from '../store/useStore';
-import axios from 'axios'; // We need axios directly for fetch
+import api from '../api/instance';
+import Price from './Price'; // Assuming Price component exists or needs to be handled
 
 const Navbar = () => {
-  const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar } = useStore();
+  const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates } = useStore();
 
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
@@ -17,9 +22,32 @@ const Navbar = () => {
   const location = useLocation();
   const searchInputRef = React.useRef(null);
 
+  // SEARCH SUGGESTIONS
+  const [suggestions, setSuggestions] = useState([]);
+  const [searchTimer, setSearchTimer] = useState(null);
+
+  const handleSearchInput = (val) => {
+    if (searchTimer) clearTimeout(searchTimer);
+    if (!val) {
+      setSuggestions([]);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        const { data } = await api.get(`/products/search?keyword=${val}`);
+        setSuggestions(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }, 300); // 300ms debounce
+    setSearchTimer(timer);
+  };
+
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   // ... (existing code)
+
 
   // SEARCH OVERLAY
 
@@ -45,7 +73,7 @@ const Navbar = () => {
     if (!user?.token) return;
     try {
       const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get(`http://localhost:5000/api/users/notifications?t=${Date.now()}`, config);
+      const { data } = await api.get(`/users/notifications?t=${Date.now()}`, config);
       setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Notif Fetch Fail");
@@ -65,7 +93,7 @@ const Navbar = () => {
     if (!notif.isRead) {
       try {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await axios.put(`http://localhost:5000/api/users/notifications/${notif._id}/read`, {}, config);
+        await api.put(`/users/notifications/${notif._id}/read`, {}, config);
         setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
       } catch (err) { }
     }
@@ -246,8 +274,8 @@ const Navbar = () => {
                             >
                               {!n.isRead && <div className="absolute right-4 top-4 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
                               <div className="flex gap-4">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.type === 'promo' ? 'bg-purple-100 text-purple-600' : (n.type === 'order' ? 'bg-zinc-100 text-black' : 'bg-blue-50 text-blue-600')}`}>
-                                  {n.type === 'order' ? <ShoppingBag size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />)}
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.type === 'promo' ? 'bg-amber-100 text-amber-600' : (n.type === 'order' ? 'bg-zinc-100 text-black' : 'bg-blue-50 text-blue-600')}`}>
+                                  {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
                                 </div>
                                 <div className="flex-1">
                                   <p className="text-[11px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
@@ -319,7 +347,13 @@ const Navbar = () => {
                         Wishlist
                       </Link>
                       <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
-                        Settings
+                      </Link>
+                      <Link
+                        to="/support"
+                        onClick={() => setIsProfileOpen(false)}
+                        className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black hover:pl-2 transition-all mt-3"
+                      >
+                        Support Hub
                       </Link>
                     </div>
 
@@ -332,7 +366,6 @@ const Navbar = () => {
                         Log Out
                       </button>
                     </div>
-
                   </div>
                 </div>
               </div>
@@ -341,6 +374,8 @@ const Navbar = () => {
                 <User className="w-5 h-5 text-white hover:text-zinc-400 transition" />
               </Link>
             )}
+
+            {/* GLOBAL HUB REMOVED */}
 
             <div className="relative cursor-pointer group" onClick={toggleCart}>
               <ShoppingBag className="w-5 h-5 text-white transition group-hover:scale-110" />
@@ -359,26 +394,57 @@ const Navbar = () => {
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">New Arrivals</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">Best Sellers</button>
             <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4">Shop All</Link>
+            <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 italic">Support Hub</Link>
           </div>
         )}
 
         {/* SEARCH OVERLAY */}
         {isSearchOpen && (
-          <div className="absolute top-0 left-0 w-full h-20 bg-white text-black rounded-2xl flex items-center px-8 z-[200] shadow-2xl animate-in slide-in-from-top duration-300">
-            <Search className="text-zinc-400 w-5 h-5" />
-            <input
-              autoFocus
-              type="text"
-              placeholder="SEARCH SLOOK..."
-              className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  toggleSearch();
-                  navigate(`/shop?keyword=${e.target.value}`);
-                }
-              }}
-            />
-            <button onClick={toggleSearch}><X className="w-5 h-5 text-black" /></button>
+          <div className="absolute top-0 left-0 w-full bg-white text-black rounded-b-2xl flex flex-col z-[200] shadow-2xl animate-in slide-in-from-top duration-300">
+            <div className="flex items-center px-8 h-20 w-full relative">
+              <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
+              <input
+                autoFocus
+                type="text"
+                placeholder="SEARCH SLOOK..."
+                className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest h-full"
+                onChange={(e) => handleSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    toggleSearch();
+                    navigate(`/shop?keyword=${e.target.value}`);
+                  }
+                }}
+              />
+              <button onClick={toggleSearch}><X className="w-5 h-5 text-black flex-shrink-0" /></button>
+            </div>
+
+            {suggestions.length > 0 && (
+              <div className="border-t border-zinc-100 max-h-[60vh] overflow-y-auto">
+                {suggestions.map((p) => (
+                  <div
+                    key={p._id}
+                    onClick={() => {
+                      toggleSearch();
+                      navigate(`/product/${p.slug}`);
+                    }}
+                    className="flex items-center gap-4 p-4 hover:bg-zinc-50 cursor-pointer transition border-b border-zinc-50 last:border-0"
+                  >
+                    <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded-md bg-zinc-100" />
+                    <div>
+                      <h4 className="text-[10px] font-black uppercase tracking-widest text-black">{p.name}</h4>
+                      <Price amount={p.price} className="text-[10px] text-zinc-500 font-bold" />
+                    </div>
+                  </div>
+                ))}
+                <div
+                  onClick={() => toggleSearch()}
+                  className="p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black cursor-pointer"
+                >
+                  Press Enter to see all results
+                </div>
+              </div>
+            )}
           </div>
         )}
       </nav>

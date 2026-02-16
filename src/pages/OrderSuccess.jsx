@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 const OrderSuccess = () => {
   const { state } = useLocation(); // Get passed state
@@ -22,12 +22,26 @@ const OrderSuccess = () => {
           Thank you for your purchase. We have received your order and will begin processing it shortly.
         </p>
 
-        <div className="bg-zinc-50 p-6 rounded-2xl mb-10 border border-zinc-200 inline-block w-full">
+        <div className="bg-zinc-50 p-6 rounded-2xl mb-6 border border-zinc-200 inline-block w-full">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Order Reference</p>
           <p className="text-xl md:text-2xl font-black font-mono tracking-widest select-all text-zinc-800">
             #{orderId.slice(-8).toUpperCase()}
           </p>
           <p className="text-[10px] text-zinc-400 mt-1 font-mono">{orderId}</p>
+        </div>
+
+        {/* IMPORTANT UNBOXING NOTICE */}
+        <div className="bg-orange-50 border border-orange-100 rounded-3xl p-6 mb-10 text-left flex gap-4">
+          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0 text-orange-600">
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-700 mb-1">Important: Return Policy</h4>
+            <p className="text-[11px] font-medium text-orange-800 leading-relaxed uppercase tracking-tight">
+              Please record an <strong>Unboxing Video</strong> and take pictures when your package arrives.
+              Returns and exchanges will <strong>ONLY</strong> be accepted with valid video proof.
+            </p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

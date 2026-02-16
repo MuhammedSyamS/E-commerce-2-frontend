@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2 } from 'lucide-react'; // Added Trash2
+import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart } from 'lucide-react'; // Added Trash2, Heart
 
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import Price from './Price';
 
 const CartDrawer = () => {
   const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon } = useStore();
@@ -13,15 +14,25 @@ const CartDrawer = () => {
   const scrollRef = useRef(null);
 
   const [couponCode, setCouponCode] = useState('');
-  const [allProducts, setAllProducts] = useState([]);
-  const [suggestions, setSuggestions] = useState([]); // Fix ReferenceError
+  const [suggestions, setSuggestions] = useState([]);
+
+  const scroll = (direction) => {
+    if (scrollRef.current) {
+      const { current } = scrollRef;
+      if (direction === 'left') {
+        current.scrollBy({ left: -200, behavior: 'smooth' });
+      } else {
+        current.scrollBy({ left: 200, behavior: 'smooth' });
+      }
+    }
+  };
 
   // Fetch Suggestions
   useEffect(() => {
     if (isCartOpen) {
       const fetchSuggestions = async () => {
         try {
-          const { data } = await axios.get('http://localhost:5000/api/products');
+          const { data } = await axios.get('/api/products');
           // Shuffle and pick 4
           const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 5);
           setSuggestions(shuffled);
@@ -51,13 +62,13 @@ const CartDrawer = () => {
     // 2. Backend Sync
     try {
       if (change > 0) {
-        await axios.post('http://localhost:5000/api/cart/add', {
+        await axios.post('/api/cart/add', {
           productId,
           quantity: 1, // Add 1
           selectedVariant: variant
         }, { headers: { Authorization: `Bearer ${user.token}` } });
       } else {
-        await axios.post('http://localhost:5000/api/cart/decrease', {
+        await axios.post('/api/cart/decrease', {
           productId,
           selectedVariant: variant
         }, { headers: { Authorization: `Bearer ${user.token}` } });
@@ -78,7 +89,7 @@ const CartDrawer = () => {
 
     // 2. Backend Sync
     try {
-      await axios.post('http://localhost:5000/api/cart/remove', {
+      await axios.post('/api/cart/remove', {
         productId,
         selectedVariant: variant,
         _id: itemId // Send Cart Item ID
@@ -87,6 +98,32 @@ const CartDrawer = () => {
     } catch (err) {
       console.error("Remove failed:", err);
       addToast("Failed to sync cart", "error");
+    }
+  };
+
+  const handleSaveForLater = async (itemId) => {
+    try {
+      const { data } = await axios.post('/api/cart/save-for-later', { _id: itemId }, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setUser({ ...user, cart: data.cart, savedForLater: data.savedForLater });
+      addToast("Saved for later", "success");
+    } catch (err) {
+      console.error(err);
+      addToast("Failed to save item", "error");
+    }
+  };
+
+  const handleMoveToCart = async (itemId) => {
+    try {
+      const { data } = await axios.post('/api/cart/move-to-cart', { _id: itemId }, {
+        headers: { Authorization: `Bearer ${user.token}` }
+      });
+      setUser({ ...user, cart: data.cart, savedForLater: data.savedForLater });
+      addToast("Moved to cart", "success");
+    } catch (err) {
+      console.error(err);
+      addToast("Failed to move item", "error");
     }
   };
 
@@ -119,7 +156,7 @@ const CartDrawer = () => {
   const handleApplyCoupon = async () => {
     if (!couponCode) return;
     try {
-      const { data } = await axios.post('http://localhost:5000/api/marketing/verify-coupon', {
+      const { data } = await axios.post('/api/marketing/verify-coupon', {
         code: couponCode,
         cartTotal: subtotal,
         userId: user?._id || user?.id
@@ -175,7 +212,7 @@ const CartDrawer = () => {
                             {item.selectedVariant.color}
                           </p>
                         )}
-                        <p className="font-black text-[11px] italic transform -skew-x-6">₹{Number(item.price || 0).toLocaleString()}</p>
+                        <Price amount={item.price} className="font-black text-[11px] italic transform -skew-x-6" />
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
@@ -183,6 +220,13 @@ const CartDrawer = () => {
                           <span className="w-8 text-center text-[11px] font-black">{item.quantity}</span>
                           <button onClick={() => updateQty(item.product, item.quantity, 1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
                         </div>
+                        <button
+                          onClick={() => handleSaveForLater(item._id)}
+                          className="p-2 text-zinc-300 hover:text-black transition-colors"
+                          title="Save for Later"
+                        >
+                          <Heart size={14} />
+                        </button>
                         <button
                           onClick={() => removeItem(item.product, item.selectedVariant, item._id)}
                           className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
@@ -211,7 +255,7 @@ const CartDrawer = () => {
                 {appliedCoupon ? (
                   <div className="p-3 bg-green-50 border border-green-100 rounded-xl flex justify-between items-center">
                     <span className="text-[10px] font-black uppercase text-green-700">{appliedCoupon?.code} Applied</span>
-                    <span className="text-[10px] font-bold text-green-600">-₹{(appliedCoupon?.discount || 0).toLocaleString()}</span>
+                    <Price amount={appliedCoupon?.discount || 0} className="text-[10px] font-bold text-green-600" />
                   </div>
                 ) : (
                   <div className="flex gap-2">
@@ -232,54 +276,89 @@ const CartDrawer = () => {
                 )}
               </div>
 
-              {/* SUGGESTIONS - EFFECT REMOVED */}
+              {/* SUGGESTIONS - SMART RECOMMENDATIONS */}
               {suggestions.length > 0 && (
-                <div className="space-y-4 relative pt-2">
+                <div className="space-y-4 relative pt-4 pb-2 border-t border-zinc-100">
                   <div className="flex items-center justify-between ml-1 pr-1">
-                    <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Complete Your Curation</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">You Might Also Like</p>
                     <div className="flex gap-2">
-                      <button onClick={() => scroll('left')} className="p-1 bg-white border border-zinc-200 rounded-full hover:bg-black hover:text-white transition shadow-sm">
-                        <ChevronLeft size={12} />
+                      {/* Navigation Controls */}
+                      <button onClick={() => scroll('left')} className="p-1.5 bg-white border border-zinc-200 rounded-full hover:bg-black hover:text-white hover:border-black transition shadow-sm">
+                        <ChevronLeft size={10} />
                       </button>
-                      <button onClick={() => scroll('right')} className="p-1 bg-white border border-zinc-200 rounded-full hover:bg-black hover:text-white transition shadow-sm">
-                        <ChevronRight size={12} />
+                      <button onClick={() => scroll('right')} className="p-1.5 bg-white border border-zinc-200 rounded-full hover:bg-black hover:text-white hover:border-black transition shadow-sm">
+                        <ChevronRight size={10} />
                       </button>
                     </div>
                   </div>
 
                   <div
                     ref={scrollRef}
-                    className="flex gap-4 overflow-x-auto no-scrollbar pb-4"
+                    className="flex gap-4 overflow-x-auto no-scrollbar pb-2 px-1 snap-x"
                   >
-                    {suggestions.map(sug => (
-                      <div
-                        key={sug._id}
-                        className="min-w-[140px] bg-white p-3 rounded-2xl border border-zinc-50 shadow-sm cursor-pointer hover:border-black transition-all group"
-                        onClick={() => { navigate(`/product/${sug.slug || sug._id}`); toggleCart(false); }}
-                      >
-                        <div className="aspect-[4/5] bg-[#f8f8f8] rounded-xl overflow-hidden mb-3 relative">
-                          {/* REMOVED: grayscale and group-hover:grayscale-0 */}
-                          <img
-                            src={sug.image}
-                            className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
-                            alt={sug.name}
-                          />
-                          <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Plus className="text-white bg-black rounded-full p-1" size={20} />
+                    {suggestions
+                      .filter(s => !cartItems.some(c => c.product === s._id || c._id === s._id)) // Filter out already in cart
+                      .map(sug => (
+                        <div
+                          key={sug._id}
+                          className="min-w-[130px] snap-center bg-white p-3 rounded-2xl border border-zinc-100 shadow-sm cursor-pointer hover:border-zinc-300 transition-all group relative"
+                          onClick={() => { navigate(`/product/${sug.slug || sug._id}`); toggleCart(false); }}
+                        >
+                          <div className="aspect-[3/4] bg-zinc-50 rounded-xl overflow-hidden mb-3 relative">
+                            <img
+                              src={sug.image}
+                              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                              alt={sug.name}
+                            />
+                            <div className="absolute bottom-2 right-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                              <div className="bg-black text-white p-1.5 rounded-full shadow-lg">
+                                <Plus size={14} />
+                              </div>
+                            </div>
                           </div>
+                          <p className="text-[9px] font-black uppercase truncate text-zinc-600 group-hover:text-black transition-colors">{sug.name}</p>
+                          <Price amount={sug.price} className="text-[10px] font-bold mt-0.5 text-zinc-900" />
                         </div>
-                        <p className="text-[9px] font-black uppercase truncate text-zinc-500 group-hover:text-black transition-colors">{sug.name}</p>
-                        <p className="text-[10px] font-black mt-1 italic">₹{sug.price.toLocaleString()}</p>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </div>
               )}
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-50">
-              <ShoppingBag size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Curate your first piece</p>
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
+              <div className="bg-zinc-50 p-4 rounded-full mb-2">
+                <ShoppingBag size={32} strokeWidth={1.5} className="text-zinc-300" />
+              </div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Your Cart is Empty</p>
+              <button
+                onClick={() => { toggleCart(false); navigate('/shop'); }}
+                className="text-xs font-bold underline underline-offset-4 decoration-zinc-300 hover:decoration-black hover:text-black transition-all"
+              >
+                Start Curating
+              </button>
+            </div>
+          )}
+
+          {/* SAVED FOR LATER SECTION */}
+          {user?.savedForLater?.length > 0 && (
+            <div className="space-y-4 pt-4 border-t border-zinc-100">
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Saved for Later</h3>
+              {user.savedForLater.map(item => (
+                <div key={item._id} className="bg-zinc-50 p-3 rounded-xl flex gap-3 opacity-75 hover:opacity-100 transition">
+                  <div className="w-12 h-16 rounded-lg overflow-hidden bg-white flex-shrink-0">
+                    <img src={item.image} className="w-full h-full object-cover" alt={item.name} />
+                  </div>
+                  <div className="flex-1 flex justify-between items-center">
+                    <div>
+                      <p className="font-black text-[10px] uppercase text-zinc-600">{item.name}</p>
+                      <Price amount={item.price} className="text-[10px] font-bold text-zinc-400" />
+                    </div>
+                    <button onClick={() => handleMoveToCart(item._id)} className="text-[9px] font-black uppercase bg-white px-3 py-2 rounded-lg border border-zinc-200 hover:border-black shadow-sm">
+                      Move to Cart
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -287,29 +366,48 @@ const CartDrawer = () => {
         {/* Footer Summary */}
         {cartItems.length > 0 && (
           <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
+
+            {/* LOYALTY EARNINGS */}
+            {user && (
+              <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
+                  <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
+                    Earn {Math.floor(total / 100)} Coins
+                  </span>
+                </div>
+                <span className="text-[9px] font-bold text-amber-900">
+                  Balance: {user.loyaltyPoints || 0}
+                </span>
+              </div>
+            )}
+
             <div className="space-y-3">
               <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
                 <span>Subtotal</span>
-                <span>₹{subtotal.toLocaleString()}</span>
+                <Price amount={subtotal} />
               </div>
 
               {discount > 0 && (
                 <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
                   <span>Studio Discount</span>
-                  <span>-₹{discount.toLocaleString()}</span>
+                  <Price amount={discount} />
                 </div>
               )}
 
-              <div className="flex justify-between text-2xl font-black uppercase italic transform -skew-x-3 pt-2">
-                <span>Total</span>
-                <span>₹{total.toLocaleString()}</span>
+              <div className="flex justify-between items-end pt-2">
+                <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
+                <div className="text-right">
+                  <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
+                  <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
+                </div>
               </div>
             </div>
             <button
               onClick={() => { toggleCart(false); navigate('/checkout'); }}
-              className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10"
+              className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
             >
-              <span>Secure <span className="text-red-500">Checkout</span></span> <ChevronRight size={16} />
+              <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         )}

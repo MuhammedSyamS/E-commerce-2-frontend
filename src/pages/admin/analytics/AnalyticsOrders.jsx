@@ -19,7 +19,7 @@ const AnalyticsOrders = () => {
             setLoading(true);
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`http://localhost:5000/api/orders/admin/stats`, config);
+                const { data } = await axios.get(`/api/orders/admin/stats`, config);
                 setStats(data);
                 setLoading(false);
             } catch (error) {
@@ -36,11 +36,45 @@ const AnalyticsOrders = () => {
 
     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
+    const downloadCSV = () => {
+        if (!stats || !stats.recentOrders) return;
+
+        const headers = ["Order ID", "Date", "Customer", "Total", "Status", "Payment"];
+        const rows = stats.recentOrders.map(order => [
+            order._id,
+            new Date(order.createdAt).toLocaleDateString(),
+            order.user?.firstName || 'Guest',
+            order.totalPrice,
+            order.isDelivered ? 'Delivered' : 'Pending',
+            order.isPaid ? 'Paid' : 'Unpaid'
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(e => e.join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">
-            <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black mb-4">
-                <ArrowLeft size={16} /> Back to Dashboard
-            </button>
+            <div className="flex justify-between items-center mb-4">
+                <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black">
+                    <ArrowLeft size={16} /> Back to Dashboard
+                </button>
+                <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 transition">
+                    <Package size={16} /> Export CSV
+                </button>
+            </div>
 
             <div className="flex justify-between items-end">
                 <div>

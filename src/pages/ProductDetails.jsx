@@ -1,25 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import {
   Star, ShoppingBag, Minus, Plus, Heart, Camera, X, Trash2,
-  Loader2, ChevronRight, ChevronLeft, Zap, BadgePercent, Gift, ShieldCheck, RotateCcw
+  Loader2, ChevronRight, ChevronLeft, Zap, BadgePercent, Gift, ShieldCheck, RotateCcw,
+  BellRing, Calendar, Truck as LucideTruck
 } from 'lucide-react';
+import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
+import Price from '../components/Price';
+import SocialShare from '../components/SocialShare';
+import api from '../api/instance';
+import NotifyMeModal from '../components/NotifyMeModal';
 
 const ProductDetails = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, setUser, addToCart, toggleWishlist } = useStore();
+  const { user, addToCart, toggleWishlist } = useStore();
   const { addToast } = useToast();
 
   const [product, setProduct] = useState(null);
-  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
+  const [suggestions, setSuggestions] = useState([]);
   const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('story');
   const [selectedVariant, setSelectedVariant] = useState(null);
@@ -29,6 +34,10 @@ const ProductDetails = () => {
   const [submitting, setSubmitting] = useState(false);
   const [selectedReview, setSelectedReview] = useState(null);
   const [sortOption, setSortOption] = useState('newest');
+  const [siteSettings, setSiteSettings] = useState(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
+  const [showWaitlistModal, setShowWaitlistModal] = useState(false);
 
   const reviewsRef = useRef(null);
 
@@ -138,28 +147,30 @@ const ProductDetails = () => {
     setReviewVideos(prev => prev.filter((_, i) => i !== index));
   };
 
-  const [suggestions, setSuggestions] = useState([]);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await axios.get(`http://localhost:5000/api/products/${slug}`);
+        const { data } = await api.get(`/products/${slug}`);
         setProduct(data);
 
         // Record View (AI)
         if (user && data._id) {
-          axios.post('http://localhost:5000/api/users/history',
+          api.post('/users/history',
             { productId: data._id },
             { headers: { Authorization: `Bearer ${user.token}` } }
           ).catch(err => console.error("Tracking Error:", err));
         }
 
-        // Fetch AI Recommendations
-        const recRes = await axios.get('http://localhost:5000/api/products/recommendations', {
+        // Fetch AI Recommendations (Contextual)
+        const recRes = await api.get(`/products/recommendations?category=${data.category}&exclude=${data._id}`, {
           headers: user ? { Authorization: `Bearer ${user.token}` } : {}
         });
         setSuggestions(recRes.data || []);
+
+        // Fetch Site Settings for Shipping Days
+        const settingsRes = await api.get('/settings');
+        setSiteSettings(settingsRes.data);
 
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -207,7 +218,7 @@ const ProductDetails = () => {
     if (!comment.trim()) return addToast("Please add a comment", "error");
     setSubmitting(true);
     try {
-      await axios.post(`http://localhost:5000/api/products/${product._id}/reviews`,
+      await api.post(`/products/${product._id}/reviews`,
         { rating: ratingInput, comment, images: reviewImages, videos: reviewVideos },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
@@ -221,7 +232,7 @@ const ProductDetails = () => {
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
-      await axios.delete(`http://localhost:5000/api/products/${product._id}/reviews/${reviewId}`, {
+      await api.delete(`/products/${product._id}/reviews/${reviewId}`, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       addToast("Review deleted", "success");
@@ -231,9 +242,41 @@ const ProductDetails = () => {
     }
   };
 
+
+
   if (loading) return (
-    <div className="h-screen flex items-center justify-center bg-white">
-      <Loader2 className="animate-spin text-zinc-900" size={32} />
+    <div className="bg-white min-h-screen pt-40 lg:pt-56 pb-20 px-4 md:px-10">
+      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        {/* Gallery Skeleton */}
+        <div className="flex flex-col-reverse lg:flex-row gap-3">
+          <div className="flex lg:flex-col gap-2">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="w-12 h-16 rounded-xl" />)}
+          </div>
+          <Skeleton className="flex-1 aspect-[4/5] rounded-[2.5rem]" />
+        </div>
+
+        {/* Info Skeleton */}
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <Skeleton className="w-24 h-6 rounded-full" />
+            <Skeleton className="w-3/4 h-10" />
+            <Skeleton className="w-1/4 h-8" />
+          </div>
+          <div className="space-y-3 py-4">
+            <Skeleton className="w-20 h-4" />
+            <div className="flex gap-2">
+              {[...Array(3)].map((_, i) => <Skeleton key={i} className="w-16 h-8 rounded-xl" />)}
+            </div>
+          </div>
+          <div className="space-y-3">
+            <div className="flex gap-3">
+              <Skeleton className="w-32 h-[48px] rounded-full" />
+              <Skeleton className="flex-1 h-[48px] rounded-full" />
+            </div>
+            <Skeleton className="w-full h-[48px] rounded-full" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -256,12 +299,40 @@ const ProductDetails = () => {
     ...(product.video ? [{ type: 'video', url: product.video }] : [])
   ];
 
-  // REMOVED SHADOWED VARIABLE 'suggestions'
+  const getDeliveryDateRange = () => {
+    if (!siteSettings?.shippingDays) return "4-7 Business Days";
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(today.getDate() + (siteSettings.shippingDays.min || 4));
+    const maxDate = new Date(today);
+    maxDate.setDate(today.getDate() + (siteSettings.shippingDays.max || 7));
+
+    return `${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+  };
+
+  const handleWaitlistSubmit = async (e) => {
+    e.preventDefault();
+    if (!waitlistEmail) return addToast("Email required", "error");
+    setWaitlistLoading(true);
+    try {
+      await api.post('/products/waitlist', {
+        email: waitlistEmail,
+        productId: product._id,
+        variant: selectedVariant
+      });
+      addToast("We'll notify you!", "success");
+    } catch (err) {
+      console.error("Waitlist error:", err);
+      addToast("Failed to join waitlist", "error");
+    } finally {
+      setWaitlistLoading(false);
+    }
+  };
 
   const handleHelpfulVote = async (reviewId) => {
     if (!user) return addToast("Please login to vote", "error");
     try {
-      const { data } = await axios.put(`http://localhost:5000/api/products/${product._id}/reviews/${reviewId}/helpful`, {}, {
+      const { data } = await api.put(`/products/${product._id}/reviews/${reviewId}/helpful`, {}, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       // Optimistic Update
@@ -277,8 +348,8 @@ const ProductDetails = () => {
         return r;
       });
       setProduct({ ...product, reviews: updatedReviews });
-      addToast(data.isHelpful ? "Marked as helpful" : "Vote removed", "success");
     } catch (err) {
+      console.error("Vote error:", err);
       addToast("Failed to vote", "error");
     }
   };
@@ -309,10 +380,11 @@ const ProductDetails = () => {
   return (
     <div className="bg-white min-h-screen pt-40 lg:pt-56 pb-20 px-4 md:px-10">
       <Helmet>
-        <title>{product ? `${product.name} | SLOOK` : 'Product Details | SLOOK'}</title>
-        <meta name="description" content={product?.description || "Shop the finest curated goods at SLOOK."} />
-        <meta property="og:title" content={product?.name} />
-        <meta property="og:description" content={product?.description} />
+        <title>{product?.seo?.metaTitle || `${product?.name} | SLOOK`}</title>
+        <meta name="description" content={product?.seo?.metaDescription || product?.description || "Shop the finest curated goods at SLOOK."} />
+        <meta name="keywords" content={product?.seo?.keywords?.join(', ') || product?.tags?.join(', ')} />
+        <meta property="og:title" content={product?.seo?.metaTitle || product?.name} />
+        <meta property="og:description" content={product?.seo?.metaDescription || product?.description} />
         <meta property="og:image" content={product?.image} />
         <meta property="og:url" content={window.location.href} />
         <meta name="twitter:card" content="summary_large_image" />
@@ -454,6 +526,14 @@ const ProductDetails = () => {
         </div>
       )}
 
+      {/* --- ELITE RESTOCK NOTIFICATION MODAL --- */}
+      <NotifyMeModal
+        isOpen={showWaitlistModal}
+        onClose={() => setShowWaitlistModal(false)}
+        product={product}
+        variant={selectedVariant}
+      />
+
       <div className="max-w-5xl mx-auto">
         {/* ... (Existing Product Header/Gallery) ... */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
@@ -517,6 +597,7 @@ const ProductDetails = () => {
           </div>
 
           <div className="space-y-6 pt-2 lg:pt-0">
+            <SocialShare url={window.location.href} title={product.name} />
             <div className="space-y-2">
               <div className="flex flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-red-600 font-black text-[9px] uppercase tracking-widest">
@@ -533,10 +614,10 @@ const ProductDetails = () => {
                   </div>
                 )}
               </div>
-              <h1 className="text-2xl lg:text-3xl font-black uppercase italic tracking-tighter leading-none">{product.name}</h1>
+              <h1 className="text-2xl lg:text-3xl font-black uppercase italic tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
               <div className="flex items-baseline gap-4 pt-1">
-                <span className="text-2xl lg:text-3xl font-black italic">₹{currentPrice?.toLocaleString()}</span>
-                <span className="text-base lg:text-lg text-zinc-300 line-through font-bold">₹{((currentPrice || 0) * 1.25).toLocaleString()}</span>
+                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black italic" />
+                <Price amount={(currentPrice || 0) * 1.25} className="text-base lg:text-lg text-zinc-300 line-through font-bold" />
               </div>
 
               {/* Star Rating Display */}
@@ -548,7 +629,6 @@ const ProductDetails = () => {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      size={16}
                       className={i < Math.round(product.rating || 0) ? "fill-black text-black" : "text-zinc-200"}
                     />
                   ))}
@@ -583,7 +663,23 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <div id="reviews-section" className="border-y border-zinc-100">
+            {/* DELIVERY ESTIMATE BAR */}
+            <div className="flex items-center gap-3 py-4 border-y border-dashed border-zinc-100">
+              <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-400">
+                <LucideTruck size={18} strokeWidth={1.5} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
+                  <span className="text-[9px] font-bold text-green-600 uppercase bg-green-50 px-2 py-0.5 rounded">Fastest</span>
+                </div>
+                <p className="text-[11px] font-bold text-zinc-500 mt-0.5">
+                  {getDeliveryDateRange() || "Loading..."}
+                </p>
+              </div>
+            </div>
+
+            <div id="reviews-section" className="border-b border-zinc-100">
               <div className="flex gap-6">
                 {['story', 'specs'].map(t => (
                   <button key={t} onClick={() => setActiveTab(t)} className={`py-3 text-[9px] font-black uppercase tracking-widest border-b ${activeTab === t ? 'border-black text-black' : 'border-transparent text-zinc-400'}`}>{t}</button>
@@ -628,8 +724,19 @@ const ProductDetails = () => {
                   </button>
                 </>
               ) : (
-                <div className="w-full h-[48px] bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center font-black uppercase tracking-widest text-[10px] cursor-not-allowed">
-                  Out of Stock
+                <div className="space-y-3">
+                  <div className="w-full h-[48px] bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center font-black uppercase tracking-widest text-[10px] cursor-not-allowed">
+                    Currently Selected Variant is Out of Stock
+                  </div>
+                  <button
+                    onClick={() => {
+                      setWaitlistEmail(user?.email || "");
+                      setShowWaitlistModal(true);
+                    }}
+                    className="w-full h-[48px] bg-black text-white rounded-full flex items-center justify-center gap-2 font-black uppercase tracking-widest text-[10px] hover:bg-zinc-900 transition-all active:scale-95"
+                  >
+                    <BellRing size={16} /> Notify Me on Restock
+                  </button>
                 </div>
               )}
             </div>
@@ -861,30 +968,29 @@ const ProductDetails = () => {
 
 
 
-        {
-          suggestions.length > 0 && (
-            <div className="mt-20 pt-10 border-t border-zinc-100">
-              <h2 className="text-xs font-black uppercase italic mb-8 tracking-widest text-zinc-300 text-center">You Might Also Like</h2>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-                {suggestions.map((item) => (
-                  <Link key={item._id} to={`/product/${item.slug}`} className="group text-left space-y-2 block">
-                    <div className="aspect-[4/5] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-50 transition-transform group-hover:scale-95 relative">
-                      {item.isBestSeller && (
-                        <span className="absolute top-2 left-2 bg-amber-400 text-black text-[8px] font-black uppercase px-2 py-1 rounded-full z-10">Best Seller</span>
-                      )}
-                      <img src={item.image} className="w-full h-full object-cover" alt="" loading="lazy" />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-[10px] font-black uppercase truncate text-zinc-900">{item.name}</p>
-                      <p className="text-[11px] font-bold italic text-zinc-500">₹{item.price?.toLocaleString()}</p>
-                    </div>
-                  </Link>
-                ))}
-              </div>
+        {suggestions && suggestions.length > 0 && (
+          <div className="mt-20 pt-10 border-t border-zinc-100">
+            <h2 className="text-xs font-black uppercase italic mb-8 tracking-widest text-zinc-300 text-center">You Might Also Like</h2>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {suggestions.map((item) => (
+                <Link key={item._id} to={`/product/${item.slug}`} className="group text-left space-y-2 block">
+                  <div className="aspect-[4/5] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-50 transition-transform group-hover:scale-95 relative">
+                    {item.isBestSeller && (
+                      <span className="absolute top-2 left-2 bg-amber-400 text-black text-[8px] font-black uppercase px-2 py-1 rounded-full z-10">Best Seller</span>
+                    )}
+                    <img src={item.image} className="w-full h-full object-cover" alt="" loading="lazy" />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] font-black uppercase truncate text-zinc-900">{item.name}</p>
+                    <Price amount={item.price} className="text-[11px] font-bold italic text-zinc-500" />
+                  </div>
+                </Link>
+              ))}
             </div>
-          )
+          </div>
+        )
         }
-      </div >
+      </div>
     </div >
   );
 };

@@ -10,6 +10,9 @@ const AdminUsers = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const [pages, setPages] = useState(1);
+    const [total, setTotal] = useState(0);
 
     // PERMISSIONS EDITOR STATE
     const [editingPermissions, setEditingPermissions] = useState(null); // User ID
@@ -24,14 +27,20 @@ const AdminUsers = () => {
     ];
 
     useEffect(() => {
-        if (user?.token) fetchUsers();
-    }, [user?.token]);
+        if (user?.token) fetchUsers(1, searchTerm);
+    }, [user?.token, searchTerm]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = async (p = 1, search = '') => {
         try {
+            setLoading(true);
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('http://localhost:5000/api/users', config);
-            setUsers(Array.isArray(data) ? data : []);
+            const { data } = await axios.get(`/api/users?page=${p}&search=${search}`, config);
+
+            setUsers(data.users || []);
+            setPage(data.page || 1);
+            setPages(data.pages || 1);
+            setTotal(data.total || 0);
+
             setLoading(false);
         } catch (err) {
             console.error(err);
@@ -43,7 +52,7 @@ const AdminUsers = () => {
         if (!window.confirm("Permanently Delete User?")) return;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`http://localhost:5000/api/users/${id}`, config);
+            await axios.delete(`/api/users/${id}`, config);
             setUsers(users.filter(u => u._id !== id));
             addToast("User Deleted", "success");
         } catch (err) {
@@ -73,7 +82,7 @@ const AdminUsers = () => {
                 permissions: newPermissions
             };
 
-            const { data } = await axios.put(`http://localhost:5000/api/users/${userToUpdate._id}/role`, payload, config);
+            const { data } = await axios.put(`/api/users/${userToUpdate._id}/role`, payload, config);
             console.log("Role Update Response:", data);
 
             // Update local list
@@ -102,7 +111,7 @@ const AdminUsers = () => {
     const toggleBlock = async (id, currentStatus) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`http://localhost:5000/api/users/${id}/block`, {}, config);
+            await axios.put(`/api/users/${id}/block`, {}, config);
             setUsers(users.map(u => u._id === id ? { ...u, isBlocked: !currentStatus } : u));
             addToast(currentStatus ? "User Unblocked" : "User Blocked", "success");
         } catch (err) {
@@ -118,7 +127,7 @@ const AdminUsers = () => {
     const savePermissions = async (id) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`http://localhost:5000/api/users/${id}/permissions`, { permissions: tempPermissions }, config);
+            await axios.put(`/api/users/${id}/permissions`, { permissions: tempPermissions }, config);
 
             setUsers(users.map(u => u._id === id ? { ...u, permissions: tempPermissions } : u));
             setEditingPermissions(null);
@@ -301,6 +310,31 @@ const AdminUsers = () => {
                         </tbody>
                     </table>
                 </div>
+
+                {/* PAGINATION CONTROLS */}
+                {pages > 1 && (
+                    <div className="bg-zinc-50 border-t border-zinc-100 px-8 py-4 flex items-center justify-between">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">
+                            Showing page {page} of {pages} ({total} Users)
+                        </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => { setPage(page - 1); fetchUsers(page - 1, searchTerm); }}
+                                disabled={page === 1}
+                                className="px-4 py-2 bg-white border border-zinc-200 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 disabled:opacity-50 disabled:hover:bg-white transition-all"
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => { setPage(page + 1); fetchUsers(page + 1, searchTerm); }}
+                                disabled={page === pages}
+                                className="px-4 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all"
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

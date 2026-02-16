@@ -31,7 +31,7 @@ const Dashboard = () => {
             try {
                 const config = { headers: { Authorization: `Bearer ${user.token}` } };
                 // Using the same endpoint, just ignoring chart data
-                const { data } = await axios.get(`http://localhost:5000/api/orders/admin/stats?t=${Date.now()}`, config);
+                const { data } = await axios.get(`/api/orders/admin/stats?t=${Date.now()}`, config);
                 setStats(data);
                 setLoading(false);
             } catch (err) {
@@ -113,9 +113,9 @@ const Dashboard = () => {
                                 <div key={p._id} className="flex items-center justify-between p-3 border border-red-100 bg-red-50/50 rounded-lg">
                                     <div>
                                         <p className="text-xs font-bold truncate w-32 md:w-auto">{p.name}</p>
-                                        <button onClick={() => navigate('/admin/products')} className="text-[9px] text-red-500 font-black underline mt-1">Restock</button>
+                                        <button onClick={() => navigate('/admin/products/bulk')} className="text-[9px] text-red-500 font-black underline mt-1">Bulk Restock</button>
                                     </div>
-                                    <span className="text-xs font-black text-red-600 bg-white px-2 py-1 rounded shadow-sm">{p.stock}</span>
+                                    <span className="text-xs font-black text-red-600 bg-white px-2 py-1 rounded shadow-sm">{p.countInStock || p.stock}</span>
                                 </div>
                             ))}
                             {stats.lowStockProducts?.length === 0 && (

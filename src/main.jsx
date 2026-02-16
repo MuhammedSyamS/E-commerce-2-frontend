@@ -17,16 +17,20 @@ if ('serviceWorker' in navigator) {
 
 import { HelmetProvider } from 'react-helmet-async';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 if (!rootElement) {
   console.error("Failed to find the root element. Ensure index.html has <div id='root'></div>");
 } else {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <HelmetProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </HelmetProvider>
+      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <HelmetProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </HelmetProvider>
+      </GoogleOAuthProvider>
     </React.StrictMode>
   );
 }

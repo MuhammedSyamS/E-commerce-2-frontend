@@ -3,7 +3,8 @@ import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/instance';
+import Price from '../components/Price';
 
 const Checkout = () => {
   const { user, setUser, coupon } = useStore();
@@ -11,6 +12,7 @@ const Checkout = () => {
   const { addToast } = useToast();
   const [step, setStep] = useState('shipping');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
 
   // Robust cart item resolution
   const cartItems = user?.cart || [];
@@ -26,7 +28,7 @@ const Checkout = () => {
     setDiscountError('');
     try {
       const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('http://localhost:5000/api/marketing/verify-coupon', {
+      const { data } = await api.post('/marketing/verify-coupon', {
         code: couponCode,
         cartTotal: calculateSubtotal(),
         userId: user?._id || user?.id
@@ -57,19 +59,25 @@ const Checkout = () => {
     }, 0);
   };
 
-  const calculateTotal = () => {
-    const sub = calculateSubtotal();
-    const discount = couponApplied ? couponApplied.discountAmount : 0;
-    return sub - discount; // Shipping is free?
-  };
-  const subtotal = cartItems.reduce((acc, item) => {
-    const price = item.price || item.product?.price || 0;
-    const qty = item.quantity || 1;
-    return acc + (price * qty);
-  }, 0);
+  const subtotal = calculateSubtotal();
+  const discountAmount = couponApplied ? couponApplied.discountAmount : (coupon ? coupon.discount : 0);
 
-  const discount = coupon ? coupon.discount : 0;
-  const total = Math.max(0, subtotal - discount);
+  const taxPrice = (subtotal * (siteSettings.taxRate / 100));
+  const shippingPrice = subtotal >= siteSettings.freeShippingThreshold ? 0 : siteSettings.shippingCharge;
+
+  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice);
+
+  const getDeliveryEstimate = () => {
+    const min = siteSettings.minDeliveryDays || 3;
+    const max = siteSettings.maxDeliveryDays || 7;
+    const minDate = new Date();
+    const maxDate = new Date();
+    minDate.setDate(minDate.getDate() + min);
+    maxDate.setDate(maxDate.getDate() + max);
+
+    const options = { month: 'short', day: 'numeric' };
+    return `${minDate.toLocaleDateString('en-US', options)} - ${maxDate.toLocaleDateString('en-US', options)}`;
+  };
 
   const [formData, setFormData] = useState({
     firstName: user?.firstName || '',
@@ -77,10 +85,21 @@ const Checkout = () => {
     address: '',
     city: '',
     zip: '',
-    phone: ''
+    phone: '',
+    orderNote: ''
   });
 
   useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get('/settings');
+        setSiteSettings(data);
+      } catch (err) {
+        console.error("Failed to load settings:", err);
+      }
+    };
+    fetchSettings();
+
     if (cartItems.length === 0 && !isSubmitting) {
       navigate('/shop');
     }
@@ -129,21 +148,27 @@ const Checkout = () => {
           phone: formData.phone
         },
         paymentMethod: step,
-        totalPrice: total - (pointsRedeemed || 0), // Deduct points from total sent to backend
-        pointsToRedeem: pointsRedeemed, // Backend handles deduction from user
+        totalPrice: total, // Send the final total (including tax/shipping)
+        taxPrice,
+        shippingPrice,
+        discountAmount,
+        couponCode: couponApplied?.code || (coupon?.code || ''),
+        pointsToRedeem: pointsRedeemed,
+        orderNote: formData.orderNote
       };
 
       // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
       if (step !== 'cod') {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
+        const finalAmountToPay = total - (pointsRedeemed || 0);
 
         console.log("PAYMENT: Starting Flow for method:", step);
         // A. Fetch Key
-        const { data: { key } } = await axios.get('http://localhost:5000/api/payments/key');
+        const { data: { key } } = await api.get('/payments/key');
         console.log("PAYMENT: Key Fetched:", key);
 
         // B. Create Order on Server
-        const { data: paymentOrder } = await axios.post('http://localhost:5000/api/payments/create-order', { amount: total }, config);
+        const { data: paymentOrder } = await api.post('/payments/create-order', { amount: finalAmountToPay }, config);
         console.log("PAYMENT: Order Created:", paymentOrder);
 
         // C. Check for MOCK Mode
@@ -155,11 +180,11 @@ const Checkout = () => {
           setTimeout(async () => {
             try {
               // Create Local Order First
-              const orderRes = await axios.post('http://localhost:5000/api/orders', orderData, config);
+              const orderRes = await api.post('/orders', orderData, config);
               console.log("PAYMENT: Local Order Created:", orderRes.data._id);
 
               // Verify Mock
-              await axios.post('http://localhost:5000/api/payments/verify', {
+              await api.post('/payments/verify', {
                 razorpay_order_id: paymentOrder.id,
                 razorpay_payment_id: `pay_mock_${Date.now()}`,
                 razorpay_signature: 'mock_signature_bypass', // Backend ignores this for mock orders
@@ -168,7 +193,7 @@ const Checkout = () => {
               console.log("PAYMENT: Verification Success");
 
               // Clear Cart & Redirect
-              await axios.delete('http://localhost:5000/api/cart/clear', config);
+              await api.delete('/cart/clear', config);
               setUser({ ...user, cart: [] });
               navigate('/order-success', { state: { orderId: orderRes.data._id }, replace: true });
             } catch (mockErr) {
@@ -199,10 +224,10 @@ const Checkout = () => {
           handler: async function (response) {
             try {
               // Create Local Order (Pending)
-              const orderRes = await axios.post('http://localhost:5000/api/orders', orderData, config);
+              const orderRes = await api.post('/orders', orderData, config);
 
               // Verify
-              await axios.post('http://localhost:5000/api/payments/verify', {
+              await api.post('/payments/verify', {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
@@ -210,7 +235,7 @@ const Checkout = () => {
               }, config);
 
               // Clear Cart
-              await axios.delete('http://localhost:5000/api/cart/clear', config);
+              await api.delete('/cart/clear', config);
               setUser({ ...user, cart: [] });
 
               navigate('/order-success', { state: { orderId: orderRes.data._id }, replace: true });
@@ -246,14 +271,14 @@ const Checkout = () => {
 
       } else {
         // 3. Branch: COD / Manual
-        const { data } = await axios.post(
-          'http://localhost:5000/api/orders',
+        const { data } = await api.post(
+          '/orders',
           orderData,
           { headers: { Authorization: `Bearer ${user.token}` } }
         );
 
         // Clear cart
-        await axios.delete('http://localhost:5000/api/cart/clear', {
+        await api.delete('/cart/clear', {
           headers: { Authorization: `Bearer ${user.token}` }
         });
 
@@ -364,6 +389,17 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-2">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Special Instructions / Order Notes (Optional)</label>
+                    <textarea
+                      rows="2"
+                      placeholder="e.g. Leave at the back gate, specific delivery time, etc."
+                      className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-medium text-xs resize-none"
+                      value={formData.orderNote}
+                      onChange={e => setFormData({ ...formData, orderNote: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
                     <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
@@ -460,7 +496,7 @@ const Checkout = () => {
                         <p className="text-xs font-bold uppercase truncate">{itemName}</p>
                         <div className="flex justify-between items-center mt-1">
                           <span className="text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
-                          <span className="text-[10px] font-bold">₹{itemPrice.toLocaleString()}</span>
+                          <Price amount={itemPrice} className="text-[10px] font-bold" />
                         </div>
                       </div>
                     </div>
@@ -471,18 +507,36 @@ const Checkout = () => {
               <div className="space-y-3 border-t border-dashed border-zinc-200 pt-6">
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Subtotal</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
+                  <Price amount={subtotal} />
                 </div>
-                {discount > 0 && (
+                {discountAmount > 0 && (
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-600">
                     <span>Discount</span>
-                    <span>- ₹{discount.toLocaleString()}</span>
+                    <Price amount={discountAmount} />
                   </div>
                 )}
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  <span>Tax ({siteSettings.taxRate}%)</span>
+                  <Price amount={taxPrice} />
+                </div>
+                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                  <span>Shipping</span>
+                  <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
+                </div>
                 <div className="flex justify-between text-xl font-black uppercase italic transform -skew-x-2 pt-2">
                   <span>Total</span>
-                  <span>₹{(total - (pointsRedeemed || 0)).toLocaleString()}</span>
+                  <Price amount={total - (pointsRedeemed || 0)} />
                 </div>
+              </div>
+
+              {/* DELIVERY ESTIMATE */}
+              <div className="mt-8 pt-6 border-t border-zinc-100">
+                <div className="flex items-center gap-3 text-zinc-400 mb-2">
+                  <Truck size={14} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
+                </div>
+                <p className="text-xs font-bold text-black">{getDeliveryEstimate()}</p>
+                <p className="text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
               </div>
 
               {/* LOYALTY POINTS REDEMPTION */}
@@ -506,11 +560,11 @@ const Checkout = () => {
                       }}
                       className="w-full bg-black text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition"
                     >
-                      Redeem Now (Save ₹{Math.min(user.loyaltyPoints, total)})
+                      Redeem Now (Save <Price amount={Math.min(user.loyaltyPoints || 0, total)} />)
                     </button>
                   ) : (
                     <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-amber-200">
-                      <span className="text-[10px] font-bold uppercase text-green-600">Redeemed ₹{pointsRedeemed}</span>
+                      <span className="text-[10px] font-bold uppercase text-green-600">Redeemed <Price amount={pointsRedeemed} /></span>
                       <button onClick={() => setPointsRedeemed(0)} className="text-[9px] font-bold underline text-zinc-400 hover:text-red-500">Remove</button>
                     </div>
                   )}

@@ -24,7 +24,7 @@ const UserReviews = () => {
                 const config = {
                     headers: { Authorization: `Bearer ${user.token}` }
                 };
-                const { data } = await axios.get('http://localhost:5000/api/products/reviews/my-reviews', config);
+                const { data } = await axios.get('/api/products/reviews/my-reviews', config);
                 setReviews(data);
             } catch (err) {
                 console.error("Failed to fetch user reviews", err);
@@ -43,7 +43,7 @@ const UserReviews = () => {
             const config = {
                 headers: { Authorization: `Bearer ${user.token}` }
             };
-            await axios.delete(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}`, config);
+            await axios.delete(`/api/products/${productId}/reviews/${reviewId}`, config);
             // Remove from local state
             setReviews(reviews.filter(r => r.review._id !== reviewId));
         } catch (err) {

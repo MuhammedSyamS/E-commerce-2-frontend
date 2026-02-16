@@ -17,7 +17,7 @@ const AdminReviews = () => {
     const fetchReviews = async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('http://localhost:5000/api/products/admin/reviews', config);
+            const { data } = await axios.get('/api/products/admin/reviews', config);
             setReviews(Array.isArray(data) ? data : []);
             setLoading(false);
         } catch (err) {
@@ -33,7 +33,7 @@ const AdminReviews = () => {
     const toggleVisibility = async (productId, reviewId) => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.put(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}/toggle`, {}, config);
+            const { data } = await axios.put(`/api/products/${productId}/reviews/${reviewId}/toggle`, {}, config);
 
             // Optimistic Update
             setReviews(reviews.map(r =>
@@ -49,7 +49,7 @@ const AdminReviews = () => {
         if (!window.confirm("Delete this review permanently?")) return;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}`, config);
+            await axios.delete(`/api/products/${productId}/reviews/${reviewId}`, config);
             setReviews(reviews.filter(r => r.review._id !== reviewId));
             addToast("Review Deleted", "success");
         } catch (err) {
@@ -61,7 +61,7 @@ const AdminReviews = () => {
         if (!replyText.trim()) return;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.put(`http://localhost:5000/api/products/${productId}/reviews/${reviewId}/reply`, { response: replyText }, config);
+            const { data } = await axios.put(`/api/products/${productId}/reviews/${reviewId}/reply`, { response: replyText }, config);
 
             setReviews(reviews.map(r =>
                 r.review._id === reviewId ? { ...r, review: { ...r.review, adminResponse: data.adminResponse } } : r

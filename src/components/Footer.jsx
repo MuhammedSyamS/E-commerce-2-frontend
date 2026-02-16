@@ -20,7 +20,7 @@ const Footer = () => {
 
     setStatus('loading');
     try {
-      const { data } = await axios.post('http://localhost:5000/api/marketing/subscribe', { email });
+      const { data } = await axios.post('/api/marketing/subscribe', { email });
       setStatus('success');
       setMessage(data.message);
       setEmail('');
@@ -87,9 +87,10 @@ const Footer = () => {
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
             <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/about" className="hover:text-white transition-colors">Our Story</Link></li>
+              <li><Link to="/support" className="hover:text-white transition-colors">Support Hub & FAQ</Link></li>
               <li><Link to="/track-order" className="hover:text-white transition-colors">Track Your Order</Link></li>
               <li><Link to="/shipping" className="hover:text-white transition-colors">Shipping & Delivery</Link></li>
-              <li><Link to="/returns" className="hover:text-white transition-colors">Returns</Link></li>
+              <li><Link to="/returns" className="hover:text-white transition-colors">Return & Exchange</Link></li>
               <li><Link to="/care-guide" className="hover:text-white transition-colors">Care Guide</Link></li>
               <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
             </ul>
@@ -103,8 +104,14 @@ const Footer = () => {
             </p>
             <div className="relative group">
               {status === 'success' ? (
-                <div className="py-4 text-[10px] font-black uppercase tracking-widest text-green-500 animate-in fade-in">
-                  {message}
+                <div className="py-6 px-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl text-center animate-in zoom-in duration-500">
+                  <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center mx-auto mb-4 scale-110">
+                    <ShieldCheck size={20} className="text-black" />
+                  </div>
+                  <h4 className="text-[11px] font-black uppercase tracking-[0.3em] text-white mb-2">Welcome to the Inner Circle</h4>
+                  <p className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest leading-loose">
+                    Your exclusive access is now confirmed. <br /> Check your inbox soon.
+                  </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe}>

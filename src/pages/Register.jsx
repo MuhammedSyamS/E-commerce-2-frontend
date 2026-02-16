@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useStore } from '../store/useStore';
+import { GoogleLogin } from '@react-oauth/google';
+import { useToast } from '../context/ToastContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '' });
@@ -15,6 +17,25 @@ const Register = () => {
 
   const navigate = useNavigate();
   const setUser = useStore((state) => state.setUser);
+  const { addToast } = useToast();
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post('/api/users/google-login', {
+        token: credentialResponse.credential
+      });
+
+      if (res.data.token) {
+        setUser(res.data);
+        addToast("Logged in with Google", "success");
+        if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
+        else navigate('/account');
+      }
+    } catch (err) {
+      console.error(err);
+      addToast("Google Login Failed", "error");
+    }
+  };
 
   // --- AUTO-VANISH STATUS MESSAGE ---
   useEffect(() => {
@@ -45,7 +66,7 @@ const Register = () => {
     setStatus({ type: '', msg: '' });
     try {
       // UPDATED URL: Changed from /api/auth to /api/users
-      await axios.post('http://localhost:5000/api/users/send-otp', { email: formData.email });
+      await axios.post('/api/users/send-otp', { email: formData.email });
       setShowOtp(true);
       setTimer(60);
       setCanResend(false);
@@ -64,7 +85,7 @@ const Register = () => {
     setLoading(true);
     try {
       // UPDATED URL: Changed from /api/auth to /api/users
-      const { data } = await axios.post('http://localhost:5000/api/users/register', {
+      const { data } = await axios.post('/api/users/register', {
         ...formData,
         code: otp.join('')
       });
@@ -108,6 +129,24 @@ const Register = () => {
           )}
         </div>
 
+        {!showOtp && (
+          <div className="mb-8 flex justify-center flex-col items-center gap-4">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => addToast("Login Failed", "error")}
+              type="standard"
+              theme="filled_black"
+              size="large"
+              text="signup_with"
+              shape="pill"
+            />
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+              <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-white px-2 text-gray-400">Or using email</span></div>
+            </div>
+          </div>
+        )}
+
         {!showOtp ? (
           <div className="space-y-6">
             <form onSubmit={handleRegisterSubmit} className="space-y-5">
@@ -140,6 +179,12 @@ const Register = () => {
                 className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
+              />
+              <input
+                type="text"
+                placeholder="Referral Code (Optional)"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 uppercase"
+                onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
               />
               <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition">
                 {loading ? "Sending OTP..." : "Create Account"}

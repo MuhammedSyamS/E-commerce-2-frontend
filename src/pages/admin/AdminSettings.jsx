@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Save, Bell, Shield, Globe, User, ToggleLeft, ToggleRight } from 'lucide-react';
+import {  Save, Bell, Shield, Globe, User, ToggleLeft, ToggleRight, Truck } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 
@@ -19,7 +19,10 @@ const AdminSettings = () => {
         marketingEmails: false,
         taxRate: 0,
         shippingCharge: 0,
-        freeShippingThreshold: 0
+        freeShippingThreshold: 0,
+        minDeliveryDays: 3,
+        maxDeliveryDays: 7,
+        manifestLogo: ''
     });
 
     useEffect(() => {
@@ -28,7 +31,7 @@ const AdminSettings = () => {
 
     const fetchSettings = async () => {
         try {
-            const { data } = await axios.get('http://localhost:5000/api/settings');
+            const { data } = await axios.get('/api/settings');
             setSettings(data);
             setLoading(false);
         } catch (err) {
@@ -52,7 +55,7 @@ const AdminSettings = () => {
     const handleSave = async () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put('http://localhost:5000/api/settings', settings, config);
+            await axios.put('/api/settings', settings, config);
             addToast("Settings Updated Successfully", "success");
         } catch (err) {
             addToast("Failed to save settings", "error");
@@ -151,6 +154,51 @@ const AdminSettings = () => {
         </div>
     );
 
+    const LogisticsSettings = () => (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="bg-white p-6 rounded-xl border border-zinc-200">
+                <h4 className="font-bold text-zinc-900 mb-4 uppercase tracking-widest text-xs">Delivery Window Estimations</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Min Delivery Days</label>
+                        <input
+                            type="number"
+                            name="minDeliveryDays"
+                            value={settings.minDeliveryDays}
+                            onChange={handleChange}
+                            className="w-full p-3 bg-zinc-50 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-black transition"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Max Delivery Days</label>
+                        <input
+                            type="number"
+                            name="maxDeliveryDays"
+                            value={settings.maxDeliveryDays}
+                            onChange={handleChange}
+                            className="w-full p-3 bg-zinc-50 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-black transition"
+                        />
+                    </div>
+                </div>
+                <p className="text-[10px] text-zinc-400 mt-4 italic font-medium">These values are used to calculate the "Estimated Delivery" range shown to customers during checkout.</p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl border border-zinc-200">
+                <h4 className="font-bold text-zinc-900 mb-4 uppercase tracking-widest text-xs">Manifest Configuration</h4>
+                <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-widest text-zinc-500 mb-2">Branded Logo URL (for Manifests)</label>
+                    <input
+                        name="manifestLogo"
+                        value={settings.manifestLogo}
+                        onChange={handleChange}
+                        placeholder="https://example.com/logo-black.png"
+                        className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-black transition"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+
     const SecuritySettings = () => (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-zinc-50 p-6 rounded-xl border border-zinc-200">
@@ -174,6 +222,7 @@ const AdminSettings = () => {
 
     const tabs = [
         { id: 'general', label: 'General', icon: <Globe size={16} /> },
+        { id: 'logistics', label: 'Logistics', icon: <Truck size={16} /> },
         { id: 'notifications', label: 'Notifications', icon: <Bell size={16} /> },
         { id: 'security', label: 'Security', icon: <Shield size={16} /> },
     ];
@@ -211,6 +260,7 @@ const AdminSettings = () => {
                 <div className="lg:col-span-3">
                     <div className="bg-white p-8 rounded-3xl shadow-sm border border-zinc-100 min-h-[400px]">
                         {activeTab === 'general' && <GeneralSettings />}
+                        {activeTab === 'logistics' && <LogisticsSettings />}
                         {activeTab === 'notifications' && <NotificationSettings />}
                         {activeTab === 'security' && <SecuritySettings />}
                     </div>

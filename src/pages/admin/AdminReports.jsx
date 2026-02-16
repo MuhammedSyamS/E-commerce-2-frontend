@@ -23,8 +23,8 @@ const AdminReports = () => {
 
             // Parallel fetch
             const [salesRes, usersRes] = await Promise.all([
-                axios.get(`http://localhost:5000/api/reports/sales?range=${timeRange}`, config),
-                axios.get(`http://localhost:5000/api/reports/users`, config)
+                axios.get(`/api/reports/sales?range=${timeRange}`, config),
+                axios.get(`/api/reports/users`, config)
             ]);
 
             setReportData(salesRes.data); // { timeline, summary, topProducts, categoryStats }

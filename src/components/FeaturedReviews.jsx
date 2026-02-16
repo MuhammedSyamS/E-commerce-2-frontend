@@ -85,7 +85,7 @@ const FeaturedReviews = () => {
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const { data } = await axios.get('http://localhost:5000/api/products/reviews/featured');
+                const { data } = await axios.get('/api/products/reviews/featured');
                 setReviews(data && data.length > 0 ? data : MOCK_REVIEWS);
             } catch (err) {
                 setReviews(MOCK_REVIEWS);

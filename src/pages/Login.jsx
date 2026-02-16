@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import axios from 'axios';
+import { GoogleLogin } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -20,12 +21,30 @@ const Login = () => {
     }
   }, [user, navigate]);
 
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await axios.post('/api/users/google-login', {
+        token: credentialResponse.credential
+      });
+
+      if (res.data.token) {
+        setUser(res.data);
+        addToast("Logged in with Google", "success");
+        if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
+        else navigate('/account');
+      }
+    } catch (err) {
+      console.error(err);
+      addToast("Google Login Failed", "error");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/users/login', {
+      const res = await axios.post('/api/users/login', {
         email: email.toLowerCase().trim(),
         password
       });
@@ -46,7 +65,6 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
       <div className="w-full max-w-md">
-        {/* REMOVED ITALIC HERE */}
         <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">Welcome <span className="text-red-500">Back</span></h1>
         <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account</p>
 
@@ -69,7 +87,6 @@ const Login = () => {
               required
             />
 
-            {/* --- ADDED FORGOT PASSWORD LINK --- */}
             <div className="text-right mt-2">
               <Link
                 to="/forgot-password"
@@ -84,6 +101,23 @@ const Login = () => {
             {loading ? 'Authenticating...' : 'LogIn'}
           </button>
         </form>
+
+        <div className="relative my-8">
+          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
+          <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-white px-2 text-gray-400">Or continue with</span></div>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => addToast("Login Failed", "error")}
+            type="standard"
+            theme="filled_black"
+            size="large"
+            text="continue_with"
+            shape="pill"
+          />
+        </div>
 
         <div className="mt-8 text-center flex flex-col gap-4 items-center">
           <Link to="/register" className="text-[10px] font-bold uppercase tracking-widest border-b border-black pb-1">
