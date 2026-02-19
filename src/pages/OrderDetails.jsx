@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 import {
   ArrowLeft, MapPin, CreditCard, Truck, Package,
   Loader2, ChevronRight, Star, AlertTriangle, RotateCcw,
-  Calendar, CheckCircle2, Copy, Clock
+  Calendar, CheckCircle2, Copy, Clock, ShieldCheck
 } from 'lucide-react';
 
 const OrderDetails = () => {
@@ -26,20 +26,20 @@ const OrderDetails = () => {
   const [returnReason, setReturnReason] = useState("");
   const [returnFiles, setReturnFiles] = useState([]); // Array of URLs
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Exchange Logic
+  const [variants, setVariants] = useState([]);
+  const [variantsLoading, setVariantsLoading] = useState(false);
+  const [selectedExchangeVariant, setSelectedExchangeVariant] = useState(null);
 
   const handleFileUpload = async (e) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-      formData.append('file', files[i]);
-    }
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
 
     setUploading(true);
+    setUploadProgress(0);
     try {
-      // Upload one by one or modify backend to accept multiple. 
-      // Our backend /api/upload accepts .single('file'). So we loop.
       const newUrls = [];
       for (let i = 0; i < files.length; i++) {
         const fd = new FormData();
@@ -47,15 +47,17 @@ const OrderDetails = () => {
         const { data } = await api.post('/upload', fd, {
           headers: { 'Content-Type': 'multipart/form-data' }
         });
-        newUrls.push(data.filePath); // Ensure backend returns full path or we prepend generic host
-        // Backend returns relative path "/uploads/filename". Frontend can use it directly if served statically.
+        newUrls.push(data.filePath);
+        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
       }
       setReturnFiles(prev => [...prev, ...newUrls]);
+      addToast(`Uploaded ${files.length} proof file(s)`, "success");
     } catch (err) {
       console.error("Upload failed", err);
       addToast("Upload Failed. Video/Images only.", "error");
     } finally {
       setUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -101,12 +103,19 @@ const OrderDetails = () => {
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
 
         {/* BREADCRUMB / BACK */}
+        {/* BREADCRUMB / BACK */}
         <button
-          onClick={() => navigate('/my-orders')}
+          onClick={() => {
+            if (user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_orders')) {
+              navigate('/admin/orders');
+            } else {
+              navigate('/my-orders');
+            }
+          }}
           className="group flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8 hover:text-black transition-colors"
         >
           <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-          Back to Order History
+          Back to {user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_orders') ? 'Orders' : 'Order History'}
         </button>
 
         {/* HEADER SECTION */}
@@ -189,62 +198,85 @@ const OrderDetails = () => {
           </div>
         )}
 
-        {/* ORDER STATUS TIMELINE */}
-        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-x-auto">
-          <div className="min-w-[600px] relative">
-            {/* Timeline Line */}
-            <div className="absolute top-1/2 left-0 w-full h-1 bg-zinc-100 -translate-y-1/2 z-0"></div>
-            <div
-              className="absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 z-0 transition-all duration-1000"
-              style={{
-                width: (() => {
-                  const status = order.orderStatus;
-                  if (status === 'Pending' || status === 'Processing') return '0%';
-                  if (status === 'Confirmed') return '33%';
-                  if (status === 'Dispatched' || status === 'Shipped') return '66%';
-                  if (status === 'Delivered') return '100%';
-                  return '0%';
-                })()
-              }}
-            ></div>
+        {/* ELITE FULFILLMENT VISUALIZER */}
+        <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-hidden relative">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
+              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Tracking Your Look</h2>
+            </div>
 
-            {/* Timeline Steps */}
-            <div className="relative z-10 flex justify-between">
-              {[
-                { id: 'Pending', label: 'Order Placed', icon: <Package size={16} /> },
-                { id: 'Confirmed', label: 'Confirmed', icon: <CheckCircle2 size={16} /> },
-                { id: 'Shipped', label: 'Shipped', icon: <Truck size={16} /> },
-                { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} /> }
-              ].map((step, idx) => {
-                const status = order.orderStatus;
-                const isCompleted = (() => {
+            {order.orderStatus !== 'Delivered' && (
+              <div className="bg-zinc-50 px-6 py-4 rounded-3xl border border-zinc-100 flex items-center gap-4">
+                <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center animate-pulse">
+                  <Calendar size={18} />
+                </div>
+                <div>
+                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Estimated Arrival</p>
+                  <p className="text-xs font-black uppercase">{new Date(new Date(order.createdAt).setDate(new Date(order.createdAt).getDate() + 5)).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative pt-10 pb-4 overflow-x-auto no-scrollbar">
+            <div className="min-w-[700px] relative px-4">
+              {/* Animated Progress Line */}
+              <div className="absolute top-[19px] left-0 w-full h-[2px] bg-zinc-100 z-0"></div>
+              <div
+                className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2000ms] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+                style={{
+                  width: (() => {
+                    const status = order.orderStatus;
+                    if (status === 'Pending' || status === 'Processing') return '12.5%';
+                    if (status === 'Confirmed') return '37.5%';
+                    if (status === 'Shipped' || status === 'Dispatched') return '62.5%';
+                    if (status === 'Delivered') return '100%';
+                    return '0%';
+                  })()
+                }}
+              ></div>
+
+              {/* Enhanced Steps */}
+              <div className="relative z-10 flex justify-between">
+                {[
+                  { id: 'Pending', label: 'Accepted', icon: <Package size={16} />, desc: 'Order is curated' },
+                  { id: 'Confirmed', label: 'Quality Check', icon: <ShieldCheck size={16} />, desc: 'Verified by SLOOK' },
+                  { id: 'Shipped', label: 'In Transit', icon: <Truck size={16} />, desc: 'Handed to partner' },
+                  { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} />, desc: 'Enjoy your look' }
+                ].map((step, idx) => {
                   const statusList = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
-                  const normalizedStatus = status === 'Processing' ? 'Pending' : status === 'Dispatched' ? 'Shipped' : status;
+                  const normalizedStatus = order.orderStatus === 'Processing' ? 'Pending' : (order.orderStatus === 'Dispatched' || order.orderStatus === 'Shipped') ? 'Shipped' : order.orderStatus;
                   const currentIdx = statusList.indexOf(normalizedStatus);
-                  return idx <= currentIdx;
-                })();
-                const isActive = (status === step.id) || (status === 'Processing' && step.id === 'Pending') || (status === 'Dispatched' && step.id === 'Shipped');
+                  const isCompleted = idx <= currentIdx;
+                  const isActive = normalizedStatus === step.id;
 
-                return (
-                  <div key={step.id} className="flex flex-col items-center gap-3">
-                    <div className={`
-                      w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500
-                      ${isCompleted ? 'bg-black text-white' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
-                      ${isActive ? 'ring-4 ring-zinc-100 scale-110' : ''}
-                    `}>
-                      {isCompleted && !isActive && step.id !== 'Delivered' ? <CheckCircle2 size={16} /> : step.icon}
+                  return (
+                    <div key={step.id} className="flex flex-col items-center group">
+                      <div className={`
+                        w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 relative
+                        ${isCompleted ? 'bg-black text-white shadow-xl scale-110' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
+                        ${isActive ? 'ring-[6px] ring-zinc-50' : ''}
+                      `}>
+                        {isCompleted && !isActive && idx < 3 ? <CheckCircle2 size={16} className="animate-in zoom-in duration-300" /> : step.icon}
+
+                        {isActive && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white animate-bounce" />
+                        )}
+                      </div>
+
+                      <div className="mt-4 text-center">
+                        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
+                          {step.label}
+                        </p>
+                        <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
+                          {step.desc}
+                        </p>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
-                        {step.label}
-                      </p>
-                      {isActive && (
-                        <p className="text-[8px] font-bold text-zinc-400 mt-1 uppercase animate-pulse">In Progress</p>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -497,7 +529,24 @@ const OrderDetails = () => {
                     {['Return', 'Exchange'].map(type => (
                       <button
                         key={type}
-                        onClick={() => setConfirmModal(prev => ({ ...prev, requestType: type }))}
+                        onClick={async () => {
+                          const newType = type;
+                          setConfirmModal(prev => ({ ...prev, requestType: newType }));
+                          if (newType === 'Exchange') {
+                            // Fetch Variants
+                            setVariantsLoading(true);
+                            try {
+                              const item = order.orderItems.find(it => it._id === confirmModal.itemId);
+                              const pId = item.product?._id || item.product;
+                              const { data } = await api.get(`/products/${pId}/variants`);
+                              setVariants(data.filter(v => v.stock > 0));
+                            } catch (err) {
+                              addToast("Failed to fetch size options", "error");
+                            } finally {
+                              setVariantsLoading(false);
+                            }
+                          }
+                        }}
                         className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${(confirmModal.requestType || 'Return') === type ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'
                           }`}
                       >
@@ -505,6 +554,36 @@ const OrderDetails = () => {
                       </button>
                     ))}
                   </div>
+
+                  {/* Variant Picker for Exchange */}
+                  {confirmModal.requestType === 'Exchange' && (
+                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Select Replacement Size/Color</label>
+                      {variantsLoading ? (
+                        <div className="flex items-center gap-2 p-4 bg-zinc-50 rounded-xl border border-dashed border-zinc-200 mt-1">
+                          <Loader2 size={12} className="animate-spin text-zinc-400" />
+                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Checking Availability...</span>
+                        </div>
+                      ) : variants.length === 0 ? (
+                        <div className="p-4 bg-red-50 rounded-xl border border-red-100 mt-1">
+                          <p className="text-[10px] font-black uppercase tracking-tight text-red-600">No other variants in stock for exchange.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-2 mt-1">
+                          {variants.map((v, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setSelectedExchangeVariant(v)}
+                              className={`p-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${selectedExchangeVariant === v ? 'border-black bg-black text-white' : 'border-zinc-200 hover:border-zinc-400 text-zinc-600'
+                                }`}
+                            >
+                              {v.size} {v.color && `/ ${v.color}`}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Reason Select */}
                   <div>
@@ -552,7 +631,20 @@ const OrderDetails = () => {
                           file:bg-orange-100 file:text-orange-700
                           hover:file:bg-orange-200 transaction"
                     />
-                    {uploading && <p className="text-[10px] font-bold text-zinc-400 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={12} /> Uploading Proof...</p>}
+                    {uploading && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-400">
+                          <span>Uploading...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <div className="h-1 w-full bg-orange-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-orange-500 transition-all duration-300"
+                            style={{ width: `${uploadProgress}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
 
                     {/* PREVIEW FILES */}
                     {returnFiles.length > 0 && (
@@ -601,7 +693,8 @@ const OrderDetails = () => {
                           type: confirmModal.requestType || 'Return',
                           reason: returnReason,
                           comment: confirmModal.comment,
-                          images: returnFiles
+                          images: returnFiles,
+                          selectedVariant: selectedExchangeVariant // NEW
                         }, { headers: { Authorization: `Bearer ${user.token}` } });
 
                         addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");

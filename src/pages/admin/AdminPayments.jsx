@@ -21,8 +21,9 @@ const AdminPayments = () => {
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             // Using existing getAllOrders logic, we will filter client-side for now
-            const { data } = await axios.get('/api/orders/admin/all', config);
-            setOrders(data);
+            // API returns { orders: [], page, ... } now
+            const { data } = await axios.get('/api/orders/admin/all?pageSize=1000', config); // Fetch all for stats
+            setOrders(data.orders || []);
         } catch (err) {
             addToast("Failed to fetch payments", "error");
         } finally {

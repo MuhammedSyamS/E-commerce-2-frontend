@@ -13,6 +13,8 @@ const AdminBulkEditor = () => {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [filterCategory, setFilterCategory] = useState('All');
+    const [showLowStockOnly, setShowLowStockOnly] = useState(false);
     const [edits, setEdits] = useState({}); // { productId: { field: value } }
 
     useEffect(() => {
@@ -59,10 +61,25 @@ const AdminBulkEditor = () => {
         }
     };
 
-    const filteredProducts = products.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.category.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredProducts = products.filter(p => {
+        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            p.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesCategory = filterCategory === 'All' || p.category === filterCategory;
+        const matchesStock = !showLowStockOnly || p.countInStock < 5;
+        return matchesSearch && matchesCategory && matchesStock;
+    });
+
+    const bulkToggleStatus = (active) => {
+        const newEdits = { ...edits };
+        filteredProducts.forEach(p => {
+            newEdits[p._id] = {
+                ...newEdits[p._id],
+                isActive: active
+            };
+        });
+        setEdits(newEdits);
+        addToast(`Marked ${filteredProducts.length} items as ${active ? 'Active' : 'Disabled'}`, "info");
+    };
 
     if (loading) return (
         <div className="flex flex-col items-center justify-center h-96 gap-4">
@@ -86,16 +103,6 @@ const AdminBulkEditor = () => {
                 </div>
 
                 <div className="flex items-center gap-4 w-full md:w-auto">
-                    <div className="relative flex-1 md:w-64">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                        <input
-                            type="text"
-                            placeholder="SEARCH PRODUCTS..."
-                            className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-2 ring-black outline-none"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                        />
-                    </div>
                     <button
                         onClick={saveAll}
                         disabled={saving || Object.keys(edits).length === 0}
@@ -108,6 +115,57 @@ const AdminBulkEditor = () => {
                     >
                         {saving ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
                         Save All Changes ({Object.keys(edits).length})
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm">
+                <div className="flex-1 w-full relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+                    <input
+                        type="text"
+                        placeholder="SEARCH PRODUCTS..."
+                        className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-2 ring-black outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                    <select
+                        className="bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-black"
+                        value={filterCategory}
+                        onChange={(e) => setFilterCategory(e.target.value)}
+                    >
+                        <option value="All">All Categories</option>
+                        <option value="Home Decor">Home Decor</option>
+                        <option value="Furniture">Furniture</option>
+                        <option value="Lighting">Lighting</option>
+                        <option value="Kitchenware">Kitchenware</option>
+                        <option value="Textiles">Textiles</option>
+                    </select>
+
+                    <button
+                        onClick={() => setShowLowStockOnly(!showLowStockOnly)}
+                        className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${showLowStockOnly ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-zinc-50 border-zinc-100 text-zinc-400'
+                            }`}
+                    >
+                        Low Stock {showLowStockOnly && 'ON'}
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-zinc-100 md:pl-4 w-full md:w-auto">
+                    <button
+                        onClick={() => bulkToggleStatus(true)}
+                        className="px-4 py-3 bg-green-50 text-green-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-green-100"
+                    >
+                        Enable All
+                    </button>
+                    <button
+                        onClick={() => bulkToggleStatus(false)}
+                        className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-100"
+                    >
+                        Disable All
                     </button>
                 </div>
             </div>

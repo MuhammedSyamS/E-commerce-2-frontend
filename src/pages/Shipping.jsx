@@ -4,7 +4,7 @@ const Shipping = () => {
     return (
         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
             <div className="max-w-3xl mx-auto space-y-8">
-                <h1 className="text-4xl font-black uppercase tracking-tighter italic">Shipping & Delivery</h1>
+                <h1 className="text-4xl font-black uppercase tracking-tighter">Shipping & Delivery</h1>
 
                 <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
                     <p className="text-sm font-bold text-zinc-800 leading-relaxed">

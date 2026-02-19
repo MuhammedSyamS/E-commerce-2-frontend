@@ -45,13 +45,13 @@ const OrderTracking = () => {
         <div className="bg-white min-h-screen pt-40 pb-20">
             <Helmet>
                 <title>Track Your Order | SLOOK</title>
-                <meta name="description" content="Track the status of your HighPhaus order." />
+                <meta name="description" content="Track the status of your SLOOK order." />
             </Helmet>
 
             <div className="container mx-auto px-6 max-w-4xl">
 
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 italic transform -skew-x-3">Track Your Order</h1>
+                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">Track Your Order</h1>
                     <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Enter your details below to see current status</p>
                 </div>
 
@@ -106,7 +106,7 @@ const OrderTracking = () => {
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
                                 <div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
-                                    <h2 className={`text-2xl font-black uppercase italic ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
+                                    <h2 className={`text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
                                         {order.status}
                                     </h2>
                                 </div>

@@ -30,7 +30,7 @@ const Blog = () => {
             <section className="pt-32 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400 mb-3">Journal</p>
-                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">The <span className="text-zinc-300">Edit</span></h1>
+                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">The <span className="text-zinc-300">Edit</span></h1>
                 </div>
 
                 {loading ? (
@@ -46,7 +46,7 @@ const Blog = () => {
                                         <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black text-4xl uppercase opacity-20 group-hover:opacity-30 transition-opacity">
-                                            Highphaus
+                                            Slook
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />

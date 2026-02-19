@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Bell, ArrowLeft, Info, Package, Tag, Check, CheckCheck, Trash2, ArrowRight } from 'lucide-react';
+import { Bell, ArrowLeft, Info, Package, Tag, Check, CheckCheck, Trash2, ArrowRight, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Notifications = () => {
@@ -106,7 +106,7 @@ const Notifications = () => {
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> BACK TO DASHBOARD
             </button>
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-2">
-              Inbox <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full align-middle border border-purple-200">v2.1 MNC</span>
+              Inbox
             </h1>
             <p className="text-zinc-500 font-medium">
               Stay updated on your orders and exclusive drops.
@@ -219,11 +219,30 @@ const Notifications = () => {
                       </p>
 
                       {/* Rich Actions / Links */}
-                      {notif.data?.url && (
-                        <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700 transition-colors">
-                          View Details <ArrowRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
-                        </div>
-                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {notif.data?.url && (
+                          <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700 transition-colors">
+                            View Details <ArrowRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
+                          </div>
+                        )}
+
+                        {notif.type === 'order' && (
+                          <div className="flex items-center gap-2 pt-2 w-full">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate('/my-orders'); }}
+                              className="px-4 py-2 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-zinc-800 transition-all flex items-center gap-2"
+                            >
+                              <Truck size={12} /> Track Parcel
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); navigate('/support'); }}
+                              className="px-4 py-2 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-black uppercase tracking-widest rounded-lg hover:border-black transition-all flex items-center gap-2"
+                            >
+                              <Info size={12} /> Need Help?
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>

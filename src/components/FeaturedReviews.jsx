@@ -173,7 +173,7 @@ const FeaturedReviews = () => {
     if (loading) return null;
 
     return (
-        <section className="bg-zinc-50 py-24 border-t border-zinc-200 overflow-hidden">
+        <section className="bg-zinc-50 py-24 border-t border-zinc-200">
 
             {/* IMMERSIVE MODAL (With Navigation) */}
             {selectedReview && (
@@ -276,7 +276,7 @@ const FeaturedReviews = () => {
                                         <Star key={i} size={16} fill="black" className="text-black" />
                                     ))}
                                 </div>
-                                <h3 className="text-2xl font-serif italic mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
+                                <h3 className="text-2xl font-serif mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
                                 <p className="text-zinc-600 leading-loose text-base font-light">
                                     {selectedReview.comment}
                                 </p>
@@ -286,7 +286,7 @@ const FeaturedReviews = () => {
                                         <p className="text-[10px] font-black uppercase text-zinc-900 mb-2 flex items-center gap-1">
                                             <Zap size={10} fill="black" /> Official Response
                                         </p>
-                                        <p className="text-xs text-zinc-500 italic">{selectedReview.adminResponse}</p>
+                                        <p className="text-xs text-zinc-500">{selectedReview.adminResponse}</p>
                                     </div>
                                 )}
                             </div>
@@ -305,118 +305,115 @@ const FeaturedReviews = () => {
                 </div>
             )}
 
-            <div className="max-w-[1440px] mx-auto px-6 md:px-12">
+            <div className="max-w-[1440px] mx-auto px-6 md:px-24">
 
                 {/* HEADER */}
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
-                    <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
-                            Community Verified
-                        </p>
-                        <h2 className="text-4xl md:text-5xl font-serif italic text-zinc-900">
-                            The Collection in the Wild
-                        </h2>
-                    </div>
-
-                    {/* CONTROLS */}
-                    <div className="flex gap-2">
-                        <button onClick={() => scroll('left')} className="w-12 h-12 rounded-full border border-zinc-300 flex items-center justify-center hover:bg-black hover:border-black hover:text-white transition-all">
-                            <ChevronLeft size={20} />
-                        </button>
-                        <button onClick={() => scroll('right')} className="w-12 h-12 rounded-full border border-zinc-300 flex items-center justify-center hover:bg-black hover:border-black hover:text-white transition-all">
-                            <ChevronRight size={20} />
-                        </button>
-                    </div>
+                <div className="mb-12">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
+                        Community Verified
+                    </p>
+                    <h2 className="text-4xl md:text-5xl font-serif text-zinc-900">
+                        The Collection in the Wild
+                    </h2>
                 </div>
 
-                {/* SCROLL CONTAINER */}
-                <div
-                    ref={scrollRef}
-                    className="flex gap-6 overflow-x-auto pb-12 -mx-6 px-6 md:px-0 md:-mx-0 snap-x snap-mandatory scrollbar-hide"
-                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                >
-                    {reviews.map((item, idx) => {
-                        const r = item.review || item;
+                {/* SCROLL WRAPPER */}
+                <div className="relative group/review-scroller">
+                    <button onClick={() => scroll('left')} className="absolute -left-4 md:-left-20 top-[40%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-all hover:scale-110 active:scale-95">
+                        <ChevronLeft className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} />
+                    </button>
+                    <button onClick={() => scroll('right')} className="absolute -right-4 md:-right-20 top-[40%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-all hover:scale-110 active:scale-95">
+                        <ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} />
+                    </button>
 
-                        const media = getMediaFromReview(item);
-                        const hasMedia = media.length > 0;
+                    <div
+                        ref={scrollRef}
+                        className="flex gap-6 overflow-x-auto pb-12 -mx-6 px-6 md:px-0 md:-mx-0 snap-x snap-mandatory scrollbar-hide"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        {reviews.map((item, idx) => {
+                            const r = item.review || item;
 
-                        return (
-                            <div
-                                key={idx}
-                                onClick={() => openModal(item, idx)}
-                                className="min-w-[300px] md:min-w-[400px] bg-white border border-zinc-200 snap-start flex flex-col group hover:shadow-xl transition-shadow duration-500 cursor-pointer"
-                            >
-                                {/* MEDIA AREA (Top 60%) */}
-                                <div className="h-[300px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
-                                    {hasMedia ? (
-                                        <div className="w-full h-full relative">
-                                            {media[0].type === 'video' ? (
-                                                <video src={media[0].url} muted loop autoPlay className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                                            ) : (
-                                                <img src={media[0].url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
-                                            )}
+                            const media = getMediaFromReview(item);
+                            const hasMedia = media.length > 0;
 
-                                            {/* Count Badge */}
-                                            {media.length > 1 && (
-                                                <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-2 py-1 text-[10px] font-bold text-white uppercase tracking-widest rounded-md">
-                                                    +{media.length - 1} More
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => openModal(item, idx)}
+                                    className="min-w-[300px] md:min-w-[400px] bg-white border border-zinc-200 snap-start flex flex-col group hover:shadow-xl transition-shadow duration-500 cursor-pointer"
+                                >
+                                    {/* MEDIA AREA (Top 60%) */}
+                                    <div className="h-[300px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
+                                        {hasMedia ? (
+                                            <div className="w-full h-full relative">
+                                                {media[0].type === 'video' ? (
+                                                    <video src={media[0].url} muted loop autoPlay className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                ) : (
+                                                    <img src={media[0].url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                )}
+
+                                                {/* Count Badge */}
+                                                {media.length > 1 && (
+                                                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-2 py-1 text-[10px] font-bold text-white uppercase tracking-widest rounded-md">
+                                                        +{media.length - 1} More
+                                                    </div>
+                                                )}
+
+                                                {/* Type Badge */}
+                                                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 text-[10px] font-bold text-black uppercase tracking-widest rounded-md">
+                                                    {media[0].type === 'video' ? 'Video Review' : 'Verified Photo'}
                                                 </div>
-                                            )}
 
-                                            {/* Type Badge */}
-                                            <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 text-[10px] font-bold text-black uppercase tracking-widest rounded-md">
-                                                {media[0].type === 'video' ? 'Video Review' : 'Verified Photo'}
-                                            </div>
-
-                                            {/* Expand Overlay */}
-                                            <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                                                    <Maximize2 size={16} />
-                                                    <span className="text-xs font-bold uppercase tracking-widest">Read More</span>
+                                                {/* Expand Overlay */}
+                                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                    <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                                                        <Maximize2 size={16} />
+                                                        <span className="text-xs font-bold uppercase tracking-widest">Read More</span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        // Fallback Pattern for Text-Only
-                                        <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-8">
-                                            <p className="font-serif italic text-3xl text-zinc-300 text-center leading-tight">
-                                                "{r.comment.substring(0, 50)}..."
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* CONTENT AREA (Bottom 40%) */}
-                                <div className="p-8 flex flex-col flex-1 relative bg-white">
-                                    <div className="flex gap-0.5 mb-4">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={12} fill="black" className="text-black" />
-                                        ))}
+                                        ) : (
+                                            // Fallback Pattern for Text-Only
+                                            <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-8">
+                                                <p className="font-serif text-3xl text-zinc-300 text-center leading-tight">
+                                                    "{r.comment?.substring(0, 50)}..."
+                                                </p>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    <h3 className="font-serif text-xl italic mb-4 line-clamp-3 leading-relaxed">
-                                        "{r.comment}"
-                                    </h3>
-
-                                    <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center font-bold text-xs">
-                                                {(r.name || "U").charAt(0)}
-                                            </div>
-                                            <div>
-                                                <p className="text-xs font-bold uppercase tracking-wide text-zinc-900">{r.name}</p>
-                                                <p className="text-[10px] text-zinc-400 font-medium">Verified Buyer</p>
-                                            </div>
+                                    {/* CONTENT AREA (Bottom 40%) */}
+                                    <div className="p-8 flex flex-col flex-1 relative bg-white">
+                                        <div className="flex gap-0.5 mb-4">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={12} fill="black" className="text-black" />
+                                            ))}
                                         </div>
-                                        <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
-                                            <ArrowUpRight size={14} />
+
+                                        <h3 className="font-serif text-xl mb-4 line-clamp-3 leading-relaxed">
+                                            "{r.comment}"
+                                        </h3>
+
+                                        <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center font-bold text-xs">
+                                                    {(r.name || "U").charAt(0)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-900">{r.name}</p>
+                                                    <p className="text-[10px] text-zinc-400 font-medium">Verified Buyer</p>
+                                                </div>
+                                            </div>
+                                            <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                                                <ArrowUpRight size={14} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </section>

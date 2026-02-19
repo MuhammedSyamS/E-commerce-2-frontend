@@ -71,8 +71,8 @@ const AdminSupport = () => {
                         >
                             <div className="flex justify-between items-start mb-2">
                                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${ticket.status === 'Open' ? 'bg-blue-100 text-blue-700' :
-                                        ticket.status === 'Resolved' ? 'bg-green-100 text-green-700' :
-                                            'bg-zinc-100 text-zinc-600'
+                                    ticket.status === 'Resolved' ? 'bg-green-100 text-green-700' :
+                                        'bg-zinc-100 text-zinc-600'
                                     }`}>
                                     {ticket.status}
                                 </span>

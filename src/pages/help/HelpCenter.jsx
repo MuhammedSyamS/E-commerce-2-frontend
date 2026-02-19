@@ -21,7 +21,7 @@ const HelpCenter = () => {
         <div className="min-h-screen bg-zinc-50 pt-40 pb-20">
             {/* HERO SECTION */}
             <div className="bg-black text-white py-20 px-6 text-center mb-12">
-                <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mb-6">How can we help?</h1>
+                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">How can we help?</h1>
                 <div className="relative max-w-2xl mx-auto">
                     <input
                         type="text"
@@ -41,7 +41,7 @@ const HelpCenter = () => {
                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
                             <MessageSquare size={28} />
                         </div>
-                        <h3 className="text-xl font-black uppercase italic mb-2">My Support Tickets</h3>
+                        <h3 className="text-xl font-black uppercase mb-2">My Support Tickets</h3>
                         <p className="text-zinc-500 text-sm mb-6">View status of your requests or submit a new issue.</p>
                         <span className="text-xs font-bold uppercase tracking-widest underline decoration-zinc-300">View Tickets</span>
                     </div>
@@ -51,12 +51,12 @@ const HelpCenter = () => {
                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
                             <Phone size={28} />
                         </div>
-                        <h3 className="text-xl font-black uppercase italic mb-2">Contact Us</h3>
+                        <h3 className="text-xl font-black uppercase mb-2">Contact Us</h3>
                         <p className="text-zinc-500 text-sm mb-6">Need urgent help? Reach out to our customer care.</p>
                         <div className="flex justify-center gap-4 text-xs font-bold uppercase">
                             <a href="tel:+919876543210" className="hover:underline">Call</a>
                             <span>•</span>
-                            <a href="mailto:support@highphaus.com" className="hover:underline">Email</a>
+                            <a href="mailto:support@slook.com" className="hover:underline">Email</a>
                         </div>
                     </div>
 
@@ -65,7 +65,7 @@ const HelpCenter = () => {
                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
                             <BookOpen size={28} />
                         </div>
-                        <h3 className="text-xl font-black uppercase italic mb-2">Product Care</h3>
+                        <h3 className="text-xl font-black uppercase mb-2">Product Care</h3>
                         <p className="text-zinc-500 text-sm mb-6">Learn how to take care of your premium products.</p>
                         <span className="text-xs font-bold uppercase tracking-widest underline decoration-zinc-300">Read Guide</span>
                     </Link>
@@ -73,7 +73,7 @@ const HelpCenter = () => {
 
                 {/* FAQ SECTION */}
                 <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-zinc-100">
-                    <h2 className="text-3xl font-black uppercase italic tracking-tight mb-10 text-center">Frequently Asked Questions</h2>
+                    <h2 className="text-3xl font-black uppercase tracking-tight mb-10 text-center">Frequently Asked Questions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         {filteredFaqs.map((faq, i) => (
                             <div key={i} className="bg-zinc-50 p-6 rounded-2xl">

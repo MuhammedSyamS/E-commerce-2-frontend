@@ -5,7 +5,7 @@ const Terms = () => {
         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
             <div className="max-w-3xl mx-auto space-y-12">
                 <div className="space-y-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">Terms of Service</h1>
+                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">Terms of Service</h1>
                     <p className="text-sm font-bold text-zinc-400 max-w-lg mx-auto uppercase tracking-widest">
                         Effective Date: {new Date().getFullYear()}
                     </p>

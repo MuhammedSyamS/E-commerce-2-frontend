@@ -10,7 +10,7 @@ const Profile = () => {
   // Mock data if user isn't logged in for preview purposes
   const userData = user || {
     name: "Guest User",
-    email: "guest@highphaus.com",
+    email: "guest@slook.com",
     memberSince: "January 2026"
   };
 

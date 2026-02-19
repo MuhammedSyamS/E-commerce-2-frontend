@@ -5,7 +5,7 @@ import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Legend, PieChart, Pie, Cell
 } from 'recharts';
-import { IndianRupee, ArrowLeft } from 'lucide-react';
+import { IndianRupee, ArrowLeft, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AnalyticsRevenue = () => {
@@ -35,6 +35,28 @@ const AnalyticsRevenue = () => {
 
     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#6366f1'];
 
+    const downloadReport = async () => {
+        try {
+            const config = {
+                headers: { Authorization: `Bearer ${user.token}` },
+                responseType: 'blob'
+            };
+            let rangeParam = '30d';
+            if (timeRange === 'weekly') rangeParam = '7d';
+            if (timeRange === 'yearly') rangeParam = '1y';
+
+            const { data } = await axios.get(`/api/reports/sales/pdf?range=${rangeParam}`, config);
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `SLOOK_Sales_Report.pdf`);
+            document.body.appendChild(link);
+            link.click();
+        } catch (error) {
+            console.error("Download failed:", error);
+        }
+    };
+
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">
             <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black mb-4">
@@ -59,6 +81,12 @@ const AnalyticsRevenue = () => {
                             {range}
                         </button>
                     ))}
+                    <button
+                        onClick={downloadReport}
+                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100"
+                    >
+                        <Download size={12} /> PDF Report
+                    </button>
                 </div>
             </div>
 

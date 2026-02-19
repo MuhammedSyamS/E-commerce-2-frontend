@@ -1,0 +1,60 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Eye, ChevronRight } from 'lucide-react';
+import Price from './Price';
+
+const RecentlyViewed = ({ currentProductId }) => {
+    const [items, setItems] = useState([]);
+
+    useEffect(() => {
+        const history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        // Filter out current product and limit to 4 items
+        const filtered = history
+            .filter(p => p._id !== currentProductId)
+            .slice(0, 4);
+        setItems(filtered);
+    }, [currentProductId]);
+
+    if (items.length === 0) return null;
+
+    return (
+        <section className="mt-20 pt-10 border-t border-zinc-100">
+            <div className="flex justify-between items-end mb-8">
+                <div>
+                    <h2 className="text-xl font-black uppercase tracking-tighter">Recently <span className="text-zinc-300">Viewed</span></h2>
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Pick up where you left off</p>
+                </div>
+                <Link to="/shop" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black flex items-center gap-1 transition-colors">
+                    Explore More <ChevronRight size={12} />
+                </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {items.map((product) => (
+                    <Link
+                        key={product._id}
+                        to={`/product/${product.slug || product._id}`}
+                        className="group block bg-zinc-50 rounded-2xl p-3 border border-transparent hover:border-zinc-200 transition-all hover:-translate-y-1"
+                    >
+                        <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-white">
+                            <img
+                                src={product.image}
+                                alt={product.name}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                        </div>
+                        <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1 mb-1">{product.name}</h4>
+                        <div className="flex justify-between items-center">
+                            <Price amount={product.price} className="text-[11px] font-black" />
+                            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-zinc-300 group-hover:text-black transition-colors">
+                                <Eye size={10} /> View
+                            </div>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+        </section>
+    );
+};
+
+export default RecentlyViewed;

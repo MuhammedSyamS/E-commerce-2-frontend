@@ -204,7 +204,7 @@ const products = [
 const seedDatabase = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);
-    console.log("Miso Studio DB Connected for Fresh Seed...");
+    console.log("SLOOK Studio DB Connected for Fresh Seed...");
     await Product.deleteMany();
     console.log("All previous items removed.");
     await Product.insertMany(products);

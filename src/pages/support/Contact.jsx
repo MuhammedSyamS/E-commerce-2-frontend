@@ -1,17 +1,29 @@
 import React, { useState } from 'react';
 import { Mail, MapPin, Phone, MessageSquare } from 'lucide-react';
 
+import axios from 'axios'; // Add axios import
+
 const Contact = () => {
   const [status, setStatus] = useState('');
+  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('Sending...');
-    // Simulate API call
-    setTimeout(() => {
-      setStatus('Message sent successfully.');
-      e.target.reset();
-    }, 2000);
+
+    try {
+      await axios.post('/api/support/contact', formData);
+      setStatus('Message sent successfully!');
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setStatus(''), 3000);
+    } catch (error) {
+      console.error("Contact Error:", error);
+      setStatus('Failed to send message. Please try again.');
+    }
   };
 
   return (
@@ -36,27 +48,39 @@ const Contact = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <input
                   type="text"
+                  name="name"
                   placeholder="Your Name"
                   className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
                   required
+                  value={formData.name}
+                  onChange={handleChange}
                 />
                 <input
                   type="email"
+                  name="email"
                   placeholder="Email Address"
                   className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
                   required
+                  value={formData.email}
+                  onChange={handleChange}
                 />
               </div>
               <input
                 type="text"
+                name="subject"
                 placeholder="Subject"
                 className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium"
+                value={formData.subject}
+                onChange={handleChange}
               />
               <textarea
+                name="message"
                 rows="5"
                 placeholder="How can we help you?"
                 className="w-full border-b border-zinc-200 py-4 outline-none focus:border-black transition-colors bg-transparent font-medium resize-none"
                 required
+                value={formData.message}
+                onChange={handleChange}
               ></textarea>
 
               <button
@@ -91,8 +115,8 @@ const Contact = () => {
                   <h3 className="text-[10px] font-black uppercase tracking-widest">Email Us</h3>
                 </div>
                 <p className="text-zinc-500 text-sm">
-                  support@slook.com<br />
-                  press@slook.com
+                  help.slook@gmail.com<br />
+                  press.slook@gmail.com
                 </p>
               </div>
 

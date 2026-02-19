@@ -4,7 +4,7 @@ const Returns = () => {
   return (
     <div className="bg-white min-h-screen pt-40 pb-20 px-6">
       <div className="max-w-3xl mx-auto space-y-8">
-        <h1 className="text-4xl font-black uppercase tracking-tighter italic">Returns & Refunds</h1>
+        <h1 className="text-4xl font-black uppercase tracking-tighter">Returns & Refunds</h1>
 
         <div className="space-y-4">
           <h2 className="text-xl font-black uppercase tracking-tight">7-Day Guarantee</h2>
@@ -26,7 +26,7 @@ const Returns = () => {
         </div>
 
         <div className="bg-orange-50 border border-orange-100 rounded-3xl p-8 space-y-4">
-          <h2 className="text-xl font-black uppercase tracking-tight text-orange-900 flex items-center gap-3 italic">
+          <h2 className="text-xl font-black uppercase tracking-tight text-orange-900 flex items-center gap-3">
             <span className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center text-orange-700">!</span>
             Mandatory Requirement
           </h2>

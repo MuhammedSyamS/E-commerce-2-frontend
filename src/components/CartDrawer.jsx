@@ -1,17 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart } from 'lucide-react'; // Added Trash2, Heart
+import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart, CheckCircle2 } from 'lucide-react'; // Added Trash2, Heart
 
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import api from '../api/instance';
 import axios from 'axios';
 import Price from './Price';
 
 const CartDrawer = () => {
   const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon } = useStore();
+  const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
   const { addToast } = useToast();
   const navigate = useNavigate();
   const scrollRef = useRef(null);
+
+  // Fetch Site Settings (Tax, Shipping etc)
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get('/settings');
+        setSiteSettings(data);
+      } catch (err) {
+        console.error("Failed to fetch settings", err);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const [couponCode, setCouponCode] = useState('');
   const [suggestions, setSuggestions] = useState([]);
@@ -325,17 +340,39 @@ const CartDrawer = () => {
               )}
             </>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
-              <div className="bg-zinc-50 p-4 rounded-full mb-2">
-                <ShoppingBag size={32} strokeWidth={1.5} className="text-zinc-300" />
+            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
+              <div className="opacity-50 flex flex-col items-center">
+                <div className="bg-zinc-50 p-4 rounded-full mb-2">
+                  <ShoppingBag size={32} strokeWidth={1.5} className="text-zinc-300" />
+                </div>
+                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Your Cart is Empty</p>
+                <button
+                  onClick={() => { toggleCart(false); navigate('/shop'); }}
+                  className="text-xs font-bold underline underline-offset-4 decoration-zinc-300 hover:decoration-black hover:text-black transition-all mt-2"
+                >
+                  Start Curating
+                </button>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Your Cart is Empty</p>
-              <button
-                onClick={() => { toggleCart(false); navigate('/shop'); }}
-                className="text-xs font-bold underline underline-offset-4 decoration-zinc-300 hover:decoration-black hover:text-black transition-all"
-              >
-                Start Curating
-              </button>
+
+              {/* QUICK ADD TRENDING STRIP */}
+              <div className="w-full pt-10 border-t border-zinc-50">
+                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-6">Trending Now</p>
+                <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
+                  {suggestions.slice(0, 3).map(sug => (
+                    <div
+                      key={sug._id}
+                      onClick={() => { navigate(`/product/${sug.slug || sug._id}`); toggleCart(false); }}
+                      className="min-w-[140px] bg-white p-3 rounded-2xl border border-zinc-100 shadow-sm cursor-pointer group"
+                    >
+                      <div className="aspect-[3/4] bg-zinc-50 rounded-xl overflow-hidden mb-3">
+                        <img src={sug.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
+                      </div>
+                      <p className="text-[9px] font-black uppercase truncate text-zinc-600 group-hover:text-black transition-colors mb-1">{sug.name}</p>
+                      <Price amount={sug.price} className="text-[10px] font-bold text-zinc-900" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 
@@ -363,54 +400,71 @@ const CartDrawer = () => {
           )}
         </div>
 
-        {/* Footer Summary */}
-        {cartItems.length > 0 && (
-          <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
+        <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
 
-            {/* LOYALTY EARNINGS */}
-            {user && (
-              <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
-                  <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
-                    Earn {Math.floor(total / 100)} Coins
-                  </span>
-                </div>
-                <span className="text-[9px] font-bold text-amber-900">
-                  Balance: {user.loyaltyPoints || 0}
+          {/* FREE SHIPPING PROGRESS BAR */}
+          {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
+                {subtotal >= siteSettings.freeShippingThreshold ? (
+                  <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={10} /> You've unlocked FREE Shipping!</span>
+                ) : (
+                  <span className="text-zinc-400">₹{(siteSettings.freeShippingThreshold - subtotal).toLocaleString()} away from <span className="text-black">FREE Shipping</span></span>
+                )}
+                <span className="text-zinc-300">{Math.min(100, Math.round((subtotal / siteSettings.freeShippingThreshold) * 100))}%</span>
+              </div>
+              <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full transition-all duration-1000 ease-out ${subtotal >= siteSettings.freeShippingThreshold ? 'bg-green-500' : 'bg-black'}`}
+                  style={{ width: `${Math.min(100, (subtotal / siteSettings.freeShippingThreshold) * 100)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* LOYALTY EARNINGS */}
+          {user && (
+            <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
+                <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
+                  Earn {Math.floor(total / 100)} Coins
                 </span>
+              </div>
+              <span className="text-[9px] font-bold text-amber-900">
+                Balance: {user.loyaltyPoints || 0}
+              </span>
+            </div>
+          )}
+
+          <div className="space-y-3">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
+              <span>Subtotal</span>
+              <Price amount={subtotal} />
+            </div>
+
+            {discount > 0 && (
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
+                <span>Studio Discount</span>
+                <Price amount={discount} />
               </div>
             )}
 
-            <div className="space-y-3">
-              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                <span>Subtotal</span>
-                <Price amount={subtotal} />
-              </div>
-
-              {discount > 0 && (
-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
-                  <span>Studio Discount</span>
-                  <Price amount={discount} />
-                </div>
-              )}
-
-              <div className="flex justify-between items-end pt-2">
-                <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
-                <div className="text-right">
-                  <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
-                  <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
-                </div>
+            <div className="flex justify-between items-end pt-2">
+              <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
+              <div className="text-right">
+                <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
+                <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
               </div>
             </div>
-            <button
-              onClick={() => { toggleCart(false); navigate('/checkout'); }}
-              className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
-            >
-              <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
           </div>
-        )}
+          <button
+            onClick={() => { toggleCart(false); navigate('/checkout'); }}
+            className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
+          >
+            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -14,6 +14,8 @@ import SocialShare from '../components/SocialShare';
 import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
 
+import RecentlyViewed from '../components/RecentlyViewed';
+
 const ProductDetails = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -38,10 +40,9 @@ const ProductDetails = () => {
   const [waitlistEmail, setWaitlistEmail] = useState("");
   const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const reviewsRef = useRef(null);
-
-  const [uploading, setUploading] = useState(false);
 
   const validateFile = (file, type) => {
     const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB Video, 5MB Image
@@ -153,6 +154,15 @@ const ProductDetails = () => {
         setLoading(true);
         const { data } = await api.get(`/products/${slug}`);
         setProduct(data);
+
+        // --- PHASE 14: RECENTLY VIEWED TRACKING ---
+        const history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        const updatedHistory = [
+          { _id: data._id, name: data.name, slug: data.slug, image: data.image, price: data.price },
+          ...history.filter(item => item._id !== data._id)
+        ].slice(0, 10);
+        localStorage.setItem('recentlyViewed', JSON.stringify(updatedHistory));
+        // -------------------------------------------
 
         // Record View (AI)
         if (user && data._id) {
@@ -491,7 +501,7 @@ const ProductDetails = () => {
               </div>
 
               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <p className="text-sm text-zinc-600 leading-relaxed italic mb-6">
+                <p className="text-sm text-zinc-600 leading-relaxed mb-6">
                   "{selectedReview.comment}"
                 </p>
                 {selectedReview.adminResponse && (
@@ -499,7 +509,7 @@ const ProductDetails = () => {
                     <p className="text-[10px] font-black uppercase text-zinc-900 mb-2 flex items-center gap-1">
                       <Zap size={10} fill="black" /> Official Response
                     </p>
-                    <p className="text-xs text-zinc-500 italic">{selectedReview.adminResponse}</p>
+                    <p className="text-xs text-zinc-500">{selectedReview.adminResponse}</p>
                   </div>
                 )}
               </div>
@@ -614,9 +624,9 @@ const ProductDetails = () => {
                   </div>
                 )}
               </div>
-              <h1 className="text-2xl lg:text-3xl font-black uppercase italic tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
+              <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
               <div className="flex items-baseline gap-4 pt-1">
-                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black italic" />
+                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black" />
                 <Price amount={(currentPrice || 0) * 1.25} className="text-base lg:text-lg text-zinc-300 line-through font-bold" />
               </div>
 
@@ -758,9 +768,13 @@ const ProductDetails = () => {
           </div>
         </div>
 
+        {/* --- PHASE 14: RECENTLY VIEWED --- */}
+        <RecentlyViewed currentProductId={product._id} />
+        {/* ------------------------------- */}
+
         <div ref={reviewsRef} id="reviews" className="mt-20 pt-10 border-t border-zinc-100 grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="bg-zinc-50 p-6 rounded-3xl space-y-4 h-fit">
-            <h3 className="text-xs font-black uppercase italic">Submit Review</h3>
+            <h3 className="text-xs font-black uppercase">Submit Review</h3>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={18} className={`cursor-pointer ${ratingInput >= n ? 'fill-black text-black' : 'text-zinc-200'}`} />)}
             </div>
@@ -792,7 +806,7 @@ const ProductDetails = () => {
                 )}
               </div>
 
-              {/* MEDIA PREVIEW GRID */}
+              {/* CUSTOMER REVIEWS LIST */}
               {(reviewImages.length > 0 || reviewVideos.length > 0) && (
                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                   {reviewImages.map((img, idx) => (

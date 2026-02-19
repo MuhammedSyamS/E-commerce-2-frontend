@@ -5,12 +5,15 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
 } from 'recharts';
-import { Package, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Package, ArrowLeft, RefreshCw, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../../api/instance';
+import { useToast } from '../../../context/ToastContext';
 
 const AnalyticsOrders = () => {
     const { user } = useStore();
     const navigate = useNavigate();
+    const { addToast } = useToast();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -36,33 +39,74 @@ const AnalyticsOrders = () => {
 
     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
-    const downloadCSV = () => {
-        if (!stats || !stats.recentOrders) return;
+    const downloadCSV = async () => {
+        try {
+            addToast("Preparing Export...", "info");
+            const config = { headers: { Authorization: `Bearer ${user.token}` } };
+            // Fetch ALL orders for export
+            const { data } = await api.get(`/orders/admin/all?pageSize=10000`, config);
 
-        const headers = ["Order ID", "Date", "Customer", "Total", "Status", "Payment"];
-        const rows = stats.recentOrders.map(order => [
-            order._id,
-            new Date(order.createdAt).toLocaleDateString(),
-            order.user?.firstName || 'Guest',
-            order.totalPrice,
-            order.isDelivered ? 'Delivered' : 'Pending',
-            order.isPaid ? 'Paid' : 'Unpaid'
-        ]);
+            if (!data.orders || data.orders.length === 0) {
+                addToast("No orders to export", "error");
+                return;
+            }
 
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(e => e.join(','))
-        ].join('\n');
+            const headers = ["Order ID", "Date", "Customer Name", "Email", "Items Count", "Total Amount", "Status", "Payment", "Payment Method"];
 
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a");
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+            const escape = (text) => {
+                if (text === null || text === undefined) return '';
+                return `"${String(text).replace(/"/g, '""')}"`;
+            };
+
+            const rows = data.orders.map(order => [
+                escape(order._id),
+                escape(new Date(order.createdAt).toLocaleDateString()),
+                escape(order.user ? `${order.user.firstName} ${order.user.lastName}` : 'Guest'),
+                escape(order.user?.email || ''),
+                escape(order.orderItems?.length || 0),
+                escape(order.totalPrice),
+                escape(order.orderStatus || (order.isDelivered ? 'Delivered' : 'Pending')),
+                escape(order.isPaid ? 'Paid' : 'Unpaid'),
+                escape(order.paymentMethod)
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(e => e.join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Order_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            addToast("Export Complete", "success");
+        } catch (error) {
+            console.error("Export Failed:", error);
+            addToast("Failed to export orders", "error");
+        }
+    };
+
+    const downloadPDF = async () => {
+        try {
+            const config = {
+                headers: { Authorization: `Bearer ${user.token}` },
+                responseType: 'blob'
+            };
+            const { data } = await api.get(`/api/reports/orders/pdf`, config);
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `SLOOK_Order_Operations_Report.pdf`);
+            document.body.appendChild(link);
+            link.click();
+        } catch (error) {
+            console.error("Download failed:", error);
+        }
     };
 
     return (
@@ -71,9 +115,14 @@ const AnalyticsOrders = () => {
                 <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black">
                     <ArrowLeft size={16} /> Back to Dashboard
                 </button>
-                <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 transition">
-                    <Package size={16} /> Export CSV
-                </button>
+                <div className="flex gap-2">
+                    <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-zinc-200 transition">
+                        <Package size={14} /> CSV
+                    </button>
+                    <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-zinc-800 transition shadow-lg shadow-zinc-200">
+                        <Download size={14} /> Export PDF
+                    </button>
+                </div>
             </div>
 
             <div className="flex justify-between items-end">
@@ -122,7 +171,7 @@ const AnalyticsOrders = () => {
                                     <p className="text-red-700 text-xs font-bold uppercase">Return Requests</p>
                                 </div>
                             </div>
-                            <button className="px-4 py-2 bg-white text-red-600 font-bold text-xs rounded-lg shadow-sm">Review</button>
+                            <button onClick={() => navigate('/admin/returns')} className="px-4 py-2 bg-white text-red-600 font-bold text-xs rounded-lg shadow-sm hover:bg-red-50 transition">Review</button>
                         </div>
 
                         <div className="p-6 bg-orange-50 rounded-2xl flex items-center justify-between">

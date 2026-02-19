@@ -56,7 +56,7 @@ const Wishlist = () => {
       <div className="container mx-auto px-6 max-w-7xl">
 
         <div className="mb-16 text-center">
-          <h1 className="text-4xl font-black uppercase tracking-tighter mb-2 italic transform -skew-x-3">
+          <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">
             Your Wishlist
           </h1>
           <div className="h-1 w-12 bg-black mx-auto mb-4"></div>

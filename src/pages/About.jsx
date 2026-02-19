@@ -5,7 +5,7 @@ const About = () => {
         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
             <div className="max-w-3xl mx-auto space-y-12">
                 <div className="space-y-4 text-center">
-                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic">The Mission</h1>
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">The Mission</h1>
                     <p className="text-lg font-bold text-zinc-400 max-w-lg mx-auto">
                         "Curating essentials for the modern lifestyle."
                     </p>

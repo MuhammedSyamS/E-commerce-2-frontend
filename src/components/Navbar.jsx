@@ -221,6 +221,10 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
+            <Link to="/social" className="text-white hover:text-zinc-400 transition group flex items-center gap-1">
+              SOCIAL
+              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" title="New Feed" />
+            </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
           </div>
 
@@ -346,11 +350,13 @@ const Navbar = () => {
                       <Link to="/wishlist" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         Wishlist
                       </Link>
+                      <Link to="/social" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all text-amber-500">
+                        Social Feed
+                      </Link>
                       <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                       </Link>
                       <Link
                         to="/support"
-                        onClick={() => setIsProfileOpen(false)}
                         className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black hover:pl-2 transition-all mt-3"
                       >
                         Support Hub
@@ -393,6 +399,9 @@ const Navbar = () => {
           <div className="md:hidden absolute top-24 left-0 w-full bg-black/95 backdrop-blur-3xl rounded-3xl p-10 flex flex-col gap-8 border border-white/10 animate-in slide-in-from-top duration-500">
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">New Arrivals</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">Best Sellers</button>
+            <Link to="/social" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 flex items-center justify-between">
+              Social Feed <span className="bg-amber-400 text-black text-[10px] px-2 py-0.5 rounded-full">NEW</span>
+            </Link>
             <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4">Shop All</Link>
             <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 italic">Support Hub</Link>
           </div>

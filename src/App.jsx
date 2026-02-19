@@ -17,6 +17,7 @@ import AIStylist from './components/AIStylist';
 const Home = lazy(() => import('./pages/Home'));
 const Shop = lazy(() => import('./pages/Shop'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const SocialFeed = lazy(() => import('./pages/SocialFeed'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -80,6 +81,7 @@ const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
 const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
 const AdminMarketing = lazy(() => import('./pages/admin/AdminMarketing'));
+const AdminLooks = lazy(() => import('./pages/admin/AdminLooks')); // NEW
 const AdminBlog = lazy(() => import('./pages/admin/AdminBlog')); // NEW
 const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
@@ -151,6 +153,7 @@ const App = () => {
                 <Route path="/returns-portal" element={<ReturnPortal />} />
                 <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/product/:slug" element={<ProductDetails />} />
+                <Route path="/social" element={<SocialFeed />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -172,10 +175,10 @@ const App = () => {
                 <Route path="/my-returns" element={<MyReturns />} /> {/* New Route */}
                 <Route path="/my-reviews" element={<UserReviews />} />
 
-                <Route path="/my-reviews" element={<UserReviews />} />
+
 
                 <Route path="/returns" element={<Returns />} />
-                <Route path="/returns" element={<Returns />} />
+
                 <Route path="/reviews" element={<Reviews />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/checkout" element={<Checkout />} />
@@ -206,6 +209,7 @@ const App = () => {
                   <Route path="products/bulk" element={<AdminBulkEditor />} />
                   <Route path="orders" element={<AdminOrders />} />
                   <Route path="returns" element={<AdminReturns />} /> {/* NEW ROUTE */}
+                  <Route path="looks" element={<AdminLooks />} /> {/* NEW COMMUNITY MODERATION */}
                   <Route path="support" element={<AdminSupport />} /> {/* NEW SUPPORT */}
                   <Route path="payments" element={<AdminPayments />} />
                   <Route path="marketing" element={<AdminMarketing />} />

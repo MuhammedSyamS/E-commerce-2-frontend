@@ -39,8 +39,8 @@ const Referrals = () => {
     const handleShare = () => {
         if (navigator.share) {
             navigator.share({
-                title: 'Join HighPhaus',
-                text: 'Signup on HighPhaus and get 10% off your first order!',
+                title: 'Join SLOOK',
+                text: 'Signup on SLOOK and get 10% off your first order!',
                 url: referralLink,
             })
                 .then(() => addToast("Link shared successfully!", "success"))
@@ -60,11 +60,11 @@ const Referrals = () => {
                             <Gift size={12} className="inline mr-2 mb-0.5" />
                             Invite & Earn
                         </span>
-                        <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mb-6 leading-none">
+                        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6 leading-none">
                             Share the <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-500 text-6xl">Luxury</span>
                         </h1>
                         <p className="text-zinc-400 text-lg mb-8 font-medium">
-                            Invite your friends to HighPhaus. They get <span className="text-white font-bold">10% off</span> their first order,
+                            Invite your friends to SLOOK. They get <span className="text-white font-bold">10% off</span> their first order,
                             and you earn <span className="text-white font-bold">₹500</span> in store credit for every successful referral.
                         </p>
 
@@ -98,7 +98,7 @@ const Referrals = () => {
                         <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
                             <DollarSign size={24} />
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">₹{referralData.referralEarnings}</h3>
+                        <h3 className="text-4xl font-black uppercase tracking-tighter">₹{referralData.referralEarnings}</h3>
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Total Earnings</p>
                     </div>
 
@@ -106,7 +106,7 @@ const Referrals = () => {
                         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
                             <Users size={24} />
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">{referralData.referredFriends.length}</h3>
+                        <h3 className="text-4xl font-black uppercase tracking-tighter">{referralData.referredFriends.length}</h3>
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Friends Referred</p>
                     </div>
 
@@ -114,7 +114,7 @@ const Referrals = () => {
                         <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
                             <Gift size={24} />
                         </div>
-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">10%</h3>
+                        <h3 className="text-4xl font-black uppercase tracking-tighter">10%</h3>
                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Friend's Discount</p>
                     </div>
                 </div>
@@ -122,7 +122,7 @@ const Referrals = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
                     {/* HOW IT WORKS */}
                     <div className="lg:col-span-1 bg-white border border-zinc-100 rounded-[3rem] p-10 h-fit">
-                        <h2 className="text-sm font-black uppercase italic tracking-tight mb-8 border-b border-zinc-50 pb-4">How to Earn</h2>
+                        <h2 className="text-sm font-black uppercase tracking-tight mb-8 border-b border-zinc-50 pb-4">How to Earn</h2>
                         <div className="space-y-10">
                             {[
                                 { num: "1", title: "Send Invite", desc: "Share your unique referral link with friends." },
@@ -130,7 +130,7 @@ const Referrals = () => {
                                 { num: "3", title: "You Earn", desc: "Once their order is delivered, you get ₹500 store credit." }
                             ].map((step) => (
                                 <div key={step.num} className="flex gap-4">
-                                    <span className="text-3xl font-black italic text-zinc-200">{step.num}</span>
+                                    <span className="text-3xl font-black text-zinc-200">{step.num}</span>
                                     <div>
                                         <h4 className="text-[11px] font-black uppercase tracking-wide mb-1">{step.title}</h4>
                                         <p className="text-xs text-zinc-500 leading-relaxed font-medium">{step.desc}</p>
@@ -143,7 +143,7 @@ const Referrals = () => {
                     {/* REFERRED FRIENDS LIST */}
                     <div className="lg:col-span-2 bg-white border border-zinc-100 rounded-[3rem] p-10">
                         <div className="flex items-center justify-between mb-8 border-b border-zinc-50 pb-4">
-                            <h2 className="text-sm font-black uppercase italic tracking-tight">Referred Friends</h2>
+                            <h2 className="text-sm font-black uppercase tracking-tight">Referred Friends</h2>
                             <span className="text-[9px] font-bold text-zinc-400 uppercase">{referralData.referredFriends.length} Total</span>
                         </div>
 

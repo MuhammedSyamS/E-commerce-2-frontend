@@ -299,6 +299,12 @@ const AdminReturns = () => {
                                         <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
                                             {ret.type}
                                         </span>
+                                        {ret.type === 'Exchange' && ret.requestedVariant && (
+                                            <div className="mt-1 flex flex-col">
+                                                <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Requested:</span>
+                                                <span className="text-[10px] font-black uppercase text-purple-600">{ret.requestedVariant.size} {ret.requestedVariant.color && `/ ${ret.requestedVariant.color}`}</span>
+                                            </div>
+                                        )}
                                         <div className="mt-1 text-[10px] font-medium text-zinc-600">{ret.reason}</div>
                                     </td>
                                     <td className="px-6 py-4">

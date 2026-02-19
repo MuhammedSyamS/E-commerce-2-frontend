@@ -107,6 +107,131 @@ const Shop = () => {
     setKeyword('');
   };
 
+  const FilterContent = ({ isMobile = false }) => (
+    <div className={`space-y-14 ${isMobile ? 'pr-2' : ''}`}>
+      {/* Status Section */}
+      <section className="space-y-6">
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Artifact Status</h4>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { id: 'inStock', label: 'Stock' },
+            { id: 'isNewArrival', label: 'New' },
+            { id: 'isBestSeller', label: 'Best' }
+          ].map(flag => (
+            <button
+              key={flag.id}
+              onClick={() => setFlags({ ...flags, [flag.id]: !flags[flag.id] })}
+              className={`py-3 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${flags[flag.id]
+                ? (isMobile ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-black text-white border-black')
+                : (isMobile ? 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-transparent text-zinc-300 border-zinc-100 hover:border-zinc-200')}`}
+            >
+              {flag.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="space-y-8">
+        <div className="space-y-6">
+          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Main Category</h4>
+          <div className="flex flex-wrap gap-2">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCategory(cat); setSubcategory('All'); }}
+                className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${category === cat
+                  ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
+                  : (isMobile ? 'text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'text-zinc-400 border-zinc-100 hover:border-zinc-200')}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {subcategories.length > 0 && (
+          <div className="space-y-6">
+            <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Sub-Style</h4>
+            <div className="flex flex-wrap gap-2">
+              {subcategories.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSubcategory(subcategory === s ? 'All' : s)}
+                  className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === s
+                    ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
+                    : (isMobile ? 'text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'text-zinc-400 border-zinc-100 hover:border-zinc-200')}`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Colors */}
+      <section className="space-y-6">
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Visual Tints</h4>
+        <div className="flex flex-wrap gap-3">
+          {availableColors.map(c => (
+            <button
+              key={c}
+              onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${filters.color === c
+                ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
+                : (isMobile ? 'bg-zinc-900/40 text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-zinc-50 text-zinc-400 border-zinc-100 hover:border-zinc-200')
+                }`}
+            >
+              <div className="w-2 h-2 rounded-full border border-zinc-200" style={{ backgroundColor: c.toLowerCase() }}></div>
+              {c}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Sizes */}
+      <section className="space-y-6">
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Dimension Spec</h4>
+        <div className="flex flex-wrap gap-3">
+          {availableSizes.map(s => (
+            <button
+              key={s}
+              onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
+              className={`w-12 h-12 flex items-center justify-center rounded-2xl border text-[11px] font-black transition-all ${filters.size === s
+                ? (isMobile ? 'bg-white text-black border-white scale-110' : 'bg-black text-white border-black scale-105')
+                : (isMobile ? 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-transparent text-zinc-300 border-zinc-100 hover:border-zinc-200')
+                }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Price Range */}
+      <section className="space-y-6">
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Valuation (₹)</h4>
+        <div className="flex items-center gap-3">
+          <input
+            type="number"
+            placeholder="Min"
+            value={priceRange.min}
+            onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+            className={`flex-1 border p-4 rounded-2xl text-[11px] font-black outline-none transition-all ${isMobile ? 'bg-zinc-900/50 border-zinc-900 text-white focus:border-zinc-700' : 'bg-zinc-50 border-zinc-100 text-black focus:border-black'}`}
+          />
+          <input
+            type="number"
+            placeholder="Max"
+            value={priceRange.max}
+            onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+            className={`flex-1 border p-4 rounded-2xl text-[11px] font-black outline-none transition-all ${isMobile ? 'bg-zinc-900/50 border-zinc-900 text-white focus:border-zinc-700' : 'bg-zinc-50 border-zinc-100 text-black focus:border-black'}`}
+          />
+        </div>
+      </section>
+    </div>
+  );
+
   return (
     <div className="bg-white min-h-screen pt-40 pb-20 selection:bg-black selection:text-white">
       <Helmet>
@@ -169,42 +294,59 @@ const Shop = () => {
           </div>
         </div>
 
-        {/* --- PRODUCT GRID --- */}
-        {loading ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="space-y-6">
-                <Skeleton className="aspect-square w-full rounded-xl bg-zinc-50" />
-                <div className="space-y-3 px-2">
-                  <Skeleton className="h-4 w-3/4 rounded-full" />
-                  <Skeleton className="h-3 w-1/4 rounded-full" />
-                </div>
-              </div>
-            ))}
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-16">
+        {/* --- DESKTOP SIDEBAR --- */}
+        <aside className="hidden lg:block w-72 shrink-0 sticky top-48 h-[calc(100vh-240px)] overflow-y-auto no-scrollbar pb-20">
+          <div className="mb-12">
+            <h2 className="text-4xl font-black uppercase tracking-tighter leading-none mb-1">Catalog</h2>
+            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-300">Curated Elite Discovery</p>
           </div>
-        ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
-            {products.length > 0 ? (
-              products.map((product) => (
-                <div key={product._id} className="group/item animate-in fade-in slide-in-from-bottom-8 duration-700">
-                  <ProductCard product={product} />
-                </div>
-              ))
-            ) : (
-              <div className="col-span-full py-40 text-center rounded-[3rem] bg-zinc-50 border-2 border-dashed border-zinc-100">
-                <RotateCcw size={40} className="mx-auto text-zinc-200 mb-6" />
-                <h3 className="text-xl font-black uppercase tracking-tighter mb-2">No Artifacts Found</h3>
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8">Refine your parameters or reset</p>
-                <button
-                  onClick={resetFilters}
-                  className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
-                >
-                  Reset Discovery
-                </button>
-              </div>
-            )}
+          <FilterContent />
+          <div className="mt-12 pt-10 border-t border-zinc-100">
+            <button onClick={resetFilters} className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">Reset All Parameters</button>
           </div>
-        )}
+        </aside>
+
+        {/* --- MAIN GRID --- */}
+        <div className="flex-1">
+          {loading ? (
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="space-y-6">
+                  <Skeleton className="aspect-square w-full rounded-xl bg-zinc-50" />
+                  <div className="space-y-3 px-2">
+                    <Skeleton className="h-4 w-3/4 rounded-full" />
+                    <Skeleton className="h-3 w-1/4 rounded-full" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
+              {products.length > 0 ? (
+                products.map((product) => (
+                  <div key={product._id} className="group/item animate-in fade-in slide-in-from-bottom-8 duration-700">
+                    <ProductCard product={product} />
+                  </div>
+                ))
+              ) : (
+                <div className="col-span-full py-40 text-center rounded-[3rem] bg-zinc-50 border-2 border-dashed border-zinc-100">
+                  <RotateCcw size={40} className="mx-auto text-zinc-200 mb-6 font-thin" />
+                  <h3 className="text-xl font-black uppercase tracking-tighter mb-2">No Artifacts Found</h3>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8">Refine your parameters or reset</p>
+                  <button
+                    onClick={resetFilters}
+                    className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+                  >
+                    Reset Discovery
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* --- FILTER DRAWER (ELITE BLACK THEME) --- */}
@@ -224,7 +366,7 @@ const Shop = () => {
         >
           <div className="flex items-center justify-between mb-12">
             <div>
-              <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white leading-none">Catalog</h2>
+              <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">Catalog</h2>
               <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Explorer / Elite Specification</p>
             </div>
             <button
@@ -235,143 +377,8 @@ const Shop = () => {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto no-scrollbar space-y-14 pr-2 border-t border-zinc-900 pt-10">
-            {/* Status Section */}
-            <section className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Artifact Status</h4>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'inStock', label: 'Stock' },
-                  { id: 'isNewArrival', label: 'New' },
-                  { id: 'isBestSeller', label: 'Best' }
-                ].map(flag => (
-                  <button
-                    key={flag.id}
-                    onClick={() => setFlags({ ...flags, [flag.id]: !flags[flag.id] })}
-                    className={`py-3 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${flags[flag.id] ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
-                  >
-                    {flag.label}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* General Specs - Category & Style */}
-            <section className="space-y-8">
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Main Category</h4>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map(cat => (
-                    <button
-                      key={cat}
-                      onClick={() => { setCategory(cat); setSubcategory('All'); }}
-                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${category === cat ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {subcategories.length > 0 && (
-                <div className="space-y-6">
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Sub-Style</h4>
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => setSubcategory('All')}
-                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === 'All' ? 'bg-zinc-800 text-white border-zinc-700' : 'text-zinc-400 border-zinc-900 hover:border-zinc-700'}`}
-                    >
-                      Default
-                    </button>
-                    {subcategories.map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setSubcategory(subcategory === s ? 'All' : s)}
-                        className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === s ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </section>
-
-            {/* Technical Coloring */}
-            <section className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Visual Tints (Color Spec)</h4>
-              <div className="flex flex-wrap gap-3">
-                {availableColors.map(c => (
-                  <button
-                    key={c}
-                    onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${filters.color === c ? 'bg-white text-black border-white' : 'bg-zinc-900/40 text-zinc-500 border-zinc-900 hover:border-zinc-700'
-                      }`}
-                  >
-                    <div className="w-2 h-2 rounded-full border border-white/20" style={{ backgroundColor: c.toLowerCase() }}></div>
-                    {c}
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            {/* Dimensioning / Sizing */}
-            <section className="space-y-6">
-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Dimension Spec (Size)</h4>
-              <div className="flex flex-wrap gap-3">
-                {availableSizes.length > 0 ? availableSizes.map(s => (
-                  <button
-                    key={s}
-                    onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
-                    className={`w-14 h-14 flex items-center justify-center rounded-2xl border text-[11px] font-black transition-all ${filters.size === s ? 'bg-white text-black border-white shadow-xl scale-110' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'
-                      }`}
-                  >
-                    {s}
-                  </button>
-                )) : (
-                  <p className="text-[10px] font-black uppercase text-zinc-800 italic">No Size Specifications Found</p>
-                )}
-              </div>
-            </section>
-
-            {/* Valuation & Reputation */}
-            <section className="grid grid-cols-1 gap-12">
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Valuation Range (₹)</h4>
-                <div className="flex items-center gap-4">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange.min}
-                    onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
-                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
-                  />
-                  <div className="w-2 h-[2px] bg-zinc-800 shrink-0"></div>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange.max}
-                    onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
-                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Public Reputation</h4>
-                <div className="grid grid-cols-4 gap-2">
-                  {[1, 2, 3, 4].map(star => (
-                    <button
-                      key={star}
-                      onClick={() => setFilters({ ...filters, minRating: filters.minRating === star ? 0 : star })}
-                      className={`py-4 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${filters.minRating === star ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
-                    >
-                      {star}+ ★
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
+          <div className="flex-1 overflow-y-auto no-scrollbar border-t border-zinc-900 pt-10">
+            <FilterContent isMobile={true} />
           </div>
 
           <div className="pt-10 flex items-center gap-4 border-t border-zinc-900 mt-auto bg-zinc-950 pb-6">

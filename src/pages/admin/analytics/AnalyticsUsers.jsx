@@ -5,7 +5,7 @@ import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar
 } from 'recharts';
-import { Users, ArrowLeft, Trophy } from 'lucide-react';
+import { Users, ArrowLeft, Trophy, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AnalyticsUsers = () => {
@@ -33,6 +33,24 @@ const AnalyticsUsers = () => {
 
     if (!stats && loading) return <div className="p-8 text-center">Loading...</div>;
 
+    const downloadReport = async () => {
+        try {
+            const config = {
+                headers: { Authorization: `Bearer ${user.token}` },
+                responseType: 'blob'
+            };
+            const { data } = await axios.get(`/api/reports/users/pdf`, config);
+            const url = window.URL.createObjectURL(new Blob([data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `SLOOK_User_Report.pdf`);
+            document.body.appendChild(link);
+            link.click();
+        } catch (error) {
+            console.error("Download failed:", error);
+        }
+    };
+
     return (
         <div className="p-8 space-y-8 animate-in fade-in duration-500">
             <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black mb-4">
@@ -44,6 +62,12 @@ const AnalyticsUsers = () => {
                     <h1 className="text-3xl font-black italic tracking-tighter text-zinc-900">USER INSIGHTS<span className="text-blue-500">.</span></h1>
                     <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Growth & Customer Loyalty</p>
                 </div>
+                <button
+                    onClick={downloadReport}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-zinc-900 text-white hover:bg-black transition shadow-lg shadow-zinc-200"
+                >
+                    <Download size={14} /> Download PDF
+                </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

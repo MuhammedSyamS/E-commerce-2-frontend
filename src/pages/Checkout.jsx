@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
-import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star } from 'lucide-react';
+import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star, Gift, Zap } from 'lucide-react';
 import api from '../api/instance';
 import Price from '../components/Price';
 
@@ -21,6 +21,9 @@ const Checkout = () => {
   const [discountError, setDiscountError] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [pointsRedeemed, setPointsRedeemed] = useState(0); // NEW: Loyalty Logic
+  const [isGift, setIsGift] = useState(false);
+  const [giftNote, setGiftNote] = useState('');
+  const [premiumPackaging, setPremiumPackaging] = useState(false);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -64,8 +67,9 @@ const Checkout = () => {
 
   const taxPrice = (subtotal * (siteSettings.taxRate / 100));
   const shippingPrice = subtotal >= siteSettings.freeShippingThreshold ? 0 : siteSettings.shippingCharge;
+  const packagingPrice = premiumPackaging ? 250 : 0; // Premium SLOOK Packaging
 
-  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice);
+  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice + packagingPrice);
 
   const getDeliveryEstimate = () => {
     const min = siteSettings.minDeliveryDays || 3;
@@ -75,8 +79,8 @@ const Checkout = () => {
     minDate.setDate(minDate.getDate() + min);
     maxDate.setDate(maxDate.getDate() + max);
 
-    const options = { month: 'short', day: 'numeric' };
-    return `${minDate.toLocaleDateString('en-US', options)} - ${maxDate.toLocaleDateString('en-US', options)}`;
+    const options = { weekday: 'long', month: 'short', day: 'numeric' };
+    return `Arriving ${minDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', options)}`;
   };
 
   const [formData, setFormData] = useState({
@@ -154,7 +158,9 @@ const Checkout = () => {
         discountAmount,
         couponCode: couponApplied?.code || (coupon?.code || ''),
         pointsToRedeem: pointsRedeemed,
-        orderNote: formData.orderNote
+        orderNote: isGift ? `GIFT: ${giftNote}` : formData.orderNote,
+        isGift,
+        premiumPackaging
       };
 
       // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
@@ -388,15 +394,49 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Special Instructions / Order Notes (Optional)</label>
-                    <textarea
-                      rows="2"
-                      placeholder="e.g. Leave at the back gate, specific delivery time, etc."
-                      className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-medium text-xs resize-none"
-                      value={formData.orderNote}
-                      onChange={e => setFormData({ ...formData, orderNote: e.target.value })}
-                    />
+                  {/* PREMIUM GIFT OPTIONS */}
+                  <div className="bg-zinc-50 p-6 rounded-3xl space-y-6 border border-zinc-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 bg-white rounded-xl shadow-sm"><Gift size={18} className="text-zinc-900" /></div>
+                        <div>
+                          <p className="text-xs font-black uppercase tracking-tight">Gift Options</p>
+                          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Make it a SLOOK Moment</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsGift(!isGift)}
+                        className={`w-12 h-6 rounded-full transition-colors relative ${isGift ? 'bg-black' : 'bg-zinc-200'}`}
+                      >
+                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isGift ? 'left-7' : 'left-1'}`} />
+                      </button>
+                    </div>
+
+                    {isGift && (
+                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
+                        <textarea
+                          placeholder="WRITE A HEARTFELT NOTE..."
+                          className="w-full bg-white border border-zinc-100 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-black transition-all"
+                          value={giftNote}
+                          onChange={(e) => setGiftNote(e.target.value)}
+                        />
+
+                        <div
+                          onClick={() => setPremiumPackaging(!premiumPackaging)}
+                          className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${premiumPackaging ? 'border-black bg-white shadow-md' : 'border-zinc-100 opacity-60'}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Zap size={16} className={premiumPackaging ? 'text-amber-400 fill-amber-400' : 'text-zinc-300'} />
+                            <div>
+                              <p className="text-[10px] font-black uppercase">Premium SLOOK Packaging</p>
+                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">+ ₹250.00</p>
+                            </div>
+                          </div>
+                          {premiumPackaging && <CheckCircle2 size={16} className="text-black" />}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="space-y-2">

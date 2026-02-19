@@ -17,6 +17,7 @@ const AdminAnalytics = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [timeRange, setTimeRange] = useState('daily'); // 'daily', 'weekly', 'monthly', 'yearly'
+    const [alerts, setAlerts] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -33,6 +34,17 @@ const AdminAnalytics = () => {
             }
         };
         if (user?.token) fetchStats();
+
+        const fetchAlerts = async () => {
+            try {
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                const { data } = await axios.get('/api/alerts', config);
+                setAlerts(data);
+            } catch (err) {
+                console.error("Alerts Fetch Failed:", err);
+            }
+        };
+        if (user?.token) fetchAlerts();
     }, [user, timeRange]);
 
     const downloadReport = () => {
@@ -134,6 +146,45 @@ const AdminAnalytics = () => {
                     </div>
                 </div>
             </div>
+
+            {/* SYSTEM ALERTS WIDGET */}
+            {alerts.length > 0 && (
+                <div className="bg-red-50 border border-red-100 rounded-2xl p-6 animate-in slide-in-from-top duration-500">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-xs font-black uppercase tracking-widest text-red-600 flex items-center gap-2">
+                            <AlertCircle size={16} /> Critical System Alerts ({alerts.length})
+                        </h3>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                                    await axios.delete('/api/alerts', config);
+                                    setAlerts([]);
+                                } catch (e) { console.error(e); }
+                            }}
+                            className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 transition"
+                        >
+                            Dismiss All
+                        </button>
+                    </div>
+                    <div className="space-y-3">
+                        {alerts.map(alert => (
+                            <div key={alert._id} className="bg-white p-3 rounded-xl border border-red-50 flex items-center justify-between shadow-sm">
+                                <div className="flex items-center gap-3">
+                                    <div className={`w-2 h-2 rounded-full ${alert.severity === 'critical' ? 'bg-red-500 animate-ping' : 'bg-amber-500'}`}></div>
+                                    <p className="text-[11px] font-bold text-zinc-900">{alert.message}</p>
+                                </div>
+                                <button
+                                    onClick={() => navigate('/admin/products/bulk')}
+                                    className="px-3 py-1 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition"
+                                >
+                                    Restock
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* 1. KEY METRICS ROW (Summary for Selected Period) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
+import axios from 'axios';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity, Camera } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { io } from 'socket.io-client';
@@ -13,9 +14,12 @@ const AdminLayout = () => {
     const { addToast } = useToast();
     const navigate = useNavigate();
     const location = useLocation();
+    const [alerts, setAlerts] = React.useState([]);
 
     // --- SOCKET.IO LISTENER ---
     useEffect(() => {
+        if (!user?.token) return;
+
         const socket = io();
 
         socket.on('connect', () => {
@@ -32,10 +36,26 @@ const AdminLayout = () => {
             addToast(`New Review (${data.rating}★) on ${data.productName}`, "info");
         });
 
+        socket.on('new-return', (data) => {
+            addToast(`New Return Request: ${data.type} by ${data.user.firstName}`, "info"); // Or 'warning' for attention
+        });
+
+        const fetchAlerts = async () => {
+            try {
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
+                const { data } = await axios.get('/api/alerts', config);
+                setAlerts(data);
+            } catch (err) {
+                console.error("Alerts Fetch Failed:", err);
+            }
+        };
+
+        fetchAlerts();
+
         return () => {
             socket.disconnect();
         };
-    }, [addToast]);
+    }, [addToast, user?.token]);
     // --------------------------
 
     // CLOSE MOBILE DRAWER ON NAVIGATE
@@ -74,21 +94,27 @@ const AdminLayout = () => {
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 whitespace-nowrap">
                     <nav className="space-y-2">
                         {/* DASHBOARD */}
+                        {/* DASHBOARD - ADMIN ONLY */}
                         {(user?.isAdmin || user?.role === 'admin') && (
-                            <>
-                                <NavLink to="/admin" end className={navClass}>
-                                    <LayoutDashboard size={18} className="flex-shrink-0" /> Dashboard
-                                </NavLink>
-                                <NavLink to="/admin/analytics" className={navClass}>
-                                    <TrendingUp size={18} className="flex-shrink-0" /> Analytics
-                                </NavLink>
-                            </>
+                            <NavLink to="/admin" end className={navClass}>
+                                <LayoutDashboard size={18} className="flex-shrink-0" /> Dashboard
+                            </NavLink>
+                        )}
+
+                        {/* ANALYTICS */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats')) && (
+                            <NavLink to="/admin/analytics" className={navClass}>
+                                <TrendingUp size={18} className="flex-shrink-0" /> Analytics
+                            </NavLink>
                         )}
 
                         {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
                             <>
                                 <NavLink to="/admin/products" className={navClass}>
                                     <Package size={18} className="flex-shrink-0" /> Inventory
+                                    {alerts.some(a => a.type === 'low_stock') && (
+                                        <span className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm shadow-red-500/50"></span>
+                                    )}
                                 </NavLink>
                                 <NavLink to="/admin/products/bulk" className={navClass}>
                                     <Edit3 size={18} className="flex-shrink-0" /> Bulk Editor
@@ -107,20 +133,29 @@ const AdminLayout = () => {
                             </>
                         )}
 
-                        {/* ADMIN ONLY ACTIONS */}
-                        {isAdmin && (
+                        {/* ADMIN & MANAGER ACTIONS */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_users')) && (
+                            <NavLink to="/admin/users" className={navClass}>
+                                <Users size={18} className="flex-shrink-0" /> Users
+                            </NavLink>
+                        )}
+
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_logs')) && (
+                            <NavLink to="/admin/logs" className={navClass}>
+                                <Shield size={18} className="flex-shrink-0" /> Logs
+                            </NavLink>
+                        )}
+
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_reports')) && (
+                            <NavLink to="/admin/reports" className={navClass}>
+                                <LayoutDashboard size={18} className="flex-shrink-0" /> Reports
+                            </NavLink>
+                        )}
+
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_content')) && (
                             <>
-                                <NavLink to="/admin/users" className={navClass}>
-                                    <Users size={18} className="flex-shrink-0" /> Users
-                                </NavLink>
-                                <NavLink to="/admin/logs" className={navClass}>
-                                    <Shield size={18} className="flex-shrink-0" /> Logs
-                                </NavLink>
-                                <NavLink to="/admin/reports" className={navClass}>
-                                    <LayoutDashboard size={18} className="flex-shrink-0" /> Reports
-                                </NavLink>
-                                <NavLink to="/admin/marketing" className={navClass}>
-                                    <Tag size={18} className="flex-shrink-0" /> Offers
+                                <NavLink to="/admin/looks" className={navClass}>
+                                    <Camera size={18} className="flex-shrink-0" /> Community Styles
                                 </NavLink>
                                 <NavLink to="/admin/blog" className={navClass}>
                                     <FileText size={18} className="flex-shrink-0" /> Blog
@@ -128,8 +163,14 @@ const AdminLayout = () => {
                             </>
                         )}
 
-                        {/* REVIEWS - Visible to Admin and Managers */}
-                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_marketing')) && (
+                            <NavLink to="/admin/marketing" className={navClass}>
+                                <Tag size={18} className="flex-shrink-0" /> Offers
+                            </NavLink>
+                        )}
+
+                        {/* REVIEWS */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_reviews')) && (
                             <NavLink to="/admin/reviews" className={navClass}>
                                 <MessageSquare size={18} className="flex-shrink-0" /> Reviews
                             </NavLink>
@@ -152,7 +193,7 @@ const AdminLayout = () => {
                     </nav>
                 </div>
 
-                <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
+                <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
                     <HelpCircle size={18} className="flex-shrink-0" /> Help & Support
                 </a>
                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition whitespace-nowrap">
@@ -183,7 +224,7 @@ const AdminLayout = () => {
                 >
                     {/* HEADER */}
                     <div className="mb-8 flex justify-between items-center flex-shrink-0">
-                        <h1 className="text-2xl font-black italic tracking-tighter">SLOOK<span className="text-red-500">ADMIN</span></h1>
+                        <h1 className="text-2xl font-black tracking-tighter">SLOOK<span className="text-red-500">ADMIN</span></h1>
                         <button
                             type="button"
                             onClick={(e) => {
@@ -200,15 +241,18 @@ const AdminLayout = () => {
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <nav className="space-y-2 pb-24">
                             {/* Dashboard */}
+                            {/* Dashboard - Admin Only */}
                             {(user?.isAdmin || user?.role === 'admin') && (
-                                <>
-                                    <NavLink to="/admin" end className={navClass}>
-                                        <LayoutDashboard size={18} /> Dashboard
-                                    </NavLink>
-                                    <NavLink to="/admin/analytics" className={navClass}>
-                                        <TrendingUp size={18} /> Analytics
-                                    </NavLink>
-                                </>
+                                <NavLink to="/admin" end className={navClass}>
+                                    <LayoutDashboard size={18} /> Dashboard
+                                </NavLink>
+                            )}
+
+                            {/* Analytics */}
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats')) && (
+                                <NavLink to="/admin/analytics" className={navClass}>
+                                    <TrendingUp size={18} /> Analytics
+                                </NavLink>
                             )}
 
                             {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
@@ -223,29 +267,52 @@ const AdminLayout = () => {
                             )}
 
                             {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_orders')) && (
-                                <NavLink to="/admin/orders" className={navClass}>
-                                    <ShoppingBag size={18} /> Orders
-                                </NavLink>
-                            )}
-
-                            {isAdmin && (
                                 <>
-                                    <NavLink to="/admin/users" className={navClass}>
-                                        <Users size={18} /> Users
+                                    <NavLink to="/admin/orders" className={navClass}>
+                                        <ShoppingBag size={18} /> Orders
                                     </NavLink>
-                                    <NavLink to="/admin/logs" className={navClass}>
-                                        <Shield size={18} /> Logs
-                                    </NavLink>
-                                    <NavLink to="/admin/reports" className={navClass}>
-                                        <LayoutDashboard size={18} /> Reports
-                                    </NavLink>
-                                    <NavLink to="/admin/marketing" className={navClass}>
-                                        <Tag size={18} /> Offers
+                                    <NavLink to="/admin/returns" className={navClass}>
+                                        <RefreshCw size={18} /> Returns
                                     </NavLink>
                                 </>
                             )}
 
-                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_users')) && (
+                                <NavLink to="/admin/users" className={navClass}>
+                                    <Users size={18} /> Users
+                                </NavLink>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_logs')) && (
+                                <NavLink to="/admin/logs" className={navClass}>
+                                    <Shield size={18} /> Logs
+                                </NavLink>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_reports')) && (
+                                <NavLink to="/admin/reports" className={navClass}>
+                                    <LayoutDashboard size={18} /> Reports
+                                </NavLink>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_content')) && (
+                                <>
+                                    <NavLink to="/admin/looks" className={navClass}>
+                                        <Camera size={18} /> Community Styles
+                                    </NavLink>
+                                    <NavLink to="/admin/blog" className={navClass}>
+                                        <FileText size={18} /> Blog
+                                    </NavLink>
+                                </>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_marketing')) && (
+                                <NavLink to="/admin/marketing" className={navClass}>
+                                    <Tag size={18} /> Offers
+                                </NavLink>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_reviews')) && (
                                 <NavLink to="/admin/reviews" className={navClass}>
                                     <MessageSquare size={18} /> Reviews
                                 </NavLink>
@@ -269,7 +336,7 @@ const AdminLayout = () => {
 
                     {/* LOGOUT */}
                     <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0 space-y-2">
-                        <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
+                        <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
                             <HelpCircle size={18} /> Help & Support
                         </a>
                         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition w-full">
