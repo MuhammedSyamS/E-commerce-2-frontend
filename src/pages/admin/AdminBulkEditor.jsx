@@ -15,6 +15,8 @@ const AdminBulkEditor = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [filterCategory, setFilterCategory] = useState('All');
     const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+    const [stockReason, setStockReason] = useState('Admin Adjustment');
+    const [stockNote, setStockNote] = useState('');
     const [edits, setEdits] = useState({}); // { productId: { field: value } }
 
     useEffect(() => {
@@ -42,15 +44,28 @@ const AdminBulkEditor = () => {
     };
 
     const saveAll = async () => {
+        const editsArray = Object.values(edits);
+        const hasStockEdit = editsArray.some(e => e.countInStock !== undefined);
+
+        if (hasStockEdit && !stockReason) {
+            addToast("Please provide a reason for stock changes", "error");
+            return;
+        }
+
         const updatedCount = Object.keys(edits).length;
         if (updatedCount === 0) return;
 
         setSaving(true);
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put('/api/products/bulk-update', { edits }, config);
+            await axios.put('/api/products/bulk-update', {
+                edits,
+                stockReason: hasStockEdit ? stockReason : undefined,
+                stockNote: hasStockEdit ? stockNote : undefined
+            }, config);
             addToast(`Successfully updated ${updatedCount} products`, "success");
             setEdits({});
+            setStockNote('');
             // Re-fetch to sync
             const { data } = await axios.get('/api/products');
             setProducts(data);
@@ -171,11 +186,42 @@ const AdminBulkEditor = () => {
             </div>
 
             {/* TOOLS & LEGEND */}
-            <div className="flex items-center gap-6 bg-amber-50 border border-amber-100 p-4 rounded-2xl text-amber-800">
-                <AlertCircle size={20} />
-                <p className="text-[10px] font-bold uppercase tracking-widest">
-                    Changes are staged locally. Click <span className="font-black">SAVE ALL CHANGES</span> to commit to the database.
-                </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-6 bg-amber-50 border border-amber-100 p-4 rounded-2xl text-amber-800">
+                    <AlertCircle size={20} />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">
+                        Changes are staged locally. Click <span className="font-black">SAVE ALL CHANGES</span> to commit.
+                    </p>
+                </div>
+
+                {Object.values(edits).some(e => e.countInStock !== undefined) && (
+                    <div className="flex flex-col md:flex-row gap-3 bg-purple-50 border border-purple-100 p-4 rounded-2xl animate-in slide-in-from-top-2 duration-300">
+                        <div className="flex-1">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-purple-400 block mb-1">Stock Adjustment Reason</label>
+                            <select
+                                value={stockReason}
+                                onChange={(e) => setStockReason(e.target.value)}
+                                className="w-full bg-white border border-purple-100 rounded-lg px-3 py-2 text-[10px] font-bold uppercase outline-none focus:ring-1 ring-purple-400"
+                            >
+                                <option value="Admin Adjustment">Admin Adjustment</option>
+                                <option value="Restock">Restock</option>
+                                <option value="Correction">Inventory Correction</option>
+                                <option value="Return to Shelf">Return to Shelf</option>
+                                <option value="Damaged/Loss">Damaged / Loss</option>
+                            </select>
+                        </div>
+                        <div className="flex-[2]">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-purple-400 block mb-1">Adjustment Note (Optional)</label>
+                            <input
+                                type="text"
+                                placeholder="E.G. RESTOCKED FROM WAREHOUSE B..."
+                                value={stockNote}
+                                onChange={(e) => setStockNote(e.target.value)}
+                                className="w-full bg-white border border-purple-100 rounded-lg px-3 py-2 text-[10px] font-bold uppercase outline-none focus:ring-1 ring-purple-400 placeholder:text-purple-200"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* PRODUCT LIST / TABLE */}

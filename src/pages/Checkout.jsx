@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star, Gift, Zap } from 'lucide-react';
 import api from '../api/instance';
@@ -9,13 +9,14 @@ import Price from '../components/Price';
 const Checkout = () => {
   const { user, setUser, coupon } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const { addToast } = useToast();
   const [step, setStep] = useState('shipping');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
 
-  // Robust cart item resolution
-  const cartItems = user?.cart || [];
+  // Enhanced cart item resolution: Support for "Buy Now" (Single Item Checkout)
+  const cartItems = location.state?.checkoutSingleItem ? [location.state.checkoutSingleItem] : (user?.cart || []);
   const [couponCode, setCouponCode] = useState('');
   const [couponApplied, setCouponApplied] = useState(null); // { code, discountAmount }
   const [discountError, setDiscountError] = useState('');
@@ -30,12 +31,11 @@ const Checkout = () => {
     setIsValidatingCoupon(true);
     setDiscountError('');
     try {
-      const config = { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user.token}` } };
       const { data } = await api.post('/marketing/verify-coupon', {
         code: couponCode,
         cartTotal: calculateSubtotal(),
         userId: user?._id || user?.id
-      }, config);
+      });
 
       setCouponApplied({ code: data.code, discountAmount: data.discount }); // mapped from 'discount'
       addToast('Coupon Applied Successfully!', 'success');
@@ -72,15 +72,10 @@ const Checkout = () => {
   const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice + packagingPrice);
 
   const getDeliveryEstimate = () => {
-    const min = siteSettings.minDeliveryDays || 3;
-    const max = siteSettings.maxDeliveryDays || 7;
-    const minDate = new Date();
-    const maxDate = new Date();
-    minDate.setDate(minDate.getDate() + min);
-    maxDate.setDate(maxDate.getDate() + max);
-
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 7);
     const options = { weekday: 'long', month: 'short', day: 'numeric' };
-    return `Arriving ${minDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', options)}`;
+    return `Arriving by ${deliveryDate.toLocaleDateString('en-US', options)}`;
   };
 
   const [formData, setFormData] = useState({
@@ -200,8 +195,13 @@ const Checkout = () => {
 
               // Clear Cart & Redirect
               await api.delete('/cart/clear', config);
-              setUser({ ...user, cart: [] });
-              navigate('/order-success', { state: { orderId: orderRes.data._id }, replace: true });
+              // Update User from response (if provided)
+              if (orderRes.data.user) {
+                setUser({ ...orderRes.data.user, token: user.token });
+              } else {
+                setUser({ ...user, cart: [] });
+              }
+              navigate('/order-success', { state: { orderId: orderRes.data.order?._id || orderRes.data._id }, replace: true });
             } catch (mockErr) {
               console.error("PAYMENT: Mock Error:", mockErr);
               addToast("Mock Payment Failed", "error");
@@ -228,27 +228,53 @@ const Checkout = () => {
           image: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png", // Use valid image
           order_id: paymentOrder.id,
           handler: async function (response) {
+            console.log("✅ RAZORPAY HANDLER FIRED:", {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              has_signature: !!response.razorpay_signature
+            });
             try {
               // Create Local Order (Pending)
-              const orderRes = await api.post('/orders', orderData, config);
+              let orderRes;
+              try {
+                orderRes = await api.post('/orders', orderData, config);
+              } catch (orderErr) {
+                const msg = orderErr.response?.data?.message || "Order creation failed";
+                console.error("ORDER CREATE ERROR:", orderErr);
+                addToast(`Order failed: ${msg}`, "error");
+                setIsSubmitting(false);
+                return;
+              }
 
-              // Verify
-              await api.post('/payments/verify', {
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                orderId: orderRes.data._id
-              }, config);
+              // Verify payment with backend
+              try {
+                await api.post('/payments/verify', {
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                  orderId: orderRes.data._id
+                }, config);
+              } catch (verifyErr) {
+                const msg = verifyErr.response?.data?.message || "Signature verification failed";
+                console.error("VERIFY ERROR:", verifyErr.response?.data);
+                addToast(`Payment verification failed: ${msg}`, "error");
+                setIsSubmitting(false);
+                return;
+              }
 
               // Clear Cart
               await api.delete('/cart/clear', config);
-              setUser({ ...user, cart: [] });
-
-              navigate('/order-success', { state: { orderId: orderRes.data._id }, replace: true });
+              if (orderRes.data.user) {
+                setUser({ ...orderRes.data.user, token: user.token });
+              } else {
+                setUser({ ...user, cart: [] });
+              }
+              navigate('/order-success', { state: { orderId: orderRes.data.order?._id || orderRes.data._id }, replace: true });
 
             } catch (vErr) {
-              addToast("Payment Verification Failed", "error");
-              console.error(vErr);
+              console.error("HANDLER UNEXPECTED ERROR:", vErr);
+              addToast(vErr.response?.data?.message || "Payment processing failed. Please contact support.", "error");
+              setIsSubmitting(false);
             }
           },
           prefill: {
@@ -288,8 +314,12 @@ const Checkout = () => {
           headers: { Authorization: `Bearer ${user.token}` }
         });
 
-        setUser({ ...user, cart: [] });
-        navigate('/order-success', { state: { orderId: data._id }, replace: true });
+        if (data.user) {
+          setUser({ ...data.user, token: user.token });
+        } else {
+          setUser({ ...user, cart: [] });
+        }
+        navigate('/order-success', { state: { orderId: data.order?._id || data._id }, replace: true });
       }
 
     } catch (err) {
@@ -579,37 +609,110 @@ const Checkout = () => {
                 <p className="text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
               </div>
 
-              {/* LOYALTY POINTS REDEMPTION */}
-              {user?.loyaltyPoints > 0 && (
-                <div className="mt-8 bg-gradient-to-r from-amber-100 to-yellow-50 p-6 rounded-2xl border border-amber-200">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-black text-white p-1.5 rounded-full"><Star size={12} /></div>
-                      <span className="font-black uppercase text-xs tracking-widest">SLOOK Coins</span>
-                    </div>
-                    <span className="text-sm font-bold">{user.loyaltyPoints} Available</span>
-                  </div>
+              {/* SLOOK COINS — MNC TIER CARD */}
+              {(() => {
+                const coins = user?.loyaltyPoints || 0;
+                const tier = user?.membershipTier || 'Bronze';
+                const MIN_REDEEM = 100;
+                const canRedeem = coins >= MIN_REDEEM;
+                const coinsToNext = MIN_REDEEM - (coins % MIN_REDEEM);
+                const progressPct = Math.min(100, ((coins % MIN_REDEEM) / MIN_REDEEM) * 100);
 
-                  {!pointsRedeemed ? (
-                    <button
-                      onClick={() => {
-                        if (total === 0) return addToast("Cart total is 0", "info");
-                        const redeemable = Math.min(user.loyaltyPoints, total);
-                        setPointsRedeemed(redeemable);
-                        addToast(`Redeemed ${redeemable} Coins!`, "success");
-                      }}
-                      className="w-full bg-black text-white py-3 rounded-xl font-bold uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition"
-                    >
-                      Redeem Now (Save <Price amount={Math.min(user.loyaltyPoints || 0, total)} />)
-                    </button>
-                  ) : (
-                    <div className="flex justify-between items-center bg-white p-3 rounded-xl border border-amber-200">
-                      <span className="text-[10px] font-bold uppercase text-green-600">Redeemed <Price amount={pointsRedeemed} /></span>
-                      <button onClick={() => setPointsRedeemed(0)} className="text-[9px] font-bold underline text-zinc-400 hover:text-red-500">Remove</button>
+                const tierConfig = {
+                  Bronze: { bg: 'from-amber-900/10 to-amber-700/10', border: 'border-amber-800/30', badge: 'bg-gradient-to-r from-amber-700 to-amber-500', text: 'text-amber-700', icon: '🥉', next: 'Silver', nextAt: 10000 },
+                  Silver: { bg: 'from-slate-400/10 to-slate-300/10', border: 'border-slate-400/30', badge: 'bg-gradient-to-r from-slate-500 to-slate-400', text: 'text-slate-600', icon: '🥈', next: 'Gold', nextAt: 50000 },
+                  Gold: { bg: 'from-yellow-400/10 to-amber-300/10', border: 'border-yellow-400/30', badge: 'bg-gradient-to-r from-yellow-500 to-amber-400', text: 'text-yellow-600', icon: '🥇', next: 'Platinum', nextAt: 100000 },
+                  Platinum: { bg: 'from-purple-500/10 to-indigo-400/10', border: 'border-purple-400/30', badge: 'bg-gradient-to-r from-purple-600 to-indigo-500', text: 'text-purple-600', icon: '💎', next: null, nextAt: null },
+                };
+                const t = tierConfig[tier] || tierConfig.Bronze;
+
+                if (coins === 0) return null;
+
+                return (
+                  <div className={`mt-8 bg-gradient-to-br ${t.bg} rounded-2xl border ${t.border} overflow-hidden`}>
+                    {/* Header */}
+                    <div className="flex items-center justify-between p-5 pb-3">
+                      <div className="flex items-center gap-3">
+                        <span className={`${t.badge} text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm`}>
+                          {t.icon} {tier} Member
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-2xl font-black ${t.text} leading-none`}>{coins}</p>
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">SLOOK Coins</p>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
+
+                    {/* Progress to next redeem */}
+                    <div className="px-5 pb-4">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                          {canRedeem ? `${Math.floor(coins / MIN_REDEEM) * MIN_REDEEM} coins ready` : `${coinsToNext} more to unlock`}
+                        </span>
+                        <span className="text-[9px] font-bold text-zinc-400">Next redeem: {Math.ceil(coins / MIN_REDEEM) * MIN_REDEEM} coins</span>
+                      </div>
+                      <div className="w-full bg-black/10 rounded-full h-1.5">
+                        <div
+                          className={`h-1.5 rounded-full transition-all duration-500 ${t.badge}`}
+                          style={{ width: `${progressPct}%` }}
+                        />
+                      </div>
+                      <p className="text-[9px] font-bold text-zinc-400 mt-1.5 uppercase tracking-widest">
+                        💡 1 Coin per ₹100 (Online) / ₹500 (COD) · Tier Bonuses apply · 90-day expiry
+                      </p>
+                    </div>
+
+                    {/* Redeem Action */}
+                    <div className="px-5 pb-5">
+                      {canRedeem ? (
+                        !pointsRedeemed ? (
+                          <button
+                            onClick={() => {
+                              if (total === 0) return addToast("Cart total is 0", "info");
+                              // REFINED RULES: 
+                              // 1. Max 100 coins per order
+                              // 2. Max 30% of order value
+                              const MAX_COINS = 100;
+                              const MAX_PCT_LIMIT = Math.floor(total * 0.30);
+
+                              const limit = Math.min(MAX_COINS, MAX_PCT_LIMIT);
+                              const userBalanceAvailable = Math.floor(coins / MIN_REDEEM) * MIN_REDEEM;
+
+                              const redeemable = Math.min(userBalanceAvailable, limit);
+
+                              if (redeemable < MIN_REDEEM) {
+                                if (limit < MIN_REDEEM) {
+                                  return addToast(`Order total too low. Min 30% cap (${MAX_PCT_LIMIT}) or limit is under 100 coins.`, "info");
+                                }
+                                return addToast(`Minimum 100 coins required to redeem.`, "info");
+                              }
+
+                              setPointsRedeemed(redeemable);
+                              addToast(`🪙 ${redeemable} Coins redeemed — You save ₹${redeemable}!`, "success");
+                            }}
+                            className={`w-full ${t.badge} text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5`}
+                          >
+                            🪙 Redeem SLOOK Coins — Save up to ₹100
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-green-200">
+                            <div>
+                              <p className="text-[10px] font-black uppercase text-green-600 tracking-widest">✅ {pointsRedeemed} Coins Applied</p>
+                              <p className="text-[9px] text-zinc-400 font-bold mt-0.5">You're saving ₹{pointsRedeemed} on this order</p>
+                            </div>
+                            <button onClick={() => setPointsRedeemed(0)} className="text-[9px] font-black uppercase text-red-400 hover:text-red-600 transition ml-4">Remove</button>
+                          </div>
+                        )
+                      ) : (
+                        <div className="bg-white/50 rounded-xl p-4 text-center border border-dashed border-zinc-300">
+                          <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">🔒 Earn {coinsToNext} more coins to unlock</p>
+                          <p className="text-[9px] text-zinc-400 mt-1">Shop ₹{coinsToNext * 50} more to reach 100 coins</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* DESKTOP ACTION BUTTON */}
               <div className="hidden lg:block mt-8">

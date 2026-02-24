@@ -58,11 +58,11 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
 
           {/* BRAND STORY */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white">SLOOK</h2>
             <p className="text-zinc-500 text-xs leading-relaxed max-w-sm font-medium">
               Premium essentials for the modern lifestyle.
-              Curated for quality, designed for life. No fillers, just substance.
+              Curated for quality, designed for life.
             </p>
             <div className="flex gap-6 pt-4">
               <Instagram className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
@@ -86,18 +86,26 @@ const Footer = () => {
           <div className="lg:col-span-2 space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
             <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+              <li><Link to="/contact" className="hover:text-white transition-colors text-orange-400">Contact Us</Link></li>
               <li><Link to="/about" className="hover:text-white transition-colors">Our Story</Link></li>
               <li><Link to="/support" className="hover:text-white transition-colors">Support Hub & FAQ</Link></li>
-              <li><Link to="/track-order" className="hover:text-white transition-colors">Track Your Order</Link></li>
               <li><Link to="/shipping" className="hover:text-white transition-colors">Shipping & Delivery</Link></li>
-              <li><Link to="/returns" className="hover:text-white transition-colors">Return & Exchange</Link></li>
               <li><Link to="/care-guide" className="hover:text-white transition-colors">Care Guide</Link></li>
-              <li><Link to="/contact" className="hover:text-white transition-colors">Contact Us</Link></li>
+            </ul>
+          </div>
+
+          {/* TRACK LINKS */}
+          <div className="lg:col-span-2 space-y-6">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
+            <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+              <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Order Track</Link></li>
+              <li><Link to="/track-order?type=return" className="hover:text-white transition-colors">Return Track</Link></li>
+              <li><Link to="/track-order?type=exchange" className="hover:text-white transition-colors">Exchange Track</Link></li>
             </ul>
           </div>
 
           {/* NEWSLETTER */}
-          <div className="lg:col-span-4 space-y-6">
+          <div className="lg:col-span-3 space-y-6">
             <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
             <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-loose">
               Join for early access to drops and exclusive updates.

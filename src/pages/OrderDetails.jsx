@@ -8,7 +8,7 @@ import { useToast } from '../context/ToastContext';
 import {
   ArrowLeft, MapPin, CreditCard, Truck, Package,
   Loader2, ChevronRight, Star, AlertTriangle, RotateCcw,
-  Calendar, CheckCircle2, Copy, Clock, ShieldCheck
+  Calendar, CheckCircle, Copy, Clock, ShieldCheck, Box
 } from 'lucide-react';
 
 const OrderDetails = () => {
@@ -33,32 +33,35 @@ const OrderDetails = () => {
   const [variantsLoading, setVariantsLoading] = useState(false);
   const [selectedExchangeVariant, setSelectedExchangeVariant] = useState(null);
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
     setUploading(true);
     setUploadProgress(0);
-    try {
-      const newUrls = [];
-      for (let i = 0; i < files.length; i++) {
-        const fd = new FormData();
-        fd.append('file', files[i]);
-        const { data } = await api.post('/upload', fd, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        newUrls.push(data.filePath);
-        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
-      }
-      setReturnFiles(prev => [...prev, ...newUrls]);
-      addToast(`Uploaded ${files.length} proof file(s)`, "success");
-    } catch (err) {
-      console.error("Upload failed", err);
-      addToast("Upload Failed. Video/Images only.", "error");
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
-    }
+
+    const promises = files.map(file => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(promises)
+      .then(base64s => {
+        setReturnFiles(prev => [...prev, ...base64s]);
+        addToast(`Attached ${files.length} proof file(s)`, "success");
+      })
+      .catch(err => {
+        console.error("Upload failed", err);
+        addToast("Failed to process files", "error");
+      })
+      .finally(() => {
+        setUploading(false);
+        setUploadProgress(0);
+      });
   };
 
   useEffect(() => {
@@ -66,9 +69,7 @@ const OrderDetails = () => {
       if (!user?.token) return;
       try {
         setLoading(true);
-        const { data } = await api.get(`/orders/${id}`, {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
+        const { data } = await api.get(`/orders/${id}`);
         setOrder(data);
       } catch (err) {
         console.error("Order Detail Error:", err);
@@ -155,7 +156,6 @@ const OrderDetails = () => {
                     try {
                       addToast("Generating Invoice...", "info");
                       const response = await api.get(`/orders/${order._id}/invoice`, {
-                        headers: { Authorization: `Bearer ${user.token}` },
                         responseType: 'blob'
                       });
                       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -203,10 +203,42 @@ const OrderDetails = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
-              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Tracking Your Look</h2>
+              <h2 className="text-2xl font-black uppercase tracking-tighter italic flex items-center gap-3">
+                <Truck className="text-black" size={24} />
+                {order.returnId ? (
+                  <div className="flex flex-col">
+                    <span className="text-orange-500 flex items-center gap-2">
+                      Track {order.returnType === 'Exchange' ? 'Exchange' : 'Return'}: {order.returnId}
+                      <span className="text-[10px] bg-orange-100 px-2 py-0.5 rounded-full text-orange-600 not-italic">
+                        {order.returnQty} {order.returnQty === 1 ? 'PC' : 'PCS'}
+                      </span>
+                    </span>
+                    {order.returnTrackingId && (
+                      <span className="text-[10px] text-zinc-400 font-bold tracking-widest not-italic mt-1">
+                        {order.returnType === 'Exchange' ? 'EXC' : 'RTN'} TRK: {order.returnTrackingId} <span className="text-zinc-200">/</span> {order.returnCourier || 'LOGISTICS'}
+                      </span>
+                    )}
+                    {order.returnPickupDate && (
+                      <span className="text-[9px] text-zinc-500 font-black not-italic mt-0.5 uppercase tracking-widest">
+                        Pickup: {new Date(order.returnPickupDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} ({order.returnPickupMethod})
+                      </span>
+                    )}
+                    {order.returnIdFull && (
+                      <div className="flex items-center gap-2 mt-2 bg-zinc-50 px-2 py-1 rounded-md border border-zinc-100 self-start">
+                        <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">{order.returnIdFull}</span>
+                        <button onClick={() => { navigator.clipboard.writeText(order.returnIdFull); addToast(`${order.returnType === 'Exchange' ? 'Exchange' : 'System'} ID Copied!`, "success") }} className="text-zinc-300 hover:text-black transition-colors" title="Copy System ID">
+                          <Copy size={10} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  'Tracking Your Look'
+                )}
+              </h2>
             </div>
 
-            {order.orderStatus !== 'Delivered' && (
+            {order.orderStatus !== 'Delivered' && !['Return Requested', 'Returned'].includes(order.orderStatus) && (
               <div className="bg-zinc-50 px-6 py-4 rounded-3xl border border-zinc-100 flex items-center gap-4">
                 <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center animate-pulse">
                   <Calendar size={18} />
@@ -220,63 +252,90 @@ const OrderDetails = () => {
           </div>
 
           <div className="relative pt-10 pb-4 overflow-x-auto no-scrollbar">
-            <div className="min-w-[700px] relative px-4">
-              {/* Animated Progress Line */}
-              <div className="absolute top-[19px] left-0 w-full h-[2px] bg-zinc-100 z-0"></div>
-              <div
-                className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2000ms] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
-                style={{
-                  width: (() => {
-                    const status = order.orderStatus;
-                    if (status === 'Pending' || status === 'Processing') return '12.5%';
-                    if (status === 'Confirmed') return '37.5%';
-                    if (status === 'Shipped' || status === 'Dispatched') return '62.5%';
-                    if (status === 'Delivered') return '100%';
-                    return '0%';
-                  })()
-                }}
-              ></div>
+            <div className="min-w-[800px] relative px-4">
+              {/* Stepper Implementation */}
+              {(() => {
+                const getMilestones = () => {
+                  const base = [
+                    { label: 'Order Placed', icon: Box, dateKey: 'createdAt', id: 'Pending' },
+                    { label: 'Processing', icon: Clock, dateKey: 'processingAt', id: 'Processing' },
+                    { label: 'Quality Check', icon: ShieldCheck, dateKey: 'confirmedAt', id: 'Confirmed' },
+                    { label: 'In Transit', icon: Truck, dateKey: 'shippedAt', id: 'Shipped' },
+                    { label: 'Delivered', icon: CheckCircle, dateKey: 'deliveredAt', id: 'Delivered' }
+                  ];
 
-              {/* Enhanced Steps */}
-              <div className="relative z-10 flex justify-between">
-                {[
-                  { id: 'Pending', label: 'Accepted', icon: <Package size={16} />, desc: 'Order is curated' },
-                  { id: 'Confirmed', label: 'Quality Check', icon: <ShieldCheck size={16} />, desc: 'Verified by SLOOK' },
-                  { id: 'Shipped', label: 'In Transit', icon: <Truck size={16} />, desc: 'Handed to partner' },
-                  { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} />, desc: 'Enjoy your look' }
-                ].map((step, idx) => {
-                  const statusList = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
-                  const normalizedStatus = order.orderStatus === 'Processing' ? 'Pending' : (order.orderStatus === 'Dispatched' || order.orderStatus === 'Shipped') ? 'Shipped' : order.orderStatus;
-                  const currentIdx = statusList.indexOf(normalizedStatus);
-                  const isCompleted = idx <= currentIdx;
-                  const isActive = normalizedStatus === step.id;
+                  if (order.orderStatus === 'Return Requested' || order.orderStatus === 'Returned') {
+                    base.push({ label: 'Return Initiated', icon: RotateCcw, dateKey: 'returnRequestedAt', id: 'Return Requested' });
+                  }
+                  if (order.orderStatus === 'Returned') {
+                    base.push({ label: 'Finalized', icon: ShieldCheck, dateKey: 'returnedAt', id: 'Returned' });
+                  }
+                  return base;
+                };
 
-                  return (
-                    <div key={step.id} className="flex flex-col items-center group">
-                      <div className={`
-                        w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 relative
-                        ${isCompleted ? 'bg-black text-white shadow-xl scale-110' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
-                        ${isActive ? 'ring-[6px] ring-zinc-50' : ''}
-                      `}>
-                        {isCompleted && !isActive && idx < 3 ? <CheckCircle2 size={16} className="animate-in zoom-in duration-300" /> : step.icon}
+                const milestones = getMilestones();
+                const statusFlow = {
+                  'Pending': 0,
+                  'Processing': 1,
+                  'Confirmed': 2,
+                  'Dispatched': 3,
+                  'Shipped': 3,
+                  'Delivered': 4,
+                  'Return Requested': 5,
+                  'Returned': 6
+                };
+                const currentLevel = statusFlow[order.orderStatus] || 0;
 
-                        {isActive && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white animate-bounce" />
-                        )}
-                      </div>
+                return (
+                  <>
+                    {/* Animated Progress Line */}
+                    <div className="absolute top-[19px] left-0 w-full h-[2px] bg-zinc-100 z-0"></div>
+                    <div
+                      className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2000ms] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+                      style={{ width: `${(currentLevel / (milestones.length - 1)) * 100}%` }}
+                    ></div>
 
-                      <div className="mt-4 text-center">
-                        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
-                          {step.label}
-                        </p>
-                        <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
-                          {step.desc}
-                        </p>
-                      </div>
+                    <div className="relative z-10 flex justify-between">
+                      {milestones.map((step, idx) => {
+                        const Icon = step.icon;
+                        const isCompleted = currentLevel > idx;
+                        const isActive = currentLevel === idx;
+                        const date = order[step.dateKey];
+
+                        return (
+                          <div key={idx} className="flex flex-col items-center group w-32">
+                            <div className={`
+                              w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-700 relative border
+                              ${isActive ? 'bg-black border-black text-white shadow-xl scale-110' :
+                                isCompleted ? 'bg-zinc-50 border-zinc-200 text-black' :
+                                  'bg-white border-zinc-100 text-zinc-200'}
+                              ${isActive ? 'ring-[6px] ring-zinc-50' : ''}
+                            `}>
+                              <div className="flex items-center justify-center">
+                                <Icon size={18} />
+                              </div>
+                              {isActive && (
+                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white animate-bounce" />
+                              )}
+                            </div>
+
+                            <div className="mt-4 text-center">
+                              <p className={`text-[9px] font-black uppercase tracking-widest mb-1 transition-colors ${isActive ? 'text-black' : isCompleted ? 'text-zinc-600' : 'text-zinc-300'}`}>
+                                {step.label}
+                              </p>
+                              {date && (
+                                <p className="text-[7px] font-black text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
+                                  {new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
-                  );
-                })}
-              </div>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -306,7 +365,7 @@ const OrderDetails = () => {
                 {order.paymentMethod === 'cod' ? 'Cash On Delivery' : order.paymentMethod}
               </p>
               <p className="text-[10px] font-bold text-green-600 mt-1 uppercase flex items-center gap-1">
-                <CheckCircle2 size={12} /> Payment {order.isPaid ? 'Completed' : 'Pending'}
+                <CheckCircle size={12} /> Payment {order.isPaid ? 'Completed' : 'Pending'}
               </p>
             </div>
           </div>
@@ -387,6 +446,11 @@ const OrderDetails = () => {
                           >
                             {item.name}
                           </Link>
+                          {item.selectedVariant && (
+                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">
+                              {item.selectedVariant.size} {item.selectedVariant.color && `/ ${item.selectedVariant.color}`}
+                            </p>
+                          )}
                           {/* Status Badges */}
                           {/* Status Badges - Comprehensive */}
                           {item.status === 'Cancelled' && <span className="bg-red-100 text-red-600 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Cancelled</span>}
@@ -428,7 +492,8 @@ const OrderDetails = () => {
                             )}
                             {(() => {
                               const deliveryDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.updatedAt);
-                              const isReturnable = (new Date() - deliveryDate) < (7 * 24 * 60 * 60 * 1000);
+                              const daysDiff = (new Date() - deliveryDate) / (1000 * 60 * 60 * 24);
+                              const isReturnable = daysDiff <= 7;
 
                               if (isReturnable) {
                                 return (
@@ -465,6 +530,11 @@ const OrderDetails = () => {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
+                    {item.selectedVariant && (
+                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                        {item.selectedVariant.size} {item.selectedVariant.color && `/ ${item.selectedVariant.color}`}
+                      </p>
+                    )}
                     <p className="text-xs text-zinc-500 font-mono mb-2"><Price amount={item.price} /> x {item.qty}</p>
                     <p className="font-black text-sm">Total: <Price amount={item.price * item.qty} /></p>
 
@@ -483,7 +553,8 @@ const OrderDetails = () => {
                           <div className="flex gap-2">
                             {(() => {
                               const deliveryDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.updatedAt);
-                              const isReturnable = (new Date() - deliveryDate) < (7 * 24 * 60 * 60 * 1000);
+                              const daysDiff = (new Date() - deliveryDate) / (1000 * 60 * 60 * 24);
+                              const isReturnable = daysDiff <= 7;
                               return isReturnable ? (
                                 <button onClick={() => setConfirmModal({ show: true, itemId: item._id, actionType: 'return' })} className="text-[9px] font-bold border px-3 py-1.5 rounded-full uppercase">Return</button>
                               ) : null;
@@ -651,7 +722,7 @@ const OrderDetails = () => {
                       <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                         {returnFiles.map((url, idx) => (
                           <div key={idx} className="w-16 h-16 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0 relative group">
-                            {url.match(/\.(mp4|mov|avi|webm)$/i) ? (
+                            {(url.match(/\.(mp4|mov|avi|webm)$/i) || url.startsWith('data:video/')) ? (
                               <video src={url} className="w-full h-full object-cover" />
                             ) : (
                               <img src={url} alt="proof" className="w-full h-full object-cover" />

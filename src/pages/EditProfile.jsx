@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
-import axios from 'axios';
+import api from '../api/instance';
 import { User, Mail, Lock, Save, ArrowLeft } from 'lucide-react';
 
 const EditProfile = () => {
@@ -34,7 +34,6 @@ const EditProfile = () => {
 
     try {
       setLoading(true);
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
 
       // Prepare payload (only send changed fields)
       const updateData = {
@@ -42,7 +41,7 @@ const EditProfile = () => {
         lastName: formData.lastName,
       };
 
-      const { data } = await axios.put('/api/users/profile', updateData, config);
+      const { data } = await api.put('/users/profile', updateData);
 
       // Update Global Store
       setUser({ ...data, token: user.token }); // Maintain token

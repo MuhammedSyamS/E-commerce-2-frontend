@@ -23,7 +23,11 @@ const AdminUsers = () => {
         { key: 'manage_orders', label: 'Manage Orders' },
         { key: 'manage_users', label: 'Manage Users' },
         { key: 'view_stats', label: 'View Analytics' },
-        { key: 'manage_marketing', label: 'Manage Offers' }
+        { key: 'manage_marketing', label: 'Manage Offers' },
+        { key: 'manage_support', label: 'Manage Support' },
+        { key: 'manage_reviews', label: 'Manage Reviews' },
+        { key: 'manage_blog', label: 'Manage Blog' },
+        { key: 'manage_looks', label: 'Manage Looks' }
     ];
 
     useEffect(() => {
@@ -75,6 +79,10 @@ const AdminUsers = () => {
                 if (value === 'manager_p') newPermissions = ['manage_products'];
                 else if (value === 'manager_o') newPermissions = ['manage_orders'];
                 else if (value === 'manager_op') newPermissions = ['manage_products', 'manage_orders'];
+            } else if (value === 'client_support_executive') {
+                newRole = 'client_support_executive';
+            } else if (value === 'digital_marketing_executive') {
+                newRole = 'digital_marketing_executive';
             }
 
             const payload = {
@@ -162,6 +170,8 @@ const AdminUsers = () => {
             if (hasOrder) return 'manager_o';
             return 'manager_op'; // Default to all if just "manager"
         }
+        if (u.role === 'client_support_executive') return 'client_support_executive';
+        if (u.role === 'digital_marketing_executive') return 'digital_marketing_executive';
         return 'customer';
     };
 
@@ -219,15 +229,19 @@ const AdminUsers = () => {
                                                 onChange={(e) => updateRoleDirectly(u, e.target.value)}
                                                 className={`appearance-none pl-3 pr-8 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border border-zinc-200 outline-none cursor-pointer hover:border-zinc-400 transition-all ${(u.role === 'admin' || (u.isAdmin && !u.role))
                                                     ? 'bg-black text-white border-black hover:bg-zinc-800'
-                                                    : u.role === 'manager'
-                                                        ? 'bg-purple-100 text-purple-600 border-purple-200 hover:bg-purple-200'
-                                                        : 'bg-white text-zinc-600 hover:bg-zinc-50'
+                                                    : u.role === 'client_support_executive'
+                                                        ? 'bg-blue-100 text-blue-600 border-blue-200 hover:bg-blue-200'
+                                                        : u.role === 'digital_marketing_executive'
+                                                            ? 'bg-orange-100 text-orange-600 border-orange-200 hover:bg-orange-200'
+                                                            : 'bg-white text-zinc-600 hover:bg-zinc-50'
                                                     }`}
                                             >
                                                 <option value="customer" className="text-zinc-600 bg-white">Customer</option>
                                                 <option value="manager_p" className="text-purple-600 bg-purple-50">Manager (Product)</option>
                                                 <option value="manager_o" className="text-purple-600 bg-purple-50">Manager (Order)</option>
                                                 <option value="manager_op" className="text-purple-600 bg-purple-50">Manager (All)</option>
+                                                <option value="client_support_executive" className="text-blue-600 bg-blue-50">Client Support Executive</option>
+                                                <option value="digital_marketing_executive" className="text-orange-600 bg-orange-50">Digital Marketing Executive</option>
                                                 <option value="admin" className="text-black bg-zinc-100">Admin</option>
                                             </select>
                                             <div className={`absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${(u.role === 'admin' || u.isAdmin) ? 'text-white' : 'text-zinc-400'}`}>

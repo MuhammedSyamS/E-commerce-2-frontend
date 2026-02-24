@@ -31,7 +31,8 @@ import {
   Plus,
   Search,
   Trash2,
-  Upload
+  Upload,
+  Zap
 } from 'lucide-react';
 
 const Account = () => {
@@ -244,7 +245,7 @@ const Account = () => {
                   <Info size={16} />
                 </button>
               </div>
-              <div onClick={() => navigate('/account/loyalty-ledger')} className="flex-1">
+              <div onClick={() => navigate('/account/loyalty-ledger')} className="flex-1 cursor-pointer">
                 <p className="text-4xl font-black mb-1">{user.loyaltyPoints || 0}</p>
                 <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Available Balance</p>
                 <p className="text-[10px] mt-4 font-medium opacity-60">1 Coin = ₹1. <span className="underline decoration-black/20">View Ledger</span></p>
@@ -288,22 +289,38 @@ const Account = () => {
                   <Info size={16} />
                 </button>
               </div>
-              <p className="text-4xl font-black mb-1">{user.membershipTier || 'Bronze'}</p>
-              <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Tier Status</p>
+              <p className="text-4xl font-black mb-1 italic transform -skew-x-12">{user.membershipTier || 'Bronze'}</p>
+              <p className="text-[10px] font-black opacity-70 uppercase tracking-[0.3em]">Neural Tier Status</p>
 
               {/* Progress to next tier */}
-              <div className="mt-4">
-                <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
-                  <div className="bg-white h-full" style={{ width: `${Math.min(100, ((user.totalSpent || 0) / 100000) * 100)}%` }}></div>
+              <div className="mt-8">
+                <div className="flex justify-between items-end mb-2">
+                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                    Rewards Progression
+                  </p>
+                  <p className="text-[11px] font-black">
+                    ₹{(user.totalSpent || 0).toLocaleString()} / ₹{
+                      user.membershipTier === 'Silver' ? '50,000' : user.membershipTier === 'Gold' ? '1,00,000' : '10,000'
+                    }
+                  </p>
                 </div>
-                <div className="flex justify-between items-center mt-2">
-                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-60">
-                    ₹{(user.totalSpent || 0).toLocaleString()} Spent
+                <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden backdrop-blur-md">
+                  <div
+                    className="bg-white h-full transition-all duration-1000 ease-out"
+                    style={{ width: `${Math.min(100, ((user.totalSpent || 0) / (user.membershipTier === 'Silver' ? 50000 : user.membershipTier === 'Gold' ? 100000 : 10000)) * 100)}%` }}
+                  ></div>
+                </div>
+                <div className="flex justify-between items-center mt-3">
+                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60">
+                    Unlocked: {user.membershipTier === 'Platinum' ? 'Max Tier' : 'Standard Perks'}
                   </p>
                   {user.membershipTier !== 'Platinum' && (
-                    <p className="text-[8px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">Next: {
-                      user.membershipTier === 'Silver' ? 'Gold' : user.membershipTier === 'Gold' ? 'Platinum' : 'Silver'
-                    }</p>
+                    <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full backdrop-blur-md">
+                      <Zap size={10} fill="white" />
+                      <p className="text-[8px] font-black uppercase tracking-tighter">Next: {
+                        user.membershipTier === 'Silver' ? 'Gold' : user.membershipTier === 'Gold' ? 'Platinum' : 'Silver'
+                      }</p>
+                    </div>
                   )}
                 </div>
               </div>
@@ -493,7 +510,7 @@ const Account = () => {
 
                         {/* SEARCH RESULTS */}
                         <div className="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar">
-                          {searchResults.map((prod) => (
+                          {(searchResults.products || []).map((prod) => (
                             <div
                               key={prod._id}
                               onClick={() => {

@@ -42,12 +42,18 @@ const AdminPayments = () => {
         const { id, action } = confirmModal;
         try {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const endpoint = action === 'pay' ? 'pay' : 'refund';
-            const { data } = await axios.put(`/api/orders/${id}/${endpoint}`, {}, config);
 
-            // Update local state
-            setOrders(orders.map(o => o._id === id ? data : o));
-            addToast(`Transaction ${action === 'pay' ? 'Verified' : 'Refunded'} Successfully`, "success");
+            if (action === 'delete') {
+                await axios.delete(`/api/orders/${id}`, config);
+                setOrders(orders.filter(o => o._id !== id));
+                addToast("Transaction deleted successfully", "success");
+            } else {
+                const endpoint = action === 'pay' ? 'pay' : 'refund';
+                const { data } = await axios.put(`/api/orders/${id}/${endpoint}`, {}, config);
+                // Update local state
+                setOrders(orders.map(o => o._id === id ? data : o));
+                addToast(`Transaction ${action === 'pay' ? 'Verified' : 'Refunded'} Successfully`, "success");
+            }
         } catch (err) {
             addToast(`Failed to ${action} transaction`, "error");
         } finally {
@@ -212,22 +218,58 @@ const AdminPayments = () => {
                                     )}
                                 </td>
                                 <td className="p-6 text-right space-x-2">
-                                    {!o.isPaid && o.orderStatus !== 'Cancelled' && (
+                                    <div className="flex justify-end gap-2">
+                                        {/* VIEW */}
                                         <button
-                                            onClick={() => initiateAction(o._id, 'pay')}
-                                            className="inline-flex items-center gap-2 px-3 py-2 bg-black text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-zinc-800 transition"
+                                            onClick={() => window.open(`/order/${o._id}`, '_blank')}
+                                            className="p-2 bg-zinc-50 rounded-lg hover:bg-black hover:text-white transition text-zinc-400"
+                                            title="View Order"
                                         >
-                                            <CheckCircle size={12} /> Verify
+                                            <Search size={14} />
                                         </button>
-                                    )}
-                                    {o.isPaid && o.orderStatus !== 'Returned' && (
-                                        <button
-                                            onClick={() => initiateAction(o._id, 'refund')}
-                                            className="inline-flex items-center gap-2 px-3 py-2 border border-zinc-200 text-zinc-400 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-red-50 hover:text-red-500 hover:border-red-200 transition"
-                                        >
-                                            <RotateCcw size={12} /> Refund
-                                        </button>
-                                    )}
+
+                                        {/* RECEIPT (Shows Invoice) */}
+                                        {o.isPaid && (
+                                            <button
+                                                onClick={() => window.open(`/invoice/${o._id}`, '_blank')}
+                                                className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition"
+                                                title="View Receipt"
+                                            >
+                                                <CreditCard size={14} />
+                                            </button>
+                                        )}
+
+                                        {/* VERIFY / REFUND */}
+                                        {!o.isPaid && o.orderStatus !== 'Cancelled' && (
+                                            <button
+                                                onClick={() => initiateAction(o._id, 'pay')}
+                                                className="p-2 bg-black text-white rounded-lg hover:bg-green-600 transition"
+                                                title="Verify Payment"
+                                            >
+                                                <CheckCircle size={14} />
+                                            </button>
+                                        )}
+                                        {o.isPaid && o.orderStatus !== 'Returned' && (
+                                            <button
+                                                onClick={() => initiateAction(o._id, 'refund')}
+                                                className="p-2 bg-zinc-50 text-zinc-400 rounded-lg hover:bg-red-50 hover:text-red-500 transition border border-transparent hover:border-red-100"
+                                                title="Refund"
+                                            >
+                                                <RotateCcw size={14} />
+                                            </button>
+                                        )}
+
+                                        {/* DELETE (Only for Cancelled/Failed) */}
+                                        {(o.orderStatus === 'Cancelled' || o.orderStatus === 'Failed') && (
+                                            <button
+                                                onClick={() => initiateAction(o._id, 'delete')}
+                                                className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition"
+                                                title="Delete Record"
+                                            >
+                                                <RotateCcw size={14} className="rotate-45" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -243,12 +285,14 @@ const AdminPayments = () => {
                             {confirmModal.action === 'pay' ? <CheckCircle size={24} /> : <RotateCcw size={24} />}
                         </div>
                         <h3 className="text-xl font-black uppercase tracking-tighter mb-2 italic text-center">
-                            {confirmModal.action === 'pay' ? 'Verify Payment?' : 'Refund Order?'}
+                            {confirmModal.action === 'pay' ? 'Verify Payment?' : confirmModal.action === 'delete' ? 'Delete Record?' : 'Refund Order?'}
                         </h3>
                         <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
                             {confirmModal.action === 'pay'
                                 ? "Confirm this payment has been received?"
-                                : "This will process a refund for this order."}
+                                : confirmModal.action === 'delete'
+                                    ? "This action cannot be undone."
+                                    : "This will process a refund for this order."}
                         </p>
                         <div className="grid grid-cols-2 gap-4">
                             <button
@@ -263,7 +307,7 @@ const AdminPayments = () => {
                                     ? 'bg-black hover:bg-zinc-800 shadow-zinc-200'
                                     : 'bg-red-500 hover:bg-red-600 shadow-red-200'}`}
                             >
-                                {confirmModal.action === 'pay' ? 'Yes, Verify' : 'Confirm Refund'}
+                                {confirmModal.action === 'pay' ? 'Yes, Verify' : confirmModal.action === 'delete' ? 'Yes, Delete' : 'Confirm'}
                             </button>
                         </div>
                     </div>

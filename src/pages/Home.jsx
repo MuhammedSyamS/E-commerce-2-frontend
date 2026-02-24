@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus, ArrowUpRight, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus, ArrowUpRight, Heart, Award, Crown, Zap, ShieldCheck, Star } from 'lucide-react';
 import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { Helmet } from 'react-helmet-async';
@@ -64,6 +64,7 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [looks, setLooks] = useState([]); // NEW: Community Looks
+  const [scrollY, setScrollY] = useState(0);
   const { user } = useStore();
 
   const newArrivalRef = useRef(null);
@@ -81,6 +82,12 @@ const Home = () => {
   const scrollToProducts = () => {
     trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -110,9 +117,7 @@ const Home = () => {
     const fetchRecentlyViewed = async () => {
       if (!user?.token) return;
       try {
-        const { data } = await api.get('/users/recently-viewed', {
-          headers: { Authorization: `Bearer ${user.token}` }
-        });
+        const { data } = await api.get('/users/recently-viewed');
         setRecentlyViewed(data);
       } catch (err) {
         console.error("Recently Viewed Fetch Fail");
@@ -182,7 +187,16 @@ const Home = () => {
           <section className="relative w-full h-screen overflow-hidden bg-zinc-950">
             {slides.map((slide, index) => (
               <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}>
-                <img src={slide.img} className={`w-full h-full object-cover transition-transform ${index === currentSlide ? "scale-110" : "scale-100"}`} style={{ transitionDuration: '8000ms' }} alt="" loading="eager" />
+                <img
+                  src={slide.img}
+                  className={`w-full h-full object-cover transition-transform will-change-transform`}
+                  style={{
+                    transitionDuration: index === currentSlide ? '0ms' : '1000ms',
+                    transform: index === currentSlide ? `scale(${1.1 + (scrollY * 0.0005)}) translateY(${scrollY * 0.2}px)` : 'scale(1)'
+                  }}
+                  alt=""
+                  loading="eager"
+                />
                 <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
                   <div className="text-center">
                     <p className="text-white/80 text-[10px] font-black uppercase tracking-[0.8em] mb-6">{slide.subtitle}</p>
@@ -262,6 +276,7 @@ const Home = () => {
           )}
         </React.Fragment>
       ))}
+
 
       {activeView === 'all' && (
         <Reveal width="100%">
@@ -358,6 +373,42 @@ const Home = () => {
               <div ref={recentlyViewedRef} className="flex gap-6 md:gap-8 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10">
                 {recentlyViewed.map((product) => (
                   <div key={product._id} className="min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start flex-shrink-0"><ProductCard product={product} /></div>
+                ))}
+              </div>
+            </div>
+          </section>
+        </Reveal>
+      )}
+      {activeView === 'all' && (
+        <Reveal width="100%">
+          <section className="bg-white py-24 pb-48">
+            <div className="max-w-[1440px] mx-auto px-4 md:px-24">
+              <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-2">Privilege</p>
+                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic transform -skew-x-3">Loyalty <span className="text-zinc-300">Milestones</span></h2>
+                </div>
+                <button onClick={() => navigate('/account')} className="text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black transition-all">Join the Elite</button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                {[
+                  { tier: 'Bronze', spend: 'Starts at ₹0', perk: '1.0x Elite Coins', icon: Award, color: 'text-amber-700' },
+                  { tier: 'Silver', spend: '₹10k+ Spent', perk: '1.2x Elite Coins', icon: ShieldCheck, color: 'text-blue-600' },
+                  { tier: 'Gold', spend: '₹50k+ Spent', perk: '1.5x Elite Coins', icon: Star, color: 'text-amber-500' },
+                  { tier: 'Platinum', spend: '₹1 Lakh+', perk: '2.0x Elite Coins', icon: Crown, color: 'text-zinc-900' }
+                ].map((m, i) => (
+                  <div key={i} className="group p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 hover:bg-white hover:border-zinc-800 hover:shadow-2xl transition-all duration-500">
+                    <div className={`w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${m.color}`}>
+                      <m.icon size={28} />
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{m.spend}</p>
+                    <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 italic">{m.tier}</h3>
+                    <div className="flex items-center gap-2 text-zinc-600">
+                      <Zap size={12} fill="currentColor" />
+                      <span className="text-[11px] font-bold uppercase tracking-tight">{m.perk}</span>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>

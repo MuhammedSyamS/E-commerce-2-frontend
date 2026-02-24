@@ -25,8 +25,11 @@ const AddProduct = () => {
     isBestSeller: false,
     video: '', // Video URL
     variants: [], // { size, color, stock }
-    seo: { metaTitle: '', metaDescription: '' }
+    seo: { metaTitle: '', metaDescription: '' },
+    richDescription: ''
   });
+
+  const [previewVariantIdx, setPreviewVariantIdx] = useState(null);
 
   const [newImageUrl, setNewImageUrl] = useState('');
 
@@ -55,8 +58,8 @@ const AddProduct = () => {
       };
 
       await axios.post('/api/products', formData, config);
-      addToast('Product Published Successfully!', 'success');
-      navigate('/admin/dashboard');
+      addToast("Piece added to Studio collection", "success");
+      navigate('/admin/products');
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to create product', 'error');
     } finally {
@@ -92,7 +95,8 @@ const AddProduct = () => {
         isBestSeller: false,
         video: '',
         variants: [],
-        seo: { metaTitle: '', metaDescription: '' }
+        seo: { metaTitle: '', metaDescription: '' },
+        richDescription: ''
         // Keep category, subcategory, tags
       }));
       setNewImageUrl('');
@@ -376,7 +380,15 @@ const AddProduct = () => {
 
               {/* --- 3. DESCRIPTION & SEO --- */}
               <div className="space-y-6 pt-6 border-t border-zinc-100">
-                <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b border-zinc-100 pb-2">Content & SEO</h3>
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b border-zinc-100 pb-2">Content & SEO</h3>
+                  {(!formData.seo?.metaTitle || !formData.seo?.metaDescription) && (
+                    <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full animate-pulse mb-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                      <span className="text-[9px] font-black uppercase text-amber-700 tracking-wider">SEO Missing</span>
+                    </div>
+                  )}
+                </div>
 
                 <div>
                   <label className="block text-[10px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">Description</label>
@@ -386,6 +398,18 @@ const AddProduct = () => {
                     value={formData.description}
                     onChange={e => setFormData({ ...formData, description: e.target.value })}
                   ></textarea>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase mb-2 text-red-500 tracking-widest font-black">Product Story (The "Story" Tab Content)</label>
+                  <textarea
+                    rows="10"
+                    placeholder="Tell the narrative of this product. This shows in the 'Story' tab on the live page..."
+                    className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black text-sm italic border-l-4 border-l-red-500"
+                    value={formData.richDescription}
+                    onChange={e => setFormData({ ...formData, richDescription: e.target.value })}
+                  />
+                  <p className="text-[9px] text-zinc-400 mt-2">Supports multi-line narrative. Use this for the emotional and high-fidelity product story.</p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -430,13 +454,17 @@ const AddProduct = () => {
                   </div>
 
                   {formData.variants && formData.variants.length > 0 ? (
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {formData.variants.map((variant, idx) => (
-                        <div key={idx} className="flex gap-2 items-center">
+                        <div
+                          key={idx}
+                          onClick={() => setPreviewVariantIdx(idx)}
+                          className={`flex gap-2 items-center p-3 rounded-2xl border transition-all cursor-pointer group ${previewVariantIdx === idx ? 'bg-zinc-900 border-zinc-900 shadow-lg' : 'bg-zinc-50 border-zinc-200 hover:border-black'}`}
+                        >
                           <input
                             type="text"
-                            placeholder="Size (e.g. 7)"
-                            className="w-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
+                            placeholder="Size"
+                            className={`w-16 bg-transparent outline-none text-xs font-bold uppercase ${previewVariantIdx === idx ? 'text-white' : 'text-zinc-900'}`}
                             value={variant.size}
                             onChange={(e) => {
                               const newVar = [...formData.variants];
@@ -446,8 +474,8 @@ const AddProduct = () => {
                           />
                           <input
                             type="text"
-                            placeholder="Color (e.g. Black)"
-                            className="flex-1 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold uppercase"
+                            placeholder="Color"
+                            className={`flex-1 bg-transparent outline-none text-xs font-bold uppercase ${previewVariantIdx === idx ? 'text-zinc-300' : 'text-zinc-900'}`}
                             value={variant.color}
                             onChange={(e) => {
                               const newVar = [...formData.variants];
@@ -458,7 +486,7 @@ const AddProduct = () => {
                           <input
                             type="number"
                             placeholder="Qty"
-                            className="w-20 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs font-bold"
+                            className={`w-12 bg-transparent outline-none text-xs font-bold ${previewVariantIdx === idx ? 'text-white' : 'text-zinc-900'}`}
                             value={variant.stock}
                             onChange={(e) => {
                               const newVar = [...formData.variants];
@@ -468,14 +496,52 @@ const AddProduct = () => {
                               setFormData({ ...formData, variants: newVar, countInStock: total });
                             }}
                           />
+                          <input
+                            type="text"
+                            placeholder="Image URL"
+                            className={`flex-1 bg-transparent outline-none text-[10px] font-mono ${previewVariantIdx === idx ? 'text-zinc-400' : 'text-zinc-400'}`}
+                            value={variant.image || ''}
+                            onChange={(e) => {
+                              const newVar = [...formData.variants];
+                              newVar[idx].image = e.target.value;
+                              setFormData({ ...formData, variants: newVar });
+                            }}
+                          />
                           <button
                             type="button"
                             onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = (e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    const newVar = [...formData.variants];
+                                    newVar[idx].image = reader.result;
+                                    setFormData({ ...formData, variants: newVar });
+                                  };
+                                  reader.readAsDataURL(file);
+                                }
+                              };
+                              input.click();
+                            }}
+                            className="p-3 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200"
+                            title="Upload Variant Image"
+                          >
+                            <Upload size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               const newVar = formData.variants.filter((_, i) => i !== idx);
                               const total = newVar.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
                               setFormData({ ...formData, variants: newVar, countInStock: total });
+                              if (previewVariantIdx === idx) setPreviewVariantIdx(null);
                             }}
-                            className="p-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100"
+                            className={`p-3 rounded-xl transition-colors ${previewVariantIdx === idx ? 'bg-zinc-800 text-red-400 hover:bg-zinc-700' : 'bg-red-50 text-red-500 hover:bg-red-100'}`}
                           >
                             <X size={14} />
                           </button>
@@ -614,12 +680,21 @@ const AddProduct = () => {
             <h3 className="text-[10px] font-black uppercase text-zinc-400 mb-6 tracking-widest sticky top-32">Listing Preview</h3>
             <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100 sticky top-44">
               <div className="aspect-[4/5] bg-zinc-100 rounded-2xl overflow-hidden mb-6 relative">
-                {formData.image ? (
-                  <img src={formData.image} className="w-full h-full object-cover" alt="Preview" />
+                {previewVariantIdx !== null && formData.variants[previewVariantIdx]?.image ? (
+                  <img src={formData.variants[previewVariantIdx].image} className="w-full h-full object-cover" alt="Variant Preview" />
+                ) : formData.image ? (
+                  <img src={formData.image} className="w-full h-full object-cover" alt="Main Preview" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-zinc-300 gap-2">
                     <Upload size={24} />
                     <span className="text-[10px] font-bold uppercase tracking-widest">No Image</span>
+                  </div>
+                )}
+
+                {/* Variant Overlay */}
+                {previewVariantIdx !== null && (
+                  <div className="absolute top-3 left-3 bg-black/80 backdrop-blur-md text-white text-[8px] font-black px-3 py-1.5 uppercase tracking-widest rounded-full z-10 border border-white/20">
+                    Previewing: {formData.variants[previewVariantIdx].color || 'Unnamed'} {formData.variants[previewVariantIdx].size || ''}
                   </div>
                 )}
 

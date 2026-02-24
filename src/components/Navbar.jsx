@@ -8,6 +8,7 @@ import {
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
 import Price from './Price'; // Assuming Price component exists or needs to be handled
+import { io } from 'socket.io-client';
 
 const Navbar = () => {
   const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates } = useStore();
@@ -23,26 +24,39 @@ const Navbar = () => {
   const searchInputRef = React.useRef(null);
 
   // SEARCH SUGGESTIONS
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState({ products: [], categories: [] });
   const [searchTimer, setSearchTimer] = useState(null);
 
   const handleSearchInput = (val) => {
     if (searchTimer) clearTimeout(searchTimer);
     if (!val) {
-      setSuggestions([]);
+      setSuggestions({ products: [], categories: [] });
       return;
     }
 
     const timer = setTimeout(async () => {
       try {
         const { data } = await api.get(`/products/search?keyword=${val}`);
-        setSuggestions(data);
-      } catch (err) {
-        console.error(err);
+        setSuggestions(data || { products: [], categories: [] });
+      } catch (error) {
+        console.error("Search Error:", error);
+        setSuggestions({ products: [], categories: [] });
       }
     }, 300); // 300ms debounce
     setSearchTimer(timer);
   };
+
+  // Keyboard Shortcut '/'
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === '/' && !isSearchOpen && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        toggleSearch();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSearchOpen]);
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
@@ -72,8 +86,7 @@ const Navbar = () => {
   const fetchNotifications = async () => {
     if (!user?.token) return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await api.get(`/users/notifications?t=${Date.now()}`, config);
+      const { data } = await api.get(`/users/notifications?t=${Date.now()}`);
       setNotifications(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Notif Fetch Fail");
@@ -83,17 +96,43 @@ const Navbar = () => {
 
   useEffect(() => {
     fetchNotifications();
-    // Poll every 60s
+
+    // --- SOCKET.IO ---
+    let socket;
+    if (user?.token) {
+      socket = io();
+
+      socket.on('connect', () => {
+        console.log("Connected to Notifications Socket");
+        socket.emit('join-user-room', user._id);
+      });
+
+      socket.on('notification', (notif) => {
+        setNotifications(prev => [notif, ...(Array.isArray(prev) ? prev : [])]);
+        // Optional: show a toast if you have access to it here, 
+        // but Navbar usually doesn't have useToast unless imported.
+        // Let's check if useToast is available in useStore or similar.
+      });
+
+      socket.on('ticket-reply', (data) => {
+        // We could also trigger a fetch or just let 'notification' handle it
+        console.log("Ticket Reply Received:", data);
+      });
+    }
+
+    // Poll every 60s as fallback
     const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
-  }, [user?.token]);
+    return () => {
+      clearInterval(interval);
+      if (socket) socket.disconnect();
+    };
+  }, [user?.token, user?._id]);
 
   const handleNotificationClick = async (notif) => {
     // 1. Mark as read
     if (!notif.isRead) {
       try {
-        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        await api.put(`/users/notifications/${notif._id}/read`, {}, config);
+        await api.put(`/users/notifications/${notif._id}/read`, {});
         setNotifications(prev => prev.map(n => n._id === notif._id ? { ...n, isRead: true } : n));
       } catch (err) { }
     }
@@ -300,21 +339,24 @@ const Navbar = () => {
               </div>
             )}
 
-            {/* ADMIN / MANAGER PANEL LINK */}
+            {/* ADMIN / STAFF PANEL LINK */}
             {(() => {
-              if (user?.role === 'admin' || user?.isAdmin) {
+              const isAdmin = user?.role === 'admin' || user?.isAdmin;
+              const isStaff = isAdmin || ['manager', 'client_support_executive', 'digital_marketing_executive'].includes(user?.role);
+
+              if (isAdmin) {
                 return (
                   <Link to="/admin" className="relative group" title="Admin Panel">
                     <Shield className="w-5 h-5 text-white transition group-hover:text-zinc-400" />
                   </Link>
                 );
               }
-              if (user?.role === 'manager') {
+              if (isStaff) {
                 return (
-                  <Link to="/admin" className="relative group" title="Manager Panel">
+                  <Link to="/admin" className="relative group" title="Staff Panel">
                     <div className="relative">
-                      <Shield className="w-5 h-5 text-purple-400 transition group-hover:text-white" />
-                      <div className="absolute -bottom-1 -right-1 w-2 h-2 bg-purple-500 rounded-full border border-black"></div>
+                      <Shield className={`w-5 h-5 transition group-hover:text-white ${user?.role === 'manager' ? 'text-purple-400' : (user?.role === 'client_support_executive' ? 'text-blue-400' : 'text-orange-400')}`} />
+                      <div className={`absolute -bottom-1 -right-1 w-2 h-2 rounded-full border border-black ${user?.role === 'manager' ? 'bg-purple-500' : (user?.role === 'client_support_executive' ? 'bg-blue-500' : 'bg-orange-500')}`}></div>
                     </div>
                   </Link>
                 );
@@ -325,8 +367,15 @@ const Navbar = () => {
             {/* USER PROFILE DROPDOWN */}
             {user ? (
               <div className="relative group">
-                <button className="flex items-center gap-2 outline-none">
+                <button className="flex items-center gap-2 outline-none relative group/badge">
                   <User className="w-5 h-5 transition-all text-white fill-white scale-110" />
+                  {user && (
+                    <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse ${(user.totalSpend || 0) >= 50000 ? 'bg-gradient-to-tr from-zinc-200 to-zinc-400' :
+                        (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
+                          (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
+                            'bg-orange-700'
+                      }`} title={`${(user.totalSpend || 0) >= 50000 ? 'Platinum' : (user.totalSpend || 0) >= 20000 ? 'Gold' : (user.totalSpend || 0) >= 5000 ? 'Silver' : 'Bronze'} Member`} />
+                  )}
                 </button>
 
                 {/* DROPDOWN MENU */}
@@ -350,7 +399,10 @@ const Navbar = () => {
                       <Link to="/wishlist" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         Wishlist
                       </Link>
-                      <Link to="/social" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all text-amber-500">
+                      <Link to="/account/loyalty-ledger" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all text-amber-500">
+                        SLOOK Coins
+                      </Link>
+                      <Link to="/social" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         Social Feed
                       </Link>
                       <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
@@ -428,29 +480,68 @@ const Navbar = () => {
               <button onClick={toggleSearch}><X className="w-5 h-5 text-black flex-shrink-0" /></button>
             </div>
 
-            {suggestions.length > 0 && (
-              <div className="border-t border-zinc-100 max-h-[60vh] overflow-y-auto">
-                {suggestions.map((p) => (
-                  <div
-                    key={p._id}
-                    onClick={() => {
-                      toggleSearch();
-                      navigate(`/product/${p.slug}`);
-                    }}
-                    className="flex items-center gap-4 p-4 hover:bg-zinc-50 cursor-pointer transition border-b border-zinc-50 last:border-0"
-                  >
-                    <img src={p.image} alt={p.name} className="w-12 h-12 object-cover rounded-md bg-zinc-100" />
-                    <div>
-                      <h4 className="text-[10px] font-black uppercase tracking-widest text-black">{p.name}</h4>
-                      <Price amount={p.price} className="text-[10px] text-zinc-500 font-bold" />
+            {(suggestions.products?.length > 0 || suggestions.categories?.length > 0) && (
+              <div className="border-t border-zinc-100 max-h-[60vh] overflow-y-auto custom-scrollbar bg-[#fcfcfc]">
+                {/* CATEGORIES GROUP */}
+                {suggestions.categories?.length > 0 && (
+                  <div className="p-6 border-b border-zinc-100 bg-white/50">
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Categories</p>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestions.categories.map((cat, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            toggleSearch();
+                            navigate(`/shop?category=${cat}`);
+                          }}
+                          className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                        >
+                          {cat}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                ))}
+                )}
+
+                {/* PRODUCTS GROUP */}
+                {suggestions.products?.length > 0 && (
+                  <div className="p-6">
+                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Products</p>
+                    <div className="grid grid-cols-1 gap-2">
+                      {suggestions.products.map((p) => (
+                        <div
+                          key={p._id}
+                          onClick={() => {
+                            toggleSearch();
+                            navigate(`/product/${p.slug}`);
+                          }}
+                          className="flex items-center gap-5 p-3 hover:bg-white hover:shadow-xl rounded-2xl cursor-pointer transition-all border border-transparent hover:border-zinc-100 group"
+                        >
+                          <div className="w-14 h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
+                            <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-[11px] font-black uppercase tracking-tight text-black flex items-center gap-2">
+                              {p.name}
+                              <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors" />
+                            </h4>
+                            <div className="flex items-center gap-3 mt-1">
+                              <Price amount={p.price} className="text-[10px] text-zinc-400 font-bold" />
+                              <span className="text-[8px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400">{p.category}</span>
+                            </div>
+                          </div>
+                          <ChevronRight size={14} className="text-zinc-100 group-hover:text-black group-hover:translate-x-1 transition-all" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div
                   onClick={() => toggleSearch()}
-                  className="p-3 text-center text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black cursor-pointer"
+                  className="p-6 text-center text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white"
                 >
-                  Press Enter to see all results
+                  View all results
                 </div>
               </div>
             )}

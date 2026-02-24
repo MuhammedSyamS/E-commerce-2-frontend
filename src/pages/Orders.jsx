@@ -85,18 +85,39 @@ const Orders = () => {
                           case 'Pending': colorClass = 'bg-yellow-100 text-yellow-600'; break;
                           case 'Processing': colorClass = 'bg-teal-100 text-teal-600'; break;
                           case 'Confirmed': colorClass = 'bg-blue-100 text-blue-600'; break;
-                          case 'Dispatched': colorClass = 'bg-indigo-100 text-indigo-600'; break; // Renamed from Packed
+                          case 'Dispatched': colorClass = 'bg-indigo-100 text-indigo-600'; break;
                           case 'Shipped': colorClass = 'bg-purple-100 text-purple-600'; break;
                           case 'Delivered': colorClass = 'bg-green-100 text-green-600'; break;
                           case 'Cancelled': colorClass = 'bg-red-50 text-red-500'; break;
                           case 'Returned': colorClass = 'bg-orange-50 text-orange-500'; break;
+                          case 'Return Requested': colorClass = 'bg-orange-50 text-orange-400'; break;
                           default: colorClass = 'bg-zinc-100 text-zinc-600';
                         }
 
+                        // Get the date for the current status
+                        const statusDates = {
+                          'Pending': order.createdAt,
+                          'Processing': order.processingAt,
+                          'Confirmed': order.confirmedAt,
+                          'Dispatched': order.dispatchedAt,
+                          'Shipped': order.shippedAt,
+                          'Delivered': order.deliveredAt,
+                          'Return Requested': order.returnRequestedAt,
+                          'Returned': order.returnedAt
+                        };
+                        const currentDate = statusDates[status] || order.updatedAt;
+
                         return (
-                          <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
-                            {status}
-                          </span>
+                          <div className="flex items-center gap-3">
+                            <span className={`px-4 py-1 rounded-full text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+                              {status}
+                            </span>
+                            {currentDate && (
+                              <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                                {new Date(currentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            )}
+                          </div>
                         );
                       })()}
                     </div>

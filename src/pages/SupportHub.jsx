@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Search, ChevronDown, MessageCircle, Mail, Phone, ExternalLink, ShieldCheck, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, MessageCircle, Mail, Phone, ShieldCheck, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 
 const SupportHub = () => {
@@ -15,34 +15,13 @@ const SupportHub = () => {
     const [ticketData, setTicketData] = useState({ subject: '', message: '' });
     const [showForm, setShowForm] = useState(false);
 
-    // TRACKING STATE
-    const [trackId, setTrackId] = useState('');
-    const [trackEmail, setTrackEmail] = useState('');
-    const [trackResult, setTrackResult] = useState(null);
-    const [isTracking, setIsTracking] = useState(false);
-
-    const handleTrack = async (e) => {
-        e.preventDefault();
-        setIsTracking(true);
-        setTrackResult(null);
-        try {
-            const { data } = await axios.get(`/api/returns/track/${trackId}?email=${trackEmail}`);
-            setTrackResult(data);
-        } catch (err) {
-            addToast(err.response?.data?.message || 'Tracking failed', 'error');
-        } finally {
-            setIsTracking(false);
-        }
-    };
-
     const handleTicketSubmit = async (e) => {
         e.preventDefault();
         if (!user) return addToast('Please login to submit a ticket', 'error');
 
         setIsSubmitting(true);
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.post('/api/support', ticketData, config);
+            await api.post('/support', ticketData);
             addToast('Ticket submitted successfully! Our team will reach out.', 'success');
             setShowForm(false);
             setTicketData({ subject: '', message: '' });
@@ -80,73 +59,6 @@ const SupportHub = () => {
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400">How can we help you today?</p>
                 </div>
 
-                {/* --- TRACKING WIDGET --- */}
-                <div className="mb-16 bg-zinc-50 border border-zinc-100 rounded-[2.5rem] p-10 md:p-12 relative overflow-hidden group">
-                    <div className="relative z-10 max-w-2xl mx-auto text-center">
-                        <h2 className="text-xl font-black uppercase tracking-widest mb-2 flex items-center justify-center gap-3">
-                            <ExternalLink size={20} className="text-zinc-300" /> Track Your Request
-                        </h2>
-                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-8">Enter Return ID & Email to view Status</p>
-
-                        <form onSubmit={handleTrack} className="flex flex-col md:flex-row gap-4 mb-4">
-                            <input
-                                type="text"
-                                placeholder="Return ID (e.g. 65cba...)"
-                                className="flex-1 bg-white border border-zinc-200 rounded-2xl p-4 text-xs font-bold outline-none focus:border-black transition-all"
-                                value={trackId}
-                                onChange={e => setTrackId(e.target.value)}
-                                required
-                            />
-                            <input
-                                type="email"
-                                placeholder="Order Email"
-                                className="flex-1 bg-white border border-zinc-200 rounded-2xl p-4 text-xs font-bold outline-none focus:border-black transition-all"
-                                value={trackEmail}
-                                onChange={e => setTrackEmail(e.target.value)}
-                                required
-                            />
-                            <button
-                                type="submit"
-                                disabled={isTracking}
-                                className="px-10 py-4 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
-                            >
-                                {isTracking ? <Loader2 className="animate-spin" size={14} /> : 'Track'}
-                            </button>
-                        </form>
-
-                        {trackResult && (
-                            <div className="mt-8 text-left bg-white border border-zinc-100 rounded-3xl p-8 animate-in fade-in slide-in-from-top-4 shadow-xl shadow-black/5">
-                                <div className="flex justify-between items-center mb-6 pb-6 border-b border-zinc-50">
-                                    <div>
-                                        <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">Live Status</p>
-                                        <h3 className="text-2xl font-black uppercase tracking-tighter text-black">{trackResult.status}</h3>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">Request Ref</p>
-                                        <p className="text-[10px] font-black font-mono">{trackId.slice(-6).toUpperCase()}</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    {trackResult.timeline.map((item, idx) => (
-                                        <div key={idx} className="flex gap-4 group">
-                                            <div className="flex flex-col items-center">
-                                                <div className={`w-3 h-3 rounded-full ${idx === 0 ? 'bg-black scale-125' : 'bg-zinc-200'}`}></div>
-                                                {idx !== trackResult.timeline.length - 1 && <div className="w-[1px] h-full bg-zinc-100 my-1"></div>}
-                                            </div>
-                                            <div className="pb-2">
-                                                <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${idx === 0 ? 'text-black' : 'text-zinc-400'}`}>{item.status}</p>
-                                                <p className="text-xs font-medium text-zinc-500 mt-1 leading-tight">{item.note}</p>
-                                                <p className="text-[8px] text-zinc-300 font-bold mt-2 uppercase">{new Date(item.timestamp).toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
                 {/* --- SEARCH BAR --- */}
                 <div className="relative mb-16 group">
                     <div className="absolute inset-y-0 left-6 flex items-center text-zinc-300 group-focus-within:text-black transition-colors">
@@ -164,9 +76,9 @@ const SupportHub = () => {
                 {/* --- QUICK CONTACT --- */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
                     {[
-                        { icon: <MessageCircle />, title: "Live Chat", sub: "Avg. response: 5 mins", action: "Chat Now", color: "bg-blue-50 text-blue-600" },
-                        { icon: <Mail />, title: "Email Us", sub: "help.slook@gmail.com", action: "Send Email", color: "bg-amber-50 text-amber-600" },
-                        { icon: <Phone />, title: "Call Hub", sub: "+91 800-SLOOK-IT", action: "Call Now", color: "bg-green-50 text-green-600" }
+                        { icon: <MessageCircle />, title: "Live Chat", sub: "Avg. response: 5 mins", action: "Chat Now", color: "bg-blue-50 text-blue-600", href: "#" },
+                        { icon: <Mail />, title: "Email Us", sub: "help.slook@gmail.com", action: "Send Email", color: "bg-amber-50 text-amber-600", href: "mailto:help.slook@gmail.com" },
+                        { icon: <Phone />, title: "Call Hub", sub: "+91 800-SLOOK-IT", action: "Call Now", color: "bg-green-50 text-green-600", href: "tel:+918007566548" }
                     ].map((item, i) => (
                         <div key={i} className="p-8 border border-zinc-100 rounded-[2rem] hover:shadow-xl hover:-translate-y-1 transition-all group">
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-6 ${item.color}`}>
@@ -174,9 +86,12 @@ const SupportHub = () => {
                             </div>
                             <h3 className="font-black uppercase tracking-tight text-lg mb-1">{item.title}</h3>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-6">{item.sub}</p>
-                            <button className="text-[10px] font-black uppercase tracking-widest underline decoration-2 underline-offset-4 group-hover:text-black text-zinc-400 transition-colors">
+                            <a
+                                href={item.href}
+                                className="text-[10px] font-black uppercase tracking-widest underline decoration-2 underline-offset-4 group-hover:text-black text-zinc-400 transition-colors block w-fit"
+                            >
                                 {item.action}
-                            </button>
+                            </a>
                         </div>
                     ))}
                 </div>

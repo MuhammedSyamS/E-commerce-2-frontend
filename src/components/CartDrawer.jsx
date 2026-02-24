@@ -144,14 +144,6 @@ const CartDrawer = () => {
 
   const cartItems = (user?.cart && Array.isArray(user.cart)) ? user.cart : [];
 
-  // DEBUG LOG
-  console.log("Cart Items Debug:", cartItems.map(i => ({
-    name: i.name,
-    price: i.price,
-    type_price: typeof i.price,
-    qty: i.quantity,
-    type_qty: typeof i.quantity
-  })));
 
   // ROBUST CALCULATION
   const subtotal = cartItems.reduce((acc, item) => {
@@ -207,6 +199,18 @@ const CartDrawer = () => {
           <button onClick={() => toggleCart(false)} className="p-2 hover:bg-zinc-50 rounded-full transition"><X size={20} /></button>
         </div>
 
+        {/* FOMO TIMER */}
+        {cartItems.length > 0 && (
+          <div className="bg-zinc-900 text-white px-6 py-2 flex items-center justify-between overflow-hidden relative">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-transparent animate-pulse" />
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Items held for limited time</p>
+            <div className="flex items-center gap-2 relative z-10 font-mono text-xs font-bold text-red-400">
+              <Zap size={10} fill="currentColor" className="animate-bounce" />
+              <span>14:59</span>
+            </div>
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-8">
           {cartItems.length > 0 ? (
             <>
@@ -218,8 +222,11 @@ const CartDrawer = () => {
                       <img src={item.image || "/placeholder.jpg"} className="w-full h-full object-cover" alt={item.name} />
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
-                      <div className="flex justify-between items-start">
-                        <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name || "Unknown Product"}</p>
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name || "Unknown Product"}</p>
+                          <Price amount={item.price} className="font-black text-[11px] italic transform -skew-x-6 shrink-0" />
+                        </div>
                         {item.selectedVariant && (
                           <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">
                             {item.selectedVariant.size && `Size ${item.selectedVariant.size}`}
@@ -227,7 +234,6 @@ const CartDrawer = () => {
                             {item.selectedVariant.color}
                           </p>
                         )}
-                        <Price amount={item.price} className="font-black text-[11px] italic transform -skew-x-6" />
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
@@ -400,7 +406,7 @@ const CartDrawer = () => {
           )}
         </div>
 
-        <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
+        {cartItems.length > 0 && <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
 
           {/* FREE SHIPPING PROGRESS BAR */}
           {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
@@ -457,6 +463,13 @@ const CartDrawer = () => {
                 <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
               </div>
             </div>
+            {/* FOMO MICRO-COPY */}
+            <div className="flex items-center gap-2 justify-center py-2 bg-zinc-50 rounded-lg">
+              <div className="w-1 h-1 bg-green-500 rounded-full animate-ping" />
+              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
+                {Math.floor(Math.random() * 5 + 2)} Elite members have this in their cart
+              </p>
+            </div>
           </div>
           <button
             onClick={() => { toggleCart(false); navigate('/checkout'); }}
@@ -464,9 +477,9 @@ const CartDrawer = () => {
           >
             <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
-        </div>
+        </div>}
       </div>
-    </div>
+    </div >
   );
 };
 

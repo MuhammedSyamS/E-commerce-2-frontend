@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -21,10 +21,7 @@ const UserReviews = () => {
 
         const fetchReviews = async () => {
             try {
-                const config = {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                };
-                const { data } = await axios.get('/api/products/reviews/my-reviews', config);
+                const { data } = await api.get('/products/reviews/my-reviews');
                 setReviews(data);
             } catch (err) {
                 console.error("Failed to fetch user reviews", err);
@@ -40,10 +37,7 @@ const UserReviews = () => {
         if (!window.confirm("Are you sure you want to delete this review?")) return;
 
         try {
-            const config = {
-                headers: { Authorization: `Bearer ${user.token}` }
-            };
-            await axios.delete(`/api/products/${productId}/reviews/${reviewId}`, config);
+            await api.delete(`/products/${productId}/reviews/${reviewId}`);
             // Remove from local state
             setReviews(reviews.filter(r => r.review._id !== reviewId));
         } catch (err) {

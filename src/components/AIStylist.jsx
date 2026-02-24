@@ -3,6 +3,7 @@ import { Bot, X, Send, Sparkles, Loader2, ShoppingBag } from 'lucide-react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import Price from './Price';
+import { useToast } from '../context/ToastContext';
 
 const AIStylist = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +12,7 @@ const AIStylist = () => {
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
+    const { success } = useToast();
     const chatEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -89,21 +91,40 @@ const AIStylist = () => {
                             </p>
 
                             {msg.recommendations && (
-                                <div className="p-4 grid grid-cols-2 gap-3 animate-in fade-in slide-in-from-top-4 duration-500">
-                                    {msg.recommendations.map((prod, j) => (
-                                        <Link
-                                            key={j}
-                                            to={`/product/${prod.slug}`}
-                                            className="group block"
-                                            onClick={() => setIsOpen(false)}
+                                <div className="mt-4 bg-zinc-50/50 border border-zinc-100 rounded-[2rem] p-5 space-y-4 animate-in fade-in zoom-in-95 duration-500">
+                                    <div className="flex items-center justify-between border-b border-zinc-100 pb-3">
+                                        <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">Curated Mood Board</p>
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(window.location.origin + "/shop?look=" + msg.recommendations.map(r => r._id).join(','));
+                                                success("Look Link Copied!");
+                                            }}
+                                            className="text-[8px] font-black uppercase text-zinc-900 border border-zinc-200 px-3 py-1 rounded-full hover:bg-black hover:text-white transition-all"
                                         >
-                                            <div className="aspect-[4/5] bg-zinc-50 rounded-xl overflow-hidden mb-2">
-                                                <img src={prod.images?.[0] || prod.image} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                                            </div>
-                                            <p className="text-[9px] font-black uppercase truncate">{prod.name}</p>
-                                            <Price amount={prod.price} className="text-[9px] font-bold text-zinc-400" />
-                                        </Link>
-                                    ))}
+                                            Share Look
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {msg.recommendations.map((prod, j) => (
+                                            <Link
+                                                key={j}
+                                                to={`/product/${prod.slug}`}
+                                                className="group block bg-white p-2 rounded-2xl shadow-sm hover:shadow-xl transition-all"
+                                                onClick={() => setIsOpen(false)}
+                                            >
+                                                <div className="aspect-[4/5] bg-zinc-50 rounded-xl overflow-hidden mb-2 relative">
+                                                    <img src={prod.images?.[0] || prod.image} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                                                    <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <div className="bg-black/80 text-white p-1 rounded-full backdrop-blur-sm">
+                                                            <ShoppingBag size={8} />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p className="text-[8px] font-black uppercase truncate leading-tight">{prod.name}</p>
+                                                <Price amount={prod.price} className="text-[8px] font-bold text-zinc-400" />
+                                            </Link>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>

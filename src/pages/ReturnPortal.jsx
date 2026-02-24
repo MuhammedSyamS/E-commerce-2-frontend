@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Truck, Search, ArrowRight, ShieldCheck, RotateCcw, AlertCircle, CheckCircle, Package } from 'lucide-react';
+import { Truck, Search, ArrowRight, ShieldCheck, RotateCcw, AlertCircle, CheckCircle, Package, X, Loader2 } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import api from '../api/instance'; // Use configured instance
 import { useToast } from '../context/ToastContext';
@@ -15,23 +15,63 @@ const ReturnPortal = () => {
     const [reason, setReason] = useState('');
     const [comment, setComment] = useState('');
     const [returnType, setReturnType] = useState('Return'); // Return or Exchange
+    const [images, setImages] = useState([]); // Base64 strings
+    const [uploading, setUploading] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
+    const [variants, setVariants] = useState({}); // itemId -> variants array
+    const [selectedExchangeVariants, setSelectedExchangeVariants] = useState({}); // itemId -> variant object
+    const [variantsLoading, setVariantsLoading] = useState({}); // itemId -> bool
 
     const { addToast } = useToast();
     const { user } = useStore();
     const navigate = useNavigate();
+
+    const handleFileUpload = (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
+
+        setUploading(true);
+        const promises = files.map(file => {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        });
+
+        Promise.all(promises)
+            .then(base64s => {
+                setImages(prev => [...prev, ...base64s]);
+                addToast(`Attached ${files.length} file(s)`, "success");
+            })
+            .catch(err => {
+                console.error("Upload failed", err);
+                addToast("Failed to process files", "error");
+            })
+            .finally(() => setUploading(false));
+    };
 
     const handleLookup = async (e) => {
         e.preventDefault();
         setLoading(true);
         setOrder(null);
         setSelectedItems([]);
+        setImages([]);
         setSuccessMsg('');
         try {
             // Use public lookup endpoint
             const { data } = await api.get(`/orders/lookup?id=${orderId}&email=${email}`);
             setOrder(data);
-            addToast("Order Found!", "success");
+
+            // Check if order as a whole is too old
+            const deliveryDate = data.deliveredAt ? new Date(data.deliveredAt) : new Date(data.createdAt);
+            const daysDiff = (new Date() - deliveryDate) / (1000 * 60 * 60 * 24);
+            if (daysDiff > 7 && data.orderStatus === 'Delivered') {
+                addToast("Return period expired (7 days from delivery)", "warning");
+            } else {
+                addToast("Order Found!", "success");
+            }
         } catch (err) {
             addToast(err.response?.data?.message || "Order not found or not eligible for return", "error");
         } finally {
@@ -39,11 +79,30 @@ const ReturnPortal = () => {
         }
     };
 
-    const toggleItemSelection = (itemId) => {
+    const toggleItemSelection = async (itemId) => {
         if (selectedItems.includes(itemId)) {
             setSelectedItems(selectedItems.filter(id => id !== itemId));
+            // Cleanup variants if needed?
         } else {
             setSelectedItems([...selectedItems, itemId]);
+            if (returnType === 'Exchange') {
+                fetchVariantsForItem(itemId);
+            }
+        }
+    };
+
+    const fetchVariantsForItem = async (itemId) => {
+        if (variants[itemId]) return;
+        setVariantsLoading(prev => ({ ...prev, [itemId]: true }));
+        try {
+            const item = order.items.find(it => it._id === itemId);
+            const pId = item.product?._id || item.product;
+            const { data } = await api.get(`/products/${pId}/variants`);
+            setVariants(prev => ({ ...prev, [itemId]: data.filter(v => v.stock > 0) }));
+        } catch (err) {
+            addToast("Failed to fetch variations for an item", "error");
+        } finally {
+            setVariantsLoading(prev => ({ ...prev, [itemId]: false }));
         }
     };
 
@@ -52,7 +111,7 @@ const ReturnPortal = () => {
 
         if (!user) {
             addToast("Please login to verify ownership", "info");
-            navigate('/login');
+            navigate('/login', { state: { from: window.location.pathname } });
             return;
         }
 
@@ -61,12 +120,14 @@ const ReturnPortal = () => {
             return;
         }
 
+        const isDamaged = reason === 'Damaged Product' || reason === 'Wrong Item Received';
+        if (isDamaged && images.length === 0) {
+            addToast("Unboxing video/images required for damaged items", "error");
+            return;
+        }
+
         setLoading(true);
         try {
-            // We need to submit a request for EACH selected item if the backend expects one-by-one
-            // Backend `createReturnRequest` takes `itemId` (singular).
-            // So we loop.
-
             const promises = selectedItems.map(itemId => {
                 return api.post('/returns', {
                     orderId: order._id,
@@ -74,7 +135,8 @@ const ReturnPortal = () => {
                     reason,
                     comment,
                     type: returnType,
-                    images: [] // TODO: Add Image Upload UI if needed
+                    images: images,
+                    requestedVariant: selectedExchangeVariants[itemId] || null
                 });
             });
 
@@ -82,7 +144,8 @@ const ReturnPortal = () => {
 
             setSuccessMsg("Return Request Initiated Successfully!");
             setSelectedItems([]);
-            setOrder(null); // Reset
+            setOrder(null);
+            setImages([]);
             addToast("Return Initiated", "success");
 
         } catch (err) {
@@ -178,27 +241,64 @@ const ReturnPortal = () => {
 
                         <form onSubmit={handleSubmitReturn}>
                             <div className="space-y-4 mb-8">
-                                {returnableItems.length === 0 && (
-                                    <p className="text-center text-zinc-400 font-bold text-xs py-8">No returnable items found in this order.</p>
-                                )}
-                                {returnableItems.map(item => (
-                                    <label key={item._id} className={`flex items-start gap-4 p-4 rounded-2xl border cursor-pointer transition-all active:scale-[0.99] touch-manipulation ${selectedItems.includes(item._id) ? 'border-black bg-zinc-50' : 'border-zinc-100'}`}>
-                                        <div className="pt-1">
-                                            <input
-                                                type="checkbox"
-                                                className="w-5 h-5 accent-black rounded"
-                                                checked={selectedItems.includes(item._id)}
-                                                onChange={() => toggleItemSelection(item._id)}
-                                            />
+                                {returnableItems.map(item => {
+                                    const deliveryDate = order.deliveredAt ? new Date(order.deliveredAt) : new Date(order.createdAt);
+                                    const daysDiff = (new Date() - deliveryDate) / (1000 * 60 * 60 * 24);
+                                    const isExpired = daysDiff > 7 && order.orderStatus === 'Delivered';
+
+                                    return (
+                                        <div key={item._id} className="space-y-3">
+                                            <label className={`flex items-start gap-4 p-4 rounded-2xl border transition-all touch-manipulation ${isExpired ? 'opacity-50 cursor-not-allowed bg-zinc-50 border-zinc-100' : selectedItems.includes(item._id) ? 'border-black bg-zinc-50 active:scale-[0.99] cursor-pointer' : 'border-zinc-100 active:scale-[0.99] cursor-pointer'}`}>
+                                                <div className="pt-1">
+                                                    <input
+                                                        type="checkbox"
+                                                        disabled={isExpired}
+                                                        className="w-5 h-5 accent-black rounded"
+                                                        checked={selectedItems.includes(item._id)}
+                                                        onChange={() => !isExpired && toggleItemSelection(item._id)}
+                                                    />
+                                                </div>
+                                                <img src={item.image} alt="" className="w-16 h-16 object-cover rounded-xl bg-zinc-200" />
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex justify-between items-start">
+                                                        <p className="font-bold text-xs uppercase truncate">{item.name}</p>
+                                                        {isExpired && <span className="text-[8px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase">Period Expired</span>}
+                                                    </div>
+                                                    <p className="text-[10px] text-zinc-500 mt-0.5">Qty: {item.qty} | Size: {item.selectedVariant?.size || 'N/A'}</p>
+                                                    <p className="text-[11px] font-black mt-1">₹{item.price}</p>
+                                                </div>
+                                            </label>
+
+                                            {/* Variant Picker for Exchange */}
+                                            {returnType === 'Exchange' && selectedItems.includes(item._id) && (
+                                                <div className="ml-10 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 animate-in fade-in slide-in-from-top-2">
+                                                    <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2 block">Choose Replacement Size</label>
+                                                    {variantsLoading[item._id] ? (
+                                                        <div className="flex items-center gap-2 py-2">
+                                                            <Loader2 size={12} className="animate-spin" />
+                                                            <span className="text-[10px] font-bold uppercase text-zinc-400">Loading Sizes...</span>
+                                                        </div>
+                                                    ) : !variants[item._id] || variants[item._id].length === 0 ? (
+                                                        <p className="text-[10px] font-bold text-red-500 uppercase">Other sizes out of stock</p>
+                                                    ) : (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {variants[item._id].map((v, vIdx) => (
+                                                                <button
+                                                                    key={vIdx}
+                                                                    type="button"
+                                                                    onClick={() => setSelectedExchangeVariants(prev => ({ ...prev, [item._id]: v }))}
+                                                                    className={`px-3 py-2 rounded-lg border text-[10px] font-black uppercase tracking-widest transition-all ${selectedExchangeVariants[item._id] === v ? 'bg-black text-white border-black' : 'bg-white border-zinc-200 text-zinc-600 hover:border-black'}`}
+                                                                >
+                                                                    {v.size} {v.color && `/ ${v.color}`}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        <img src={item.image} alt="" className="w-16 h-16 object-cover rounded-xl bg-zinc-200" />
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-bold text-xs uppercase truncate">{item.name}</p>
-                                            <p className="text-[10px] text-zinc-500 mt-0.5">Qty: {item.qty} | Size: {item.selectedVariant?.size || 'N/A'}</p>
-                                            <p className="text-[11px] font-black mt-1">₹{item.price}</p>
-                                        </div>
-                                    </label>
-                                ))}
+                                    );
+                                })}
                             </div>
 
                             {selectedItems.length > 0 && (
@@ -242,6 +342,49 @@ const ReturnPortal = () => {
                                     </div>
 
                                     <div className="space-y-2">
+                                        <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Unboxing Proof (Images/Video)</label>
+                                        <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-2xl p-6 text-center transition-colors hover:border-black group relative">
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*,video/*"
+                                                onChange={handleFileUpload}
+                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                            />
+                                            <div className="flex flex-col items-center gap-2">
+                                                <div className={`p-3 rounded-full ${uploading ? 'bg-zinc-100 animate-pulse' : 'bg-white shadow-sm'}`}>
+                                                    <RotateCcw size={20} className={uploading ? 'animate-spin' : 'text-zinc-400'} />
+                                                </div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-black">
+                                                    {uploading ? 'Processing File...' : 'Click or Drag to Upload'}
+                                                </p>
+                                                <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-tighter">MAX 5MB · MP4, JPG, PNG</p>
+                                            </div>
+                                        </div>
+
+                                        {images.length > 0 && (
+                                            <div className="flex gap-2 mt-4 overflow-x-auto pb-2 no-scrollbar">
+                                                {images.map((img, idx) => (
+                                                    <div key={idx} className="w-20 h-20 rounded-xl bg-zinc-100 border border-zinc-200 overflow-hidden shrink-0 relative group">
+                                                        {img.startsWith('data:video') ? (
+                                                            <video src={img} className="w-full h-full object-cover" />
+                                                        ) : (
+                                                            <img src={img} className="w-full h-full object-cover" alt="Proof" />
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setImages(prev => prev.filter((_, i) => i !== idx))}
+                                                            className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X size={12} />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-2">
                                         <label className="text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Additional Comments</label>
                                         <textarea
                                             value={comment}
@@ -253,8 +396,8 @@ const ReturnPortal = () => {
 
                                     <button
                                         type="submit"
-                                        disabled={loading}
-                                        className="w-full bg-black text-white py-4 md:py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-zinc-900 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 block touch-manipulation"
+                                        disabled={loading || uploading}
+                                        className="w-full bg-black text-white py-4 md:py-5 rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-zinc-900 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 block touch-manipulation disabled:opacity-50"
                                     >
                                         {loading ? "Processing..." : `Confirm ${returnType}`}
                                     </button>

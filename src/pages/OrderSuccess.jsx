@@ -60,6 +60,31 @@ const OrderSuccess = () => {
           <p className="text-[10px] text-zinc-400 mt-1 font-mono">{orderId}</p>
         </div>
 
+        {/* STYLISH TIMELINE */}
+        <div className="max-w-md mx-auto mb-12">
+          <div className="flex justify-between relative">
+            {/* Background Line */}
+            <div className="absolute top-5 left-0 w-full h-0.5 bg-zinc-100 z-0"></div>
+            {/* Progress Line */}
+            <div className="absolute top-5 left-0 w-1/4 h-0.5 bg-green-500 z-10 transition-all duration-1000"></div>
+
+            {[
+              { label: 'Confirmed', sub: 'Today', active: true },
+              { label: 'Processing', sub: 'Tomorrow', active: false },
+              { label: 'Studio Check', sub: '2 Days', active: false },
+              { label: 'Shipped', sub: '3-4 Days', active: false },
+            ].map((s, i) => (
+              <div key={i} className="relative z-20 flex flex-col items-center">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 border-white shadow-sm transition-colors ${s.active ? 'bg-green-500 text-white' : 'bg-zinc-100 text-zinc-400'}`}>
+                  {s.active ? <CheckCircle size={16} /> : <div className="w-2 h-2 bg-current rounded-full" />}
+                </div>
+                <p className={`text-[9px] font-black uppercase tracking-widest mt-3 ${s.active ? 'text-black' : 'text-zinc-400'}`}>{s.label}</p>
+                <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-tighter">{s.sub}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* IMPORTANT UNBOXING NOTICE */}
         <div className="bg-orange-50 border border-orange-100 rounded-3xl p-6 mb-10 text-left flex gap-4">
           <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0 text-orange-600">

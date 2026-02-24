@@ -286,7 +286,7 @@ const AdminOrders = () => {
                         {tab}
                         <span className="ml-2 opacity-50 text-[8px]">
                             {/* Simple Count Badge */}
-                            ({orders.filter(o => {
+                            ({(orders || []).filter(o => {
                                 const s = o.orderStatus || (o.isDelivered ? 'Delivered' : o.isDispatched ? 'Shipped' : 'Pending');
                                 if (tab === 'Return Requests') return o.orderItems?.some(i => i.returnRequest?.status === 'Pending' && i.returnRequest?.type === 'Return');
                                 if (tab === 'Exchange Requests') return o.orderItems?.some(i => i.returnRequest?.status === 'Pending' && i.returnRequest?.type === 'Exchange');
@@ -314,7 +314,7 @@ const AdminOrders = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-50">
-                            {filteredOrders.map(order => (
+                            {(orders || []).filter(o => activeTab === 'All' || o.orderStatus === activeTab).map(order => (
                                 <tr key={order._id} className="hover:bg-zinc-50/50 transition-colors group">
                                     <td className="px-4 py-4 md:px-8 md:py-6 font-mono text-xs text-zinc-500">#{order._id.slice(-6)}</td>
 
@@ -327,6 +327,11 @@ const AdminOrders = () => {
                                                     <span className="text-[10px] font-bold uppercase truncate max-w-[200px] text-zinc-700">
                                                         {item.qty}x {item.name}
                                                     </span>
+                                                    {item.selectedVariant && (
+                                                        <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">
+                                                            {item.selectedVariant.size} {item.selectedVariant.color && `/ ${item.selectedVariant.color}`}
+                                                        </span>
+                                                    )}
                                                     {/* Item Status Badge */}
                                                     {item.status !== 'Ordered' && item.status !== 'Delivered' && (
                                                         <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded w-fit ${item.status.includes('Returned') ? 'bg-red-100 text-red-600' :

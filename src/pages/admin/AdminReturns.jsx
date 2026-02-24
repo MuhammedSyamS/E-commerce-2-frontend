@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
-import { RefreshCw, Search, Filter, Eye, Truck, Check, X, AlertCircle } from 'lucide-react';
+import { RefreshCw, Search, Filter, Eye, Truck, Check, X, AlertCircle, Calendar, ShieldAlert } from 'lucide-react';
 import AlertModal from '../../components/ui/AlertModal';
 
 const AdminReturns = () => {
     const { user } = useStore();
     const [returns, setReturns] = useState([]);
-    const [filteredReturns, setFilteredReturns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('All');
     const [searchTerm, setSearchTerm] = useState('');
 
     const [viewMedia, setViewMedia] = useState(null);
+    const [schedulePickupModal, setSchedulePickupModal] = useState({ show: false, returnId: null, courier: 'BLUE DART', trackingId: '', date: new Date().toISOString().split('T')[0] });
+    const [confirmAction, setConfirmAction] = useState({ show: false, id: null, action: '', extraData: {} });
+    const [processingId, setProcessingId] = useState(null);
 
     const [alertState, setAlertState] = useState({ show: false, title: '', message: '', type: 'info' });
     const showAlert = (title, message, type = 'info') => {
@@ -24,7 +27,6 @@ const AdminReturns = () => {
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const { data } = await axios.get('/api/returns/admin', config);
             setReturns(data);
-            setFilteredReturns(data);
             setLoading(false);
         } catch (error) {
             console.error(error);
@@ -37,19 +39,31 @@ const AdminReturns = () => {
         fetchReturns();
     }, [user.token]);
 
-    useEffect(() => {
+    // PERFORMANCE OPTIMIZATION: Memoize filtered data
+    const filteredReturns = useMemo(() => {
         let result = returns;
         if (activeTab !== 'All') {
             result = result.filter(r => r.status === activeTab);
         }
         if (searchTerm) {
+            const lowSearch = searchTerm.toLowerCase();
             result = result.filter(r =>
-                r.order?._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                r.user?.email.toLowerCase().includes(searchTerm.toLowerCase())
+                r.order?._id.toLowerCase().includes(lowSearch) ||
+                r.user?.email.toLowerCase().includes(lowSearch) ||
+                (r.returnId && r.returnId.toLowerCase().includes(lowSearch))
             );
         }
-        setFilteredReturns(result);
+        return result;
     }, [activeTab, searchTerm, returns]);
+
+    // PRE-CALCULATE TAB COUNTS (Eliminate filter inside render)
+    const tabCounts = useMemo(() => {
+        const counts = { All: returns.length };
+        returns.forEach(r => {
+            counts[r.status] = (counts[r.status] || 0) + 1;
+        });
+        return counts;
+    }, [returns]);
 
     const [rejectModal, setRejectModal] = useState({ show: false, returnId: null, reason: '' });
 
@@ -59,19 +73,55 @@ const AdminReturns = () => {
             return;
         }
 
-        if (!window.confirm(`Are you sure you want to ${action}?`)) return;
+        if (action === 'Schedule Pickup') {
+            const retItem = returns.find(r => r._id === id);
+            const prefix = retItem?.type === 'Exchange' ? 'EXC-' : 'RTN-';
+            setSchedulePickupModal({
+                show: true,
+                returnId: id,
+                courier: 'BLUE DART',
+                trackingId: (prefix + id).toUpperCase(), // Differentiated FULL ID
+                date: new Date().toISOString().split('T')[0]
+            });
+            return;
+        }
 
+        // MNC-GRADE: Replace window.confirm with Action Card
+        setConfirmAction({ show: true, id, action, extraData });
+    };
+
+    const triggerConfirmedAction = async () => {
+        const { id, action, extraData } = confirmAction;
+        setConfirmAction({ show: false, id: null, action: '', extraData: {} });
         await executeAction(id, action, extraData);
+    };
+
+    const submitPickup = async () => {
+        if (!schedulePickupModal.courier || !schedulePickupModal.trackingId) {
+            showAlert('Missing Info', 'Please provide courier and tracking details.', 'warning');
+            return;
+        }
+
+        await executeAction(schedulePickupModal.returnId, 'Schedule Pickup', {
+            pickupDetails: {
+                courier: schedulePickupModal.courier,
+                trackingId: schedulePickupModal.trackingId,
+                scheduledDate: schedulePickupModal.date,
+                method: 'Pickup'
+            }
+        });
+        setSchedulePickupModal({ ...schedulePickupModal, show: false });
     };
 
     const confirmReject = async () => {
         if (!rejectModal.returnId || !rejectModal.reason) return;
+        setRejectModal({ ...rejectModal, show: false });
         await executeAction(rejectModal.returnId, 'Reject', { adminComment: rejectModal.reason });
-        setRejectModal({ show: false, returnId: null, reason: '' });
     };
 
     const executeAction = async (id, action, extraData = {}) => {
         try {
+            setProcessingId(id);
             const config = { headers: { Authorization: `Bearer ${user.token}` } };
             let status = '';
 
@@ -79,7 +129,7 @@ const AdminReturns = () => {
             if (action === 'Reject') status = 'Rejected';
             if (action === 'Schedule Pickup') status = 'Pickup Scheduled';
             if (action === 'Mark Picked Up') status = 'Picked Up';
-            if (action === 'Mark Received') status = 'QC Pending'; // Auto to QC
+            if (action === 'Mark Received') status = 'QC Pending';
             if (action === 'Pass QC') status = 'QC Passed';
             if (action === 'Fail QC') status = 'QC Failed';
 
@@ -90,34 +140,141 @@ const AdminReturns = () => {
             }
 
             fetchReturns();
-            showAlert('Success', `${action} completed successfully`, 'success');
+            showAlert('Success', `${action} processed`, 'success');
         } catch (error) {
             const msg = error.response?.data?.message || 'Action failed';
             showAlert('Action Failed', msg, 'error');
+        } finally {
+            setProcessingId(null);
         }
     };
 
     const tabs = ['All', 'Requested', 'Approved', 'Pickup Scheduled', 'QC Pending', 'QC Passed', 'QC Failed', 'Refund Completed', 'Replacement Sent', 'Rejected'];
-    const toggleMediaKey = (key) => {
-        // Simple distinct locking if needed, else just use activeTab logic
-    }
 
     const getMediaUrl = (path) => {
         if (!path) return '';
-        if (path.startsWith('http')) return path;
-        // Backend runs on port 5000 in dev
+        if (path.startsWith('http') || path.startsWith('data:')) return path;
         return `${path}`;
     };
 
     return (
         <div className="p-8 pt-24 min-h-screen max-w-[1600px] mx-auto relative bg-zinc-50/50">
-            <AlertModal
-                isOpen={alertState.show}
-                onClose={() => setAlertState({ ...alertState, show: false })}
-                title={alertState.title}
-                message={alertState.message}
-                type={alertState.type}
-            />
+            <AnimatePresence>
+                {alertState.show && (
+                    <AlertModal
+                        isOpen={alertState.show}
+                        onClose={() => setAlertState({ ...alertState, show: false })}
+                        title={alertState.title}
+                        message={alertState.message}
+                        type={alertState.type}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* CONFIRM ACTION CARD (MNC STYLE) */}
+            <AnimatePresence>
+                {confirmAction.show && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl border border-zinc-100 text-center"
+                        >
+                            <div className="w-16 h-16 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-zinc-200">
+                                <ShieldAlert size={32} className="text-white" />
+                            </div>
+                            <h3 className="text-xl font-black uppercase tracking-tighter mb-2 italic">Confirm Action</h3>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed mb-8">
+                                Are you sure you want to <span className="text-black">{confirmAction.action}</span> for this request? This action will be logged.
+                            </p>
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    onClick={() => setConfirmAction({ show: false, id: null, action: '', extraData: {} })}
+                                    className="py-3 bg-zinc-50 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={triggerConfirmedAction}
+                                    className="py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-lg"
+                                >
+                                    Execute
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* PICKUP SCHEDULING MODAL */}
+            {schedulePickupModal.show && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-1">
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-blue-600">Schedule Logistics</h3>
+                            <button onClick={() => setSchedulePickupModal({ ...schedulePickupModal, show: false })} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
+                        </div>
+                        <div className="mb-4 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
+                            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">System Reference ID</span>
+                            <span className="text-[10px] font-mono font-bold text-zinc-600 break-all">{schedulePickupModal.returnId}</span>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Courier Partner</label>
+                                <select
+                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500"
+                                    value={schedulePickupModal.courier}
+                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, courier: e.target.value })}
+                                >
+                                    <option value="BLUE DART">BLUE DART</option>
+                                    <option value="DELHIVERY">DELHIVERY</option>
+                                    <option value="XPRESSBEES">XPRESSBEES</option>
+                                    <option value="ECOM EXPRESS">ECOM EXPRESS</option>
+                                    <option value="FEDEX">FEDEX</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Return Tracking No (RTN TRK)</label>
+                                <input
+                                    type="text"
+                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-mono font-bold uppercase focus:outline-none focus:border-blue-500"
+                                    value={schedulePickupModal.trackingId}
+                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, trackingId: e.target.value.toUpperCase() })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Scheduled Date</label>
+                                <input
+                                    type="date"
+                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500"
+                                    value={schedulePickupModal.date}
+                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, date: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-8">
+                            <button
+                                onClick={() => setSchedulePickupModal({ ...schedulePickupModal, show: false })}
+                                className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={submitPickup}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
+                            >
+                                <Truck size={14} /> Confirm Logistics
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* REJECTION MODAL */}
             {rejectModal.show && (
                 <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
@@ -171,7 +328,7 @@ const AdminReturns = () => {
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {viewMedia.images.map((url, idx) => {
-                                    const isVideo = url.match(/\.(mp4|mov|avi|webm|mkv)$/i);
+                                    const isVideo = url.match(/\.(mp4|mov|avi|webm|mkv)$/i) || url.startsWith('data:video/');
                                     const fullUrl = getMediaUrl(url);
                                     return (
                                         <div key={idx} className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 shadow-md">
@@ -230,7 +387,7 @@ const AdminReturns = () => {
                         className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab ? 'bg-black text-white shadow-lg scale-105' : 'bg-white text-zinc-500 hover:bg-zinc-100 hover:text-black'
                             }`}
                     >
-                        {tab} <span className="opacity-50 ml-1">({returns.filter(r => tab === 'All' ? true : r.status === tab).length})</span>
+                        {tab} <span className="opacity-50 ml-1">({tabCounts[tab] || 0})</span>
                     </button>
                 ))}
             </div>
@@ -257,8 +414,15 @@ const AdminReturns = () => {
                                         <div className="font-bold text-xs text-zinc-500">#{index + 1}</div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="font-bold text-xs">{ret.order?._id.slice(-6)}</div>
-                                        <div className="text-[10px] text-zinc-400">{new Date(ret.createdAt).toLocaleDateString()}</div>
+                                        <div className="flex flex-col">
+                                            <div className="flex items-center gap-1 group/id cursor-pointer" onClick={() => { navigator.clipboard.writeText(ret.order?._id); showAlert('Copied', 'Order ID copied to clipboard', 'success'); }}>
+                                                <span className="font-black text-[10px] text-zinc-900 uppercase tracking-tighter">ORD: {ret.order?._id}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1 group/id cursor-pointer" onClick={() => { navigator.clipboard.writeText(ret._id); showAlert('Copied', `${ret.type} ID copied to clipboard`, 'success'); }}>
+                                                <span className="font-bold text-[9px] text-zinc-400 uppercase tracking-tight">{ret.type.slice(0, 3).toUpperCase()}: {ret._id}</span>
+                                            </div>
+                                            <div className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-widest">{new Date(ret.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="font-bold text-xs">{ret.user?.firstName}</div>
@@ -325,28 +489,74 @@ const AdminReturns = () => {
                                             {/* DYNAMIC ACTIONS */}
                                             {ret.status === 'Requested' && (
                                                 <div className="flex gap-1">
-                                                    <button onClick={() => handleAction(ret._id, 'Approve')} className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded">Approve</button>
-                                                    <button onClick={() => handleAction(ret._id, 'Reject')} className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded">Reject</button>
+                                                    <button
+                                                        onClick={() => handleAction(ret._id, 'Approve')}
+                                                        disabled={processingId === ret._id}
+                                                        className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                    >
+                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Approve'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAction(ret._id, 'Reject')}
+                                                        disabled={processingId === ret._id}
+                                                        className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                    >
+                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Reject'}
+                                                    </button>
                                                 </div>
                                             )}
                                             {ret.status === 'Approved' && (
-                                                <button onClick={() => handleAction(ret._id, 'Schedule Pickup', { pickupDetails: { courier: 'FedEx', trackingId: `TRK-${Date.now()}` } })} className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded">Schedule Pickup</button>
+                                                <button
+                                                    onClick={() => handleAction(ret._id, 'Schedule Pickup')}
+                                                    disabled={processingId === ret._id}
+                                                    className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded disabled:opacity-50 flex items-center justify-center gap-2"
+                                                >
+                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : <><Truck size={10} /> Schedule Pickup</>}
+                                                </button>
                                             )}
                                             {ret.status === 'Pickup Scheduled' && (
-                                                <button onClick={() => handleAction(ret._id, 'Mark Picked Up')} className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded">Confirm Pickup</button>
+                                                <button
+                                                    onClick={() => handleAction(ret._id, 'Mark Picked Up')}
+                                                    disabled={processingId === ret._id}
+                                                    className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                >
+                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Confirm Pickup'}
+                                                </button>
                                             )}
                                             {(ret.status === 'Picked Up' || ret.status === 'In Transit') && (
-                                                <button onClick={() => handleAction(ret._id, 'Mark Received')} className="py-1 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase hover:bg-purple-100 rounded">Receive & QC</button>
+                                                <button
+                                                    onClick={() => handleAction(ret._id, 'Mark Received')}
+                                                    disabled={processingId === ret._id}
+                                                    className="py-1 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase hover:bg-purple-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                >
+                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Receive & QC'}
+                                                </button>
                                             )}
                                             {(ret.status === 'Received' || ret.status === 'QC Pending') && (
                                                 <div className="flex gap-1">
-                                                    <button onClick={() => handleAction(ret._id, 'Pass QC')} className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded">Pass QC</button>
-                                                    <button onClick={() => handleAction(ret._id, 'Fail QC')} className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded">Fail QC</button>
+                                                    <button
+                                                        onClick={() => handleAction(ret._id, 'Pass QC')}
+                                                        disabled={processingId === ret._id}
+                                                        className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                    >
+                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Pass QC'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleAction(ret._id, 'Fail QC')}
+                                                        disabled={processingId === ret._id}
+                                                        className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
+                                                    >
+                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Fail QC'}
+                                                    </button>
                                                 </div>
                                             )}
                                             {ret.status === 'QC Passed' && (
-                                                <button onClick={() => handleAction(ret._id, 'Resolve')} className="py-1 bg-green-600 text-white text-[9px] font-bold uppercase hover:bg-green-700 rounded shadow-lg shadow-green-200">
-                                                    Resolve ({ret.type === 'Return' ? 'Refund' : 'Replace'})
+                                                <button
+                                                    onClick={() => handleAction(ret._id, 'Resolve')}
+                                                    disabled={processingId === ret._id}
+                                                    className="py-1 bg-green-600 text-white text-[9px] font-bold uppercase hover:bg-green-700 rounded shadow-lg shadow-green-200 disabled:opacity-50 flex items-center justify-center gap-1"
+                                                >
+                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : `Resolve (${ret.type === 'Return' ? 'Refund' : 'Replace'})`}
                                                 </button>
                                             )}
                                         </div>

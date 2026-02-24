@@ -4,7 +4,7 @@ import ProductCard from '../components/ProductCard';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { Share2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/instance';
 
 const Wishlist = () => {
   const { user, setUser } = useStore();
@@ -21,12 +21,8 @@ const Wishlist = () => {
       }
 
       try {
-        const config = {
-          headers: { Authorization: `Bearer ${user.token}` },
-        };
-
-        // --- UPDATED ENDPOINT: Using the dedicated wishlist route ---
-        const { data } = await axios.get('/api/wishlist', config);
+        // --- UPDATED ENDPOINT: Using the dedicated wishlist route via api instance ---
+        const { data } = await api.get('/wishlist');
 
         setWishlistItems(data);
         // SYNC GLOBAL STATE: Ensure navbar badge matches valid items (removes ghost IDs)
@@ -86,8 +82,7 @@ const Wishlist = () => {
                 onAddToCart={async () => {
                   // Move to Cart Logic: Remove from Wishlist after adding to cart
                   try {
-                    const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                    const { data } = await axios.post('/api/wishlist', { productId: product._id }, config);
+                    const { data } = await api.post('/wishlist', { productId: product._id });
                     // Update global user state (which triggers effect)
                     setUser({ ...user, wishlist: data });
                   } catch (err) {

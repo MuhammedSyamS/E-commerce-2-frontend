@@ -48,6 +48,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const Reviews = lazy(() => import('./pages/Reviews'));
 const SupportHub = lazy(() => import('./pages/SupportHub'));
 const ReturnPortal = lazy(() => import('./pages/ReturnPortal'));
+const Invoice = lazy(() => import('./pages/Invoice'));
 
 // Content Pages
 const About = lazy(() => import('./pages/About'));
@@ -86,6 +87,7 @@ const AdminBlog = lazy(() => import('./pages/admin/AdminBlog')); // NEW
 const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
 const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
 const AdminSupport = lazy(() => import('./pages/admin/AdminSupport'));
+const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries')); // NEW
 // const HelpCenter = lazy(() => import('./pages/help/HelpCenter')); // Replaced by earlier import or different path?
 // Keeping existing import on line 52 as: const HelpCenter = lazy(() => import('./pages/support/HelpCenter'));
 const SupportTickets = lazy(() => import('./pages/help/SupportTickets'));
@@ -186,6 +188,7 @@ const App = () => {
                 <Route path="/support/ticket" element={<TicketForm />} />
                 <Route path="/support-tickets" element={<SupportTickets />} />
                 <Route path="/ticket/:id" element={<TicketDetails />} />
+                <Route path="/invoice/:id" element={<Invoice />} />
 
                 {/* CONTENT ROUTES */}
                 <Route path="/about" element={<About />} />
@@ -211,6 +214,7 @@ const App = () => {
                   <Route path="returns" element={<AdminReturns />} /> {/* NEW ROUTE */}
                   <Route path="looks" element={<AdminLooks />} /> {/* NEW COMMUNITY MODERATION */}
                   <Route path="support" element={<AdminSupport />} /> {/* NEW SUPPORT */}
+                  <Route path="enquiries" element={<AdminEnquiries />} /> {/* NEW ENQUIRIES */}
                   <Route path="payments" element={<AdminPayments />} />
                   <Route path="marketing" element={<AdminMarketing />} />
                   <Route path="blog" element={<AdminBlog />} />

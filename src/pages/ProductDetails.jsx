@@ -1,20 +1,18 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import {
-  Star, ShoppingBag, Minus, Plus, Heart, Camera, X, Trash2,
-  Loader2, ChevronRight, ChevronLeft, Zap, BadgePercent, Gift, ShieldCheck, RotateCcw,
-  BellRing, Calendar, Truck as LucideTruck
-} from 'lucide-react';
+import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Calendar, RotateCcw, CheckCircle2, Lock, Award, Check } from 'lucide-react';
+import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
 import Price from '../components/Price';
 import SocialShare from '../components/SocialShare';
 import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
-
 import RecentlyViewed from '../components/RecentlyViewed';
+import TrustBadges from '../components/TrustBadges';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -27,9 +25,10 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [suggestions, setSuggestions] = useState([]);
-  const [activeImgIndex, setActiveImgIndex] = useState(0);
   const [activeTab, setActiveTab] = useState('story');
-  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [selectedColor, setSelectedColor] = useState(null);
+  const [selectedSize, setSelectedSize] = useState(null);
+  // selectedVariant is now a useMemo to prevent state lag
   const [ratingInput, setRatingInput] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewImages, setReviewImages] = useState([]);
@@ -37,15 +36,40 @@ const ProductDetails = () => {
   const [selectedReview, setSelectedReview] = useState(null);
   const [sortOption, setSortOption] = useState('newest');
   const [siteSettings, setSiteSettings] = useState(null);
-  const [waitlistEmail, setWaitlistEmail] = useState("");
-  const [waitlistLoading, setWaitlistLoading] = useState(false);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [zoomScale, setZoomScale] = useState(1);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isZooming, setIsZooming] = useState(false);
 
+  // Dynamic Delivery Logic
+  const deliveryDate = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 3);
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  }, []);
+  const [showLightbox, setShowLightbox] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [isGalleryHovered, setIsGalleryHovered] = useState(false);
+  const [activeMediaIndex, setActiveMediaIndex] = useState(0);
+  const [zoomRatio, setZoomRatio] = useState(1);
+  const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
+  const [showZoom, setShowZoom] = useState(false);
+  const [showSizeConsultant, setShowSizeConsultant] = useState(false);
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [fitPreference, setFitPreference] = useState('Standard');
+  const [aiRecommendation, setAiRecommendation] = useState(null);
   const reviewsRef = useRef(null);
+  const scrollToReviews = () => {
+    setActiveTab('reviews');
+    setTimeout(() => {
+      reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
 
   const validateFile = (file, type) => {
-    const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB Video, 5MB Image
+    const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
     if (file.size > maxSize) {
       addToast(`File too large. Max ${type === 'video' ? '50MB' : '5MB'}`, "error");
       return false;
@@ -53,7 +77,6 @@ const ProductDetails = () => {
     return true;
   };
 
-  // HELPER: Resize Image (MNC Performance Optimization)
   const resizeImage = (file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -63,28 +86,17 @@ const ProductDetails = () => {
           const canvas = document.createElement('canvas');
           let width = img.width;
           let height = img.height;
-
-          // Max dimensions (e.g. 1080p)
           const MAX_WIDTH = 1080;
           const MAX_HEIGHT = 1080;
-
           if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
-            }
+            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
           } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
+            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
           }
-
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
-          // Compress to JPEG 0.7 quality
           resolve(canvas.toDataURL('image/jpeg', 0.7));
         };
         img.src = event.target.result;
@@ -96,57 +108,35 @@ const ProductDetails = () => {
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-
     setUploading(true);
-
-    // Process sequentially to avoid browser freeze
     for (const file of files) {
       if (!validateFile(file, 'image')) continue;
-
       try {
         const resizedImage = await resizeImage(file);
         setReviewImages(prev => [...prev, resizedImage]);
-      } catch (err) {
-        console.error("Compression ended error", err);
-        addToast("Failed to process image", "error");
-      }
+      } catch (err) { addToast("Failed to process image", "error"); }
     }
     setUploading(false);
   };
 
-  const [reviewVideos, setReviewVideos] = useState([]); // Changed to Array
-
+  const [reviewVideos, setReviewVideos] = useState([]);
   const handleVideoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-
     setUploading(true);
-
     for (const file of files) {
       if (!validateFile(file, 'video')) continue;
-
-      // Video Compression is hard on client without heavy libraries.
-      // We will read as DataURL but warn if huge.
       const reader = new FileReader();
-
       await new Promise((resolve) => {
-        reader.onloadend = () => {
-          setReviewVideos(prev => [...prev, reader.result]);
-          resolve();
-        };
+        reader.onloadend = () => { setReviewVideos(prev => [...prev, reader.result]); resolve(); };
         reader.readAsDataURL(file);
       });
     }
     setUploading(false);
   };
 
-  const removeImage = (index) => {
-    setReviewImages(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const removeVideo = (index) => {
-    setReviewVideos(prev => prev.filter((_, i) => i !== index));
-  };
+  const removeImage = (index) => setReviewImages(prev => prev.filter((_, i) => i !== index));
+  const removeVideo = (index) => setReviewVideos(prev => prev.filter((_, i) => i !== index));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -154,66 +144,139 @@ const ProductDetails = () => {
         setLoading(true);
         const { data } = await api.get(`/products/${slug}`);
         setProduct(data);
-
-        // --- PHASE 14: RECENTLY VIEWED TRACKING ---
-        const history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        let history = [];
+        try { history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]'); } catch (e) { history = []; }
         const updatedHistory = [
           { _id: data._id, name: data.name, slug: data.slug, image: data.image, price: data.price },
-          ...history.filter(item => item._id !== data._id)
+          ...(Array.isArray(history) ? history.filter(item => item._id !== data._id) : [])
         ].slice(0, 10);
         localStorage.setItem('recentlyViewed', JSON.stringify(updatedHistory));
-        // -------------------------------------------
-
-        // Record View (AI)
-        if (user && data._id) {
-          api.post('/users/history',
-            { productId: data._id },
-            { headers: { Authorization: `Bearer ${user.token}` } }
-          ).catch(err => console.error("Tracking Error:", err));
+        if (user && data._id && user.token) {
+          api.post('/users/history', { productId: data._id }).catch(() => { });
         }
-
-        // Fetch AI Recommendations (Contextual)
-        const recRes = await api.get(`/products/recommendations?category=${data.category}&exclude=${data._id}`, {
-          headers: user ? { Authorization: `Bearer ${user.token}` } : {}
-        });
+        const recRes = await api.get(`/products/recommendations?category=${data.category}&exclude=${data._id}`);
         setSuggestions(recRes.data || []);
-
-        // Fetch Site Settings for Shipping Days
         const settingsRes = await api.get('/settings');
         setSiteSettings(settingsRes.data);
-
-      } catch (err) {
-        console.error("Fetch Error:", err);
-      } finally {
-        setLoading(false);
-      }
+      } catch (err) { console.error(err); } finally { setLoading(false); }
     };
     fetchData();
   }, [slug, user]);
 
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
-      setSelectedVariant(product.variants[0]);
+      const params = new URLSearchParams(location.search);
+      const urlColor = params.get('color');
+      const urlSize = params.get('size');
+
+      if (urlColor || urlSize) {
+        if (urlColor) setSelectedColor(urlColor);
+        if (urlSize) setSelectedSize(urlSize);
+      } else {
+        const inStockVariant = product.variants.find(v => Number(v.stock ?? v.countInStock ?? v.qty ?? 0) > 0);
+        const firstVariant = inStockVariant || product.variants[0];
+        setSelectedColor(firstVariant.color);
+        setSelectedSize(firstVariant.size);
+      }
     } else {
-      setSelectedVariant(null);
+      setSelectedColor(null);
+      setSelectedSize(null);
     }
+  }, [product, location.search]);
+
+  const updateUrlParams = (color, size) => {
+    const params = new URLSearchParams(location.search);
+    if (color) params.set('color', color);
+    if (size) params.set('size', size);
+    navigate({ search: params.toString() }, { replace: true });
+  };
+
+  const colors = useMemo(() => {
+    if (!product?.variants) return [];
+    const colorMap = new Map();
+    product.variants.forEach(v => {
+      if (v.color && !colorMap.has(v.color)) {
+        colorMap.set(v.color, v.image || product.image);
+      }
+    });
+    return Array.from(colorMap.entries()).map(([name, image]) => ({ name, image }));
   }, [product]);
 
+  const allSizes = useMemo(() => {
+    if (!product?.variants) return [];
+    const sizes = [...new Set(product.variants.map(v => v.size).filter(Boolean))];
+    // Custom sort for standard sizes
+    const order = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+    return sizes.sort((a, b) => {
+      const indexA = order.indexOf(a.toUpperCase());
+      const indexB = order.indexOf(b.toUpperCase());
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      return a.localeCompare(b);
+    });
+  }, [product]);
+
+  // DERIVE SELECTED VARIANT IN RENDER (No state lag)
+  const selectedVariant = useMemo(() => {
+    if (!product?.variants || product.variants.length === 0) return null;
+    return product.variants.find(v =>
+      String(v.color || '').trim().toLowerCase() === String(selectedColor || '').trim().toLowerCase() &&
+      String(v.size || '').trim().toLowerCase() === String(selectedSize || '').trim().toLowerCase()
+    ) || null;
+  }, [selectedColor, selectedSize, product]);
+
+  // SMART PIVOT LOGIC: If a user picks a color/size that is OOS in the current combo,
+  // but available in others, pivot them to an available one.
+  useEffect(() => {
+    if (!product?.variants || !selectedColor || !selectedSize) return;
+
+    // If current selection is OOS or non-existent
+    const currentIsOOS = !selectedVariant || Number(selectedVariant.stock || 0) <= 0;
+
+    if (currentIsOOS) {
+      // Find FIRST available variant for the CURRENT color
+      const autoVariant = product.variants.find(v =>
+        String(v.color || '').trim().toLowerCase() === String(selectedColor || '').trim().toLowerCase() &&
+        Number(v.stock ?? v.countInStock ?? v.qty ?? 0) > 0
+      );
+
+      if (autoVariant) {
+        setSelectedSize(autoVariant.size);
+      }
+    }
+  }, [selectedColor, product, selectedVariant]); // Only pivot on color change/stock change 
+
   const currentPrice = selectedVariant?.price || product?.price;
-  const currentStock = selectedVariant ? selectedVariant.stock : product?.countInStock;
-  const isOutOfStock = currentStock === 0;
+  const currentStock = (product?.variants && product.variants.length > 0)
+    ? (selectedVariant ? Number(selectedVariant.stock ?? selectedVariant.countInStock ?? selectedVariant.qty ?? 0) : 0)
+    : Number(product?.countInStock || 0);
+  const isOutOfStock = currentStock <= 0;
+
+  const mediaItems = useMemo(() => {
+    const items = [
+      ...(product?.image ? [{ type: 'image', url: product.image }] : []),
+      ...(product?.images || []).map(url => ({ type: 'image', url })),
+      ...(product?.videos || []).map(url => ({ type: 'video', url })),
+      ...(product?.video ? [{ type: 'video', url: product.video }] : [])
+    ];
+    return items;
+  }, [product]);
+
+  const [variantForcedImage, setVariantForcedImage] = useState(null);
+  useEffect(() => {
+    if (selectedVariant?.image) { setVariantForcedImage(selectedVariant.image); }
+    else { setVariantForcedImage(null); }
+  }, [selectedVariant]);
+
+  const handleThumbnailClick = (index) => {
+    setActiveMediaIndex(index);
+    setVariantForcedImage(null);
+  };
 
   useEffect(() => {
     if (!loading && location.hash === '#reviews') {
-      setActiveTab('reviews'); // Ensure tab is active if applicable
-      setTimeout(() => {
-        if (reviewsRef.current) {
-          reviewsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 500); // Increased timeout for ensuring layout is stable
-    } else if (!loading) {
-      window.scrollTo(0, 0);
-    }
+      setActiveTab('reviews');
+      setTimeout(() => { if (reviewsRef.current) reviewsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 500);
+    } else if (!loading) { window.scrollTo(0, 0); }
   }, [loading, location.hash]);
 
   const handleWishlist = (e) => {
@@ -234,438 +297,264 @@ const ProductDetails = () => {
       );
       addToast("Review posted!", "success");
       window.location.reload();
-    } catch (err) {
-      addToast(err.response?.data?.message || "Review failed", "error");
-    } finally { setSubmitting(false); }
+    } catch (err) { addToast(err.response?.data?.message || "Review failed", "error"); } finally { setSubmitting(false); }
   };
 
   const handleDeleteReview = async (reviewId) => {
     if (!window.confirm("Are you sure you want to delete this review?")) return;
     try {
-      await api.delete(`/products/${product._id}/reviews/${reviewId}`, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      await api.delete(`/products/${product._id}/reviews/${reviewId}`, { headers: { Authorization: `Bearer ${user.token}` } });
       addToast("Review deleted", "success");
       window.location.reload();
-    } catch (err) {
-      addToast(err.response?.data?.message || "Delete failed", "error");
-    }
+    } catch (err) { addToast(err.response?.data?.message || "Delete failed", "error"); }
   };
 
 
+  const ratingDistribution = useMemo(() => {
+    const dist = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    if (!product?.reviews) return dist;
+    product.reviews.forEach(r => {
+      if (r.rating >= 1 && r.rating <= 5) dist[Math.floor(r.rating)]++;
+    });
+    return dist;
+  }, [product]);
 
   if (loading) return (
-    <div className="bg-white min-h-screen pt-40 lg:pt-56 pb-20 px-4 md:px-10">
-      <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-        {/* Gallery Skeleton */}
-        <div className="flex flex-col-reverse lg:flex-row gap-3">
-          <div className="flex lg:flex-col gap-2">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="w-12 h-16 rounded-xl" />)}
-          </div>
-          <Skeleton className="flex-1 aspect-[4/5] rounded-[2.5rem]" />
-        </div>
-
-        {/* Info Skeleton */}
-        <div className="space-y-6">
-          <div className="space-y-2">
-            <Skeleton className="w-24 h-6 rounded-full" />
-            <Skeleton className="w-3/4 h-10" />
-            <Skeleton className="w-1/4 h-8" />
-          </div>
-          <div className="space-y-3 py-4">
-            <Skeleton className="w-20 h-4" />
-            <div className="flex gap-2">
-              {[...Array(3)].map((_, i) => <Skeleton key={i} className="w-16 h-8 rounded-xl" />)}
+    <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans">
+      <div className="container mx-auto px-6 max-w-7xl">
+        <Skeleton className="h-4 w-48 mb-10 rounded-full" />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+          <div className="lg:col-span-7">
+            <Skeleton className="aspect-square w-full rounded-[2.5rem]" />
+            <div className="grid grid-cols-4 gap-4 mt-6">
+              {[...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
             </div>
           </div>
-          <div className="space-y-3">
-            <div className="flex gap-3">
-              <Skeleton className="w-32 h-[48px] rounded-full" />
-              <Skeleton className="flex-1 h-[48px] rounded-full" />
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-24 rounded-full" />
+              <Skeleton className="h-12 w-full rounded-2xl" />
+              <Skeleton className="h-8 w-32 rounded-full" />
             </div>
-            <Skeleton className="w-full h-[48px] rounded-full" />
+            <Skeleton className="h-16 w-full rounded-full mt-10" />
           </div>
         </div>
       </div>
     </div>
   );
 
-  if (!product) return (
-    <div className="h-screen flex flex-col items-center justify-center bg-white text-center">
-      <h1 className="text-2xl font-black uppercase tracking-tighter mb-4">Product Not Found</h1>
-      <button onClick={() => navigate('/shop')} className="bg-black text-white px-8 py-3 rounded-full font-bold text-xs uppercase tracking-widest">
-        Return to Shop
-      </button>
-    </div>
-  );
+  if (!product) return (<div className="h-screen flex items-center justify-center">Product Not Found</div>);
 
   const isWishlisted = user?.wishlist?.some(item => (item._id || item).toString() === product?._id.toString());
-
-  // MERGE IMAGES AND VIDEO INTO ONE GALLERY ARRAY
-  const mediaItems = [
-    ...(product.image ? [{ type: 'image', url: product.image }] : []),
-    ...(product.images || []).map(url => ({ type: 'image', url })),
-    ...(product.videos || []).map(url => ({ type: 'video', url })),
-    ...(product.video ? [{ type: 'video', url: product.video }] : [])
-  ];
-
   const getDeliveryDateRange = () => {
-    if (!siteSettings?.shippingDays) return "4-7 Business Days";
-    const today = new Date();
-    const minDate = new Date(today);
-    minDate.setDate(today.getDate() + (siteSettings.shippingDays.min || 4));
-    const maxDate = new Date(today);
-    maxDate.setDate(today.getDate() + (siteSettings.shippingDays.max || 7));
-
-    return `${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
-  };
-
-  const handleWaitlistSubmit = async (e) => {
-    e.preventDefault();
-    if (!waitlistEmail) return addToast("Email required", "error");
-    setWaitlistLoading(true);
-    try {
-      await api.post('/products/waitlist', {
-        email: waitlistEmail,
-        productId: product._id,
-        variant: selectedVariant
-      });
-      addToast("We'll notify you!", "success");
-    } catch (err) {
-      console.error("Waitlist error:", err);
-      addToast("Failed to join waitlist", "error");
-    } finally {
-      setWaitlistLoading(false);
-    }
+    const deliveryDate = new Date();
+    deliveryDate.setDate(deliveryDate.getDate() + 5);
+    return deliveryDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const handleHelpfulVote = async (reviewId) => {
     if (!user) return addToast("Please login to vote", "error");
     try {
-      const { data } = await api.put(`/products/${product._id}/reviews/${reviewId}/helpful`, {}, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      // Optimistic Update
+      const { data } = await api.put(`/products/${product._id}/reviews/${reviewId}/helpful`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
       const updatedReviews = (product.reviews || []).map(r => {
         if (r._id === reviewId) {
-          const isHelpful = data.isHelpful;
           const currentHelpful = r.helpful || [];
-          const newHelpful = isHelpful
-            ? [...currentHelpful, user._id]
-            : currentHelpful.filter(id => id !== user._id);
+          const newHelpful = data.isHelpful ? [...currentHelpful, user._id] : currentHelpful.filter(id => id !== user._id);
           return { ...r, helpful: newHelpful };
         }
         return r;
       });
       setProduct({ ...product, reviews: updatedReviews });
-    } catch (err) {
-      console.error("Vote error:", err);
-      addToast("Failed to vote", "error");
-    }
+    } catch (err) { addToast("Failed to vote", "error"); }
   };
 
-  const getSortedReviews = () => {
-    if (!product?.reviews) return [];
-    // Safe spread to prevent crash if reviews is undefined/null
+  const sortedReviews = (() => {
     let reviews = [...(product.reviews || [])].filter(r => r.isApproved !== false);
-
     switch (sortOption) {
-      case 'newest':
-        return reviews.reverse(); // Default is oldest first in DB usually
-      case 'oldest':
-        return reviews;
-      case 'highest':
-        return reviews.sort((a, b) => b.rating - a.rating);
-      case 'lowest':
-        return reviews.sort((a, b) => a.rating - b.rating);
-      case 'helpful':
-        return reviews.sort((a, b) => (b.helpful?.length || 0) - (a.helpful?.length || 0));
-      default:
-        return reviews.reverse();
+      case 'newest': return reviews.reverse();
+      case 'oldest': return reviews;
+      case 'highest': return reviews.sort((a, b) => b.rating - a.rating);
+      case 'lowest': return reviews.sort((a, b) => a.rating - b.rating);
+      case 'helpful': return reviews.sort((a, b) => (b.helpful?.length || 0) - (a.helpful?.length || 0));
+      default: return reviews.reverse();
     }
-  };
-
-  const sortedReviews = getSortedReviews();
+  })();
 
   return (
-    <div className="bg-white min-h-screen pt-40 lg:pt-56 pb-20 px-4 md:px-10">
+    <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
       <Helmet>
-        <title>{product?.seo?.metaTitle || `${product?.name} | SLOOK`}</title>
-        <meta name="description" content={product?.seo?.metaDescription || product?.description || "Shop the finest curated goods at SLOOK."} />
-        <meta name="keywords" content={product?.seo?.keywords?.join(', ') || product?.tags?.join(', ')} />
-        <meta property="og:title" content={product?.seo?.metaTitle || product?.name} />
-        <meta property="og:description" content={product?.seo?.metaDescription || product?.description} />
-        <meta property="og:image" content={product?.image} />
-        <meta property="og:url" content={window.location.href} />
-        <meta name="twitter:card" content="summary_large_image" />
+        <title>{`${product.name} | SLOOK Modern Essentials`}</title>
+        <meta name="description" content={product.description} />
       </Helmet>
 
-      {/* ... (Existing Lightbox Code) ... */}
       {selectedReview && (
-        <div
-          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8"
-          onClick={() => setSelectedReview(null)}
-        >
-          <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
-            <X size={24} />
-          </button>
-
-          <div
-            className="bg-white w-full max-w-6xl h-[85vh] rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl animate-in fade-in zoom-in duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* LEFT: MEDIA GALLERY (2/3 width on large screens) */}
+        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
+          <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50"><X size={24} /></button>
+          <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
-              {/* Navigation Arrows */}
               {selectedReview.media?.length > 1 && (
                 <>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length;
-                      setSelectedReview({
-                        ...selectedReview,
-                        index: newIndex,
-                        currentMedia: selectedReview.media[newIndex]
-                      });
-                    }}
-                    className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20 backdrop-blur-sm"
-                  >
-                    <ChevronLeft size={24} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const newIndex = (selectedReview.index + 1) % selectedReview.media.length;
-                      setSelectedReview({
-                        ...selectedReview,
-                        index: newIndex,
-                        currentMedia: selectedReview.media[newIndex]
-                      });
-                    }}
-                    className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20 backdrop-blur-sm"
-                  >
-                    <ChevronRight size={24} />
-                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronLeft size={24} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronRight size={24} /></button>
                 </>
               )}
-
-              {/* Media Content */}
-              {selectedReview.currentMedia?.type === 'video' ? (
-                <video
-                  controls
-                  autoPlay
-                  src={selectedReview.currentMedia.url}
-                  className="w-full h-full object-contain bg-black"
-                />
-              ) : (
-                <img
-                  src={selectedReview.currentMedia?.url || selectedReview.image}
-                  alt="Review Media"
-                  className="w-full h-full object-contain select-none"
-                />
-              )}
-
-              {/* Media Counter Badge */}
-              {selectedReview.media?.length > 1 && (
-                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-widest border border-white/10">
-                  {selectedReview.index + 1} / {selectedReview.media.length}
-                </div>
-              )}
+              {selectedReview.currentMedia?.type === 'video' ? <video controls autoPlay src={selectedReview.currentMedia.url} className="w-full h-full object-contain bg-black" /> : <img src={selectedReview.currentMedia?.url || selectedReview.image} alt="Review" className="w-full h-full object-contain" />}
             </div>
-
-            {/* RIGHT: REVIEW DETAILS (1/3 width on large screens) */}
             <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-black text-xs uppercase">
-                  {selectedReview.name?.charAt(0) || 'U'}
-                </div>
-                <div>
-                  <p className="text-sm font-black uppercase tracking-wide">{selectedReview.name}</p>
-                  {selectedReview.isVerifiedPurchase && (
-                    <span className="text-[9px] font-bold text-green-600 uppercase flex items-center gap-1">
-                      <BadgePercent size={10} /> Verified Buyer
-                    </span>
-                  )}
-                </div>
+                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
+                <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
               </div>
-
-              <div className="flex gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className={i < (selectedReview.rating || 5) ? "fill-black text-black" : "text-zinc-200"}
-                  />
-                ))}
-              </div>
-
-              <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                <p className="text-sm text-zinc-600 leading-relaxed mb-6">
-                  "{selectedReview.comment}"
-                </p>
-                {selectedReview.adminResponse && (
-                  <div className="bg-zinc-50 p-4 rounded-xl border border-zinc-100 mb-6">
-                    <p className="text-[10px] font-black uppercase text-zinc-900 mb-2 flex items-center gap-1">
-                      <Zap size={10} fill="black" /> Official Response
-                    </p>
-                    <p className="text-xs text-zinc-500">{selectedReview.adminResponse}</p>
-                  </div>
-                )}
-              </div>
-
+              <p className="text-sm text-zinc-600 leading-relaxed mb-6 italic">"{selectedReview.comment}"</p>
               <div className="mt-6 pt-6 border-t border-zinc-100">
-                <p className="text-[10px] text-zinc-400 font-bold uppercase mb-4">
-                  Posted on {selectedReview.createdAt ? new Date(selectedReview.createdAt).toLocaleDateString() : 'Recent'}
-                </p>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent propagation
-                    handleHelpfulVote(selectedReview._id);
-                  }}
-                  className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase transition-all
-                    ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}
-                  `}
-                >
-                  <Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} />
-                  <span>Helpful ({selectedReview.helpful?.length || 0})</span>
-                </button>
+                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* --- ELITE RESTOCK NOTIFICATION MODAL --- */}
-      <NotifyMeModal
-        isOpen={showWaitlistModal}
-        onClose={() => setShowWaitlistModal(false)}
-        product={product}
-        variant={selectedVariant}
-      />
+      <NotifyMeModal isOpen={showWaitlistModal} onClose={() => setShowWaitlistModal(false)} product={product} variant={selectedVariant} />
 
-      <div className="max-w-5xl mx-auto">
-        {/* ... (Existing Product Header/Gallery) ... */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          <div className="flex flex-col-reverse lg:flex-row gap-3 lg:sticky lg:top-40">
-            {/* THUMBNAILS */}
-            <div className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
+
+          {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-6) */}
+          <div className="lg:col-span-6 flex gap-6">
+            {/* THUMBNAILS STRIP */}
+            <div className="hidden xl:flex flex-col gap-3 sticky top-32 h-fit w-16 shrink-0">
               {mediaItems.map((item, i) => (
-                <button key={i} onClick={() => setActiveImgIndex(i)}
-                  className={`flex-shrink-0 w-12 h-16 rounded-xl overflow-hidden border transition-all flex items-center justify-center bg-zinc-50 ${activeImgIndex === i ? 'border-black opacity-100' : 'border-transparent opacity-40'}`}>
+                <button
+                  key={i}
+                  onClick={() => { setActiveMediaIndex(i); setVariantForcedImage(null); }}
+                  className={`aspect-[3/4] rounded-lg overflow-hidden border transition-all duration-300 bg-zinc-50 ${activeMediaIndex === i && !variantForcedImage ? 'border-zinc-900 shadow-sm scale-105' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                >
                   {item.type === 'video' ? (
-                    <div className="bg-black/10 rounded-full p-1"><Zap size={14} fill="currentColor" /></div>
+                    <div className="w-full h-full flex items-center justify-center bg-zinc-100"><Play size={12} className="text-zinc-400" /></div>
                   ) : (
-                    <img src={item.url} className="w-full h-full object-cover" alt="" loading="lazy" />
+                    <img src={item.url} className="w-full h-full object-cover" alt="" />
                   )}
                 </button>
               ))}
             </div>
 
-            {/* MAIN DISPLAY */}
-            <div className="relative flex-1 aspect-[4/5] bg-zinc-50 rounded-[2.5rem] overflow-hidden border border-zinc-100 shadow-sm group">
-              {mediaItems[activeImgIndex]?.type === 'video' ? (
-                <div className="w-full h-full bg-black flex items-center justify-center">
-                  {(mediaItems[activeImgIndex].url && (mediaItems[activeImgIndex].url.includes('youtube') || mediaItems[activeImgIndex].url.includes('youtu.be'))) ? (
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      src={mediaItems[activeImgIndex].url.replace('watch?v=', 'embed/').replace('youtu.be/', 'www.youtube.com/embed/')}
-                      title="Product Video"
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  ) : (
-                    <video controls autoPlay className="w-full h-full object-contain">
-                      <source src={mediaItems[activeImgIndex]?.url} type="video/mp4" />
-                      Your browser does not support the video tag.
-                    </video>
-                  )}
-                </div>
-              ) : (
-                <img
-                  src={mediaItems[activeImgIndex]?.url || "/placeholder.jpg"}
-                  className="w-full h-full object-cover"
-                  alt=""
-                  loading="lazy"
-                />
-              )}
+            {/* MAIN HERO IMAGE */}
+            <div className="flex-1 space-y-10">
+              <div
+                className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-zinc-50 cursor-zoom-in group/main"
+                onMouseMove={(e) => {
+                  const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                  const x = ((e.pageX - left) / width) * 100;
+                  const y = ((e.pageY - top) / height) * 100;
+                  setMousePos({ x, y });
+                }}
+                onMouseEnter={() => setIsZooming(true)}
+                onMouseLeave={() => setIsZooming(false)}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={variantForcedImage || activeMediaIndex}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ duration: 0.5, ease: "circOut" }}
+                    className="w-full h-full"
+                  >
+                    {mediaItems[activeMediaIndex]?.type === 'video' && !variantForcedImage ? (
+                      <video src={mediaItems[activeMediaIndex].url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                    ) : (
+                      <img
+                        src={variantForcedImage || mediaItems[activeMediaIndex]?.url}
+                        className={`w-full h-full object-cover transition-transform duration-200 ${isZooming ? 'scale-[2.5]' : 'scale-100'}`}
+                        style={isZooming ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` } : {}}
+                        alt={product.name}
+                      />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-              {/* Overlays only for Image */}
-              {mediaItems[activeImgIndex]?.type === 'image' && product.countInStock === 0 && (
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
-                  <span className="bg-black text-white px-6 py-3 text-xs font-black uppercase tracking-widest shadow-xl transform rotate-0">
-                    Out of Stock
-                  </span>
+              {/* PRODUCT DNA SECTION */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
+                <div className="space-y-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">The Story</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80">{product.description}</p>
                 </div>
-              )}
-              <button onClick={handleWishlist} className="absolute top-5 right-5 p-3 bg-white/90 backdrop-blur rounded-full shadow-lg active:scale-95 transition-transform z-30">
-                <Heart size={18} fill={isWishlisted ? "black" : "none"} className={isWishlisted ? "text-black" : "text-zinc-300"} />
-              </button>
+                <div className="space-y-4">
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Artifact Specs</h3>
+                  <div className="space-y-3">
+                    {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
+                      <div key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-900">
+                        <Check size={14} className="text-green-500" />
+                        <span>{spec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-6 pt-2 lg:pt-0">
-            <SocialShare url={window.location.href} title={product.name} />
-            <div className="space-y-2">
-              <div className="flex flex-wrap gap-2">
-                <div className="flex items-center gap-2 text-red-600 font-black text-[9px] uppercase tracking-widest">
-                  <BadgePercent size={14} /> Seasonal Studio Offer
-                </div>
-                {product.tags && product.tags.map((tag, i) => (
-                  <div key={i} className="bg-black text-white px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full">
-                    {tag}
-                  </div>
-                ))}
-                {product.isBestSeller && !product.tags?.includes('Best Seller') && (
-                  <div className="bg-amber-400 text-black px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-full">
-                    Best Seller
-                  </div>
-                )}
-              </div>
-              <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
-              <div className="flex items-baseline gap-4 pt-1">
-                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black" />
-                <Price amount={(currentPrice || 0) * 1.25} className="text-base lg:text-lg text-zinc-300 line-through font-bold" />
-              </div>
+          {/* COLUMN 2: INFORMATION HUB (lg:col-span-3) */}
+          <div className="lg:col-span-3 space-y-12">
+            <div className="space-y-6">
+              <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
+                <Link to="/shop" className="hover:text-black transition-colors">Vault</Link>
+                <ChevronRight size={10} />
+                <span className="text-zinc-900">{product.category}</span>
+              </nav>
 
-              {/* Star Rating Display */}
-              <div className="flex items-center gap-2 mt-2 cursor-pointer group w-fit" onClick={() => {
-                setActiveTab('reviews');
-                setTimeout(() => document.getElementById('reviews-section')?.scrollIntoView({ behavior: 'smooth' }), 100);
-              }}>
-                <div className="flex gap-0.5">
+              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 leading-[1] uppercase py-2">
+                {product.name}
+              </h1>
+
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1 text-amber-400">
                   {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={i < Math.round(product.rating || 0) ? "fill-black text-black" : "text-zinc-200"}
-                    />
+                    <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                   ))}
                 </div>
-                <span className="text-xs font-bold text-zinc-500 group-hover:text-black transition-colors underline decoration-zinc-300 underline-offset-4">
-                  {product.numReviews || 0} Reviews
-                </span>
+                <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+                  {product.numReviews} Verified Reviews
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
+                <div className="flex items-baseline gap-3">
+                  <span className="text-3xl font-black text-zinc-900 tracking-tighter">
+                    <Price amount={currentPrice} />
+                  </span>
+                  {currentPrice < product.price * 1.2 && (
+                    <del className="text-zinc-300 text-lg font-bold">
+                      <Price amount={product.price * 1.4} />
+                    </del>
+                  )}
+                </div>
+                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                  Price Includes Global Duty & Insurance
+                </p>
               </div>
             </div>
 
-            {product.variants && product.variants.length > 0 && (
-              <div className="space-y-3 py-4 border-t border-dashed border-zinc-100">
-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Option</p>
-                <div className="flex flex-wrap gap-2">
-                  {product.variants.map((variant, idx) => {
-                    const isSelected = selectedVariant === variant;
+            {/* PREMIUM VARIANT UX: COLOR SWATCHES */}
+            {colors.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Finish / {selectedColor}</span>
+                </div>
+                <div className="flex flex-wrap gap-4">
+                  {colors.map((color, idx) => {
+                    const isSelected = selectedColor === color.name;
                     return (
                       <button
                         key={idx}
-                        onClick={() => setSelectedVariant(variant)}
-                        className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all
-                          ${isSelected ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 border-zinc-200 hover:border-black'}
-                        `}
+                        onClick={() => { setSelectedColor(color.name); updateUrlParams(color.name, selectedSize); }}
+                        className={`relative w-10 h-10 rounded-full border-2 transition-all duration-300 ${isSelected ? 'border-zinc-900 scale-110 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
                       >
-                        {variant.size && <span>Size {variant.size}</span>}
-                        {variant.size && variant.color && <span className="mx-1">•</span>}
-                        {variant.color && <span>{variant.color}</span>}
+                        <div className="w-full h-full rounded-full overflow-hidden border border-zinc-100 p-0.5">
+                          <img src={color.image} className="w-full h-full object-cover rounded-full" alt={color.name} />
+                        </div>
+                        {isSelected && <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full border-2 border-white"><Check size={8} /></div>}
                       </button>
                     );
                   })}
@@ -673,339 +562,513 @@ const ProductDetails = () => {
               </div>
             )}
 
-            {/* DELIVERY ESTIMATE BAR */}
-            <div className="flex items-center gap-3 py-4 border-y border-dashed border-zinc-100">
-              <div className="w-10 h-10 rounded-full bg-zinc-50 flex items-center justify-center text-zinc-400">
-                <LucideTruck size={18} strokeWidth={1.5} />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
-                  <span className="text-[9px] font-bold text-green-600 uppercase bg-green-50 px-2 py-0.5 rounded">Fastest</span>
+            {/* PREMIUM VARIANT UX: SIZE PILLS */}
+            {allSizes.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Proportional Fit</span>
+                  <button onClick={() => setShowSizeConsultant(true)} className="text-[9px] font-black uppercase tracking-widest text-zinc-900 flex items-center gap-1.5 hover:opacity-70 transition-opacity">
+                    <Info size={12} /> Size Advisor
+                  </button>
                 </div>
-                <p className="text-[11px] font-bold text-zinc-500 mt-0.5">
-                  {getDeliveryDateRange() || "Loading..."}
-                </p>
+                <div className="grid grid-cols-4 gap-3">
+                  {allSizes.map((size, idx) => {
+                    const isSelected = selectedSize === size;
+                    const vMatch = product.variants.find(v => v.size?.toLowerCase() === size?.toLowerCase() && (selectedColor ? v.color?.toLowerCase() === selectedColor?.toLowerCase() : true));
+                    const isOOS = !vMatch || (Number(vMatch.stock || 0) <= 0);
+                    return (
+                      <button
+                        key={idx}
+                        disabled={isOOS}
+                        onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
+                        className={`py-3 rounded-xl border-2 font-black text-[10px] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                      >
+                        {size}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
-            <div id="reviews-section" className="border-b border-zinc-100">
-              <div className="flex gap-6">
-                {['story', 'specs'].map(t => (
-                  <button key={t} onClick={() => setActiveTab(t)} className={`py-3 text-[9px] font-black uppercase tracking-widest border-b ${activeTab === t ? 'border-black text-black' : 'border-transparent text-zinc-400'}`}>{t}</button>
-                ))}
-              </div>
-              <div className="py-4 space-y-2">
-                {activeTab === 'story' ? (
-                  <p className="text-[11px] text-zinc-500 leading-relaxed italic whitespace-pre-line">{product.description || "No description available for this product."}</p>
-                ) : (
-                  <div className="grid grid-cols-1 gap-2">
-                    {product.specs && product.specs.length > 0 ? (
-                      product.specs.map((spec, i) => (
-                        <div key={i} className="flex justify-between items-center text-[10px] uppercase border-b border-dashed border-zinc-100 pb-2 last:border-0">
-                          <span className="font-bold text-zinc-400 tracking-widest">{spec.key}</span>
-                          <span className="font-bold text-black">{spec.value}</span>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-[10px] text-zinc-400 italic">No specifications available.</p>
-                    )}
+            <TrustBadges />
+          </div>
+
+          {/* COLUMN 3: CONVERSION VAULT (lg:col-span-3) */}
+          <div className="lg:col-span-3 sticky top-40 h-fit space-y-8">
+            <div className="bg-white border border-zinc-100 rounded-[1.5rem] p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] space-y-6 relative overflow-hidden group/vault">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 group-hover/vault:bg-zinc-100 transition-colors" />
+
+              <div className="space-y-6">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <span className="text-2xl font-black text-zinc-900 tracking-tighter">
+                      <Price amount={currentPrice} />
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 italic">Available in Vault</span>
+                    </div>
+                  </div>
+                  <button onClick={handleWishlist} className={`p-3 rounded-2xl transition-all ${isWishlisted ? 'bg-zinc-900 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900'}`}>
+                    <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
+                  </button>
+                </div>
+
+                {/* STOCK URGENCY SIGNAL */}
+                {currentStock < 10 && currentStock > 0 && (
+                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex items-center gap-3">
+                    <Loader2 size={16} className="text-amber-600 animate-spin" />
+                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
+                      High Demand: Only {currentStock} Left
+                    </p>
                   </div>
                 )}
               </div>
-            </div>
 
-            <div className="space-y-3">
-              {!isOutOfStock ? (
-                <>
-                  <div className="flex gap-3">
-                    <div className="flex items-center justify-between bg-zinc-50 border rounded-full px-5 w-32 h-[48px]">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-1 hover:bg-zinc-200 rounded-full"><Minus size={14} /></button>
-                      <span className="font-black text-sm">{quantity}</span>
-                      <button onClick={() => setQuantity(Math.min(currentStock || 1, quantity + 1))} className="p-1 hover:bg-zinc-200 rounded-full"><Plus size={14} /></button>
+              {!isOutOfStock && (
+                <div className="space-y-6">
+                  {/* QUANTITY & ACTIONS */}
+                  <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
+                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Qty</span>
+                    <div className="flex items-center gap-6">
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-400 hover:text-black transition-colors"><Minus size={14} /></button>
+                      <span className="font-black text-sm w-4 text-center">{quantity}</span>
+                      <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-400 hover:text-black transition-colors"><Plus size={14} /></button>
                     </div>
-                    <button onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })} className="flex-1 bg-black text-white h-[48px] rounded-full font-black uppercase tracking-widest text-[9px] shadow-lg active:scale-95 transition-all">Add To Bag</button>
                   </div>
-                  <button
-                    onClick={() => { addToCart({ ...product, price: currentPrice, selectedVariant, quantity }); navigate('/checkout'); }}
-                    className="w-full h-[48px] border border-black rounded-full font-black uppercase tracking-widest text-[9px] hover:bg-black hover:text-white transition-colors"
-                  >
-                    Quick Checkout
-                  </button>
-                </>
-              ) : (
-                <div className="space-y-3">
-                  <div className="w-full h-[48px] bg-zinc-100 text-zinc-400 rounded-full flex items-center justify-center font-black uppercase tracking-widest text-[10px] cursor-not-allowed">
-                    Currently Selected Variant is Out of Stock
+
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
+                      className="w-full h-14 bg-white border-2 border-zinc-900 text-zinc-900 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-zinc-900 hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      <ShoppingBag size={16} /> Add to Bag
+                    </button>
+                    <button
+                      onClick={() => {
+                        const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                        navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                      }}
+                      className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                    >
+                      <Zap size={16} fill="currentColor" /> Buy it Now
+                    </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      setWaitlistEmail(user?.email || "");
-                      setShowWaitlistModal(true);
-                    }}
-                    className="w-full h-[48px] bg-black text-white rounded-full flex items-center justify-center gap-2 font-black uppercase tracking-widest text-[10px] hover:bg-zinc-900 transition-all active:scale-95"
-                  >
-                    <BellRing size={16} /> Notify Me on Restock
-                  </button>
                 </div>
               )}
-            </div>
 
-            {/* TRUST BAR */}
-            <div className="grid grid-cols-2 gap-3 pt-6">
-              {[
-                { text: "256-Bit Secure SSL Checkout", icon: <ShieldCheck size={14} /> },
-                { text: "7-Day Money-Back Guarantee", icon: <RotateCcw size={14} /> },
-                { text: "Inspected for Premium Quality", icon: <Star size={14} /> },
-                { text: "Over 1,000+ Happy Customers", icon: <Heart size={14} /> }
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-2 text-[9px] font-bold text-zinc-500 uppercase tracking-tight">
-                  <span className="text-black">{item.icon}</span>
-                  {item.text}
+              {isOutOfStock && (
+                <button
+                  onClick={() => setShowWaitlistModal(true)}
+                  className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all"
+                >
+                  <BellRing size={18} /> Waitlist Enrollment
+                </button>
+              )}
+
+
+              <div className="pt-6 flex items-center justify-center gap-6">
+                <div className="flex flex-col items-center gap-2">
+                  <RotateCcw size={16} className="text-zinc-300" />
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">7 Day Returns</span>
                 </div>
-              ))}
+                <div className="flex flex-col items-center gap-2">
+                  <Lock size={16} className="text-zinc-300" />
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Secure Vault</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Award size={16} className="text-zinc-300" />
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Authentic</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* --- PHASE 14: RECENTLY VIEWED --- */}
-        <RecentlyViewed currentProductId={product._id} />
-        {/* ------------------------------- */}
+      {/* FLOATING MOBILE ACTION BAR */}
+      {!isOutOfStock && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-zinc-100 p-4 z-50 lg:hidden animate-in slide-in-from-bottom-full duration-500">
+          <div className="flex items-center gap-4 max-w-lg mx-auto">
+            <div className="flex-1">
+              <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Instant Access</p>
+              <Price amount={currentPrice} className="text-lg font-black text-zinc-900" />
+            </div>
+            <button
+              onClick={() => {
+                const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+              }}
+              className="flex-[2] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <Zap size={14} fill="currentColor" /> Secure Checkout
+            </button>
+          </div>
+        </div>
+      )}
 
-        <div ref={reviewsRef} id="reviews" className="mt-20 pt-10 border-t border-zinc-100 grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="bg-zinc-50 p-6 rounded-3xl space-y-4 h-fit">
-            <h3 className="text-xs font-black uppercase">Submit Review</h3>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={18} className={`cursor-pointer ${ratingInput >= n ? 'fill-black text-black' : 'text-zinc-200'}`} />)}
-            </div>
-            <div className="bg-zinc-100 p-4 rounded-xl mb-4">
-              <p className="text-[10px] font-bold uppercase mb-2">Tips for a helpful review:</p>
-              <ul className="list-disc pl-4 space-y-1 text-[9px] text-zinc-500 italic">
-                <li>What hesitation did you have before buying?</li>
-                <li>How would you describe the feeling of wearing this?</li>
-                <li>What specific problem did this product solve?</li>
-              </ul>
-            </div>
-            <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Share your experience..." className="w-full bg-white border border-zinc-100 rounded-2xl p-4 text-[10px] h-24 outline-none focus:border-black" />
-            <div className="space-y-4">
-              <div className="flex flex-wrap items-center gap-3">
-                <label className={`cursor-pointer flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition active:scale-95 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <Camera size={14} className="text-zinc-900" />
-                  <span className="text-zinc-600">Add Photos</span>
-                  <input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" disabled={uploading} />
-                </label>
-                <label className={`cursor-pointer flex items-center gap-2 bg-zinc-50 border border-zinc-200 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition active:scale-95 ${uploading ? 'opacity-50 pointer-events-none' : ''}`}>
-                  <Zap size={14} className="text-zinc-900" />
-                  <span className="text-zinc-600">Add Videos</span>
-                  <input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" disabled={uploading} />
-                </label>
-                {uploading && (
-                  <div className="flex items-center gap-2 text-[10px] font-bold text-zinc-400 animate-pulse">
-                    <Loader2 size={12} className="animate-spin" /> Compressing & Uploading...
-                  </div>
-                )}
-              </div>
-
-              {/* CUSTOMER REVIEWS LIST */}
-              {(reviewImages.length > 0 || reviewVideos.length > 0) && (
-                <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                  {reviewImages.map((img, idx) => (
-                    <div key={`img-${idx}`} className="relative aspect-square rounded-xl overflow-hidden group border border-zinc-100 bg-zinc-50">
-                      <img src={img} alt="Preview" className="w-full h-full object-cover" />
-                      <button onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                        <X size={10} />
-                      </button>
-                    </div>
-                  ))}
-                  {reviewVideos.map((vid, idx) => (
-                    <div key={`vid-${idx}`} className="relative aspect-square rounded-xl overflow-hidden group bg-black flex items-center justify-center border border-zinc-100">
-                      <video src={vid} className="w-full h-full object-cover opacity-60" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Zap size={16} className="text-white fill-white" />
-                      </div>
-                      <button onClick={() => removeVideo(idx)} className="absolute top-1 right-1 bg-white/20 text-white rounded-full p-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity hover:bg-red-500">
-                        <X size={10} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <button onClick={handleReviewSubmit} disabled={submitting} className="w-full bg-black text-white py-3 rounded-full font-black text-[9px] uppercase shadow-md">{submitting ? "Posting..." : "Post Review"}</button>
+      {/* PREMIUM TABS SECTION */}
+      <div className="max-w-7xl mx-auto px-6">
+        <div ref={reviewsRef} className="mt-32 space-y-12">
+          <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
+            {['story', 'specifications', 'reviews'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-10 py-6 text-xs font-bold uppercase tracking-widest transition-all relative shrink-0 ${activeTab === tab ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
+              >
+                {tab}
+                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />}
+              </button>
+            ))}
           </div>
 
-          <div className="lg:col-span-2 space-y-6">
-            {/* SORTING CONTROLS */}
-            <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
-              <h2 className="text-xs font-black uppercase italic tracking-widest">
-                {sortedReviews.length} Reviews
-              </h2>
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value)}
-                className="text-[10px] font-bold uppercase bg-transparent border-none focus:ring-0 cursor-pointer"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-                <option value="highest">Highest Rated</option>
-                <option value="lowest">Lowest Rated</option>
-                <option value="helpful">Most Helpful</option>
-              </select>
-            </div>
+          <div className="min-h-[400px]">
+            {activeTab === 'story' && (
+              <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="prose prose-zinc prose-invert max-w-none">
+                  <p className="text-lg md:text-xl font-bold text-zinc-900 leading-relaxed border-l-4 border-[#1a1a1a] pl-8 mb-12 py-2">
+                    {product.description}
+                  </p>
+                </div>
+              </div>
+            )}
 
-            <div className="max-h-[500px] overflow-y-auto pr-4 custom-scrollbar">
-              {sortedReviews.map((rev, i) => {
-                if (!rev || !rev.rating) return null;
-                const isHelpful = user && rev.helpful?.includes(user._id);
+            {activeTab === 'specifications' && (
+              <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500 bg-zinc-50/50 p-12 rounded-3xl border border-zinc-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-24 gap-y-4">
+                  {product.specs && product.specs.length > 0 ? (
+                    product.specs.map((spec, i) => (
+                      <div key={i} className="flex justify-between items-center py-5 border-b border-zinc-100 group">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">{spec.key}</span>
+                        <span className="text-sm font-bold text-zinc-900">{spec.value}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Category</span>
+                        <span className="text-sm font-bold text-zinc-900">{product.category}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Product Type</span>
+                        <span className="text-sm font-bold text-zinc-900">{product.subcategory || "Essential"}</span>
+                      </div>
+                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Variants Available</span>
+                        <span className="text-sm font-bold text-zinc-900">{product.variants?.length || 1} Variations</span>
+                      </div>
+                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Shipment Origin</span>
+                        <span className="text-sm font-bold text-zinc-900">Premium Warehouse A</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
-                return (
-                  <div
-                    key={i}
-                    onClick={() => {
-                      // UNIFIED MEDIA LIST (Videos + Images)
-                      const videos = rev.videos || (rev.video ? [rev.video] : []);
-                      const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                      const allMedia = [
-                        ...videos.map(v => ({ type: 'video', url: v })),
-                        ...images.map(i => ({ type: 'image', url: i }))
-                      ];
-
-                      setSelectedReview({
-                        ...rev,
-                        media: allMedia.length > 0 ? allMedia : [{ type: 'image', url: '/placeholder.jpg' }], // Fallback if no media
-                        currentMedia: allMedia.length > 0 ? allMedia[0] : { type: 'image', url: '/placeholder.jpg' },
-                        index: 0
-                      });
-                    }}
-                    className="pb-6 border-b border-zinc-50 last:border-0 cursor-pointer group hover:bg-zinc-50/50 transition-colors p-4 -mx-4 rounded-xl"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-black uppercase text-[10px] tracking-widest text-zinc-900 group-hover:underline decoration-zinc-300 underline-offset-4 transition-all">{rev.name}</span>
-                          {rev.isVerifiedPurchase && (
-                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-[8px] font-bold uppercase flex items-center gap-1">
-                              <BadgePercent size={8} /> Verified
-                            </span>
-                          )}
-                        </div>
-                        <div className="flex gap-1">
-                          {[...Array(5)].map((_, j) => (
-                            <Star key={j} size={8} className={j < rev.rating ? "fill-black text-black" : "text-zinc-200"} />
-                          ))}
+            {activeTab === 'reviews' && (
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                  {/* REVIEW SUMMARY & FILTERS */}
+                  <div className="lg:col-span-4 space-y-12">
+                    <div className="space-y-6">
+                      <div className="flex items-baseline gap-4">
+                        <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex text-amber-400">
+                            {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
-                        <span className="text-[9px] text-zinc-400 font-medium">
-                          {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString() : 'Recent'}
-                        </span>
-                        {user && (rev.user === user._id || rev.user?._id === user._id) && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteReview(rev._id);
-                            }}
-                            className="text-red-500 hover:text-red-700 transition-colors bg-white p-1 rounded-full shadow-sm"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        )}
+                      {/* RATING DISTRIBUTION GRAPH */}
+                      <div className="space-y-3">
+                        {[5, 4, 3, 2, 1].map((star) => {
+                          const count = ratingDistribution[star] || 0;
+                          const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-4 group cursor-pointer">
+                              <span className="text-[10px] font-black text-zinc-900 w-2 italic">{star}</span>
+                              <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${percentage}%` }}
+                                  transition={{ duration: 1, ease: "circOut" }}
+                                  className="h-full bg-zinc-900"
+                                />
+                              </div>
+                              <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-zinc-600 italic leading-relaxed mb-3 line-clamp-3">"{rev.comment}"</p>
+                    <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
+                      <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
+                      <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
+                      <div className="flex gap-3">
+                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
+                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
+                      </div>
+                      <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                    </div>
+                  </div>
 
-                    {/* IMAGES & VIDEO PREVIEW (Mini) */}
-                    <div className="flex gap-2 mb-3 flex-wrap">
-                      {(() => {
-                        const videos = rev.videos || (rev.video ? [rev.video] : []);
-                        const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                        const allMedia = [
-                          ...videos.map(v => ({ type: 'video', url: v })),
-                          ...images.map(i => ({ type: 'image', url: i }))
-                        ];
-
-                        if (allMedia.length === 0) return null;
-
-                        return allMedia.slice(0, 4).map((media, idx) => (
-                          <div
-                            key={idx}
-                            className={`w-12 h-12 rounded-lg overflow-hidden border border-zinc-100 ${media.type === 'video' ? 'bg-black flex items-center justify-center' : ''}`}
-                          >
-                            {media.type === 'video' ? (
-                              <Zap size={16} className="text-white" />
-                            ) : (
-                              <img src={media.url} alt="Review" className="w-full h-full object-cover" />
+                  {/* REVIEWS LIST */}
+                  <div className="lg:col-span-8 space-y-12">
+                    <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
+                      <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase italic">Social Proof</h2>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
+                        <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                          <option value="newest">Newest</option>
+                          <option value="highest">Best Rating</option>
+                          <option value="helpful">Helpful</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div className="space-y-16">
+                      {sortedReviews.map((rev, i) => (
+                        <div key={i} onClick={() => {
+                          const videos = rev.videos || (rev.video ? [rev.video] : []);
+                          const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                          const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+                          setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
+                        }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
+                              <div className="space-y-1">
+                                <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
+                                <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                              {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
+                            </div>
+                          </div>
+                          <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
+                          <div className="flex gap-3 ml-12">
+                            {(rev.images || []).slice(0, 4).map((img, idx) => (
+                              <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
+                                <img src={img} className="w-full h-full object-cover" alt="" />
+                              </div>
+                            ))}
+                            {(rev.videos || []).length > 0 && (
+                              <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                                <Play size={24} className="text-white fill-white" />
+                              </div>
                             )}
                           </div>
-                        ));
-                      })()}
-                      {((rev.videos?.length || 0) + (rev.images?.length || 0)) > 4 && (
-                        <div className="w-12 h-12 rounded-lg bg-zinc-100 flex items-center justify-center text-[9px] font-bold text-zinc-500 border border-zinc-200">
-                          +{(rev.videos?.length || 0) + (rev.images?.length || 0) - 4}
                         </div>
-                      )}
+                      ))}
                     </div>
-                    {/* ACTIONS: Helpful & Response */}
-                    <div className="flex items-center justify-between mt-2">
-                      {/* Helpful Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleHelpfulVote(rev._id);
-                        }}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-bold uppercase transition-colors border border-zinc-100 shadow-sm
-                          ${isHelpful ? 'bg-black text-white border-black' : 'bg-white text-zinc-600 hover:bg-zinc-50'}
-                        `}
-                      >
-                        <Heart size={10} fill={isHelpful ? "white" : "none"} />
-                        <span>Helpful ({rev.helpful?.length || 0})</span>
-                      </button>
-                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
-                    {/* Admin Response */}
-                    {rev.adminResponse && (
-                      <div className="mt-3 ml-4 pl-3 border-l-2 border-zinc-200">
-                        <p className="text-[9px] font-black uppercase text-zinc-900 mb-1 flex items-center gap-1">
-                          <Zap size={10} fill="black" /> Official Response
-                        </p>
-                        <p className="text-[10px] text-zinc-500 italic leading-relaxed line-clamp-2">{rev.adminResponse}</p>
+          {/* LIGHTBOX MODAL */}
+          {showLightbox && (
+            <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
+              <button className="absolute top-8 right-8 text-white/50 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-[210]"><X size={32} /></button>
+              <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
+                <button
+                  disabled={lightboxIndex === 0}
+                  onClick={() => setLightboxIndex(prev => prev - 1)}
+                  className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                >
+                  <ChevronLeft size={32} />
+                </button>
+                <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                <button
+                  disabled={lightboxIndex === mediaItems.length - 1}
+                  onClick={() => setLightboxIndex(prev => prev + 1)}
+                  className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                >
+                  <ChevronRight size={32} />
+                </button>
+
+                <div className="absolute bottom-12 flex gap-3">
+                  {mediaItems.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setLightboxIndex(i)}
+                      className={`w-2 h-2 rounded-full transition-all ${lightboxIndex === i ? 'bg-white scale-150' : 'bg-white/30'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <RecentlyViewed currentProductId={product._id} />
+
+          {/* RECOMMENDED PRODUCTS */}
+          {suggestions.length > 0 && (
+            <div className="mt-32 pt-20 border-t border-zinc-100">
+              <div className="flex justify-between items-end mb-12">
+                <div>
+                  <h2 className="text-2xl font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
+                </div>
+                <Link to="/shop" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {suggestions.slice(0, 4).map((item) => (
+                  <Link key={item._id} to={`/product/${item.slug}`} className="group block space-y-4">
+                    <div className="aspect-[3/4] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
+                      <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                    </div>
+                    <div className="space-y-1 px-1">
+                      <p className="text-[10px] font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
+                      <div className="flex justify-between items-center">
+                        <Price amount={item.price} className="text-[11px] font-black" />
+                        <span className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* AI SIZE CONSULTANT MODAL */}
+          <AnimatePresence>
+            {showSizeConsultant && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
+                >
+                  <div className="p-8 bg-zinc-900 text-white relative">
+                    <button onClick={() => setShowSizeConsultant(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
+                    <div className="flex items-center gap-4 mb-2">
+                      <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
+                      <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
+                    </div>
+                    <p className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
+                  </div>
+
+                  <div className="p-8 space-y-6">
+                    {!aiRecommendation ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 180"
+                              value={height}
+                              onChange={(e) => setHeight(e.target.value)}
+                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 75"
+                              value={weight}
+                              onChange={(e) => setWeight(e.target.value)}
+                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
+                          <div className="flex gap-2">
+                            {['Slim', 'Standard', 'Oversized'].map(fit => (
+                              <button
+                                key={fit}
+                                onClick={() => setFitPreference(fit)}
+                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+                              >
+                                {fit}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <button
+                          disabled={!height || !weight}
+                          onClick={() => {
+                            const h = parseInt(height);
+                            const w = parseInt(weight);
+                            let baseSize = 'M';
+                            if (h > 185 || w > 85) baseSize = 'XL';
+                            else if (h > 175 || w > 70) baseSize = 'L';
+                            else if (h < 165 || w < 55) baseSize = 'S';
+
+                            setAiRecommendation({
+                              size: baseSize,
+                              confidence: 94,
+                              reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
+                            });
+                          }}
+                          className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
+                        >
+                          Analyze Profile
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
+                        <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
+                          {aiRecommendation.size}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
+                        </div>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => {
+                              setAiRecommendation(null);
+                              setHeight('');
+                              setWeight('');
+                            }}
+                            className="flex-1 py-4 border border-zinc-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
+                          >
+                            Reset
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedSize(aiRecommendation.size);
+                              setShowSizeConsultant(false);
+                              setAiRecommendation(null);
+                              setSelectedColor(selectedColor); // Trigger re-render
+                            }}
+                            className="flex-[2] py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
+                          >
+                            Apply {aiRecommendation.size}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-
-
-
-        {suggestions && suggestions.length > 0 && (
-          <div className="mt-20 pt-10 border-t border-zinc-100">
-            <h2 className="text-xs font-black uppercase italic mb-8 tracking-widest text-zinc-300 text-center">You Might Also Like</h2>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-              {suggestions.map((item) => (
-                <Link key={item._id} to={`/product/${item.slug}`} className="group text-left space-y-2 block">
-                  <div className="aspect-[4/5] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-50 transition-transform group-hover:scale-95 relative">
-                    {item.isBestSeller && (
-                      <span className="absolute top-2 left-2 bg-amber-400 text-black text-[8px] font-black uppercase px-2 py-1 rounded-full z-10">Best Seller</span>
-                    )}
-                    <img src={item.image} className="w-full h-full object-cover" alt="" loading="lazy" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] font-black uppercase truncate text-zinc-900">{item.name}</p>
-                    <Price amount={item.price} className="text-[11px] font-bold italic text-zinc-500" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )
-        }
       </div>
-    </div >
+    </div>
   );
 };
 

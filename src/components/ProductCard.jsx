@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Heart, Loader2, Star, Zap, Plus, X, ShoppingBag } from 'lucide-react';
+import { Eye, Heart, Loader2, Star, Zap, Plus, X, ShoppingBag } from 'lucide-react';
 import api from '../api/instance';
 import Price from './Price';
+import QuickView from './QuickView';
 
 const ProductCard = ({ product, onAddToCart }) => {
   const { user, setUser, toggleCart, flashSale } = useStore();
@@ -13,6 +14,7 @@ const ProductCard = ({ product, onAddToCart }) => {
   const [loading, setLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [showQuickView, setShowQuickView] = useState(false);
   const [selectedSize, setSelectedSize] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
 
@@ -144,21 +146,35 @@ const ProductCard = ({ product, onAddToCart }) => {
         )}
 
         {/* HEART BUTTON */}
-        <button
-          onClick={handleWishlist}
-          disabled={loading}
-          className="absolute top-2 right-2 z-30 p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white active:scale-90 transition-all"
-        >
-          {loading ? (
-            <Loader2 size={14} className="animate-spin text-zinc-500" />
-          ) : (
-            <Heart
-              size={14}
-              fill={isFav ? "black" : "none"}
-              className="text-black"
-            />
-          )}
-        </button>
+        <div className="absolute top-2 right-2 z-30 flex flex-col gap-2">
+          <button
+            onClick={handleWishlist}
+            disabled={loading}
+            className="p-1.5 rounded-full bg-white/90 shadow-sm hover:bg-white active:scale-90 transition-all"
+          >
+            {loading ? (
+              <Loader2 size={14} className="animate-spin text-zinc-500" />
+            ) : (
+              <Heart
+                size={14}
+                fill={isFav ? "black" : "none"}
+                className="text-black"
+              />
+            )}
+          </button>
+          <button
+            onClick={(e) => { e.preventDefault(); setShowQuickView(true); }}
+            className="md:opacity-0 group-hover/card:opacity-100 p-1.5 rounded-full bg-white text-black shadow-sm hover:bg-black hover:text-white active:scale-90 transition-all duration-300"
+          >
+            <Eye size={14} />
+          </button>
+        </div>
+
+        <QuickView
+          isOpen={showQuickView}
+          onClose={() => setShowQuickView(false)}
+          product={product}
+        />
 
         {/* ADD TO BAG BUTTON (Hover Toggle) */}
         {product.countInStock > 0 && !showQuickAdd && (

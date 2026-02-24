@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import axios from 'axios';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity, Camera } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity, Camera, Inbox } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { io } from 'socket.io-client';
@@ -93,26 +93,25 @@ const AdminLayout = () => {
                 {/* SCROLLABLE NAV */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar pr-2 whitespace-nowrap">
                     <nav className="space-y-2">
-                        {/* DASHBOARD */}
-                        {/* DASHBOARD - ADMIN ONLY */}
-                        {(user?.isAdmin || user?.role === 'admin') && (
+                        {/* DASHBOARD - ADMIN & MANAGER ONLY */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
                             <NavLink to="/admin" end className={navClass}>
                                 <LayoutDashboard size={18} className="flex-shrink-0" /> Dashboard
                             </NavLink>
                         )}
 
-                        {/* ANALYTICS */}
-                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats')) && (
+                        {/* ANALYTICS - ADMIN & MANAGER ONLY */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats') || user?.role === 'manager') && (
                             <NavLink to="/admin/analytics" className={navClass}>
                                 <TrendingUp size={18} className="flex-shrink-0" /> Analytics
                             </NavLink>
                         )}
 
-                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'digital_marketing_executive' || user?.permissions?.includes('manage_products')) && (
                             <>
                                 <NavLink to="/admin/products" className={navClass}>
                                     <Package size={18} className="flex-shrink-0" /> Inventory
-                                    {alerts.some(a => a.type === 'low_stock') && (
+                                    {(alerts || []).some(a => a.type === 'low_stock') && (
                                         <span className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm shadow-red-500/50"></span>
                                     )}
                                 </NavLink>
@@ -152,15 +151,16 @@ const AdminLayout = () => {
                             </NavLink>
                         )}
 
-                        {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_content')) && (
-                            <>
-                                <NavLink to="/admin/looks" className={navClass}>
-                                    <Camera size={18} className="flex-shrink-0" /> Community Styles
-                                </NavLink>
-                                <NavLink to="/admin/blog" className={navClass}>
-                                    <FileText size={18} className="flex-shrink-0" /> Blog
-                                </NavLink>
-                            </>
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_looks')) && (
+                            <NavLink to="/admin/looks" className={navClass}>
+                                <Camera size={18} className="flex-shrink-0" /> Community Styles
+                            </NavLink>
+                        )}
+
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'digital_marketing_executive' || user?.permissions?.includes('manage_blog')) && (
+                            <NavLink to="/admin/blog" className={navClass}>
+                                <FileText size={18} className="flex-shrink-0" /> Blog
+                            </NavLink>
                         )}
 
                         {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_marketing')) && (
@@ -170,9 +170,16 @@ const AdminLayout = () => {
                         )}
 
                         {/* REVIEWS */}
-                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_reviews')) && (
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_reviews')) && (
                             <NavLink to="/admin/reviews" className={navClass}>
                                 <MessageSquare size={18} className="flex-shrink-0" /> Reviews
+                            </NavLink>
+                        )}
+
+                        {/* SUPPORT DESK */}
+                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_support')) && (
+                            <NavLink to="/admin/support" className={navClass}>
+                                <HelpCircle size={18} className="flex-shrink-0" /> Support Desk
                             </NavLink>
                         )}
 
@@ -240,22 +247,21 @@ const AdminLayout = () => {
                     {/* NAV LINKS */}
                     <div className="flex-1 overflow-y-auto custom-scrollbar">
                         <nav className="space-y-2 pb-24">
-                            {/* Dashboard */}
-                            {/* Dashboard - Admin Only */}
-                            {(user?.isAdmin || user?.role === 'admin') && (
+                            {/* Dashboard - STAFF Access */}
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
                                 <NavLink to="/admin" end className={navClass}>
                                     <LayoutDashboard size={18} /> Dashboard
                                 </NavLink>
                             )}
 
                             {/* Analytics */}
-                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats')) && (
+                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('view_stats') || user?.role === 'manager') && (
                                 <NavLink to="/admin/analytics" className={navClass}>
                                     <TrendingUp size={18} /> Analytics
                                 </NavLink>
                             )}
 
-                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_products')) && (
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'digital_marketing_executive' || user?.permissions?.includes('manage_products')) && (
                                 <>
                                     <NavLink to="/admin/products" className={navClass}>
                                         <Package size={18} /> Inventory
@@ -295,15 +301,16 @@ const AdminLayout = () => {
                                 </NavLink>
                             )}
 
-                            {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_content')) && (
-                                <>
-                                    <NavLink to="/admin/looks" className={navClass}>
-                                        <Camera size={18} /> Community Styles
-                                    </NavLink>
-                                    <NavLink to="/admin/blog" className={navClass}>
-                                        <FileText size={18} /> Blog
-                                    </NavLink>
-                                </>
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_looks')) && (
+                                <NavLink to="/admin/looks" className={navClass}>
+                                    <Camera size={18} /> Community Styles
+                                </NavLink>
+                            )}
+
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'digital_marketing_executive' || user?.permissions?.includes('manage_blog')) && (
+                                <NavLink to="/admin/blog" className={navClass}>
+                                    <FileText size={18} /> Blog
+                                </NavLink>
                             )}
 
                             {(user?.isAdmin || user?.role === 'admin' || user?.permissions?.includes('manage_marketing')) && (
@@ -312,9 +319,16 @@ const AdminLayout = () => {
                                 </NavLink>
                             )}
 
-                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager' || user?.permissions?.includes('manage_reviews')) && (
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_reviews')) && (
                                 <NavLink to="/admin/reviews" className={navClass}>
                                     <MessageSquare size={18} /> Reviews
+                                </NavLink>
+                            )}
+
+                            {/* SUPPORT DESK */}
+                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'client_support_executive' || user?.permissions?.includes('manage_support')) && (
+                                <NavLink to="/admin/support" className={navClass}>
+                                    <HelpCircle size={18} /> Support Desk
                                 </NavLink>
                             )}
 

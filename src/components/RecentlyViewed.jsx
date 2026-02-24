@@ -7,12 +7,26 @@ const RecentlyViewed = ({ currentProductId }) => {
     const [items, setItems] = useState([]);
 
     useEffect(() => {
-        const history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-        // Filter out current product and limit to 4 items
-        const filtered = history
-            .filter(p => p._id !== currentProductId)
-            .slice(0, 4);
-        setItems(filtered);
+        const updateHistory = () => {
+            let history = [];
+            try {
+                history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+            } catch (e) {
+                console.error("Recently Viewed Parse Error");
+                history = [];
+            }
+            // Filter out current product and limit to 4 items
+            const filtered = (Array.isArray(history) ? history : [])
+                .filter(p => (p._id || p.id) !== currentProductId)
+                .slice(0, 4);
+            setItems(filtered);
+        };
+
+        updateHistory();
+
+        // Listen for storage changes in other tabs (optional but good)
+        window.addEventListener('storage', updateHistory);
+        return () => window.removeEventListener('storage', updateHistory);
     }, [currentProductId]);
 
     if (items.length === 0) return null;
@@ -34,14 +48,16 @@ const RecentlyViewed = ({ currentProductId }) => {
                     <Link
                         key={product._id}
                         to={`/product/${product.slug || product._id}`}
-                        className="group block bg-zinc-50 rounded-2xl p-3 border border-transparent hover:border-zinc-200 transition-all hover:-translate-y-1"
+                        className="group block bg-white rounded-[2rem] p-4 border border-zinc-100 hover:border-black hover:shadow-2xl hover:shadow-black/5 transition-all duration-500 hover:-translate-y-2"
                     >
-                        <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-white">
+                        <div className="aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-4 bg-zinc-50 relative">
                             <img
                                 src={product.image}
                                 alt={product.name}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                loading="lazy"
                             />
+                            <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
                         <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1 mb-1">{product.name}</h4>
                         <div className="flex justify-between items-center">

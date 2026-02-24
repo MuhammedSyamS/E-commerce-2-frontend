@@ -11,9 +11,11 @@ const StockHistory = ({ productId }) => {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
+                const storage = JSON.parse(localStorage.getItem('slook-storage'));
+                const token = storage?.state?.user?.token;
                 const config = {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`,
+                        Authorization: `Bearer ${token}`,
                     },
                 };
                 const { data } = await axios.get(`/api/products/${productId}/stock-logs`, config);
@@ -57,7 +59,7 @@ const StockHistory = ({ productId }) => {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {logs.map((log) => {
-                            const change = log.newStock - log.oldStock;
+                            const change = log.newStock - log.previousStock;
                             const isPositive = change > 0;
                             const isZero = change === 0; // Should not happen often but possible if variant changed but main didn't?
 

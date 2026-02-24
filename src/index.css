@@ -19,11 +19,12 @@ body {
   font-style: normal;
 }
 
-.transform,
+/* Removed blocking transform: none !important to allow elite skews and animations */
+/* .transform,
 [class*="-skew-x-"],
 [class*="skew-x-"] {
   transform: none !important;
-}
+} */
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {

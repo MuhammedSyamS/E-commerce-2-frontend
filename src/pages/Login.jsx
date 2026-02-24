@@ -14,9 +14,11 @@ const Login = () => {
   const { setUser, user } = useStore();
   const { addToast } = useToast();
 
+  const isStaff = (u) => u && (u.isAdmin || ['manager', 'client_support_executive', 'digital_marketing_executive'].includes(u.role));
+
   useEffect(() => {
     if (user) {
-      if (user.isAdmin || user.role === 'manager') navigate('/admin');
+      if (isStaff(user)) navigate('/admin');
       else navigate('/account');
     }
   }, [user, navigate]);
@@ -30,7 +32,7 @@ const Login = () => {
       if (res.data.token) {
         setUser(res.data);
         addToast("Logged in with Google", "success");
-        if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
+        if (isStaff(res.data)) navigate('/admin');
         else navigate('/account');
       }
     } catch (err) {
@@ -52,7 +54,7 @@ const Login = () => {
       if (res.data && res.data.token) {
         setUser(res.data);
         addToast("WELCOME BACK!", "success");
-        if (res.data.isAdmin || res.data.role === 'manager') navigate('/admin');
+        if (isStaff(res.data)) navigate('/admin');
         else navigate('/account');
       }
     } catch (err) {

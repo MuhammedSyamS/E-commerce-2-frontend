@@ -131,14 +131,22 @@ const OrderTracking = () => {
                                         {STEPS.map((step, idx) => {
                                             const current = getCurrentStep(order.status);
                                             const completed = idx <= current;
-                                            const active = idx === current;
-
                                             return (
                                                 <div key={step.status} className="flex flex-col items-center gap-3">
                                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${completed ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-300'}`}>
                                                         <step.icon size={16} />
                                                     </div>
-                                                    <span className={`text-[9px] font-black uppercase tracking-widest ${active ? 'text-black' : 'text-zinc-300'}`}>{step.label}</span>
+                                                    <div className="flex flex-col items-center">
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${active ? 'text-black' : 'text-zinc-300'}`}>{step.label}</span>
+                                                        {completed && (
+                                                            <span className="text-[7px] text-zinc-400 font-bold uppercase mt-1">
+                                                                {step.status === 'Placed' && new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                                                {step.status === 'Processing' && order.paidAt && new Date(order.paidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                                                {step.status === 'Delivered' && order.deliveredAt && new Date(order.deliveredAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                                                {step.status === 'Shipped' && order.isDispatched && new Date(order.updatedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             )
                                         })}
