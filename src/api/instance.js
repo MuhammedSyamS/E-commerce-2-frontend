@@ -1,7 +1,12 @@
 import axios from 'axios';
 
+let baseUrl = import.meta.env.VITE_API_URL || '/api';
+if (baseUrl && !baseUrl.endsWith('/api') && baseUrl !== '/api') {
+    baseUrl = baseUrl.replace(/\/$/, '') + '/api';
+}
+
 const instance = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api', // Use env var in prod, proxy in dev
+    baseURL: baseUrl,
     withCredentials: true,
 });
 

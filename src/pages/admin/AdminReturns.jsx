@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import { RefreshCw, Search, Filter, Eye, Truck, Check, X, AlertCircle, Calendar, ShieldAlert } from 'lucide-react';
@@ -24,8 +24,7 @@ const AdminReturns = () => {
 
     const fetchReturns = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/returns/admin', config);
+            const { data } = await api.get('/returns/admin');
             setReturns(data);
             setLoading(false);
         } catch (error) {
@@ -122,21 +121,10 @@ const AdminReturns = () => {
     const executeAction = async (id, action, extraData = {}) => {
         try {
             setProcessingId(id);
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            let status = '';
-
-            if (action === 'Approve') status = 'Approved';
-            if (action === 'Reject') status = 'Rejected';
-            if (action === 'Schedule Pickup') status = 'Pickup Scheduled';
-            if (action === 'Mark Picked Up') status = 'Picked Up';
-            if (action === 'Mark Received') status = 'QC Pending';
-            if (action === 'Pass QC') status = 'QC Passed';
-            if (action === 'Fail QC') status = 'QC Failed';
-
             if (status) {
-                await axios.put(`/api/returns/${id}/status`, { status, ...extraData }, config);
+                await api.put(`/returns/${id}/status`, { status, ...extraData });
             } else if (action === 'Resolve') {
-                await axios.put(`/api/returns/${id}/resolve`, {}, config);
+                await api.put(`/returns/${id}/resolve`, {});
             }
 
             fetchReturns();

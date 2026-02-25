@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Trash2, Loader2, Plus, X, Upload, AlertCircle, Package } from 'lucide-react';
-import axios from 'axios';
+import api from '../../api/instance';
 import StockHistory from '../../components/StockHistory';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
@@ -40,7 +40,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const { data } = await axios.get(`/api/products/${id}`);
+        const { data } = await api.get(`/products/${id}`);
         setFormData({
           name: data.name,
           price: data.price,
@@ -85,8 +85,7 @@ const EditProduct = () => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`/api/products/${id}`, formData, config);
+      await api.put(`/products/${id}`, formData);
       addToast("Product Updated Successfully", "success");
       navigate('/admin/products');
     } catch (err) {
@@ -97,8 +96,7 @@ const EditProduct = () => {
   const handleDelete = async () => {
     if (!window.confirm("Delete this product permanently?")) return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.delete(`/api/products/${id}`, config);
+      await api.delete(`/products/${id}`);
       addToast("Product Deleted", "success");
       navigate('/admin/products');
     } catch (err) {
@@ -113,7 +111,7 @@ const EditProduct = () => {
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const { data } = await axios.get('/api/products');
+        const { data } = await api.get('/products');
         setAllProducts(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Failed to load product list for navigation");

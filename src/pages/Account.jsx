@@ -4,7 +4,7 @@ import { useStore } from '../store/useStore';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '../api/instance';
 import { useToast } from '../context/ToastContext';
-import axios from 'axios';
+import { useToast } from '../context/ToastContext';
 import {
   Package,
   Heart,
@@ -490,7 +490,7 @@ const Account = () => {
                                 if (e.target.value.length > 2) {
                                   setIsSearching(true);
                                   try {
-                                    const { data } = await axios.get(`/api/products/search?keyword=${e.target.value}`);
+                                    const { data } = await api.get(`/products/search?keyword=${e.target.value}`);
                                     setSearchResults(data);
                                   } catch (err) {
                                     console.error(err);

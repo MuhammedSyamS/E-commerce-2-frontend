@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { Loader2 } from 'lucide-react';
 
@@ -21,8 +21,7 @@ const Invoice = () => {
                     return;
                 }
 
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`/api/orders/${id}`, config);
+                const { data } = await api.get(`/orders/${id}`);
                 setOrder(data);
             } catch (err) {
                 console.error(err);

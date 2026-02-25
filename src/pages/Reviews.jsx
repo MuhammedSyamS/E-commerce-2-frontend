@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { Star, MessageSquare, Filter, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
@@ -14,7 +14,7 @@ const Reviews = () => {
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const { data } = await axios.get('/api/products/reviews/all');
+                const { data } = await api.get('/products/reviews/all');
                 setReviews(Array.isArray(data) ? data : []);
             } catch (err) {
                 console.error("Failed to fetch reviews", err);

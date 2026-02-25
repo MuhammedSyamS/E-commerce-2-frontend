@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { Activity, ShieldCheck, Database, Zap, AlertCircle, CheckCircle2, RefreshCcw } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 

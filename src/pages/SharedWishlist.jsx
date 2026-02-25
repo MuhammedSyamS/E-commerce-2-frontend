@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
-import axios from 'axios';
+import api from '../api/instance';
 import { Share2 } from 'lucide-react';
 
 const SharedWishlist = () => {
@@ -13,7 +13,7 @@ const SharedWishlist = () => {
     useEffect(() => {
         const fetchSharedWishlist = async () => {
             try {
-                const { data } = await axios.get(`/api/wishlist/shared/${userId}`);
+                const { data } = await api.get(`/wishlist/shared/${userId}`);
                 setWishlistItems(data);
             } catch (err) {
                 console.error("Error fetching shared wishlist:", err);

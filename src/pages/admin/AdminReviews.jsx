@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useStore } from '../../store/useStore';
-import { useToast } from '../../context/ToastContext';
+import api from '../../api/instance';
 import { MessageSquare, Star, Trash2, Eye, EyeOff, MessageCircle, X, Search, Quote, Shield } from 'lucide-react'; // Added Search, Quote, Shield
 
 const AdminReviews = () => {
@@ -16,8 +14,7 @@ const AdminReviews = () => {
 
     const fetchReviews = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/products/admin/reviews', config);
+            const { data } = await api.get('/products/admin/reviews');
             setReviews(Array.isArray(data) ? data : []);
             setLoading(false);
         } catch (err) {
@@ -32,8 +29,7 @@ const AdminReviews = () => {
 
     const toggleVisibility = async (productId, reviewId) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.put(`/api/products/${productId}/reviews/${reviewId}/toggle`, {}, config);
+            const { data } = await api.put(`/products/${productId}/reviews/${reviewId}/toggle`, {});
 
             // Optimistic Update
             setReviews(reviews.map(r =>
@@ -48,8 +44,7 @@ const AdminReviews = () => {
     const handleDelete = async (productId, reviewId) => { // Renamed to local convention if needed or keep deleteReview
         if (!window.confirm("Delete this review permanently?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/products/${productId}/reviews/${reviewId}`, config);
+            await api.delete(`/products/${productId}/reviews/${reviewId}`);
             setReviews(reviews.filter(r => r.review._id !== reviewId));
             addToast("Review Deleted", "success");
         } catch (err) {
@@ -60,8 +55,7 @@ const AdminReviews = () => {
     const submitReply = async (productId, reviewId) => {
         if (!replyText.trim()) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.put(`/api/products/${productId}/reviews/${reviewId}/reply`, { response: replyText }, config);
+            const { data } = await api.put(`/products/${productId}/reviews/${reviewId}/reply`, { response: replyText });
 
             setReviews(reviews.map(r =>
                 r.review._id === reviewId ? { ...r, review: { ...r.review, adminResponse: data.adminResponse } } : r

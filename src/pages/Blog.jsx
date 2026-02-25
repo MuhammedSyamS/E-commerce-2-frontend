@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { Link } from 'react-router-dom';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 import Navbar from '../components/Navbar';
@@ -12,7 +12,7 @@ const Blog = () => {
     useEffect(() => {
         const fetchPosts = async () => {
             try {
-                const { data } = await axios.get('/api/blog');
+                const { data } = await api.get('/blog');
                 setPosts(data);
                 setLoading(false);
             } catch (err) {

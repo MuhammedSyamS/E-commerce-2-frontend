@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import { Mail, ShieldCheck, Lock, ArrowLeft, Loader2, RotateCcw } from 'lucide-react';
@@ -14,7 +14,7 @@ const ForgotPassword = () => {
   const { addToast } = useToast();
 
   const navigate = useNavigate();
-  const API_URL = "/api/users";
+  const API_URL = "/users";
 
   // Timer logic
   useEffect(() => {
@@ -31,7 +31,7 @@ const ForgotPassword = () => {
     if (e) e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/forgot-password`, {
+      await api.post(`${API_URL}/forgot-password`, {
         email: email.toLowerCase().trim()
       });
       setStep(2);
@@ -45,7 +45,7 @@ const ForgotPassword = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_URL}/reset-password`, {
+      await api.post(`${API_URL}/reset-password`, {
         email: email.toLowerCase().trim(),
         code: code.trim(),
         newPassword

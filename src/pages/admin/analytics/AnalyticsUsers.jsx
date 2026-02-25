@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../../store/useStore';
-import axios from 'axios';
+import api from '../../../api/instance';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     PieChart, Pie, Cell, Legend
@@ -27,8 +27,7 @@ const AnalyticsUsers = () => {
         const fetchStats = async () => {
             setLoading(true);
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=monthly`, config);
+                const { data } = await api.get(`/orders/admin/stats?timeRange=monthly`);
                 setStats(data);
             } catch (error) {
                 console.error('Error fetching stats:', error);

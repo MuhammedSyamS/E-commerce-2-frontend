@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, Search, Truck, CheckCircle, AlertCircle,
@@ -59,7 +59,7 @@ const TrackOrder = () => {
     setOrderData(null);
 
     try {
-      const { data } = await axios.post('/api/orders/track', { orderId, email });
+      const { data } = await api.post('/orders/track', { orderId, email });
       setOrderData(data);
     } catch (err) {
       setError(err.response?.data?.message || 'Trace failed. Please verify your credentials.');

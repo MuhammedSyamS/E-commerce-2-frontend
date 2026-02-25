@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { Copy, Gift, Share2, Users, ArrowRight, DollarSign, Calendar, CheckCircle2 } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
@@ -19,8 +19,7 @@ const Referrals = () => {
     useEffect(() => {
         const fetchReferralStats = async () => {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('/api/users/referrals', config);
+                const { data } = await api.get('/users/referrals');
                 setReferralData(data);
             } catch (err) {
                 console.error("Error fetching referrals:", err);

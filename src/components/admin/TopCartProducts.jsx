@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { ShoppingCart, TrendingUp, ArrowRight, Wallet, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +13,7 @@ const TopCartProducts = () => {
     useEffect(() => {
         const fetchTopCart = async () => {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('/api/reports/top-cart', config);
+                const { data } = await api.get('/reports/top-cart');
                 setProducts(data);
                 setLoading(false);
             } catch (err) {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
-import axios from 'axios';
+import api from '../../api/instance';
 import { Lock, ArrowLeft, ShieldCheck, Save, Eye, EyeOff } from 'lucide-react';
 
 const Security = () => {
@@ -33,8 +33,7 @@ const Security = () => {
 
         try {
             setSendingOtp(true);
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.post('/api/users/security/send-otp', {}, config);
+            await api.post('/users/security/send-otp', {});
             setOtpSent(true);
             setMessage({ type: 'success', text: "Verification code sent to your email!" });
         } catch (err) {
@@ -71,7 +70,6 @@ const Security = () => {
 
         try {
             setLoading(true);
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
 
             const updateData = {
                 firstName: user.firstName,
@@ -81,7 +79,7 @@ const Security = () => {
                 otp: otp
             };
 
-            const { data } = await axios.put('/api/users/profile', updateData, config);
+            const { data } = await api.put('/users/profile', updateData);
 
             // Update Global Store
             setUser({ ...data, token: user.token });

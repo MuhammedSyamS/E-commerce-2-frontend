@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { Save, Search, AlertCircle, Package, ArrowLeft, Loader2, Edit3, Trash2 } from 'lucide-react';
@@ -22,7 +22,7 @@ const AdminBulkEditor = () => {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const { data } = await axios.get('/api/products');
+                const { data } = await api.get('/products');
                 setProducts(data);
             } catch (err) {
                 addToast("Failed to fetch products", "error");
@@ -57,17 +57,16 @@ const AdminBulkEditor = () => {
 
         setSaving(true);
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put('/api/products/bulk-update', {
+            await api.put('/products/bulk-update', {
                 edits,
                 stockReason: hasStockEdit ? stockReason : undefined,
                 stockNote: hasStockEdit ? stockNote : undefined
-            }, config);
+            });
             addToast(`Successfully updated ${updatedCount} products`, "success");
             setEdits({});
             setStockNote('');
             // Re-fetch to sync
-            const { data } = await axios.get('/api/products');
+            const { data } = await api.get('/products');
             setProducts(data);
         } catch (err) {
             addToast(err.response?.data?.message || "Bulk update failed", "error");

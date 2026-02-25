@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { Package, Truck, Check, Eye, Trash2, AlertCircle, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -17,8 +17,7 @@ const AdminOrders = () => {
     const fetchOrders = async (p = page) => {
         try {
             // Add timestamp to prevent caching
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get(`/api/orders/admin/all?page=${p}&t=${Date.now()}`, config);
+            const { data } = await api.get(`/orders/admin/all?page=${p}&t=${Date.now()}`);
             setOrders(data.orders);
             setPages(data.pages);
             setTotal(data.total);
@@ -51,9 +50,7 @@ const AdminOrders = () => {
 
     const handleReturnAction = async (endpoint, payload) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            // endpointSuffix: action, logistics, qc, resolve
-            await axios.put(`/api/orders/${requestModal.orderId}/return/${requestModal.itemId}/${endpoint}`, payload, config);
+            await api.put(`/orders/${requestModal.orderId}/return/${requestModal.itemId}/${endpoint}`, payload);
 
             addToast("Update Successful", "success");
             setRequestModal({ open: false, orderId: null, itemId: null, request: null, itemName: '', mode: 'review' });
@@ -85,8 +82,7 @@ const AdminOrders = () => {
 
     const updateStatus = async (id, status, extraData = {}) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`/api/orders/${id}/status`, { status, ...extraData }, config);
+            await api.put(`/orders/${id}/status`, { status, ...extraData });
             fetchOrders();
             addToast(`Order marked as ${status}`, "success");
         } catch (err) {
@@ -96,8 +92,7 @@ const AdminOrders = () => {
     const deleteOrder = async (id) => {
         if (!window.confirm("Are you sure you want to delete this order?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/orders/${id}`, config);
+            await api.delete(`/orders/${id}`);
             setOrders(orders.filter(o => o._id !== id));
             addToast("Order deleted", "success");
         } catch (err) {
@@ -422,15 +417,13 @@ const AdminOrders = () => {
 
                                                 if (rStatus === 'Pickup Scheduled') return (
                                                     <button key={item._id} onClick={() => {
-                                                        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                                                        axios.put(`/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Picked Up' }, config).then(fetchOrders);
+                                                        api.put(`/orders/${order._id}/return/${item._id}/logistics`, { status: 'Picked Up' }).then(fetchOrders);
                                                     }} className="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest mb-1">Mark Picked Up</button>
                                                 );
 
                                                 if (rStatus === 'Picked Up') return (
                                                     <button key={item._id} onClick={() => {
-                                                        const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                                                        axios.put(`/api/orders/${order._id}/return/${item._id}/logistics`, { status: 'Received' }, config).then(fetchOrders);
+                                                        api.put(`/orders/${order._id}/return/${item._id}/logistics`, { status: 'Received' }).then(fetchOrders);
                                                     }} className="w-full py-2 bg-blue-50 text-blue-600 rounded-lg text-[9px] font-black uppercase tracking-widest mb-1">Mark Received</button>
                                                 );
 
@@ -478,8 +471,7 @@ const AdminOrders = () => {
                                             <button
                                                 onClick={async () => {
                                                     try {
-                                                        const response = await axios.get(`/api/orders/${order._id}/invoice`, {
-                                                            headers: { Authorization: `Bearer ${user.token}` },
+                                                        const response = await api.get(`/orders/${order._id}/invoice`, {
                                                             responseType: 'blob'
                                                         });
                                                         const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -502,8 +494,7 @@ const AdminOrders = () => {
                                             <button
                                                 onClick={async () => {
                                                     try {
-                                                        const response = await axios.get(`/api/orders/${order._id}/manifest`, {
-                                                            headers: { Authorization: `Bearer ${user.token}` },
+                                                        const response = await api.get(`/orders/${order._id}/manifest`, {
                                                             responseType: 'blob'
                                                         });
                                                         const url = window.URL.createObjectURL(new Blob([response.data]));

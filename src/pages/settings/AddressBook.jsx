@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
-import axios from 'axios';
+import api from '../../api/instance';
 import { MapPin, Plus, Trash2, ArrowLeft } from 'lucide-react';
 
 const AddressBook = () => {
@@ -34,8 +34,7 @@ const AddressBook = () => {
     }
 
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('/api/users/addresses', formData, config);
+      const { data } = await api.post('/users/addresses', formData);
 
       // Update local and store
       setAddresses(data);
@@ -54,8 +53,7 @@ const AddressBook = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this address?")) return;
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.delete(`/api/users/addresses/${id}`, config);
+      const { data } = await api.delete(`/users/addresses/${id}`);
       setAddresses(data);
       setUser({ ...user, addresses: data });
     } catch (err) {

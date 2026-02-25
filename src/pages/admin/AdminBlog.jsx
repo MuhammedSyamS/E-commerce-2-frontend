@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { Plus, Trash2, Edit, ExternalLink, FileText, Eye, EyeOff } from 'lucide-react';
@@ -25,8 +25,7 @@ const AdminBlog = () => {
 
     const fetchPosts = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/blog/admin/all', config);
+            const { data } = await api.get('/blog/admin/all');
             setPosts(data);
         } catch (err) {
             console.error(err);
@@ -36,17 +35,16 @@ const AdminBlog = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
             const payload = {
                 ...formData,
                 tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean)
             };
 
             if (isEditing) {
-                await axios.put(`/api/blog/${currentPostId}`, payload, config);
+                await api.put(`/blog/${currentPostId}`, payload);
                 addToast("Post Updated", "success");
             } else {
-                await axios.post('/api/blog', payload, config);
+                await api.post('/blog', payload);
                 addToast("Post Created", "success");
             }
             fetchPosts();
@@ -59,8 +57,7 @@ const AdminBlog = () => {
     const handleDelete = async (id) => {
         if (!window.confirm("Delete this post?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/blog/${id}`, config);
+            await api.delete(`/blog/${id}`);
             setPosts(posts.filter(p => p._id !== id));
             addToast("Post Deleted", "success");
         } catch (err) {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { Clock, Shield, AlertTriangle, User, FileText, ShoppingBag } from 'lucide-react';
 
@@ -11,8 +11,7 @@ const AdminLogs = () => {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('/api/users/logs', config);
+                const { data } = await api.get('/users/logs');
                 setLogs(data);
                 setLoading(false);
             } catch (err) {

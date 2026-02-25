@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/instance';
 import { Bell, ArrowLeft, Info, Package, Tag, Check, CheckCheck, Trash2, ArrowRight, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -17,8 +17,7 @@ const Notifications = () => {
 
   const fetchNotifs = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.get('/api/users/notifications', config);
+      const { data } = await api.get('/users/notifications');
       setNotifications(data);
     } catch (err) {
       console.error("Fetch Notifs Error", err);
@@ -42,8 +41,7 @@ const Notifications = () => {
 
   const markAsRead = async (id) => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`/api/notifications/${id}/read`, {}, config);
+      await api.put(`/notifications/${id}/read`, {});
       setNotifications(prev => prev.map(n => n._id === id ? { ...n, isRead: true } : n));
     } catch (err) {
       console.error("Error marking read", err);
@@ -52,8 +50,7 @@ const Notifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.put(`/api/notifications/read-all`, {}, config);
+      await api.put('/notifications/read-all', {});
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     } catch (err) {
       console.error("Error marking all read", err);
@@ -84,8 +81,7 @@ const Notifications = () => {
         applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
       });
 
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      await axios.post('/api/notifications/subscribe', subscription, config);
+      await api.post('/notifications/subscribe', subscription);
 
       setIsSubscribed(true); // Update UI
       alert('Notifications Enabled! You will now receive alerts for new drops.');

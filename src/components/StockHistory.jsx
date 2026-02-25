@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { format } from 'date-fns';
 import { Package, ArrowUp, ArrowDown, AlertCircle } from 'lucide-react';
 
@@ -11,14 +11,7 @@ const StockHistory = ({ productId }) => {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const storage = JSON.parse(localStorage.getItem('slook-storage'));
-                const token = storage?.state?.user?.token;
-                const config = {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                };
-                const { data } = await axios.get(`/api/products/${productId}/stock-logs`, config);
+                const { data } = await api.get(`/products/${productId}/stock-logs`);
                 setLogs(data);
                 setLoading(false);
             } catch (err) {

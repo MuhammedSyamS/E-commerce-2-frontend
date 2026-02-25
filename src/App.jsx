@@ -2,7 +2,6 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { useStore } from './store/useStore';
 import { ToastProvider } from './context/ToastContext';
-import axios from 'axios';
 import { Loader2 } from 'lucide-react';
 
 // Components (Keep Critical Components Static for LCP)
@@ -117,9 +116,8 @@ const App = () => {
       if (!token) return;
 
       try {
-        const config = { headers: { Authorization: `Bearer ${token}` } };
         // Endpoint: /api/users/profile
-        const { data } = await api.get('/users/profile', config);
+        const { data } = await api.get('/users/profile');
 
         // Update Store with Fresh DB Data
         // IMPORTANT: Ensure we keep the token!

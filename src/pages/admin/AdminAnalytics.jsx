@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/instance';
 import {
     AreaChart, Area, BarChart, Bar, LineChart, Line,
     PieChart, Pie, Cell, ComposedChart,
@@ -160,10 +160,9 @@ export default function AdminAnalytics() {
     useEffect(() => {
         if (!user?.token) return;
         setLoading(true);
-        const cfg = { headers: { Authorization: `Bearer ${user.token}` } };
-        axios.get(`/api/orders/admin/stats?timeRange=${range}`, cfg)
+        api.get(`/orders/admin/stats?timeRange=${range}`)
             .then(r => setStats(r.data)).catch(console.error).finally(() => setLoading(false));
-        axios.get('/api/alerts', cfg).then(r => setAlerts(r.data)).catch(() => { });
+        api.get('/alerts').then(r => setAlerts(r.data)).catch(() => { });
     }, [user, range]);
 
     const exportCSV = () => {

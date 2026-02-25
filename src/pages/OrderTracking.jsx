@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { Search, Package, CheckCircle, Truck, MapPin, AlertCircle, ArrowRight, Clock } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ const OrderTracking = () => {
         setOrder(null);
 
         try {
-            const { data } = await axios.post('/api/orders/track', { orderId, email });
+            const { data } = await api.post('/orders/track', { orderId, email });
             setOrder(data);
         } catch (err) {
             setError(err.response?.data?.message || 'Order not found or details mismatch.');

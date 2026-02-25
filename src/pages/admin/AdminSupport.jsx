@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { useStore } from '../../store/useStore';
-import { useToast } from '../../context/ToastContext';
+import api from '../../api/instance';
 import { MessageSquare, CheckCircle, Clock } from 'lucide-react';
 import { io } from 'socket.io-client';
 
@@ -49,14 +47,10 @@ const AdminSupport = () => {
         setLoading(true);
         try {
             if (viewMode === 'tickets') {
-                const { data } = await axios.get('/api/support/admin/all', {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                });
+                const { data } = await api.get('/support/admin/all');
                 setTickets(data);
             } else {
-                const { data } = await axios.get('/api/support/admin/contacts', {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                });
+                const { data } = await api.get('/support/admin/contacts');
                 setContacts(data);
             }
         } catch (err) {
@@ -71,9 +65,8 @@ const AdminSupport = () => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.put(`/api/support/${selectedTicket._id}`,
-                { adminResponse: reply, status: statusUpdate || selectedTicket.status },
-                { headers: { Authorization: `Bearer ${user.token}` } }
+            await api.put(`/support/${selectedTicket._id}`,
+                { adminResponse: reply, status: statusUpdate || selectedTicket.status }
             );
             addToast("Ticket Updated", "success");
             setSelectedTicket(null);
@@ -94,9 +87,8 @@ const AdminSupport = () => {
         // Mark as read if not already
         if (!ticket.isReadByAdmin) {
             try {
-                await axios.put(`/api/support/${ticket._id}`,
-                    { isReadByAdmin: true },
-                    { headers: { Authorization: `Bearer ${user.token}` } }
+                await api.put(`/support/${ticket._id}`,
+                    { isReadByAdmin: true }
                 );
                 // Update local state to reflect read status
                 setTickets(prev => prev.map(t => t._id === ticket._id ? { ...t, isReadByAdmin: true } : t));
@@ -112,9 +104,8 @@ const AdminSupport = () => {
         // Mark as read if not already (backend uses readByAdmin for contacts)
         if (!contact.readByAdmin && contact.status === 'New') {
             try {
-                await axios.put(`/api/support/admin/contacts/${contact._id}`,
-                    { status: 'Read' },
-                    { headers: { Authorization: `Bearer ${user.token}` } }
+                await api.put(`/support/admin/contacts/${contact._id}`,
+                    { status: 'Read' }
                 );
                 // Update local state
                 setContacts(prev => prev.map(c => c._id === contact._id ? { ...c, readByAdmin: true, status: 'Read' } : c));

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { X, Bell, Loader2, CheckCircle2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useToast } from '../context/ToastContext';
 
 const NotifyMeModal = ({ isOpen, onClose, product, variant }) => {
@@ -18,7 +18,7 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant }) => {
         setLoading(true);
         try {
             // Use existing waitlist endpoint
-            await axios.post(`/api/products/${product._id}/waitlist`, {
+            await api.post(`/products/${product._id}/waitlist`, {
                 email,
                 variant: variant ? { size: variant.size, color: variant.color } : null
             });

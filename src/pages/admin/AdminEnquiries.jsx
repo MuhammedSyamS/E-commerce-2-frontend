@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import {
@@ -33,7 +33,6 @@ const fmtDate = d => {
 export default function AdminEnquiries() {
     const { user } = useStore();
     const { addToast } = useToast();
-    const cfg = { headers: { Authorization: `Bearer ${user?.token}` } };
 
     const [enquiries, setEnquiries] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -52,7 +51,7 @@ export default function AdminEnquiries() {
     const fetchAll = useCallback(async () => {
         setLoading(true);
         try {
-            const { data } = await axios.get('/api/support/admin/contacts', cfg);
+            const { data } = await api.get('/support/admin/contacts');
             setEnquiries(data);
         } catch {
             addToast('Failed to load enquiries', 'error');
@@ -85,7 +84,7 @@ export default function AdminEnquiries() {
         if (enq.status === 'New') {
             setEnquiries(prev => prev.map(e => e._id === enq._id ? { ...e, status: 'Read', readByAdmin: true } : e));
             setSelected(s => s?._id === enq._id ? { ...s, status: 'Read', readByAdmin: true } : s);
-            try { await axios.put(`/api/support/admin/contacts/${enq._id}`, { status: 'Read' }, cfg); } catch { }
+            try { await api.put(`/support/admin/contacts/${enq._id}`, { status: 'Read' }); } catch { }
         }
     };
 
@@ -94,7 +93,7 @@ export default function AdminEnquiries() {
         if (!selected) return;
         setUpdating(true);
         try {
-            const { data } = await axios.put(`/api/support/admin/contacts/${selected._id}`, { status: newStatus }, cfg);
+            const { data } = await api.put(`/support/admin/contacts/${selected._id}`, { status: newStatus });
             setEnquiries(prev => prev.map(e => e._id === data._id ? data : e));
             setSelected(data);
             addToast(`Marked as ${newStatus}`, 'success');
@@ -107,10 +106,9 @@ export default function AdminEnquiries() {
         if (!replyText.trim()) { addToast('Please type a reply message', 'error'); return; }
         setSending(true);
         try {
-            const { data } = await axios.post(
-                `/api/support/admin/contacts/${selected._id}/reply`,
-                { replyMessage: replyText },
-                cfg
+            const { data } = await api.post(
+                `/support/admin/contacts/${selected._id}/reply`,
+                { replyMessage: replyText }
             );
             setEnquiries(prev => prev.map(e => e._id === data.contact._id ? data.contact : e));
             setSelected(data.contact);
@@ -129,7 +127,7 @@ export default function AdminEnquiries() {
         if (!confirmDelete) { setConfirmDelete(true); return; }
         setDeleting(true);
         try {
-            await axios.delete(`/api/support/admin/contacts/${selected._id}`, cfg);
+            await api.delete(`/support/admin/contacts/${selected._id}`);
             setEnquiries(prev => prev.filter(e => e._id !== selected._id));
             setSelected(null);
             setConfirmDelete(false);

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/instance';
 import { Package, IndianRupee, ShoppingBag, Plus, Trash2, Edit, ExternalLink, Search, RefreshCw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { useStore } from '../../store/useStore'; // Explicit import needed for token
@@ -26,7 +26,7 @@ const Admin = () => {
     try {
       setLoading(true);
       // Add timestamp to bust cache
-      const res = await axios.get(`/api/products?page=${p}&search=${search}&t=${Date.now()}`);
+      const res = await api.get(`/products?page=${p}&search=${search}&t=${Date.now()}`);
 
       const data = res.data;
       setProducts(data.products || []);
@@ -50,8 +50,7 @@ const Admin = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        const config = { headers: { Authorization: `Bearer ${useStore.getState().user.token}` } }; // Ensure auth
-        await axios.delete(`/api/products/${id}`, config);
+        await api.delete(`/products/${id}`);
         setProducts(products.filter(p => p._id !== id));
         addToast("Product removed from Studio", "success");
       } catch (err) {

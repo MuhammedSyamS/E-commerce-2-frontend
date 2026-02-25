@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { BarChart, Users, IndianRupee, Download, Calendar, TrendingUp, ShoppingBag, Package, PieChart } from 'lucide-react';
@@ -19,12 +19,10 @@ const AdminReports = () => {
     const fetchReports = async () => {
         setLoading(true);
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-
             // Parallel fetch
             const [salesRes, usersRes] = await Promise.all([
-                axios.get(`/api/reports/sales?range=${timeRange}`, config),
-                axios.get(`/api/reports/users`, config)
+                api.get(`/reports/sales?range=${timeRange}`),
+                api.get(`/reports/users`)
             ]);
 
             setReportData(salesRes.data); // { timeline, summary, topProducts, categoryStats }

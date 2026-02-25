@@ -3,7 +3,7 @@ import { Send, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
-import axios from 'axios';
+import api from '../../api/instance';
 
 const TicketForm = () => {
   const { user } = useStore();
@@ -31,14 +31,13 @@ const TicketForm = () => {
 
     setLoading(true);
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
       // Map Inquiry Type to Subject if needed, or just send as part of message
       const payload = {
         subject: formData.subject + (formData.orderId ? ` (Order: ${formData.orderId})` : ''),
         message: formData.message
       };
 
-      await axios.post('/api/support', payload, config);
+      await api.post('/support', payload);
       addToast('Ticket raised successfully!', 'success');
       navigate('/support-tickets');
     } catch (err) {

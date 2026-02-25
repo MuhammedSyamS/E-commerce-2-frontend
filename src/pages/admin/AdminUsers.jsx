@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { Trash2, Search, CheckCircle, Ban, Eye, X, Shield } from 'lucide-react';
@@ -37,8 +37,7 @@ const AdminUsers = () => {
     const fetchUsers = async (p = 1, search = '') => {
         try {
             setLoading(true);
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get(`/api/users?page=${p}&search=${search}`, config);
+            const { data } = await api.get(`/users?page=${p}&search=${search}`);
 
             setUsers(data.users || []);
             setPage(data.page || 1);
@@ -55,8 +54,7 @@ const AdminUsers = () => {
     const deleteUser = async (id) => {
         if (!window.confirm("Permanently Delete User?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/users/${id}`, config);
+            await api.delete(`/users/${id}`);
             setUsers(users.filter(u => u._id !== id));
             addToast("User Deleted", "success");
         } catch (err) {
@@ -66,9 +64,6 @@ const AdminUsers = () => {
 
     const updateRoleDirectly = async (userToUpdate, value) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            console.log("Attempting Role Update:", userToUpdate.email, "->", value);
-
             let newRole = 'customer';
             let newPermissions = [];
 
@@ -90,7 +85,7 @@ const AdminUsers = () => {
                 permissions: newPermissions
             };
 
-            const { data } = await axios.put(`/api/users/${userToUpdate._id}/role`, payload, config);
+            const { data } = await api.put(`/users/${userToUpdate._id}/role`, payload);
             console.log("Role Update Response:", data);
 
             // Update local list
@@ -118,8 +113,7 @@ const AdminUsers = () => {
 
     const toggleBlock = async (id, currentStatus) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`/api/users/${id}/block`, {}, config);
+            await api.put(`/users/${id}/block`, {});
             setUsers(users.map(u => u._id === id ? { ...u, isBlocked: !currentStatus } : u));
             addToast(currentStatus ? "User Unblocked" : "User Blocked", "success");
         } catch (err) {
@@ -134,8 +128,7 @@ const AdminUsers = () => {
 
     const savePermissions = async (id) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`/api/users/${id}/permissions`, { permissions: tempPermissions }, config);
+            await api.put(`/users/${id}/permissions`, { permissions: tempPermissions });
 
             setUsers(users.map(u => u._id === id ? { ...u, permissions: tempPermissions } : u));
             setEditingPermissions(null);

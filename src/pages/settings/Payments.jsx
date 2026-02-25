@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
-import axios from 'axios';
+import api from '../../api/instance';
 import { CreditCard, ArrowLeft, Plus, Trash2, X } from 'lucide-react';
 
 const Payments = () => {
@@ -42,8 +42,7 @@ const Payments = () => {
     };
 
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.post('/api/users/cards', cardToSave, config);
+      const { data } = await api.post('/users/cards', cardToSave);
 
       // Update Store and State
       setCards(data);
@@ -68,8 +67,7 @@ const Payments = () => {
 
   const handleDelete = async () => {
     try {
-      const config = { headers: { Authorization: `Bearer ${user.token}` } };
-      const { data } = await axios.delete(`/api/users/cards/${deleteModal.cardId}`, config);
+      const { data } = await api.delete(`/users/cards/${deleteModal.cardId}`);
       setCards(data);
       setUser({ ...user, savedCards: data });
       addToast("Card Removed", "success");

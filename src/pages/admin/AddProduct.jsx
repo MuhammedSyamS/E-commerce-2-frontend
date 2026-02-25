@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save, Plus, X, Upload, Video } from 'lucide-react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 
@@ -50,14 +50,7 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      await axios.post('/api/products', formData, config);
+      await api.post('/products', formData);
       addToast("Piece added to Studio collection", "success");
       navigate('/admin/products');
     } catch (error) {
@@ -71,14 +64,7 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user.token}`,
-        },
-      };
-
-      await axios.post('/api/products', formData, config);
+      await api.post('/products', formData);
       addToast('Product Saved! Ready for next.', 'success');
 
       // Reset Form but keep Category/Subcategory/Tags for speed
@@ -266,7 +252,7 @@ const AddProduct = () => {
                         setLoading(true);
 
                         try {
-                          const { data } = await axios.post('/api/upload', uploadData, {
+                          const { data } = await api.post('/upload', uploadData, {
                             headers: { 'Content-Type': 'multipart/form-data' }
                           });
                           // Prepend server URL for consistency

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, MapPin, Phone, MessageSquare } from 'lucide-react';
 
-import axios from 'axios'; // Add axios import
+import api from '../../api/instance';
 
 const Contact = () => {
   const [status, setStatus] = useState('');
@@ -16,7 +16,7 @@ const Contact = () => {
     setStatus('Sending...');
 
     try {
-      await axios.post('/api/support/contact', formData);
+      await api.post('/support/contact', formData);
       setStatus('Message sent successfully!');
       setFormData({ name: '', email: '', subject: '', message: '' });
       setTimeout(() => setStatus(''), 3000);

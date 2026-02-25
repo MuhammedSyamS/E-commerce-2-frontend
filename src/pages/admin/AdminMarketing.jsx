@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { Ticket, Zap, Plus, Minus, Trash2, Mail, Send, Users, Clock, ShoppingCart } from 'lucide-react';
@@ -71,8 +71,7 @@ const AdminMarketing = () => {
 
     const fetchCoupons = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/marketing/coupons', config);
+            const { data } = await api.get('/marketing/coupons');
             setCoupons(data);
         } catch (err) {
             console.error(err);
@@ -81,8 +80,7 @@ const AdminMarketing = () => {
 
     const fetchFlashSales = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/marketing/flash-sales', config);
+            const { data } = await api.get('/marketing/flash-sales');
             setFlashSales(data);
         } catch (err) {
             console.error(err);
@@ -91,7 +89,7 @@ const AdminMarketing = () => {
 
     const fetchProducts = async () => {
         try {
-            const { data } = await axios.get('/api/products');
+            const { data } = await api.get('/products');
             setProducts(data.products || []);
         } catch (err) {
             console.error(err);
@@ -100,8 +98,7 @@ const AdminMarketing = () => {
 
     const fetchBroadcasts = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/marketing/broadcasts', config);
+            const { data } = await api.get('/marketing/broadcasts');
             setBroadcasts(data);
         } catch (err) {
             console.error(err);
@@ -110,8 +107,7 @@ const AdminMarketing = () => {
 
     const fetchReferralStats = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/orders/admin/stats', config);
+            const { data } = await api.get('/orders/admin/stats');
             setReferralStats({
                 topReferrers: data.topReferrers,
                 referralRevenue: data.referralRevenue
@@ -123,8 +119,7 @@ const AdminMarketing = () => {
 
     const fetchAbandonedCarts = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.get('/api/users/admin/abandoned-carts', config);
+            const { data } = await api.get('/users/admin/abandoned-carts');
             setAbandonedCarts(data);
         } catch (err) {
             addToast("Failed to fetch abandoned carts", "error");
@@ -133,8 +128,7 @@ const AdminMarketing = () => {
 
     const sendNudge = async (userId) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.post(`/api/users/admin/nudge/${userId}`, {}, config);
+            await api.post(`/users/admin/nudge/${userId}`);
             addToast("Recovery nudge sent!", "success");
             fetchAbandonedCarts();
         } catch (err) {
@@ -148,11 +142,10 @@ const AdminMarketing = () => {
 
         setSending(true);
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            const { data } = await axios.post('/api/marketing/broadcasts', {
+            const { data } = await api.post('/marketing/broadcasts', {
                 ...newBroadcast,
                 status
-            }, config);
+            });
 
             addToast(status === 'Sent' ? `Campaign Sent to ${data.sentCount} recipients` : "Campaign Saved as Draft", "success");
             fetchBroadcasts();
@@ -169,8 +162,7 @@ const AdminMarketing = () => {
     const createCoupon = async (e) => {
         e.preventDefault();
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.post('/api/marketing/coupons', newCoupon, config);
+            await api.post('/marketing/coupons', newCoupon);
             addToast("Coupon Created Successfully", "success");
             fetchCoupons();
             setNewCoupon({
@@ -192,8 +184,7 @@ const AdminMarketing = () => {
 
     const toggleCouponStatus = async (id) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`/api/marketing/coupons/${id}/toggle`, {}, config);
+            await api.put(`/marketing/coupons/${id}/toggle`);
             addToast("Coupon status updated", "success");
             fetchCoupons();
         } catch (err) {
@@ -209,8 +200,7 @@ const AdminMarketing = () => {
     const deleteCoupon = async (id) => {
         if (!window.confirm("Delete this coupon?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/marketing/coupons/${id}`, config);
+            await api.delete(`/marketing/coupons/${id}`);
             addToast("Coupon Deleted", "success");
             fetchCoupons();
         } catch (err) {
@@ -221,8 +211,7 @@ const AdminMarketing = () => {
     const createFlashSale = async (e) => {
         e.preventDefault();
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.post('/api/marketing/flash-sales', newFlashSale, config);
+            await api.post('/marketing/flash-sales', newFlashSale);
             addToast("Flash Sale Launched", "success");
             fetchFlashSales();
             setNewFlashSale({
@@ -239,8 +228,7 @@ const AdminMarketing = () => {
 
     const toggleFlashSaleStatus = async (id) => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put(`/api/marketing/flash-sales/${id}/toggle`, {}, config);
+            await api.put(`/marketing/flash-sales/${id}/toggle`);
             addToast("Flash sale status updated", "success");
             fetchFlashSales();
         } catch (err) {
@@ -251,8 +239,7 @@ const AdminMarketing = () => {
     const deleteFlashSale = async (id) => {
         if (!window.confirm("Delete this flash sale?")) return;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.delete(`/api/marketing/flash-sales/${id}`, config);
+            await api.delete(`/marketing/flash-sales/${id}`);
             addToast("Flash Sale Deleted", "success");
             fetchFlashSales();
         } catch (err) {

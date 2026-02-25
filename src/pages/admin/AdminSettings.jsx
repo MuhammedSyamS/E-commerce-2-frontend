@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import {  Save, Bell, Shield, Globe, User, ToggleLeft, ToggleRight, Truck } from 'lucide-react';
+import api from '../../api/instance';
+import { Save, Bell, Shield, Globe, User, ToggleLeft, ToggleRight, Truck } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 
@@ -31,7 +31,7 @@ const AdminSettings = () => {
 
     const fetchSettings = async () => {
         try {
-            const { data } = await axios.get('/api/settings');
+            const { data } = await api.get('/settings');
             setSettings(data);
             setLoading(false);
         } catch (err) {
@@ -54,8 +54,7 @@ const AdminSettings = () => {
 
     const handleSave = async () => {
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-            await axios.put('/api/settings', settings, config);
+            await api.put('/settings', settings);
             addToast("Settings Updated Successfully", "success");
         } catch (err) {
             addToast("Failed to save settings", "error");

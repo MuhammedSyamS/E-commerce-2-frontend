@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useParams, Link } from 'react-router-dom';
 import { useStore } from '../../store/useStore';
 import { ArrowLeft, User, MessageSquare, Clock, Zap } from 'lucide-react';
@@ -16,9 +16,7 @@ const TicketDetails = () => {
 
     const fetchTicket = async () => {
         try {
-            const { data } = await axios.get(`/api/support/${id}`, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            const { data } = await api.get(`/support/${id}`);
             setTicket(data);
         } catch (err) {
             console.error(err);

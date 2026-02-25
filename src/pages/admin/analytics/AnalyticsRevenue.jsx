@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../../store/useStore';
-import axios from 'axios';
+import api from '../../../api/instance';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, PieChart, Pie, Cell, Legend
@@ -30,8 +30,7 @@ const AnalyticsRevenue = () => {
         const fetchStats = async () => {
             setLoading(true);
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=${timeRange}`, config);
+                const { data } = await api.get(`/orders/admin/stats?timeRange=${timeRange}`);
                 setStats(data);
             } catch (error) {
                 console.error('Error fetching stats:', error);

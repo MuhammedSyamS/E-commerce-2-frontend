@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/instance';
 import { Instagram, Facebook, Mail, ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 
 const XIcon = ({ className }) => (
@@ -20,7 +20,7 @@ const Footer = () => {
 
     setStatus('loading');
     try {
-      const { data } = await axios.post('/api/marketing/subscribe', { email });
+      const { data } = await api.post('/marketing/subscribe', { email });
       setStatus('success');
       setMessage(data.message);
       setEmail('');

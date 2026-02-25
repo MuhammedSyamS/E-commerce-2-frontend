@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/instance';
 import Price from '../components/Price';
 import { Package, ChevronRight, ShoppingBag, Loader2 } from 'lucide-react';
 import { useStore } from '../store/useStore';
@@ -20,13 +20,8 @@ const Orders = () => {
 
       try {
         setLoading(true);
-        const config = {
-          headers: {
-            Authorization: `Bearer ${user.token}`
-          }
-        };
 
-        const res = await axios.get(`/api/orders/myorders?t=${Date.now()}`, config);
+        const res = await api.get(`/orders/myorders?t=${Date.now()}`);
 
         const data = Array.isArray(res.data) ? res.data : (res.data.orders || []);
         setOrders(data);

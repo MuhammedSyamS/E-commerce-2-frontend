@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, X, Send, Sparkles, Loader2, ShoppingBag } from 'lucide-react';
-import axios from 'axios';
+import api from '../api/instance';
 import { Link } from 'react-router-dom';
 import Price from './Price';
 import { useToast } from '../context/ToastContext';
@@ -33,7 +33,7 @@ const AIStylist = () => {
         setLoading(true);
 
         try {
-            const { data } = await axios.post('/api/ai/stylist', { query: input });
+            const { data } = await api.post('/ai/stylist', { query: input });
             setMessages(prev => [...prev, {
                 role: 'ai',
                 content: data.text,

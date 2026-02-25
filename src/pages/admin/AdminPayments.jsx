@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { Search, IndianRupee, CreditCard, RotateCcw, CheckCircle, ArrowDownUp, RefreshCw, Clock } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
@@ -19,10 +19,9 @@ const AdminPayments = () => {
     const fetchPayments = async () => {
         setLoading(true);
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
             // Using existing getAllOrders logic, we will filter client-side for now
             // API returns { orders: [], page, ... } now
-            const { data } = await axios.get('/api/orders/admin/all?pageSize=1000', config); // Fetch all for stats
+            const { data } = await api.get('/orders/admin/all?pageSize=1000'); // Fetch all for stats
             setOrders(data.orders || []);
         } catch (err) {
             addToast("Failed to fetch payments", "error");
@@ -41,15 +40,13 @@ const AdminPayments = () => {
     const handleConfirmAction = async () => {
         const { id, action } = confirmModal;
         try {
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
-
             if (action === 'delete') {
-                await axios.delete(`/api/orders/${id}`, config);
+                await api.delete(`/orders/${id}`);
                 setOrders(orders.filter(o => o._id !== id));
                 addToast("Transaction deleted successfully", "success");
             } else {
                 const endpoint = action === 'pay' ? 'pay' : 'refund';
-                const { data } = await axios.put(`/api/orders/${id}/${endpoint}`, {}, config);
+                const { data } = await api.put(`/orders/${id}/${endpoint}`, {});
                 // Update local state
                 setOrders(orders.map(o => o._id === id ? data : o));
                 addToast(`Transaction ${action === 'pay' ? 'Verified' : 'Refunded'} Successfully`, "success");

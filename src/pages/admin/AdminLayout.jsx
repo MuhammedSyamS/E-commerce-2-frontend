@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity, Camera, Inbox } from 'lucide-react';
 import { useStore } from '../../store/useStore';
@@ -42,8 +42,7 @@ const AdminLayout = () => {
 
         const fetchAlerts = async () => {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get('/api/alerts', config);
+                const { data } = await api.get('/alerts');
                 setAlerts(data);
             } catch (err) {
                 console.error("Alerts Fetch Failed:", err);

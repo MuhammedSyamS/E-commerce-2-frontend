@@ -1,13 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useStore } from '../../../store/useStore';
-import axios from 'axios';
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend
-} from 'recharts';
-import { Package, ArrowLeft, RefreshCw, Download, Activity, Truck, AlertTriangle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from '../../../context/ToastContext';
 import api from '../../../api/instance';
 
 const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#6366f1'];
@@ -33,8 +25,7 @@ const AnalyticsOrders = () => {
         const fetchStats = async () => {
             setLoading(true);
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`/api/orders/admin/stats?timeRange=${timeRange}`, config);
+                const { data } = await api.get(`/orders/admin/stats?timeRange=${timeRange}`);
                 setStats(data);
             } catch (error) {
                 console.error('Error fetching stats:', error);
@@ -48,9 +39,8 @@ const AnalyticsOrders = () => {
     const downloadCSV = async () => {
         try {
             addToast('Preparing Export...', 'info');
-            const config = { headers: { Authorization: `Bearer ${user.token}` } };
             // api instance already has base URL with /api prefix, so just use /orders/admin/all
-            const { data } = await api.get(`/orders/admin/all?pageSize=10000`, config);
+            const { data } = await api.get(`/orders/admin/all?pageSize=10000`);
 
             if (!data.orders?.length) {
                 addToast('No orders to export', 'error');

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { Link, useNavigate } from 'react-router-dom';
@@ -23,9 +23,7 @@ const SupportTickets = () => {
 
     const fetchTickets = async () => {
         try {
-            const { data } = await axios.get('/api/support/my-tickets', {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            const { data } = await api.get('/support/my-tickets');
             setTickets(data);
         } catch (err) {
             console.error(err);
@@ -38,9 +36,7 @@ const SupportTickets = () => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.post('/api/support', newTicket, {
-                headers: { Authorization: `Bearer ${user.token}` }
-            });
+            await api.post('/support', newTicket);
             addToast("Ticket Created", "success");
             setShowCreate(false);
             setNewTicket({ subject: '', message: '', priority: 'Medium' });

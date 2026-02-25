@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { Package, Truck, CheckCircle2, XCircle, RefreshCw, ChevronRight, Clock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,9 +14,7 @@ const MyReturns = () => {
         const fetchReturns = async () => {
             if (!user?.token) return;
             try {
-                const { data } = await axios.get('/api/returns/my', {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                });
+                const { data } = await api.get('/returns/my');
                 setReturns(data);
             } catch (error) {
                 console.error("Failed to fetch returns", error);
@@ -161,7 +159,7 @@ const MyReturns = () => {
                                                         return (
                                                             <div key={label} className="flex flex-col items-center gap-2 group/step w-1/5">
                                                                 <div className={`w-3 h-3 rounded-full border-2 z-10 transition-all ${isRejected && i === 4 ? 'bg-red-500 border-red-500' :
-                                                                        activeState ? 'bg-black border-black scale-125' : 'bg-white border-zinc-200'
+                                                                    activeState ? 'bg-black border-black scale-125' : 'bg-white border-zinc-200'
                                                                     }`}>
                                                                     {isRejected && i === 4 && <XCircle size={8} className="text-white absolute -top-4 left-1/2 -translate-x-1/2" />}
                                                                 </div>
