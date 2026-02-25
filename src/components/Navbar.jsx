@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
   Search, Heart, Bell, User, ShoppingBag, Menu, X,
   ChevronLeft, ChevronRight, Shield,
-  BadgePercent, Info
+  BadgePercent, Info, Zap
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
@@ -371,9 +371,9 @@ const Navbar = () => {
                   <User className="w-5 h-5 transition-all text-white fill-white scale-110" />
                   {user && (
                     <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse ${(user.totalSpend || 0) >= 50000 ? 'bg-gradient-to-tr from-zinc-200 to-zinc-400' :
-                        (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
-                          (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
-                            'bg-orange-700'
+                      (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
+                        (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
+                          'bg-orange-700'
                       }`} title={`${(user.totalSpend || 0) >= 50000 ? 'Platinum' : (user.totalSpend || 0) >= 20000 ? 'Gold' : (user.totalSpend || 0) >= 5000 ? 'Silver' : 'Bronze'} Member`} />
                   )}
                 </button>

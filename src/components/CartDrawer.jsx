@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart, CheckCircle2 } from 'lucide-react'; // Added Trash2, Heart
+import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart, CheckCircle2, Zap } from 'lucide-react'; // Added Trash2, Heart, Zap
 
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
