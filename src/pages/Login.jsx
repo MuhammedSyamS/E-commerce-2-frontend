@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import api from '../api/instance';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin as GoogleAuthButton } from '@react-oauth/google';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -110,7 +110,7 @@ const Login = () => {
         </div>
 
         <div className="flex justify-center">
-          <GoogleLogin
+          <GoogleAuthButton
             onSuccess={handleGoogleSuccess}
             onError={() => addToast("Login Failed", "error")}
             type="standard"

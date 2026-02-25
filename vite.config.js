@@ -99,11 +99,14 @@ export default defineConfig({
       }
     }
   },
+  optimizeDeps: {
+    include: ['@react-oauth/google']
+  },
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', 'zustand', 'axios'],
+          vendor: ['react', 'react-dom', 'react-router-dom', 'zustand', 'axios', '@react-oauth/google'],
           ui: ['lucide-react', 'recharts'],
         },
       },

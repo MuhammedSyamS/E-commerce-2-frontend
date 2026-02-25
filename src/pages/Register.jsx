@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../api/instance';
 import { useStore } from '../store/useStore';
-import { GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin as GoogleAuthButton } from '@react-oauth/google';
 import { useToast } from '../context/ToastContext';
 
 const Register = () => {
@@ -129,7 +129,7 @@ const Register = () => {
 
         {!showOtp && (
           <div className="mb-8 flex justify-center flex-col items-center gap-4">
-            <GoogleLogin
+            <GoogleAuthButton
               onSuccess={handleGoogleSuccess}
               onError={() => addToast("Login Failed", "error")}
               type="standard"
