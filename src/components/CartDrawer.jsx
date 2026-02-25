@@ -5,11 +5,10 @@ import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/instance';
-import axios from 'axios';
 import Price from './Price';
 
 const CartDrawer = () => {
-  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon } = useStore();
+  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon, cart: guestCart, setCart: setGuestCart } = useStore();
   const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -47,7 +46,7 @@ const CartDrawer = () => {
     if (isCartOpen) {
       const fetchSuggestions = async () => {
         try {
-          const { data } = await axios.get('/api/products');
+          const { data } = await api.get('/products');
           // Shuffle and pick 4
           const shuffled = data.sort(() => 0.5 - Math.random()).slice(0, 5);
           setSuggestions(shuffled);
@@ -61,88 +60,77 @@ const CartDrawer = () => {
 
   // --- CART ACTIONS ---
   const updateQty = async (productId, currentQty, change, variant) => {
-    const parsedQty = Number(currentQty) || 1; // Ensure number
+    const parsedQty = Number(currentQty) || 1;
     const newQty = parsedQty + change;
-    if (newQty < 1) return; // Use remove for 0
+    if (newQty < 1) return;
 
-    // 1. Optimistic Update
-    const updatedCart = (user.cart || []).map(item => {
-      if (item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
-        return { ...item, quantity: newQty };
-      }
-      return item;
-    });
-    setUser({ ...user, cart: updatedCart });
+    if (user) {
+      const updatedCart = (user.cart || []).map(item => {
+        if (item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      });
+      setUser({ ...user, cart: updatedCart });
 
-    // 2. Backend Sync
-    try {
-      if (change > 0) {
-        await axios.post('/api/cart/add', {
-          productId,
-          quantity: 1, // Add 1
-          selectedVariant: variant
-        }, { headers: { Authorization: `Bearer ${user.token}` } });
-      } else {
-        await axios.post('/api/cart/decrease', {
-          productId,
-          selectedVariant: variant
-        }, { headers: { Authorization: `Bearer ${user.token}` } });
-      }
-    } catch (err) {
-      console.error("Cart update failed:", err);
-      // Revert? For now, we trust sync will happen next reload or user will retry.
+      try {
+        if (change > 0) {
+          await api.post('/cart/add', { productId, quantity: 1, selectedVariant: variant });
+        } else {
+          await api.post('/cart/decrease', { productId, selectedVariant: variant });
+        }
+      } catch (err) { console.error("Cart update failed:", err); }
+    } else {
+      const updatedCart = guestCart.map(item => {
+        if ((item._id === productId || item.product === productId) && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
+          return { ...item, quantity: newQty };
+        }
+        return item;
+      });
+      setGuestCart(updatedCart);
     }
   };
 
   const removeItem = async (productId, variant, itemId) => {
-    // 1. Optimistic Update
-    const updatedCart = (user.cart || []).filter(item => {
-      if (itemId) return item._id !== itemId;
-      return !(item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
-    });
-    setUser({ ...user, cart: updatedCart });
-
-    // 2. Backend Sync
-    try {
-      await axios.post('/api/cart/remove', {
-        productId,
-        selectedVariant: variant,
-        _id: itemId // Send Cart Item ID
-      }, { headers: { Authorization: `Bearer ${user.token}` } });
+    if (user) {
+      const updatedCart = (user.cart || []).filter(item => {
+        if (itemId) return item._id !== itemId;
+        return !(item.product === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
+      });
+      setUser({ ...user, cart: updatedCart });
+      try {
+        await api.post('/cart/remove', { productId, selectedVariant: variant, _id: itemId });
+        addToast("Item removed", "info");
+      } catch (err) { console.error("Remove failed:", err); }
+    } else {
+      const updatedCart = guestCart.filter(item => {
+        if (itemId) return item._id !== itemId;
+        return !(item._id === productId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
+      });
+      setGuestCart(updatedCart);
       addToast("Item removed", "info");
-    } catch (err) {
-      console.error("Remove failed:", err);
-      addToast("Failed to sync cart", "error");
     }
   };
 
   const handleSaveForLater = async (itemId) => {
+    if (!user) return addToast("Login to save for later", "info");
     try {
-      const { data } = await axios.post('/api/cart/save-for-later', { _id: itemId }, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      const { data } = await api.post('/cart/save-for-later', { _id: itemId });
       setUser({ ...user, cart: data.cart, savedForLater: data.savedForLater });
       addToast("Saved for later", "success");
-    } catch (err) {
-      console.error(err);
-      addToast("Failed to save item", "error");
-    }
+    } catch (err) { addToast("Failed to save item", "error"); }
   };
 
   const handleMoveToCart = async (itemId) => {
+    if (!user) return;
     try {
-      const { data } = await axios.post('/api/cart/move-to-cart', { _id: itemId }, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
+      const { data } = await api.post('/cart/move-to-cart', { _id: itemId });
       setUser({ ...user, cart: data.cart, savedForLater: data.savedForLater });
       addToast("Moved to cart", "success");
-    } catch (err) {
-      console.error(err);
-      addToast("Failed to move item", "error");
-    }
+    } catch (err) { addToast("Failed to move item", "error"); }
   };
 
-  const cartItems = (user?.cart && Array.isArray(user.cart)) ? user.cart : [];
+  const cartItems = user ? (user.cart || []) : guestCart;
 
 
   // ROBUST CALCULATION
@@ -163,7 +151,7 @@ const CartDrawer = () => {
   const handleApplyCoupon = async () => {
     if (!couponCode) return;
     try {
-      const { data } = await axios.post('/api/marketing/verify-coupon', {
+      const { data } = await api.post('/marketing/verify-coupon', {
         code: couponCode,
         cartTotal: subtotal,
         userId: user?._id || user?.id

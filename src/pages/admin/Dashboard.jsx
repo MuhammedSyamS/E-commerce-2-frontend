@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { IndianRupee, Package, TrendingUp, Truck, AlertCircle, ShoppingCart, UserPlus, Star, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
 
@@ -31,8 +31,7 @@ const Dashboard = () => {
 
         const fetchStats = async () => {
             try {
-                const config = { headers: { Authorization: `Bearer ${user.token}` } };
-                const { data } = await axios.get(`/api/orders/admin/stats?t=${Date.now()}`, config);
+                const { data } = await api.get(`/orders/admin/stats?t=${Date.now()}`);
                 setStats(data);
                 setLoading(false);
             } catch (err) {
@@ -257,8 +256,8 @@ const KPICard = ({ title, value, icon: Icon, trend, trendUp, color, highlight })
             </div>
             {trend && (
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1 ${trendUp
-                        ? (color === 'black' ? 'bg-zinc-900 text-green-400' : 'bg-green-50 text-green-600')
-                        : 'bg-red-50 text-red-600'
+                    ? (color === 'black' ? 'bg-zinc-900 text-green-400' : 'bg-green-50 text-green-600')
+                    : 'bg-red-50 text-red-600'
                     }`}>
                     {trendUp ? <ArrowUpRight size={10} /> : <ArrowDownRight size={10} />}
                     {trend}

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import axios from 'axios';
-import { GoogleLogin } from '@react-oauth/google';
+import api from '../api/instance';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -25,7 +24,7 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post('/api/users/google-login', {
+      const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
       });
 
@@ -46,7 +45,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('/api/users/login', {
+      const res = await api.post('/users/login', {
         email: email.toLowerCase().trim(),
         password
       });

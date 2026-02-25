@@ -71,9 +71,10 @@ export const useStore = create(
         }
       },
 
+      cart: [], // Add guest cart
       addToCart: async (product) => {
         const state = get();
-        const currentCart = state.user?.cart || [];
+        const currentCart = state.user ? (state.user.cart || []) : state.cart;
 
         // 1. Optimistic Update
         const existingItem = currentCart.find((item) => {
@@ -96,7 +97,11 @@ export const useStore = create(
           updatedCart = [...currentCart, { ...product, quantity: product.quantity || 1 }];
         }
 
-        set({ user: state.user ? { ...state.user, cart: updatedCart } : null });
+        if (state.user) {
+          set({ user: { ...state.user, cart: updatedCart } });
+        } else {
+          set({ cart: updatedCart });
+        }
 
         // 2. Backend Sync
         if (state.user?.token) {
@@ -115,9 +120,10 @@ export const useStore = create(
         }
       },
 
-      setCart: (updatedCart) => set((state) => ({
-        user: state.user ? { ...state.user, cart: updatedCart } : null
-      })),
+      setCart: (updatedCart) => set((state) => {
+        if (state.user) return { user: { ...state.user, cart: updatedCart } };
+        return { cart: updatedCart };
+      }),
 
       toggleCart: (open) => set((state) => ({
         isCartOpen: typeof open === 'boolean' ? open : !state.isCartOpen

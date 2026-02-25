@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { GoogleLogin } from '@react-oauth/google';
 import { useToast } from '../context/ToastContext';
@@ -21,7 +21,7 @@ const Register = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await axios.post('/api/users/google-login', {
+      const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
       });
 
@@ -65,8 +65,7 @@ const Register = () => {
     setLoading(true);
     setStatus({ type: '', msg: '' });
     try {
-      // UPDATED URL: Changed from /api/auth to /api/users
-      await axios.post('/api/users/send-otp', { email: formData.email });
+      await api.post('/users/send-otp', { email: formData.email });
       setShowOtp(true);
       setTimer(60);
       setCanResend(false);
@@ -84,8 +83,7 @@ const Register = () => {
     if (loading) return;
     setLoading(true);
     try {
-      // UPDATED URL: Changed from /api/auth to /api/users
-      const { data } = await axios.post('/api/users/register', {
+      const { data } = await api.post('/users/register', {
         ...formData,
         code: otp.join('')
       });
