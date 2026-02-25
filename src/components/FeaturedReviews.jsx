@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import api from '../api/instance';
 import { Star, CheckCircle2, ChevronLeft, ChevronRight, Play, Maximize2, MoreHorizontal, ArrowUpRight, X, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -85,7 +85,7 @@ const FeaturedReviews = () => {
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const { data } = await axios.get('/api/products/reviews/featured');
+                const { data } = await api.get('/products/reviews/featured');
                 setReviews(data && data.length > 0 ? data : MOCK_REVIEWS);
             } catch (err) {
                 setReviews(MOCK_REVIEWS);
