@@ -472,24 +472,6 @@ const ProductDetails = () => {
                 </AnimatePresence>
               </div>
 
-              {/* PRODUCT DNA SECTION */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
-                <div className="space-y-4">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Description</h3>
-                  <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80">{product.description}</p>
-                </div>
-                <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Specifications</h3>
-                  <div className="space-y-3">
-                    {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                      <div key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-900">
-                        <Check size={14} className="text-green-500" />
-                        <span>{spec}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -514,6 +496,25 @@ const ProductDetails = () => {
               <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
                 {product.numReviews} Verified Reviews
               </button>
+            </div>
+
+            {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
+            <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
+              <div className="space-y-3">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+              </div>
+              <div className="space-y-3">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
+                    <div key={i} className="flex items-center gap-2 text-[10px] font-black text-zinc-900 uppercase">
+                      <Check size={12} className="text-green-500" />
+                      <span>{spec}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
 
             <div className="flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
