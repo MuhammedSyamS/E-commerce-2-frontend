@@ -713,7 +713,7 @@ const ProductDetails = () => {
           {/* Add to Bag */}
           {!isOutOfStock ? (
             <button
-              onClick={handleAddToCart}
+              onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
               className="w-full h-12 bg-black text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
             >
               <ShoppingBag size={14} /> Add to Bag
