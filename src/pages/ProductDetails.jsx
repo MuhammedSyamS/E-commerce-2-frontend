@@ -476,7 +476,7 @@ const ProductDetails = () => {
           </div>
 
           {/* COLUMN 2: INFORMATION HUB (lg:col-span-5) */}
-          <div className="lg:col-span-5 space-y-12">
+          <div className="lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
@@ -689,253 +689,125 @@ const ProductDetails = () => {
         </div>
       )}
 
-      {/* MOBILE PRODUCT SUMMARY — shown before tabs on small screens */}
-      <div className="md:hidden container-responsive pb-2 pt-2">
-        <div className="bg-white border border-zinc-100 rounded-2xl p-4 space-y-3 shadow-sm">
-          {/* Name */}
-          <h2 className="text-lg font-black uppercase tracking-tight leading-tight">{product.name}</h2>
-          {/* Rating */}
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 text-black">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={12} fill={i < Math.floor(product.rating || 5) ? 'currentColor' : 'none'} />
-              ))}
-            </div>
-            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{product.numReviews} Reviews</span>
-          </div>
-
-          {/* Moved Description & Specs for Mobile */}
-          <div className="space-y-4 pt-2">
-            <div className="space-y-2">
-              <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-100 pb-1">Description</h3>
-              <p className="text-zinc-600 text-xs font-bold leading-relaxed">{product.description}</p>
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-100 pb-1">Specifications</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {['Craftsmanship', 'Limited Run', 'Sustainable', 'Priority Ship'].map((spec, i) => (
-                  <div key={i} className="flex items-center gap-1.5 text-[8px] font-black text-zinc-900 uppercase">
-                    <Check size={10} className="text-green-500" />
-                    <span>{spec}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Price */}
-          <div className="flex items-baseline gap-2 pt-2">
-            <span className="text-xl font-black text-zinc-900 tracking-tighter"><Price amount={currentPrice} /></span>
-            {currentPrice < product.price * 1.2 && (
-              <del className="text-zinc-300 text-sm font-bold"><Price amount={product.price * 1.4} /></del>
-            )}
-          </div>
-          <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Free Delivery Across India</p>
-
-          {/* Actions */}
-          <div className="space-y-2 pt-2">
-            {!isOutOfStock ? (
-              <>
-                <button
-                  onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                  className="w-full h-12 bg-black text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg"
-                >
-                  <ShoppingBag size={14} /> Add to Bag
-                </button>
-                <button
-                  onClick={() => {
-                    const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
-                    navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
-                  }}
-                  className="w-full h-12 bg-white border-2 border-black text-black rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
-                >
-                  <ShieldCheck size={14} /> Secure Checkout
-                </button>
-              </>
-            ) : (
-              <div className="w-full h-12 bg-zinc-100 text-zinc-400 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center">Out of Stock</div>
-            )}
-          </div>
-
-          {/* Mobile Trust Bar */}
-          <div className="grid grid-cols-2 gap-2 pt-4 border-t border-zinc-100 mt-2">
-            <div className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-lg border border-zinc-100/50">
-              <ShieldCheck size={14} className="text-zinc-900" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Secure Checkout</span>
-            </div>
-            <div className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-lg border border-zinc-100/50">
-              <RotateCcw size={14} className="text-zinc-900" />
-              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">7 Days Return</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* PREMIUM TABS SECTION */}
       <div className="container-responsive">
         <div ref={reviewsRef} className="mt-32 space-y-12">
           <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
-            {['story', 'specifications', 'reviews'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-10 py-6 text-xs font-bold uppercase tracking-widest transition-all relative shrink-0 ${activeTab === tab ? 'text-black' : 'text-zinc-400 hover:text-zinc-600'}`}
-              >
-                {tab}
-                {activeTab === tab && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />}
-              </button>
-            ))}
+            <button
+              className="px-10 py-6 text-xs font-bold uppercase tracking-widest text-black relative shrink-0"
+            >
+              Verified Reviews
+              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
+            </button>
           </div>
 
           <div className="min-h-[400px]">
-            {activeTab === 'story' && (
-              <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="prose prose-zinc prose-invert max-w-none">
-                  <p className="text-sm md:text-base font-medium text-zinc-600 leading-relaxed mb-12 py-2">
-                    {product.description}
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {activeTab === 'specifications' && (
-              <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500 bg-zinc-50/50 p-12 rounded-3xl border border-zinc-100">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-24 gap-y-4">
-                  {product.specs && product.specs.length > 0 ? (
-                    product.specs.map((spec, i) => (
-                      <div key={i} className="flex justify-between items-center py-5 border-b border-zinc-100 group">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">{spec.key}</span>
-                        <span className="text-sm font-bold text-zinc-900">{spec.value}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <>
-                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Category</span>
-                        <span className="text-sm font-bold text-zinc-900">{product.category}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Product Type</span>
-                        <span className="text-sm font-bold text-zinc-900">{product.subcategory || "Essential"}</span>
-                      </div>
-                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Variants Available</span>
-                        <span className="text-sm font-bold text-zinc-900">{product.variants?.length || 1} Variations</span>
-                      </div>
-                      <div className="flex justify-between items-center py-5 border-b border-zinc-100 group">
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400 group-hover:text-black transition-colors">Shipment Origin</span>
-                        <span className="text-sm font-bold text-zinc-900">Premium Warehouse A</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'reviews' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-                  {/* REVIEW SUMMARY & FILTERS */}
-                  <div className="lg:col-span-4 space-y-12">
-                    <div className="space-y-6">
-                      <div className="flex items-baseline gap-4">
-                        <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex text-black">
-                            {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
-                          </div>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
+            {/* REVIEWS SECTION */}
+            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                {/* REVIEW SUMMARY & FILTERS */}
+                <div className="lg:col-span-4 space-y-12">
+                  <div className="space-y-6">
+                    <div className="flex items-baseline gap-4">
+                      <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex text-black">
+                          {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
                         </div>
-                      </div>
-
-                      {/* RATING DISTRIBUTION GRAPH */}
-                      <div className="space-y-3">
-                        {[5, 4, 3, 2, 1].map((star) => {
-                          const count = ratingDistribution[star] || 0;
-                          const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
-                          return (
-                            <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                              <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
-                              <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${percentage}%` }}
-                                  transition={{ duration: 1, ease: "circOut" }}
-                                  className="h-full bg-zinc-900"
-                                />
-                              </div>
-                              <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
-                            </div>
-                          );
-                        })}
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
                       </div>
                     </div>
 
-                    <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
-                      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
-                      <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
-                      <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
-                      <div className="flex gap-3">
-                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
-                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
-                      </div>
-                      <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                    {/* RATING DISTRIBUTION GRAPH */}
+                    <div className="space-y-3">
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = ratingDistribution[star] || 0;
+                        const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
+                        return (
+                          <div key={star} className="flex items-center gap-4 group cursor-pointer">
+                            <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
+                            <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${percentage}%` }}
+                                transition={{ duration: 1, ease: "circOut" }}
+                                className="h-full bg-zinc-900"
+                              />
+                            </div>
+                            <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
-                  {/* REVIEWS LIST */}
-                  <div className="lg:col-span-8 space-y-12">
-                    <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                      <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
-                      <div className="flex items-center gap-4">
-                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
-                        <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
-                          <option value="newest">Newest</option>
-                          <option value="highest">Best Rating</option>
-                          <option value="helpful">Helpful</option>
-                        </select>
-                      </div>
+                  <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
+                    <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
+                    <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
+                    <div className="flex gap-3">
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
                     </div>
-                    <div className="space-y-16">
-                      {sortedReviews.map((rev, i) => (
-                        <div key={i} onClick={() => {
-                          const videos = rev.videos || (rev.video ? [rev.video] : []);
-                          const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                          const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
-                          setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
-                        }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
-                              <div className="space-y-1">
-                                <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
-                                <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                              <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
-                              {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
+                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                  </div>
+                </div>
+
+                {/* REVIEWS LIST */}
+                <div className="lg:col-span-8 space-y-12">
+                  <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
+                    <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
+                    <div className="flex items-center gap-4">
+                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
+                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                        <option value="newest">Newest</option>
+                        <option value="highest">Best Rating</option>
+                        <option value="helpful">Helpful</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="space-y-16">
+                    {sortedReviews.map((rev, i) => (
+                      <div key={i} onClick={() => {
+                        const videos = rev.videos || (rev.video ? [rev.video] : []);
+                        const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                        const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+                        setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
+                      }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
+                            <div className="space-y-1">
+                              <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
+                              <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
                             </div>
                           </div>
-                          <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
-                          <div className="flex gap-3 ml-12">
-                            {(rev.images || []).slice(0, 4).map((img, idx) => (
-                              <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
-                                <img src={img} className="w-full h-full object-cover" alt="" />
-                              </div>
-                            ))}
-                            {(rev.videos || []).length > 0 && (
-                              <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
-                                <Play size={24} className="text-white fill-white" />
-                              </div>
-                            )}
+                          <div className="flex items-center gap-4">
+                            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                            {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
                           </div>
                         </div>
-                      ))}
-                    </div>
+                        <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
+                        <div className="flex gap-3 ml-12">
+                          {(rev.images || []).slice(0, 4).map((img, idx) => (
+                            <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
+                              <img src={img} className="w-full h-full object-cover" alt="" />
+                            </div>
+                          ))}
+                          {(rev.videos || []).length > 0 && (
+                            <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                              <Play size={24} className="text-white fill-white" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>
+            </div>
             )}
           </div>
 
