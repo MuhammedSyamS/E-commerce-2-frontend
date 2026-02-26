@@ -76,6 +76,8 @@ const ProductDetails = () => {
   };
 
   const resizeImage = (file) => {
+    const [ratingInput, setRatingInput] = useState(5);
+    const [comment, setComment] = useState("");
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -472,11 +474,124 @@ const ProductDetails = () => {
                 </AnimatePresence>
               </div>
 
+              {/* MOBILE ONLY PRODUCT DETAILS — Consolidated Flow */}
+              <div className="lg:hidden space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
+                    <span className="w-0.5 h-0.5 bg-zinc-200 rounded-full" />
+                    <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
+                  </div>
+                  <h1 className="text-3xl font-black uppercase tracking-tight leading-tight">{product.name}</h1>
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1 text-black">
+                      {[...Array(5)].map((_, i) => (
+                        <Star key={i} size={12} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
+                      ))}
+                    </div>
+                    <button onClick={scrollToReviews} className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{product.numReviews} Reviews</button>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-2 bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-3xl font-black text-zinc-900 tracking-tighter"><Price amount={currentPrice} /></span>
+                    {currentPrice < product.price * 1.2 && (
+                      <del className="text-zinc-300 text-lg font-bold"><Price amount={product.price * 1.4} /></del>
+                    )}
+                  </div>
+                  <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Free Delivery Across India</p>
+                </div>
+
+                <div className="space-y-4 border-t border-zinc-100 pt-8">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Description</h3>
+                  <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                </div>
+
+                <div className="space-y-4 border-t border-zinc-100 pt-8">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Specifications</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
+                      <div key={i} className="flex items-center gap-3 text-[10px] font-black text-zinc-900 uppercase">
+                        <Check size={14} className="text-green-500" />
+                        <span>{spec}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Mobile Variant Selection inside flow */}
+                <div className="space-y-6 pt-8 border-t border-zinc-100">
+                  {colors.length > 0 && (
+                    <div className="space-y-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
+                      <div className="flex flex-wrap gap-4">
+                        {colors.map((color, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => { setSelectedColor(color.name); updateUrlParams(color.name, selectedSize); }}
+                            className={`relative w-12 h-12 rounded-full border-2 transition-all ${selectedColor === color.name ? 'border-zinc-900 scale-110' : 'border-transparent opacity-60'}`}
+                          >
+                            <img src={color.image} className="w-full h-full object-cover rounded-full p-1" alt={color.name} />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {allSizes.length > 0 && (
+                    <div className="space-y-4">
+                      <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
+                      <div className="flex flex-wrap gap-2">
+                        {allSizes.map((size, idx) => {
+                          const vMatch = product.variants.find(v => v.size?.toLowerCase() === size?.toLowerCase() && (selectedColor ? v.color?.toLowerCase() === selectedColor?.toLowerCase() : true));
+                          const isOOS = !vMatch || (Number(vMatch.stock || 0) <= 0);
+                          return (
+                            <button
+                              key={idx}
+                              disabled={isOOS}
+                              onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
+                              className={`px-6 py-4 rounded-2xl border-2 font-black text-[10px] transition-all ${selectedSize === size ? 'bg-zinc-900 text-white border-zinc-900' : 'bg-white text-zinc-900 border-zinc-100'} ${isOOS ? 'opacity-20' : ''}`}
+                            >
+                              {size}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-3 pt-8 border-t border-zinc-100">
+                  {!isOutOfStock ? (
+                    <>
+                      <button
+                        onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
+                        className="w-full h-16 bg-black text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl active:scale-95 transition-all"
+                      >
+                        <ShoppingBag size={20} /> Add to Bag
+                      </button>
+                      <button
+                        onClick={() => {
+                          const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                          navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                        }}
+                        className="w-full h-16 bg-white border-2 border-black text-black rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 active:scale-95 transition-all"
+                      >
+                        <ShieldCheck size={20} /> Secure Checkout
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={() => setShowWaitlistModal(true)} className="w-full h-16 bg-zinc-900 text-white rounded-[1.5rem] font-black uppercase tracking-widest text-[11px] flex items-center justify-center gap-3 shadow-xl">
+                      <BellRing size={20} /> Waitlist Enrollment
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {/* COLUMN 2: INFORMATION HUB (lg:col-span-5) */}
-          <div className="lg:col-span-5 space-y-8 md:space-y-12">
+          <div className="hidden lg:flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
@@ -668,26 +783,6 @@ const ProductDetails = () => {
         </div>
       </div>
 
-      {/* FLOATING MOBILE ACTION BAR */}
-      {!isOutOfStock && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-zinc-100 p-4 z-50 lg:hidden animate-in slide-in-from-bottom-full duration-500">
-          <div className="flex items-center gap-4 max-w-lg mx-auto">
-            <div className="flex-1">
-              <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Instant Access</p>
-              <Price amount={currentPrice} className="text-lg font-black text-zinc-900" />
-            </div>
-            <button
-              onClick={() => {
-                const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
-                navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
-              }}
-              className="flex-[2] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
-            >
-              <Zap size={14} fill="currentColor" /> Secure Checkout
-            </button>
-          </div>
-        </div>
-      )}
 
 
       {/* PREMIUM TABS SECTION */}
