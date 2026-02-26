@@ -98,9 +98,9 @@ const ProductCard = ({ product, onAddToCart }) => {
   if (!product?._id) return null;
 
   return (
-    <div className="group/card relative w-full mx-auto transition-all duration-500 hover:-translate-y-2">
+    <div className="group/card relative w-[181px] h-[227px] md:w-full md:h-auto md:max-w-[260px] mx-auto transition-all duration-500 hover:-translate-y-2 overflow-hidden md:overflow-visible">
       {/* IMAGE CONTAINER */}
-      <div className="relative aspect-square overflow-hidden bg-zinc-50 border border-zinc-100 mb-4 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
+      <div className="relative aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 mb-3 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
         <Link to={`/product/${product.slug || product._id}`}>
           <img
             src={product.image}

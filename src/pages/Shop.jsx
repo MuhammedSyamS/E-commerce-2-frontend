@@ -380,7 +380,7 @@ const Shop = () => {
           {/* --- MAIN GRID --- */}
           <div className="flex-1">
             {loading ? (
-              <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-6">
                 {[...Array(6)].map((_, i) => (
                   <div key={i} className="space-y-4">
                     <Skeleton className="aspect-square w-full rounded-[2rem]" />
@@ -390,7 +390,7 @@ const Shop = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
+              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-6 relative z-10">
                 {products.length > 0 ? (
                   products.map((product, idx) => (
                     <div
