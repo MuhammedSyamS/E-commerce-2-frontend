@@ -696,32 +696,78 @@ const ProductDetails = () => {
           <h2 className="text-lg font-black uppercase tracking-tight leading-tight">{product.name}</h2>
           {/* Rating */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-0.5 text-amber-400">
+            <div className="flex items-center gap-0.5 text-black">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} size={12} fill={i < Math.floor(product.rating || 5) ? 'currentColor' : 'none'} />
               ))}
             </div>
             <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{product.numReviews} Reviews</span>
           </div>
+
+          {/* Moved Description & Specs for Mobile */}
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-100 pb-1">Description</h3>
+              <p className="text-zinc-600 text-xs font-bold leading-relaxed">{product.description}</p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400 border-b border-zinc-100 pb-1">Specifications</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {['Craftsmanship', 'Limited Run', 'Sustainable', 'Priority Ship'].map((spec, i) => (
+                  <div key={i} className="flex items-center gap-1.5 text-[8px] font-black text-zinc-900 uppercase">
+                    <Check size={10} className="text-green-500" />
+                    <span>{spec}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Price */}
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 pt-2">
             <span className="text-xl font-black text-zinc-900 tracking-tighter"><Price amount={currentPrice} /></span>
             {currentPrice < product.price * 1.2 && (
               <del className="text-zinc-300 text-sm font-bold"><Price amount={product.price * 1.4} /></del>
             )}
           </div>
           <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Free Delivery Across India</p>
-          {/* Add to Bag */}
-          {!isOutOfStock ? (
-            <button
-              onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-              className="w-full h-12 bg-black text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
-            >
-              <ShoppingBag size={14} /> Add to Bag
-            </button>
-          ) : (
-            <div className="w-full h-12 bg-zinc-100 text-zinc-400 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center">Out of Stock</div>
-          )}
+
+          {/* Actions */}
+          <div className="space-y-2 pt-2">
+            {!isOutOfStock ? (
+              <>
+                <button
+                  onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
+                  className="w-full h-12 bg-black text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg"
+                >
+                  <ShoppingBag size={14} /> Add to Bag
+                </button>
+                <button
+                  onClick={() => {
+                    const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                    navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                  }}
+                  className="w-full h-12 bg-white border-2 border-black text-black rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+                >
+                  <ShieldCheck size={14} /> Secure Checkout
+                </button>
+              </>
+            ) : (
+              <div className="w-full h-12 bg-zinc-100 text-zinc-400 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center">Out of Stock</div>
+            )}
+          </div>
+
+          {/* Mobile Trust Bar */}
+          <div className="grid grid-cols-2 gap-2 pt-4 border-t border-zinc-100 mt-2">
+            <div className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-lg border border-zinc-100/50">
+              <ShieldCheck size={14} className="text-zinc-900" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">Secure Checkout</span>
+            </div>
+            <div className="flex items-center gap-2 bg-zinc-50/50 p-2 rounded-lg border border-zinc-100/50">
+              <RotateCcw size={14} className="text-zinc-900" />
+              <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">7 Days Return</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -795,7 +841,7 @@ const ProductDetails = () => {
                       <div className="flex items-baseline gap-4">
                         <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
                         <div className="flex flex-col gap-1">
-                          <div className="flex text-amber-400">
+                          <div className="flex text-black">
                             {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
                           </div>
                           <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
