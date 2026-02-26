@@ -210,7 +210,7 @@ const Navbar = () => {
         </button>
 
         {/* Message Container - Now using Flex Centering */}
-        <div className="h-full w-[280px] md:w-[400px] relative overflow-hidden mx-2">
+        <div className="h-full w-full max-w-[280px] md:max-w-[400px] relative overflow-hidden mx-2">
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
             <p className="font-black tracking-[0.2em] uppercase text-[9px] text-center">
               {messages[currentMsgIndex]}

@@ -10,6 +10,15 @@ body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Font Scaling: Root font size adjustment for mobile */
+  font-size: 16px;
+}
+
+/* Instant Responsive Images Snippet */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 @layer utilities {
@@ -129,4 +138,85 @@ em,
 
 .font-serif {
   font-family: 'Inter', sans-serif !important;
+}
+
+/* --- RESPONSIVE OVERRIDES (Specific Breakpoints) --- */
+
+/* Tablet Breakpoint: 768px */
+@media (max-width: 768px) {
+  :root {
+    font-size: 15px;
+    /* Slight scale down */
+  }
+
+  h1 {
+    font-size: 2.5rem !important;
+  }
+
+  h2 {
+    font-size: 2rem !important;
+  }
+
+  .container-responsive {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  /* Convert any fixed widths to max-width */
+  [style*="width: 1200px"],
+  [style*="width: 1000px"],
+  .fixed-width-container {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Mobile Breakpoint: 480px */
+@media (max-width: 480px) {
+  :root {
+    font-size: 14px;
+    /* More aggressive scale down */
+  }
+
+  h1 {
+    font-size: 2rem !important;
+  }
+
+  h2 {
+    font-size: 1.75rem !important;
+  }
+
+  h3 {
+    font-size: 1.5rem !important;
+  }
+
+  .container-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* Spacing Reductions */
+  .py-24 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  .py-12 {
+    padding-top: 2rem !important;
+    padding-bottom: 2rem !important;
+  }
+
+  .mb-16 {
+    margin-bottom: 2rem !important;
+  }
+
+  .mb-12 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Ensure all containers are responsive */
+  * {
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
 }
