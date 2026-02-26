@@ -42,6 +42,7 @@ const MOCK_REVIEWS = [
             comment: "Understated and elegant. The matte finish is exactly what I was looking for.",
             name: "David L.",
             role: "Analyst",
+            images: ["https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=800"],
             date: "Nov 03, 2024",
             isVerifiedPurchase: true
         }
@@ -55,6 +56,7 @@ const MOCK_REVIEWS = [
             comment: "Matches everything. The box packaging was also a delightful unboxing experience.",
             name: "Priya R.",
             role: "Owner",
+            images: ["https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=800"],
             date: "Aug 15, 2024",
             isVerifiedPurchase: true
         }
@@ -261,7 +263,7 @@ const FeaturedReviews = () => {
                         {/* Content Section (Right) */}
                         <div className="w-full md:w-2/5 p-8 md:p-12 flex flex-col h-[60vh] md:h-full overflow-y-auto bg-white">
                             <div className="flex items-center gap-4 mb-8">
-                                <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center text-xl font-serif font-bold text-zinc-900">
+                                <div className="w-14 h-14 rounded-full bg-zinc-100 flex items-center justify-center text-xl font-sans font-bold text-zinc-900">
                                     {(selectedReview.name || "U").charAt(0)}
                                 </div>
                                 <div>
@@ -276,7 +278,7 @@ const FeaturedReviews = () => {
                                         <Star key={i} size={16} fill="black" className="text-black" />
                                     ))}
                                 </div>
-                                <h3 className="text-2xl font-serif mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
+                                <h3 className="text-2xl font-sans mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
                                 <p className="text-zinc-600 leading-loose text-base font-light">
                                     {selectedReview.comment}
                                 </p>
@@ -312,7 +314,7 @@ const FeaturedReviews = () => {
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
                         Community Verified
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-serif text-zinc-900">
+                    <h2 className="text-4xl md:text-5xl font-sans text-zinc-900">
                         The Collection in the Wild
                     </h2>
                 </div>
@@ -376,7 +378,7 @@ const FeaturedReviews = () => {
                                         ) : (
                                             // Fallback Pattern for Text-Only
                                             <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-8">
-                                                <p className="font-serif text-3xl text-zinc-300 text-center leading-tight">
+                                                <p className="font-sans text-3xl text-zinc-300 text-center leading-tight">
                                                     "{r.comment?.substring(0, 50)}..."
                                                 </p>
                                             </div>
@@ -391,7 +393,7 @@ const FeaturedReviews = () => {
                                             ))}
                                         </div>
 
-                                        <h3 className="font-serif text-xl mb-4 line-clamp-3 leading-relaxed">
+                                        <h3 className="font-sans text-xl mb-4 line-clamp-3 leading-relaxed">
                                             "{r.comment}"
                                         </h3>
 

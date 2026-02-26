@@ -10,6 +10,15 @@ import FlashSaleBanner from '../components/FlashSaleBanner';
 import Reveal from '../components/Reveal';
 import Marquee from '../components/Marquee';
 import { Skeleton } from '../components/ui/Skeleton';
+import { motion, AnimatePresence } from 'framer-motion';
+import AIStylist from '../components/AIStylist';
+
+const MOCK_LOOKS = [
+  { _id: 'l1', image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Julian", lastName: "S." } },
+  { _id: 'l2', image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Elena", lastName: "R." } },
+  { _id: 'l3', image: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Marcus", lastName: "T." } },
+  { _id: 'l4', image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Sarah", lastName: "J." } }
+];
 
 
 const Home = () => {
@@ -182,7 +191,7 @@ const Home = () => {
                   <div ref={section.ref} className={`flex gap-6 md:gap-8 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10' : 'flex-wrap justify-center'}`}>
                     {products.length > 0 ? (
                       section.items.map((product) => (
-                        <div key={product._id} className={`${activeView === 'all' ? 'min-w-[70%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}><ProductCard product={product} /></div>
+                        <div key={product._id} className={`${activeView === 'all' ? 'min-w-[48%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}><ProductCard product={product} /></div>
                       ))
                     ) : (
                       [...Array(4)].map((_, i) => (
@@ -220,10 +229,67 @@ const Home = () => {
         </React.Fragment>
       ))}
 
-
       {activeView === 'all' && (
         <Reveal width="100%">
           <FeaturedReviews />
+        </Reveal>
+      )}
+
+      {activeView === 'all' && (
+        <Reveal width="100%">
+          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
+            <div className="flex justify-between items-end mb-12">
+              <div>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
+                <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Community Curation #StyledBySLOOK</p>
+              </div>
+              <Link to="/looks" className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {MOCK_LOOKS.map((look) => (
+                <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
+                  <img src={look.image} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
+                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
+                    <p className="text-[8px] font-black text-white uppercase tracking-widest">@{look.user.firstName}{look.user.lastName}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </Reveal>
+      )}
+
+      {activeView === 'all' && (
+        <Reveal width="100%">
+          <section className="container-responsive py-12 md:py-24 bg-zinc-950 text-white overflow-hidden relative rounded-[3rem] mb-12">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 blur-[120px] rounded-full -mr-32 -mt-32"></div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8 relative z-10 px-8">
+              <div className="space-y-4">
+                <p className="text-amber-500 text-[10px] font-black uppercase tracking-[0.4em]">Elite Rewards</p>
+                <h2 className="text-4xl md:text-7xl font-black uppercase tracking-tighter leading-[0.9]">Loyalty <br /> <span className="text-zinc-800">Milestones.</span></h2>
+              </div>
+              <div className="max-w-xs">
+                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-6">Earn coins on every artifact purchase. Unlock exclusive tiers and baseline rewards.</p>
+                <Link to="/account/loyalty" className="text-[10px] font-black uppercase tracking-[0.2em] bg-white text-black px-8 py-4 rounded-full hover:bg-zinc-200 transition-all">View My Ledger</Link>
+              </div>
+            </div>
+
+            <div className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar pb-10 px-8 snap-x relative z-10">
+              {[
+                { tier: 'Bronze', spend: '0', color: 'from-orange-700 to-orange-900', perk: 'Base Tier' },
+                { tier: 'Silver', spend: '5,000', color: 'from-zinc-300 to-zinc-500', perk: '1.2x Coins' },
+                { tier: 'Gold', spend: '20,000', color: 'from-amber-400 to-amber-600', perk: '1.5x Coins' },
+                { tier: 'Platinum', spend: '50,000', color: 'from-zinc-100 to-zinc-400', perk: '2x Coins' }
+              ].map((m, i) => (
+                <div key={i} className="min-w-[280px] bg-zinc-900/50 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] snap-center group hover:border-amber-500/30 transition-all">
+                  <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${m.color} mb-8 shadow-lg group-hover:scale-110 transition-transform`}></div>
+                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Elite {m.tier}</h3>
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Unlocked at ₹{m.spend}</p>
+                  <p className="text-xs font-black uppercase text-amber-500">{m.perk}</p>
+                </div>
+              ))}
+            </div>
+          </section>
         </Reveal>
       )}
 
@@ -242,13 +308,14 @@ const Home = () => {
               <button onClick={() => scroll(recentlyViewedRef, 'right')} className="hidden md:block absolute -right-2 md:-right-20 top-[35%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-colors"><ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
               <div ref={recentlyViewedRef} className="flex gap-6 md:gap-8 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10">
                 {recentlyViewed.map((product) => (
-                  <div key={product._id} className="min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start flex-shrink-0"><ProductCard product={product} /></div>
+                  <div key={product._id} className="min-w-[48%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start flex-shrink-0"><ProductCard product={product} /></div>
                 ))}
               </div>
             </div>
           </section>
         </Reveal>
       )}
+      {recentlyViewed.length > 0 && activeView === 'all' && <AIStylist />}
     </div>
   );
 };

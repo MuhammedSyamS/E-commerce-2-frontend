@@ -260,6 +260,10 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
+            <Link to="/community" className="text-white hover:text-zinc-400 transition group relative">
+              COMMUNITY
+              <span className="absolute -top-1 -right-4 bg-red-600 text-[6px] px-1 rounded animate-pulse text-white">LIVE</span>
+            </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
           </div>
 

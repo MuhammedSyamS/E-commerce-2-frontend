@@ -14,7 +14,10 @@ const MOCK_LOOKS = [
         caption: "The 2026 Collection - Modern Essentials",
         user: { firstName: "Julian", lastName: "S.", avatar: "https://i.pravatar.cc/150?u=julian" },
         likes: [],
-        products: []
+        products: [
+            { _id: 'p1', name: "Obsidian Signet", price: 8900, image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=400", x: 45, y: 30, slug: 'obsidian-ring' },
+            { _id: 'p2', name: "Sterling Chain", price: 12500, image: "https://images.pexels.com/photos/9953654/pexels-photo-9953654.jpeg?auto=compress&cs=tinysrgb&w=400", x: 60, y: 50, slug: 'sterling-silver-chain' }
+        ]
     },
     {
         _id: 'mock-2',
@@ -144,7 +147,7 @@ const SocialFeed = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto no-scrollbar space-y-8">
-                        <p className="text-lg font-medium text-zinc-800 leading-relaxed italic transform -skew-x-3">
+                        <p className="text-lg font-medium text-zinc-800 leading-relaxed">
                             "{look.caption}"
                         </p>
 
@@ -201,7 +204,7 @@ const SocialFeed = () => {
 
                 {/* HEADER */}
                 <div className="text-center mb-16 space-y-6">
-                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter italic transform -skew-x-3">
+                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter">
                         Styled by <span className="text-zinc-300">Community</span>
                     </h1>
                     <div className="flex flex-col items-center gap-6">
@@ -245,7 +248,8 @@ const SocialFeed = () => {
                                     <div className="p-5">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
-                                                <img src={look.user?.avatar || "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-6 h-6 rounded-full grayscale group-hover:grayscale-0 transition-all border border-zinc-100" alt="" />
+                                                <img src={look.user?.avatar || "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-6 h-6 rounded-full group-hover:scale-110 transition-all border border-zinc-100"
+                                                    alt="" />
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 leading-none">{look.user?.firstName} {look.user?.lastName}</p>
                                                     <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Verified Style</p>

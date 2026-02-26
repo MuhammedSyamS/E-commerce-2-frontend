@@ -23,6 +23,9 @@ const Checkout = () => {
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [isGift, setIsGift] = useState(false);
   const [giftNote, setGiftNote] = useState('');
+  const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
+
+  const loyaltyDiscount = useLoyaltyPoints ? Math.min(calculateSubtotal(), user?.loyaltyPoints || 0) : 0;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -343,7 +346,7 @@ const Checkout = () => {
           {step === 'shipping' ? 'Back to Bag' : 'Change Method'}
         </button>
 
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12">
+        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 italic transform -skew-x-3">
           Secure Checkout
         </h1>
 
@@ -419,19 +422,19 @@ const Checkout = () => {
                   </div>
 
                   {/* PREMIUM GIFT OPTIONS */}
-                  <div className="bg-zinc-50 p-6 rounded-3xl space-y-6 border border-zinc-100">
+                  <div className={`p-6 rounded-3xl space-y-6 border transition-all duration-500 ${isGift ? 'bg-zinc-950 text-white border-black shadow-2xl' : 'bg-zinc-50 border-zinc-100'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 bg-white rounded-xl shadow-sm"><Gift size={18} className="text-zinc-900" /></div>
+                        <div className={`p-2 rounded-xl shadow-sm transition-colors ${isGift ? 'bg-white/10' : 'bg-white'}`}><Gift size={18} className={isGift ? 'text-white' : 'text-zinc-900'} /></div>
                         <div>
-                          <p className="text-xs font-black uppercase tracking-tight">Gift Options</p>
-                          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Add a personal message</p>
+                          <p className="text-xs font-black uppercase tracking-tight italic transform -skew-x-3">Elite Gift Packaging</p>
+                          <p className={`text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => setIsGift(!isGift)}
-                        className={`w-12 h-6 rounded-full transition-colors relative ${isGift ? 'bg-black' : 'bg-zinc-200'}`}
+                        className={`w-12 h-6 rounded-full transition-colors relative ${isGift ? 'bg-amber-500' : 'bg-zinc-200'}`}
                       >
                         <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isGift ? 'left-7' : 'left-1'}`} />
                       </button>
@@ -441,7 +444,7 @@ const Checkout = () => {
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                         <textarea
                           placeholder="WRITE A NOTE..."
-                          className="w-full bg-white border border-zinc-100 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-black transition-all"
+                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-white transition-all text-white placeholder:text-zinc-600"
                           value={giftNote}
                           onChange={(e) => setGiftNote(e.target.value)}
                         />
@@ -555,14 +558,38 @@ const Checkout = () => {
               </div>
 
               <div className="space-y-3 border-t border-dashed border-zinc-200 pt-6">
+                {/* LOYALTY POINTS REDEMPTION */}
+                {user?.loyaltyPoints > 0 && (
+                  <div className={`p-4 rounded-2xl border transition-all cursor-pointer mb-4 ${useLoyaltyPoints ? 'bg-amber-50 border-amber-200' : 'bg-white border-zinc-100'}`} onClick={() => setUseLoyaltyPoints(!useLoyaltyPoints)}>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
+                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
+                        </div>
+                      </div>
+                      <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
+                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${useLoyaltyPoints ? 'left-4.5' : 'left-0.5'}`} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Subtotal</span>
                   <Price amount={subtotal} />
                 </div>
                 {discountAmount > 0 && (
                   <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-600">
-                    <span>Discount</span>
+                    <span>Coupon Discount</span>
                     <Price amount={discountAmount} />
+                  </div>
+                )}
+                {loyaltyDiscount > 0 && (
+                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-amber-600">
+                    <span>Loyalty Redemption</span>
+                    <span>-₹{loyaltyDiscount}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
@@ -573,9 +600,9 @@ const Checkout = () => {
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
-                <div className="flex justify-between text-xl font-black uppercase pt-2">
+                <div className="flex justify-between text-xl font-black uppercase pt-2 italic transform -skew-x-3">
                   <span>Total</span>
-                  <Price amount={total} />
+                  <Price amount={Math.max(0, total - loyaltyDiscount)} />
                 </div>
               </div>
 

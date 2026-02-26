@@ -109,6 +109,19 @@ body {
 /* --- FIX ITALICS & SKEWS --- */
 /* Only force normal style on elements that shouldn't be italicized unexpectedly, 
    but allow explicit italics classes to work */
-*:not(.italic) {
-  font-style: normal;
+/* --- TYPOGRAPHY HARMONIZATION --- */
+* {
+  font-style: normal !important;
+}
+
+.font-serif {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.italic {
+  font-style: normal !important;
+}
+
+[class*="skew-x-"] {
+  transform: none !important;
 }

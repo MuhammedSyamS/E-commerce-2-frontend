@@ -398,7 +398,7 @@ const ProductDetails = () => {
                 <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
                 <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
               </div>
-              <p className="text-sm text-zinc-600 leading-relaxed mb-6 italic">"{selectedReview.comment}"</p>
+              <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
               <div className="mt-6 pt-6 border-t border-zinc-100">
                 <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
               </div>
@@ -490,45 +490,42 @@ const ProductDetails = () => {
 
           {/* COLUMN 2: INFORMATION HUB (lg:col-span-3) */}
           <div className="lg:col-span-3 space-y-12">
-            <div className="space-y-6">
-              <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                <Link to="/shop" className="hover:text-black transition-colors">Shop</Link>
-                <ChevronRight size={10} />
-                <span className="text-zinc-900">{product.category}</span>
-              </nav>
-
-              <h1 className="text-2xl lg:text-3xl font-black tracking-tight text-zinc-900 leading-[1] uppercase py-2">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-4">
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
+                <span className="w-1 h-1 bg-zinc-200 rounded-full" />
+                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
+              </div>
+              <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85]">
                 {product.name}
               </h1>
-
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
-                  ))}
-                </div>
-                <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
-                  {product.numReviews} Verified Reviews
-                </button>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1 text-amber-400">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
+                ))}
               </div>
-
-              <div className="flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-black text-zinc-900 tracking-tighter">
-                    <Price amount={currentPrice} />
-                  </span>
-                  {currentPrice < product.price * 1.2 && (
-                    <del className="text-zinc-300 text-lg font-bold">
-                      <Price amount={product.price * 1.4} />
-                    </del>
-                  )}
-                </div>
-                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                  Price Includes Global Duty & Insurance
-                </p>
-              </div>
+              <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+                {product.numReviews} Verified Reviews
+              </button>
             </div>
 
+            <div className="flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
+              <div className="flex items-baseline gap-3">
+                <span className="text-3xl font-black text-zinc-900 tracking-tighter">
+                  <Price amount={currentPrice} />
+                </span>
+                {currentPrice < product.price * 1.2 && (
+                  <del className="text-zinc-300 text-lg font-bold">
+                    <Price amount={product.price * 1.4} />
+                  </del>
+                )}
+              </div>
+              <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+                Price Includes Global Duty & Insurance
+              </p>
+            </div>
             {/* PREMIUM VARIANT UX: COLOR SWATCHES */}
             {colors.length > 0 && (
               <div className="space-y-6">
@@ -578,6 +575,9 @@ const ProductDetails = () => {
                     );
                   })}
                 </div>
+                <button className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2">
+                  <Sparkles size={16} /> AI Size Consultant
+                </button>
               </div>
             )}
 
@@ -586,8 +586,8 @@ const ProductDetails = () => {
 
           {/* COLUMN 3: CONVERSION VAULT (lg:col-span-3) */}
           <div className="lg:col-span-3 sticky top-40 h-fit space-y-8">
-            <div className="bg-white border border-zinc-100 rounded-[1.5rem] p-6 shadow-[0_24px_48px_-12px_rgba(0,0,0,0.05)] space-y-6 relative overflow-hidden group/vault">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-zinc-50 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 group-hover/vault:bg-zinc-100 transition-colors" />
+            <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] space-y-6 relative overflow-hidden group/vault">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 group-hover/vault:bg-amber-500/10 transition-colors animate-pulse" />
 
               <div className="space-y-6">
                 <div className="flex justify-between items-start">
@@ -763,7 +763,7 @@ const ProductDetails = () => {
                           const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
                           return (
                             <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                              <span className="text-[10px] font-black text-zinc-900 w-2 italic">{star}</span>
+                              <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
                               <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
                                 <motion.div
                                   initial={{ width: 0 }}
@@ -794,7 +794,7 @@ const ProductDetails = () => {
                   {/* REVIEWS LIST */}
                   <div className="lg:col-span-8 space-y-12">
                     <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                      <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase italic">Social Proof</h2>
+                      <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
                       <div className="flex items-center gap-4">
                         <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
                         <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">

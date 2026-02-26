@@ -98,7 +98,7 @@ const ProductCard = ({ product, onAddToCart }) => {
   if (!product?._id) return null;
 
   return (
-    <div className="group/card relative w-full max-w-[280px] mx-auto transition-all duration-500 hover:-translate-y-2">
+    <div className="group/card relative w-full mx-auto transition-all duration-500 hover:-translate-y-2">
       {/* IMAGE CONTAINER */}
       <div className="relative aspect-square overflow-hidden bg-zinc-50 border border-zinc-100 mb-4 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500">
         <Link to={`/product/${product.slug || product._id}`}>
@@ -191,9 +191,9 @@ const ProductCard = ({ product, onAddToCart }) => {
         {product.countInStock > 0 && !showQuickAdd && (
           <button
             onClick={handleAddToCart}
-            className="md:hidden absolute bottom-4 right-4 bg-black text-white w-10 h-10 rounded-full flex items-center justify-center shadow-xl z-20 active:scale-90 transition-all"
+            className="md:hidden absolute bottom-3 right-3 bg-black text-white w-8 h-8 rounded-full flex items-center justify-center shadow-xl z-20 active:scale-95 transition-all"
           >
-            <ShoppingBag size={16} />
+            <ShoppingBag size={14} />
           </button>
         )}
 
@@ -236,15 +236,15 @@ const ProductCard = ({ product, onAddToCart }) => {
 
       {/* PRODUCT INFO */}
       <div className="px-1 text-center">
-        <h3 className="text-[12px] font-black uppercase tracking-tight mb-1 truncate">{product.name}</h3>
+        <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
         <div className="flex items-center justify-center gap-2">
           {isFlashSale ? (
             <>
-              <Price amount={discountPrice} className="text-[12px] font-black text-red-600" />
-              <Price amount={product.price} className="text-[10px] text-zinc-400 line-through" />
+              <Price amount={discountPrice} className="text-[11px] md:text-[12px] font-black text-red-600" />
+              <Price amount={product.price} className="text-[9px] md:text-[10px] text-zinc-400 line-through" />
             </>
           ) : (
-            <Price amount={product.price} className="text-[12px] font-black" />
+            <Price amount={product.price} className="text-[11px] md:text-[12px] font-black" />
           )}
         </div>
 

@@ -15,6 +15,7 @@ import PWAInstallPrompt from './components/PWAInstallPrompt';
 const Home = lazy(() => import('./pages/Home'));
 const Shop = lazy(() => import('./pages/Shop'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const SocialFeed = lazy(() => import('./pages/SocialFeed'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -22,6 +23,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 // Account & Settings
 const Account = lazy(() => import('./pages/Account'));
 const EditProfile = lazy(() => import('./pages/EditProfile'));
+const LoyaltyLedger = lazy(() => import('./pages/account/LoyaltyLedger'));
 const AddressBook = lazy(() => import('./pages/settings/AddressBook'));
 const Notifications = lazy(() => import('./pages/settings/Notifications'));
 const Payments = lazy(() => import('./pages/settings/Payments'));
@@ -87,6 +89,7 @@ const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries')); // NE
 // const HelpCenter = lazy(() => import('./pages/help/HelpCenter')); // Replaced by earlier import or different path?
 // Keeping existing import on line 52 as: const HelpCenter = lazy(() => import('./pages/support/HelpCenter'));
 const TicketDetails = lazy(() => import('./pages/help/TicketDetails'));
+const SupportTickets = lazy(() => import('./pages/help/SupportTickets'));
 
 
 // Loading Fallback
@@ -143,6 +146,8 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/community" element={<SocialFeed />} />
+                <Route path="/looks" element={<SocialFeed />} />
                 <Route path="/faq" element={<SupportHub />} />
                 <Route path="/support" element={<SupportHub />} />
                 <Route path="/returns-portal" element={<ReturnPortal />} />
@@ -154,6 +159,7 @@ const App = () => {
 
                 {/* USER ACCOUNT ROUTES */}
                 <Route path="/account" element={<Account />} />
+                <Route path="/account/loyalty" element={<LoyaltyLedger />} />
                 <Route path="/account/edit" element={<EditProfile />} />
                 <Route path="/account/addresses" element={<AddressBook />} />
                 <Route path="/account/notifications" element={<Notifications />} />

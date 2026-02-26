@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart, CheckCircle2, Zap } from 'lucide-react'; // Added Trash2, Heart, Zap
+import { X, Minus, Plus, ShoppingBag, Trash2, ArrowRight, Ticket, Flame, Clock, Gift, ShieldCheck, ChevronLeft, ChevronRight, CheckCircle2, Heart } from 'lucide-react';
 
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
@@ -140,10 +140,10 @@ const CartDrawer = () => {
     return acc + (price * qty);
   }, 0);
 
-  // Recalculate discount if percentage based? 
-  // For now, backend returns absolute discount. 
-  // We should ideally re-verify if cart changes, but for MVP let's trust the stored discount 
-  // or clear it if cart changes significantly? 
+  // Recalculate discount if percentage based?
+  // For now, backend returns absolute discount.
+  // We should ideally re-verify if cart changes, but for MVP let's trust the stored discount
+  // or clear it if cart changes significantly?
   // Let's just use the stored discount.
   const discount = (appliedCoupon && typeof appliedCoupon.discount === 'number') ? appliedCoupon.discount : 0;
   const total = subtotal - discount;
@@ -192,6 +192,15 @@ const CartDrawer = () => {
           {cartItems.length > 0 ? (
             <>
               {/* ITEM CARDS */}
+              {/* SCARCITY ALERT */}
+              <div className="bg-red-50 border border-red-100 p-4 rounded-2xl mb-8 flex items-center gap-4 animate-pulse">
+                <div className="bg-red-500 text-white p-2 rounded-full"><Flame size={16} fill="currentColor" /></div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-tight text-red-900">High Demand Artifacts</p>
+                  <p className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Items in bag are reserved for 10:00</p>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 {cartItems.map((item) => (
                   <div key={item._id || item.product || Math.random()} className="bg-white p-4 rounded-2xl shadow-sm border border-zinc-100 flex gap-4">
@@ -206,17 +215,24 @@ const CartDrawer = () => {
                         </div>
                         {item.selectedVariant && (
                           <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">
-                            {item.selectedVariant.size && `Size ${item.selectedVariant.size}`}
+                            {item.selectedVariant.size && `Size ${item.selectedVariant.size} `}
                             {item.selectedVariant.size && item.selectedVariant.color && ` / `}
                             {item.selectedVariant.color}
                           </p>
                         )}
                       </div>
                       <div className="flex justify-between items-end mt-2">
-                        <div className="flex items-center bg-[#f8f8f8] rounded-full w-fit p-1 border border-zinc-100">
-                          <button onClick={() => updateQty(item.product, item.quantity, -1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Minus size={12} /></button>
-                          <span className="w-8 text-center text-[11px] font-black">{item.quantity}</span>
-                          <button onClick={() => updateQty(item.product, item.quantity, 1, item.selectedVariant)} className="p-1 hover:text-black text-zinc-400"><Plus size={12} /></button>
+                        <div className="flex items-center gap-4 mt-3">
+                          <div className="flex items-center gap-4 bg-zinc-50 rounded-xl px-4 py-2 border border-zinc-100">
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors"><Minus size={12} /></button>
+                            <span className="font-black text-xs w-4 text-center">{item.quantity}</span>
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors"><Plus size={12} /></button>
+                          </div>
+                          {Number(item.product?.stock || 0) < 5 && (
+                            <span className="text-[8px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
+                              <Clock size={10} /> Limited Stock
+                            </span>
+                          )}
                         </div>
                         <button
                           onClick={() => handleSaveForLater(item._id)}
@@ -449,7 +465,7 @@ const CartDrawer = () => {
           </button>
         </div>}
       </div>
-    </div >
+    </div>
   );
 };
 
