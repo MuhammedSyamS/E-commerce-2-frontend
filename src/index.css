@@ -110,18 +110,23 @@ body {
 /* Only force normal style on elements that shouldn't be italicized unexpectedly, 
    but allow explicit italics classes to work */
 /* --- TYPOGRAPHY HARMONIZATION --- */
-* {
+body {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Force normal style on elements that might inherit or have italic defaults */
+i,
+em,
+.italic-forced {
   font-style: normal !important;
+}
+
+/* Targeted removal of skew if still present in some components */
+.skew-x-3,
+.-skew-x-3 {
+  transform: none !important;
 }
 
 .font-serif {
   font-family: 'Inter', sans-serif !important;
-}
-
-.italic {
-  font-style: normal !important;
-}
-
-[class*="skew-x-"] {
-  transform: none !important;
 }

@@ -190,7 +190,7 @@ const Home = () => {
                   )}
                   <div ref={section.ref} className={`flex gap-6 md:gap-8 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10' : 'flex-wrap justify-center'}`}>
                     {products.length > 0 ? (
-                      section.items.map((product) => (
+                      section.items.filter(p => p && p._id).map((product) => (
                         <div key={product._id} className={`${activeView === 'all' ? 'min-w-[48%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}><ProductCard product={product} /></div>
                       ))
                     ) : (
@@ -246,11 +246,11 @@ const Home = () => {
               <Link to="/looks" className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {MOCK_LOOKS.map((look) => (
+              {MOCK_LOOKS.filter(look => look && look.user).map((look) => (
                 <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
                   <img src={look.image} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p className="text-[8px] font-black text-white uppercase tracking-widest">@{look.user.firstName}{look.user.lastName}</p>
+                    <p className="text-[8px] font-black text-white uppercase tracking-widest">@{look.user?.firstName}{look.user?.lastName}</p>
                   </div>
                 </Link>
               ))}
@@ -307,7 +307,7 @@ const Home = () => {
               <button onClick={() => scroll(recentlyViewedRef, 'left')} className="hidden md:block absolute -left-2 md:-left-20 top-[35%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-colors"><ChevronLeft className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
               <button onClick={() => scroll(recentlyViewedRef, 'right')} className="hidden md:block absolute -right-2 md:-right-20 top-[35%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-colors"><ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
               <div ref={recentlyViewedRef} className="flex gap-6 md:gap-8 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10">
-                {recentlyViewed.map((product) => (
+                {recentlyViewed.filter(p => p && p._id).map((product) => (
                   <div key={product._id} className="min-w-[48%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start flex-shrink-0"><ProductCard product={product} /></div>
                 ))}
               </div>
