@@ -390,7 +390,7 @@ const Shop = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-6 relative z-10">
+              <div className="flex flex-wrap justify-center lg:grid lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 md:gap-6 relative z-10">
                 {products.length > 0 ? (
                   products.map((product, idx) => (
                     <div
