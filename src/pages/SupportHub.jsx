@@ -35,7 +35,6 @@ const SupportHub = () => {
     const faqs = [
         { q: "How do I track my order?", a: "Once your order is shipped, you will receive a tracking ID via email and SMS. You can also track it in the 'My Orders' section of your account.", cat: "Ordering" },
         { q: "What is your return policy?", a: "We offer a 7-day hassle-free return and exchange policy for most items. Items must be unworn and in original packaging.", cat: "Returns" },
-        { q: "How do loyalty points work?", a: "SLOOK Coins are earned on every purchase (₹100 = 1 Coin). You can redeem them at checkout to save on your next order.", cat: "Loyalty" },
         { q: "Do you ship internationally?", a: "Currently, we ship only within India. We are working on expanding our reach globally soon!", cat: "Shipping" },
         { q: "Can I cancel my order?", a: "Orders can be cancelled before they are shipped. Visit 'My Orders' to see the cancellation option.", cat: "Ordering" }
     ];
@@ -46,7 +45,7 @@ const SupportHub = () => {
     );
 
     return (
-        <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20">
+        <div className="bg-white min-h-screen pt-24 md:pt-32 pb-20">
             <Helmet>
                 <title>Support Hub | SLOOK</title>
             </Helmet>
@@ -128,14 +127,14 @@ const SupportHub = () => {
                         <ShieldCheck size={120} />
                     </div>
                     <h2 className="text-2xl font-black uppercase mb-4">Still need help?</h2>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8">Our expert concierge team is available 24/7</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8">Our expert support team is available 24/7</p>
 
                     {!showForm ? (
                         <button
                             onClick={() => setShowForm(true)}
                             className="bg-white text-black px-10 py-4 rounded-full font-black uppercase text-[10px] tracking-widest hover:bg-zinc-100 transition-transform active:scale-95"
                         >
-                            Contact Concierge
+                            Contact Support
                         </button>
                     ) : (
                         <form onSubmit={handleTicketSubmit} className="max-w-md mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4">
@@ -176,7 +175,7 @@ const SupportHub = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 

@@ -225,8 +225,8 @@ const Navbar = () => {
       </div>
 
       {/* MAIN NAV */}
-      <nav className={`transition-all duration-700 relative mx-4 mt-3 rounded-2xl border border-white/10 ${isScrolled || isMenuOpen || isAdminRoute ? 'bg-black/90 backdrop-blur-2xl shadow-xl' : 'bg-black/30 backdrop-blur-xl'}`}>
-        <div className="w-full px-8 flex items-center h-20">
+      <nav className={`transition-all duration-700 relative border-b border-white/10 ${isScrolled || isMenuOpen || isAdminRoute ? 'bg-black/95 shadow-xl' : 'bg-black/40'}`}>
+        <div className="container mx-auto px-4 md:px-6 flex items-center h-16 md:h-20">
 
           {/* 1. LEFT SECTION (LOGO) */}
           <div className="flex-1 flex items-center gap-2 md:gap-4">
@@ -260,10 +260,6 @@ const Navbar = () => {
           <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
-            <Link to="/social" className="text-white hover:text-zinc-400 transition group flex items-center gap-1">
-              SOCIAL
-              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" title="New Feed" />
-            </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
           </div>
 
@@ -297,7 +293,7 @@ const Navbar = () => {
                 {/* NOTIFICATION DROPDOWN */}
                 {showNotif && (
                   <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-80 border border-white/20 overflow-hidden ring-1 ring-black/5">
+                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
                       <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
                         <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
                         <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
@@ -399,12 +395,6 @@ const Navbar = () => {
                       <Link to="/wishlist" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         Wishlist
                       </Link>
-                      <Link to="/account/loyalty-ledger" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all text-amber-500">
-                        SLOOK Coins
-                      </Link>
-                      <Link to="/social" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
-                        Social Feed
-                      </Link>
                       <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                       </Link>
                       <Link
@@ -448,14 +438,25 @@ const Navbar = () => {
 
         {/* MOBILE MENU DRAWER */}
         {isMenuOpen && (
-          <div className="md:hidden absolute top-24 left-0 w-full bg-black/95 backdrop-blur-3xl rounded-3xl p-10 flex flex-col gap-8 border border-white/10 animate-in slide-in-from-top duration-500">
-            <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">New Arrivals</button>
-            <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">Best Sellers</button>
-            <Link to="/social" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 flex items-center justify-between">
-              Social Feed <span className="bg-amber-400 text-black text-[10px] px-2 py-0.5 rounded-full">NEW</span>
-            </Link>
-            <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4">Shop All</Link>
-            <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 italic">Support Hub</Link>
+          <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
+            <div className="pt-10 flex flex-col gap-6">
+              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
+              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-3xl font-black uppercase tracking-tighter">Shop All</Link>
+              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-sm font-black uppercase tracking-widest mt-4">Support Hub</Link>
+              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-sm font-black uppercase tracking-widest">Track Order</Link>
+            </div>
+
+            <div className="border-t border-white/10 pt-8">
+              {user ? (
+                <div className="flex flex-col gap-4">
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[10px]">My Account</Link>
+                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-[10px] text-left">Log Out</button>
+                </div>
+              ) : (
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[10px]">Sign In</Link>
+              )}
+            </div>
           </div>
         )}
 

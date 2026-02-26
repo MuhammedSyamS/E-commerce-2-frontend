@@ -11,50 +11,6 @@ import Reveal from '../components/Reveal';
 import Marquee from '../components/Marquee';
 import { Skeleton } from '../components/ui/Skeleton';
 
-const MOCK_LOOKS = [
-  {
-    _id: 'mock-1',
-    image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "The 2026 Collection - Modern Essentials",
-    user: { firstName: "Julian", lastName: "S.", avatar: "https://i.pravatar.cc/150?u=julian" },
-    likes: 124
-  },
-  {
-    _id: 'mock-2',
-    image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "Urban Living - Curated Design",
-    user: { firstName: "Elena", lastName: "R.", avatar: "https://i.pravatar.cc/150?u=elena" },
-    likes: 89
-  },
-  {
-    _id: 'mock-3',
-    image: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "Premium Quality - Built to Last",
-    user: { firstName: "Marcus", lastName: "T.", avatar: "https://i.pravatar.cc/150?u=marcus" },
-    likes: 215
-  },
-  {
-    _id: 'mock-4',
-    image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "Minimalist Workspace Vibes",
-    user: { firstName: "Sarah", lastName: "J.", avatar: "https://i.pravatar.cc/150?u=sarah" },
-    likes: 156
-  },
-  {
-    _id: 'mock-5',
-    image: "https://images.pexels.com/photos/4458554/pexels-photo-4458554.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "Industrial Minimalism",
-    user: { firstName: "David", lastName: "L.", avatar: "https://i.pravatar.cc/150?u=david" },
-    likes: 42
-  },
-  {
-    _id: 'mock-6',
-    image: "https://images.pexels.com/photos/5935748/pexels-photo-5935748.jpeg?auto=compress&cs=tinysrgb&w=800",
-    caption: "Monochrome Studio",
-    user: { firstName: "Alex", lastName: "K.", avatar: "https://i.pravatar.cc/150?u=alex" },
-    likes: 310
-  }
-];
 
 const Home = () => {
   const location = useLocation();
@@ -63,7 +19,6 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const [looks, setLooks] = useState([]); // NEW: Community Looks
   const [scrollY, setScrollY] = useState(0);
   const { user } = useStore();
 
@@ -71,7 +26,6 @@ const Home = () => {
   const bestSellersSectionRef = useRef(null);
   const trendingRef = useRef(null);
   const recentlyViewedRef = useRef(null);
-  const socialRef = useRef(null);
 
   const slides = [
     { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Modern Essentials" },
@@ -101,17 +55,6 @@ const Home = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const fetchLooks = async () => {
-      try {
-        const { data } = await api.get('/looks');
-        setLooks(data);
-      } catch (err) {
-        console.error("Home Looks Fetch Error:", err);
-      }
-    };
-    fetchLooks();
-  }, []);
 
   useEffect(() => {
     const fetchRecentlyViewed = async () => {
@@ -212,7 +155,7 @@ const Home = () => {
               <button onClick={nextSlide} className="text-white/50 hover:text-white transition-colors pointer-events-auto"><ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
             </div>
           </section>
-          <Marquee text="Elite Artifacts • Timeless Quality • Studio Drops • Handpicked Originals •" />
+          <Marquee text="Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •" />
         </>
       )}
 
@@ -220,7 +163,7 @@ const Home = () => {
         <React.Fragment key={section.id}>
           {(activeView === 'all' || activeView === section.id) && (
             <Reveal width="100%" delay={idx * 0.1}>
-              <section id={section.id} className={`max-w-[1440px] mx-auto px-4 md:px-24 py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
+              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
                 <div className="flex justify-between items-end mb-12">
                   <div>
                     <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
@@ -239,7 +182,7 @@ const Home = () => {
                   <div ref={section.ref} className={`flex gap-6 md:gap-8 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10' : 'flex-wrap justify-center'}`}>
                     {products.length > 0 ? (
                       section.items.map((product) => (
-                        <div key={product._id} className={`${activeView === 'all' ? 'min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}><ProductCard product={product} /></div>
+                        <div key={product._id} className={`${activeView === 'all' ? 'min-w-[70%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start' : 'w-[45%] md:w-[22%]'} flex-shrink-0`}><ProductCard product={product} /></div>
                       ))
                     ) : (
                       [...Array(4)].map((_, i) => (
@@ -263,7 +206,7 @@ const Home = () => {
                   <img src="https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600" className="w-full h-full object-cover opacity-70" alt="Brand Heritage" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-r from-black via-black/30 to-transparent"></div>
                 </div>
-                <div className="container mx-auto px-6 md:px-16 relative z-10 text-white">
+                <div className="container-responsive relative z-10 text-white">
                   <div className="max-w-3xl">
                     <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.6em] mb-4">SLOOK Heritage</p>
                     <h2 className="text-5xl md:text-9xl font-black uppercase leading-[0.85] mb-8 tracking-tighter">Timeless <br /> Quality.</h2>
@@ -284,83 +227,10 @@ const Home = () => {
         </Reveal>
       )}
 
-      {/* STYLED BY YOU - SOCIAL PROOF */}
-      {activeView === 'all' && (
-        <Reveal width="100%">
-          <section className="bg-zinc-50 py-24 border-t border-zinc-200">
-            <div className="max-w-[1440px] mx-auto px-4 md:px-24 mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-2">Community</p>
-                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic transform -skew-x-3">Styled by <span className="text-zinc-400">You</span></h2>
-              </div>
-              <Link to="/social" className="px-8 py-4 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-lg hover:shadow-xl">
-                View Gallery <ArrowRight size={14} />
-              </Link>
-            </div>
-
-            <div className="max-w-[1440px] mx-auto px-4 md:px-24">
-              <div className="relative flex items-center group/social-scroller">
-                <button onClick={() => scroll(socialRef, 'left')} className="hidden md:block absolute -left-4 md:-left-20 top-[40%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-all hover:scale-110 active:scale-95"><ChevronLeft className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
-                <button onClick={() => scroll(socialRef, 'right')} className="hidden md:block absolute -right-4 md:-right-20 top-[40%] -translate-y-1/2 z-50 text-zinc-300 hover:text-black transition-all hover:scale-110 active:scale-95"><ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
-
-                <div ref={socialRef} className="flex gap-6 overflow-x-auto no-scrollbar scroll-smooth pb-10 snap-x snap-mandatory w-full">
-
-                  {/* UPLOAD CTA CARD - FIXED AS FIRST ITEM */}
-                  <Link to="/account?action=upload" className="min-w-[280px] md:min-w-[320px] bg-white rounded-[2rem] border-2 border-dashed border-zinc-300 hover:border-black transition-all duration-500 snap-center flex flex-col items-center justify-center p-8 text-center gap-6 shadow-sm hover:shadow-xl group">
-                    <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400 group-hover:bg-black group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
-                      <Plus size={36} />
-                    </div>
-                    <div>
-                      <p className="text-2xl font-black uppercase italic tracking-tighter">You're Next</p>
-                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Upload Your Look</p>
-                    </div>
-                  </Link>
-
-                  {/* REAL LOOKS */}
-                  {(Array.isArray(looks) && looks.length > 0 ? looks : MOCK_LOOKS).map((look) => (
-                    <div key={look._id} className="min-w-[280px] md:min-w-[320px] bg-white rounded-[2rem] overflow-hidden border border-zinc-100 shadow-lg hover:shadow-2xl transition-all duration-500 group cursor-pointer snap-center" onClick={() => navigate('/social')}>
-
-                      {/* Image Container */}
-                      <div className="relative overflow-hidden aspect-[4/5]">
-                        <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                          <div className="bg-white/90 backdrop-blur-md p-3 rounded-full shadow-xl hover:scale-110 transition-transform">
-                            <ShoppingBag size={18} />
-                          </div>
-                        </div>
-                        <img src={look.image} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt={look.caption} />
-                      </div>
-
-                      {/* Content Below */}
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <img src={look.user?.avatar || `https://ui-avatars.com/api/?name=${look.user?.firstName || 'U'}`} className="w-9 h-9 rounded-full border border-zinc-100 object-cover" />
-                            <div>
-                              <p className="text-[11px] font-black uppercase tracking-tight text-zinc-900 leading-none">{look.user?.firstName}</p>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Verified Style</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1.5 bg-zinc-50 px-3 py-1.5 rounded-full">
-                            <Heart size={14} className="text-zinc-400 fill-zinc-100 group-hover:fill-red-50 group-hover:text-red-500 transition-colors" />
-                            <span className="text-[10px] font-black text-zinc-500">{look.likes?.length || 0}</span>
-                          </div>
-                        </div>
-                        <p className="text-xs font-medium text-zinc-600 leading-relaxed line-clamp-2">
-                          "{look.caption}"
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </section>
-        </Reveal>
-      )}
 
       {activeView === 'all' && user && recentlyViewed.length > 0 && (
         <Reveal width="100%">
-          <section className="max-w-[1440px] mx-auto px-4 md:px-24 py-24 relative bg-zinc-50 border-t border-zinc-100">
+          <section className="container-responsive py-12 md:py-24 relative bg-zinc-50 border-t border-zinc-100">
             <div className="flex justify-between items-end mb-12">
               <div>
                 <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Recently Viewed</h2>
@@ -373,42 +243,6 @@ const Home = () => {
               <div ref={recentlyViewedRef} className="flex gap-6 md:gap-8 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-8 md:px-0 pb-10">
                 {recentlyViewed.map((product) => (
                   <div key={product._id} className="min-w-[40%] sm:min-w-[45%] md:min-w-[28%] lg:min-w-[21%] snap-center md:snap-start flex-shrink-0"><ProductCard product={product} /></div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </Reveal>
-      )}
-      {activeView === 'all' && (
-        <Reveal width="100%">
-          <section className="bg-white py-24 pb-48">
-            <div className="max-w-[1440px] mx-auto px-4 md:px-24">
-              <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-600 mb-2">Privilege</p>
-                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic transform -skew-x-3">Loyalty <span className="text-zinc-300">Milestones</span></h2>
-                </div>
-                <button onClick={() => navigate('/account')} className="text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black transition-all">Join the Elite</button>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                {[
-                  { tier: 'Bronze', spend: 'Starts at ₹0', perk: '1.0x Elite Coins', icon: Award, color: 'text-amber-700' },
-                  { tier: 'Silver', spend: '₹10k+ Spent', perk: '1.2x Elite Coins', icon: ShieldCheck, color: 'text-blue-600' },
-                  { tier: 'Gold', spend: '₹50k+ Spent', perk: '1.5x Elite Coins', icon: Star, color: 'text-amber-500' },
-                  { tier: 'Platinum', spend: '₹1 Lakh+', perk: '2.0x Elite Coins', icon: Crown, color: 'text-zinc-900' }
-                ].map((m, i) => (
-                  <div key={i} className="group p-8 rounded-[2.5rem] bg-zinc-50 border border-zinc-100 hover:bg-white hover:border-zinc-800 hover:shadow-2xl transition-all duration-500">
-                    <div className={`w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center mb-6 group-hover:scale-110 transition-transform ${m.color}`}>
-                      <m.icon size={28} />
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">{m.spend}</p>
-                    <h3 className="text-2xl font-black uppercase tracking-tighter mb-4 italic">{m.tier}</h3>
-                    <div className="flex items-center gap-2 text-zinc-600">
-                      <Zap size={12} fill="currentColor" />
-                      <span className="text-[11px] font-bold uppercase tracking-tight">{m.perk}</span>
-                    </div>
-                  </div>
                 ))}
               </div>
             </div>

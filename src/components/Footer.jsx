@@ -38,7 +38,7 @@ const Footer = () => {
 
       {/* --- TRUST BAR (Inverted to Dark) --- */}
       <div className="border-b border-zinc-900 py-10 px-6">
-        <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+        <div className="container-responsive grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
           <div className="flex flex-col items-center gap-2 group cursor-default">
             <Truck size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
             <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Free Shipping</p>
@@ -54,17 +54,17 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-6 pt-20 pb-12">
+      <div className="container-responsive pt-20 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
 
           {/* BRAND STORY */}
-          <div className="lg:col-span-3 space-y-6">
-            <h2 className="text-4xl font-black uppercase tracking-tighter italic text-white">SLOOK</h2>
+          <div className="lg:col-span-3 space-y-6 text-center lg:text-left">
+            <h2 className="text-4xl font-black uppercase tracking-tighter text-white">SLOOK</h2>
             <p className="text-zinc-500 text-xs leading-relaxed max-w-sm font-medium">
               Premium essentials for the modern lifestyle.
               Curated for quality, designed for life.
             </p>
-            <div className="flex gap-6 pt-4">
+            <div className="flex justify-center lg:justify-start gap-6 pt-4">
               <Instagram className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
               <XIcon className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
               <Facebook className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
@@ -149,7 +149,7 @@ const Footer = () => {
         </div>
 
         {/* BOTTOM BAR */}
-        <div className="mt-24 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="mt-16 md:mt-24 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em]">
             © 2026 SLOOK. All rights reserved.
           </p>

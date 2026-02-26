@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Inter:wght@400;500;700;900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -11,20 +11,6 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
-
-/* --- FIX ITALICS & SKEWS --- */
-/* Only force normal style on elements that shouldn't be italicized unexpectedly, 
-   but allow explicit italics classes to work */
-*:not(.italic) {
-  font-style: normal;
-}
-
-/* Removed blocking transform: none !important to allow elite skews and animations */
-/* .transform,
-[class*="-skew-x-"],
-[class*="skew-x-"] {
-  transform: none !important;
-} */
 
 @layer utilities {
   .no-scrollbar::-webkit-scrollbar {
@@ -56,4 +42,73 @@ body {
     background: #a1a1aa;
     /* zinc-400 */
   }
+}
+
+/* --- RESPONSIVE UTILITIES --- */
+.container-responsive {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 640px) {
+  .container-responsive {
+    max-width: 640px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .container-responsive {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container-responsive {
+    max-width: 1024px;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container-responsive {
+    max-width: 1280px;
+  }
+}
+
+/* Responsive Grid Fixes */
+.responsive-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* --- FIX ITALICS & SKEWS --- */
+/* Only force normal style on elements that shouldn't be italicized unexpectedly, 
+   but allow explicit italics classes to work */
+*:not(.italic) {
+  font-style: normal;
 }

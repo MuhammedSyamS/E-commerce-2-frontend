@@ -99,9 +99,9 @@ const OrderDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a]">
+    <div className="min-h-screen bg-zinc-50/50 pt-24 md:pt-32 pb-20 font-sans text-[#1a1a1a]">
       {/* Increased Max Width for Desktop Table View */}
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
+      <div className="container-responsive">
 
         {/* BREADCRUMB / BACK */}
         {/* BREADCRUMB / BACK */}
@@ -139,7 +139,7 @@ const OrderDetails = () => {
                   Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic mb-4">
+              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4">
                 Order #{order._id?.slice(-6).toUpperCase()}
               </h1>
 
@@ -179,7 +179,7 @@ const OrderDetails = () => {
 
           <div className="flex flex-col items-start lg:items-end gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
-            <Price amount={order.totalPrice} className="text-4xl md:text-5xl font-black tracking-tighter italic" />
+            <Price amount={order.totalPrice} className="text-4xl md:text-5xl font-black tracking-tighter" />
           </div>
         </div>
 
@@ -198,12 +198,12 @@ const OrderDetails = () => {
           </div>
         )}
 
-        {/* ELITE FULFILLMENT VISUALIZER */}
+        {/* ORDER TRACKING */}
         <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-hidden relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
-              <h2 className="text-2xl font-black uppercase tracking-tighter italic flex items-center gap-3">
+              <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
                 <Truck className="text-black" size={24} />
                 {order.returnId ? (
                   <div className="flex flex-col">
@@ -411,7 +411,7 @@ const OrderDetails = () => {
       {/* ITEMS SECTION */}
       <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
         <div className="p-8 border-b border-zinc-100">
-          <h2 className="text-xl font-black uppercase tracking-tight italic">Order Items ({order.orderItems?.length})</h2>
+          <h2 className="text-xl font-black uppercase tracking-tight">Order Items ({order.orderItems?.length})</h2>
         </div>
 
         {/* DESKTOP TABLE VIEW (Visible on lg+) */}
@@ -585,7 +585,7 @@ const OrderDetails = () => {
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 px-4">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmModal({ ...confirmModal, show: false })} />
             <div className="relative bg-white w-full max-w-md rounded-3xl p-8 animate-in zoom-in-95 shadow-2xl overflow-y-auto max-h-[90vh]">
-              <h3 className="text-2xl font-black uppercase italic mb-2 tracking-tighter">
+              <h3 className="text-2xl font-black uppercase mb-2 tracking-tighter">
                 {confirmModal.actionType === 'cancel' ? 'Confirm Cancellation' : 'Request Service'}
               </h3>
 

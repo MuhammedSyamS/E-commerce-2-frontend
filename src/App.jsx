@@ -10,13 +10,11 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import ErrorBoundary from './components/ErrorBoundary';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
-import AIStylist from './components/AIStylist';
 
 // Lazy Load Pages
 const Home = lazy(() => import('./pages/Home'));
 const Shop = lazy(() => import('./pages/Shop'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
-const SocialFeed = lazy(() => import('./pages/SocialFeed'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -29,7 +27,6 @@ const Notifications = lazy(() => import('./pages/settings/Notifications'));
 const Payments = lazy(() => import('./pages/settings/Payments'));
 const Security = lazy(() => import('./pages/settings/Security'));
 const Settings = lazy(() => import('./pages/settings/Settings'));
-const LoyaltyLedger = lazy(() => import('./pages/account/LoyaltyLedger'));
 
 // Orders & Checkout
 const Wishlist = lazy(() => import('./pages/Wishlist'));
@@ -89,9 +86,7 @@ const AdminSupport = lazy(() => import('./pages/admin/AdminSupport'));
 const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries')); // NEW
 // const HelpCenter = lazy(() => import('./pages/help/HelpCenter')); // Replaced by earlier import or different path?
 // Keeping existing import on line 52 as: const HelpCenter = lazy(() => import('./pages/support/HelpCenter'));
-const SupportTickets = lazy(() => import('./pages/help/SupportTickets'));
 const TicketDetails = lazy(() => import('./pages/help/TicketDetails'));
-const Referrals = lazy(() => import('./pages/Referrals'));
 
 
 // Loading Fallback
@@ -153,14 +148,12 @@ const App = () => {
                 <Route path="/returns-portal" element={<ReturnPortal />} />
                 <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="/product/:slug" element={<ProductDetails />} />
-                <Route path="/social" element={<SocialFeed />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
                 <Route path="/forgot-password" element={<ForgotPassword />} />
 
                 {/* USER ACCOUNT ROUTES */}
                 <Route path="/account" element={<Account />} />
-                <Route path="/account/loyalty-ledger" element={<LoyaltyLedger />} />
                 <Route path="/account/edit" element={<EditProfile />} />
                 <Route path="/account/addresses" element={<AddressBook />} />
                 <Route path="/account/notifications" element={<Notifications />} />
@@ -234,7 +227,6 @@ const App = () => {
           {!location.pathname.startsWith('/admin') && <Footer />}
           {isCartOpen && <CartDrawer />}
           <PWAInstallPrompt />
-          <AIStylist />
         </div>
       </ToastProvider>
     </ErrorBoundary>

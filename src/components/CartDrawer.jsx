@@ -187,17 +187,6 @@ const CartDrawer = () => {
           <button onClick={() => toggleCart(false)} className="p-2 hover:bg-zinc-50 rounded-full transition"><X size={20} /></button>
         </div>
 
-        {/* FOMO TIMER */}
-        {cartItems.length > 0 && (
-          <div className="bg-zinc-900 text-white px-6 py-2 flex items-center justify-between overflow-hidden relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-red-500/20 to-transparent animate-pulse" />
-            <p className="text-[9px] font-black uppercase tracking-[0.2em] relative z-10">Items held for limited time</p>
-            <div className="flex items-center gap-2 relative z-10 font-mono text-xs font-bold text-red-400">
-              <Zap size={10} fill="currentColor" className="animate-bounce" />
-              <span>14:59</span>
-            </div>
-          </div>
-        )}
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-8">
           {cartItems.length > 0 ? (
@@ -213,7 +202,7 @@ const CartDrawer = () => {
                       <div>
                         <div className="flex justify-between items-start">
                           <p className="font-black text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name || "Unknown Product"}</p>
-                          <Price amount={item.price} className="font-black text-[11px] italic transform -skew-x-6 shrink-0" />
+                          <Price amount={item.price} className="font-black text-[11px] shrink-0" />
                         </div>
                         {item.selectedVariant && (
                           <p className="text-[9px] text-zinc-400 font-bold uppercase mt-1">
@@ -445,18 +434,11 @@ const CartDrawer = () => {
             )}
 
             <div className="flex justify-between items-end pt-2">
-              <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
+              <span className="text-sm font-black uppercase">Total</span>
               <div className="text-right">
-                <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
+                <Price amount={total} className="text-2xl font-black uppercase block leading-none" />
                 <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
               </div>
-            </div>
-            {/* FOMO MICRO-COPY */}
-            <div className="flex items-center gap-2 justify-center py-2 bg-zinc-50 rounded-lg">
-              <div className="w-1 h-1 bg-green-500 rounded-full animate-ping" />
-              <p className="text-[9px] font-bold text-zinc-500 uppercase tracking-tighter">
-                {Math.floor(Math.random() * 5 + 2)} Elite members have this in their cart
-              </p>
             </div>
           </div>
           <button

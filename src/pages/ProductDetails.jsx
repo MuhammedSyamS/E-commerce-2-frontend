@@ -2,17 +2,15 @@ import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Calendar, RotateCcw, CheckCircle2, Lock, Award, Check } from 'lucide-react';
+import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, RotateCcw, Lock, Award, Check } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
 import Price from '../components/Price';
-import SocialShare from '../components/SocialShare';
 import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
 import RecentlyViewed from '../components/RecentlyViewed';
 import TrustBadges from '../components/TrustBadges';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -55,11 +53,6 @@ const ProductDetails = () => {
   const [zoomRatio, setZoomRatio] = useState(1);
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
   const [showZoom, setShowZoom] = useState(false);
-  const [showSizeConsultant, setShowSizeConsultant] = useState(false);
-  const [height, setHeight] = useState('');
-  const [weight, setWeight] = useState('');
-  const [fitPreference, setFitPreference] = useState('Standard');
-  const [aiRecommendation, setAiRecommendation] = useState(null);
   const reviewsRef = useRef(null);
   const scrollToReviews = () => {
     setActiveTab('reviews');
@@ -321,7 +314,7 @@ const ProductDetails = () => {
 
   if (loading) return (
     <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans">
-      <div className="container mx-auto px-6 max-w-7xl">
+      <div className="container-responsive">
         <Skeleton className="h-4 w-48 mb-10 rounded-full" />
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
           <div className="lg:col-span-7">
@@ -383,7 +376,7 @@ const ProductDetails = () => {
   return (
     <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
       <Helmet>
-        <title>{`${product.name} | SLOOK Modern Essentials`}</title>
+        <title>{`${product.name} | SLOOK`}</title>
         <meta name="description" content={product.description} />
       </Helmet>
 
@@ -416,7 +409,7 @@ const ProductDetails = () => {
 
       <NotifyMeModal isOpen={showWaitlistModal} onClose={() => setShowWaitlistModal(false)} product={product} variant={selectedVariant} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container-responsive py-12">
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
 
           {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-6) */}
@@ -477,11 +470,11 @@ const ProductDetails = () => {
               {/* PRODUCT DNA SECTION */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-12 pt-4">
                 <div className="space-y-4">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">The Story</h3>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Description</h3>
                   <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80">{product.description}</p>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Artifact Specs</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Specifications</h3>
                   <div className="space-y-3">
                     {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
                       <div key={i} className="flex items-center gap-3 text-xs font-bold text-zinc-900">
@@ -499,7 +492,7 @@ const ProductDetails = () => {
           <div className="lg:col-span-3 space-y-12">
             <div className="space-y-6">
               <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-zinc-400">
-                <Link to="/shop" className="hover:text-black transition-colors">Vault</Link>
+                <Link to="/shop" className="hover:text-black transition-colors">Shop</Link>
                 <ChevronRight size={10} />
                 <span className="text-zinc-900">{product.category}</span>
               </nav>
@@ -540,7 +533,7 @@ const ProductDetails = () => {
             {colors.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Finish / {selectedColor}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
                 </div>
                 <div className="flex flex-wrap gap-4">
                   {colors.map((color, idx) => {
@@ -566,12 +559,9 @@ const ProductDetails = () => {
             {allSizes.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Proportional Fit</span>
-                  <button onClick={() => setShowSizeConsultant(true)} className="text-[9px] font-black uppercase tracking-widest text-zinc-900 flex items-center gap-1.5 hover:opacity-70 transition-opacity">
-                    <Info size={12} /> Size Advisor
-                  </button>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
                 </div>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="flex flex-wrap gap-2">
                   {allSizes.map((size, idx) => {
                     const isSelected = selectedSize === size;
                     const vMatch = product.variants.find(v => v.size?.toLowerCase() === size?.toLowerCase() && (selectedColor ? v.color?.toLowerCase() === selectedColor?.toLowerCase() : true));
@@ -606,8 +596,7 @@ const ProductDetails = () => {
                       <Price amount={currentPrice} />
                     </span>
                     <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500 italic">Available in Vault</span>
+                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">In Stock</span>
                     </div>
                   </div>
                   <button onClick={handleWishlist} className={`p-3 rounded-2xl transition-all ${isWishlisted ? 'bg-zinc-900 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900'}`}>
@@ -615,15 +604,6 @@ const ProductDetails = () => {
                   </button>
                 </div>
 
-                {/* STOCK URGENCY SIGNAL */}
-                {currentStock < 10 && currentStock > 0 && (
-                  <div className="bg-amber-50 rounded-xl p-4 border border-amber-100 flex items-center gap-3">
-                    <Loader2 size={16} className="text-amber-600 animate-spin" />
-                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">
-                      High Demand: Only {currentStock} Left
-                    </p>
-                  </div>
-                )}
               </div>
 
               {!isOutOfStock && (
@@ -645,15 +625,6 @@ const ProductDetails = () => {
                     >
                       <ShoppingBag size={16} /> Add to Bag
                     </button>
-                    <button
-                      onClick={() => {
-                        const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
-                        navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
-                      }}
-                      className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                    >
-                      <Zap size={16} fill="currentColor" /> Buy it Now
-                    </button>
                   </div>
                 </div>
               )}
@@ -671,15 +642,15 @@ const ProductDetails = () => {
               <div className="pt-6 flex items-center justify-center gap-6">
                 <div className="flex flex-col items-center gap-2">
                   <RotateCcw size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">7 Day Returns</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Returns</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Lock size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Secure Vault</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Secure Payment</span>
                 </div>
                 <div className="flex flex-col items-center gap-2">
                   <Award size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Authentic</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Authentic Product</span>
                 </div>
               </div>
             </div>
@@ -709,7 +680,7 @@ const ProductDetails = () => {
       )}
 
       {/* PREMIUM TABS SECTION */}
-      <div className="max-w-7xl mx-auto px-6">
+      <div className="container-responsive">
         <div ref={reviewsRef} className="mt-32 space-y-12">
           <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
             {['story', 'specifications', 'reviews'].map((tab) => (
@@ -728,7 +699,7 @@ const ProductDetails = () => {
             {activeTab === 'story' && (
               <div className="max-w-4xl animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="prose prose-zinc prose-invert max-w-none">
-                  <p className="text-lg md:text-xl font-bold text-zinc-900 leading-relaxed border-l-4 border-[#1a1a1a] pl-8 mb-12 py-2">
+                  <p className="text-sm md:text-base font-medium text-zinc-600 leading-relaxed mb-12 py-2">
                     {product.description}
                   </p>
                 </div>

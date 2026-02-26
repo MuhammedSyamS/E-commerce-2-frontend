@@ -112,7 +112,7 @@ const Shop = () => {
     <div className={`space-y-14 ${isMobile ? 'pr-2' : ''}`}>
       {/* Status Section */}
       <section className="space-y-6">
-        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Artifact Status</h4>
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Status</h4>
         <div className="grid grid-cols-3 gap-2">
           {[
             { id: 'inStock', label: 'Stock' },
@@ -135,7 +135,7 @@ const Shop = () => {
       {/* Categories */}
       <section className="space-y-8">
         <div className="space-y-6">
-          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Main Category</h4>
+          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Category</h4>
           <div className="flex flex-wrap gap-2">
             {categories.map(cat => (
               <button
@@ -153,7 +153,7 @@ const Shop = () => {
 
         {subcategories.length > 0 && (
           <div className="space-y-6">
-            <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Sub-Style</h4>
+            <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Subcategory</h4>
             <div className="flex flex-wrap gap-2">
               {subcategories.map(s => (
                 <button
@@ -174,7 +174,7 @@ const Shop = () => {
       {/* Colors */}
       <section className="space-y-6">
         <div className="flex justify-between items-end">
-          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Visual Tints</h4>
+          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Color</h4>
           {filters.color && <button onClick={() => setFilters({ ...filters, color: '' })} className="text-[10px] font-bold text-zinc-400 hover:text-red-500 uppercase tracking-widest">Clear</button>}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -207,7 +207,7 @@ const Shop = () => {
 
       {/* Sizes */}
       <section className="space-y-6">
-        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Dimension Spec</h4>
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Size</h4>
         <div className="flex flex-wrap gap-3">
           {availableSizes.map(s => (
             <button
@@ -226,7 +226,7 @@ const Shop = () => {
 
       {/* Price Range */}
       <section className="space-y-6">
-        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Valuation (₹)</h4>
+        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Price (₹)</h4>
         <div className="flex items-center gap-3">
           <input
             type="number"
@@ -268,7 +268,7 @@ const Shop = () => {
   return (
     <div className="bg-white min-h-screen pb-20 selection:bg-black selection:text-white overflow-hidden">
       <Helmet>
-        <title>The Collection | SLOOK Elite</title>
+        <title>The Collection | SLOOK</title>
         <meta name="description" content="Explore SLOOK's premium collection of hand-picked artifacts." />
       </Helmet>
 
@@ -278,16 +278,16 @@ const Shop = () => {
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-zinc-50 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-zinc-50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 -z-10" />
 
-        <div className="container mx-auto max-w-7xl relative">
+        <div className="container-responsive relative">
           <div className="max-w-3xl">
             <h1 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] mb-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
               The<br />
-              Collection<span className="text-zinc-200">.</span>
+              Collection
             </h1>
             <div className="flex flex-col md:flex-row md:items-center gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
               <div className="h-px w-20 bg-black hidden md:block" />
               <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-zinc-400">
-                Curated Excellence / Spring-Summer 2026 / Version 4.2
+                Spring-Summer 2026 Collection
               </p>
             </div>
           </div>
@@ -296,7 +296,7 @@ const Shop = () => {
 
       {/* --- STICKY GLASS CONTROL BAR --- */}
       <nav className="sticky top-20 z-[100] px-6 py-4 transition-all duration-500">
-        <div className="container mx-auto max-w-7xl">
+        <div className="container-responsive">
           <div className="bg-white/80 backdrop-blur-2xl border border-zinc-100 rounded-full px-6 py-2 md:px-8 md:py-3 shadow-2xl shadow-black/5 flex items-center justify-between gap-4">
 
             {/* Minimal Categories (Desktop) */}
@@ -351,14 +351,14 @@ const Shop = () => {
                 className="flex items-center gap-2 bg-black text-white px-5 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-black/10 group"
               >
                 <SlidersHorizontal size={12} strokeWidth={3} className="group-hover:rotate-180 transition-transform duration-500" />
-                <span className="hidden sm:inline italic">Specifications</span>
+                <span className="hidden sm:inline">Filters</span>
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      <div className="container mx-auto max-w-7xl px-6 pt-12">
+      <div className="container-responsive pt-12">
         <Breadcrumbs items={[
           { label: 'Shop', path: '/shop' },
           ...(category !== 'All' ? [{ label: category, path: `/shop?category=${category}` }] : [])
@@ -369,7 +369,7 @@ const Shop = () => {
           <aside className="hidden lg:block w-72 shrink-0 sticky top-48 h-[calc(100vh-240px)] overflow-y-auto no-scrollbar pb-20">
             <div className="mb-12">
               <h2 className="text-4xl font-black uppercase tracking-tighter leading-none mb-1">Catalog</h2>
-              <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-300">Curated Elite Discovery</p>
+              <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-300">Hand-Picked Selection</p>
             </div>
             <FilterContent />
             <div className="mt-12 pt-10 border-t border-zinc-100">
@@ -410,7 +410,7 @@ const Shop = () => {
                       onClick={resetFilters}
                       className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
                     >
-                      Reset Discovery
+                      Reset Filters
                     </button>
                   </div>
                 )}
@@ -437,7 +437,7 @@ const Shop = () => {
             <div className="flex items-center justify-between mb-12">
               <div>
                 <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">Catalog</h2>
-                <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Explorer / Elite Specification</p>
+                <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Products</p>
               </div>
               <button
                 onClick={() => setIsDrawerOpen(false)}
@@ -462,7 +462,7 @@ const Shop = () => {
                 onClick={() => setIsDrawerOpen(false)}
                 className="flex-[2] py-5 bg-white text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.4em] hover:bg-zinc-100 active:scale-95 transition-all font-black shadow-2xl shadow-white/5"
               >
-                Analyze {products.length} Items
+                Show {products.length} Items
               </button>
             </div>
           </div>

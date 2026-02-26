@@ -163,13 +163,13 @@ const TrackOrder = () => {
 
   return (
     <div className="min-h-screen bg-white text-[#1a1a1a] pt-20 pb-20 px-4 md:px-10 selection:bg-black selection:text-white flex flex-col justify-center items-center">
-      <div className="max-w-4xl w-full mx-auto">
+      <div className="container-responsive">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-12 text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none italic">
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">
             {config.title} <span className="text-zinc-300">{config.subtitle}</span>
           </h1>
         </motion.div>
@@ -232,7 +232,7 @@ const TrackOrder = () => {
             >
               <div className="text-center group pt-8 flex flex-col items-center">
                 <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Live Status</p>
-                <h3 className="text-3xl font-black uppercase italic text-black tracking-tighter flex items-center gap-3">
+                <h3 className="text-3xl font-black uppercase text-black tracking-tighter flex items-center gap-3">
                   <Truck className="text-black" size={28} />
                   {orderData.orderStatus}
                 </h3>

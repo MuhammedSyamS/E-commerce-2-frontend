@@ -113,71 +113,6 @@ const Account = () => {
     </button>
   );
 
-  // Rewards Modal Component
-  const RewardsModal = () => (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
-      <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
-        <div className="p-8 bg-black text-white relative">
-          <button onClick={() => setShowRewardsModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
-          <div className="flex items-center gap-4 mb-2">
-            <div className="p-3 bg-amber-400 rounded-full text-black"><Crown size={24} /></div>
-            <h2 className="text-2xl font-black uppercase tracking-tighter">Elite <span className="text-amber-400">Rewards</span></h2>
-          </div>
-          <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.3em]">The SLOOK Privilege Program</p>
-        </div>
-
-        <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar">
-          <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
-              <div className="w-1 h-1 bg-amber-400 rounded-full"></div> Membership Tiers
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { name: 'Bronze', spend: '₹0', perks: '1.0x Coin Multiplier' },
-                { name: 'Silver', spend: '₹10k+', perks: '1.2x Coin Multiplier' },
-                { name: 'Gold', spend: '₹50k+', perks: '1.5x Coin Multiplier' },
-                { name: 'Platinum', spend: '₹1 Lakh+', perks: '2.0x Coin Multiplier' }
-              ].map(tier => (
-                <div key={tier.name} className={`p-4 rounded-2xl border ${user.membershipTier === tier.name ? 'border-amber-400 bg-amber-50' : 'border-zinc-100'}`}>
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="font-black text-sm uppercase">{tier.name}</span>
-                    <span className="text-[9px] font-bold text-zinc-500">{tier.spend}</span>
-                  </div>
-                  <p className="text-[10px] text-zinc-400 font-medium">{tier.perks}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
-              <div className="w-1 h-1 bg-amber-400 rounded-full"></div> How to Earn Coins
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                <div className="p-2 bg-white rounded-lg shadow-sm"><Package size={18} /></div>
-                <div>
-                  <p className="text-xs font-black uppercase">Shopping</p>
-                  <p className="text-[10px] text-zinc-500">Earn coins on every purchase based on your tier.</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
-                <div className="p-2 bg-white rounded-lg shadow-sm"><User size={18} /></div>
-                <div>
-                  <p className="text-xs font-black uppercase">Referrals</p>
-                  <p className="text-[10px] text-zinc-500">Earn ₹500 for every friend who makes their first purchase.</p>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <div className="p-8 border-t border-zinc-100 flex justify-end">
-          <button onClick={() => setShowRewardsModal(false)} className="px-8 py-3 bg-black text-white rounded-full font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all">Understood</button>
-        </div>
-      </div>
-    </div>
-  );
 
   const handleDeleteLook = async (lookId) => {
     if (!window.confirm("Are you sure you want to delete this look? This cannot be undone.")) return;
@@ -192,7 +127,7 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-44 md:pt-52">
+    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24 md:pt-32">
       <div className="max-w-7xl mx-auto">
         {showRewardsModal && <RewardsModal />}
 
@@ -226,31 +161,6 @@ const Account = () => {
             }}
           />
 
-          {/* LOYALTY CARD */}
-          <div className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer">
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity" onClick={() => navigate('/account/loyalty-ledger')}>
-              <Star size={100} fill="black" />
-            </div>
-            <div className="relative z-10 h-full flex flex-col">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="bg-black/10 p-2 rounded-full"><Star size={20} fill="black" /></div>
-                  <h3 className="font-black uppercase tracking-widest text-xs">SLOOK Coins</h3>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowRewardsModal(true); }}
-                  className="p-1 hover:bg-black/10 rounded-full transition-colors"
-                >
-                  <Info size={16} />
-                </button>
-              </div>
-              <div onClick={() => navigate('/account/loyalty-ledger')} className="flex-1 cursor-pointer">
-                <p className="text-4xl font-black mb-1">{user.loyaltyPoints || 0}</p>
-                <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Available Balance</p>
-                <p className="text-[10px] mt-4 font-medium opacity-60">1 Coin = ₹1. <span className="underline decoration-black/20">View Ledger</span></p>
-              </div>
-            </div>
-          </div>
 
           <AccountCard
             icon={Heart}
@@ -267,64 +177,6 @@ const Account = () => {
             onClick={() => navigate('/support-tickets')}
           />
 
-          {/* TIER CARD */}
-          <div className={`rounded-xl p-6 text-white shadow-lg relative overflow-hidden group hover:shadow-xl transition-all ${user.membershipTier === 'Platinum' ? 'bg-zinc-900 border border-zinc-800' :
-            user.membershipTier === 'Gold' ? 'bg-amber-600' :
-              user.membershipTier === 'Silver' ? 'bg-blue-600' : 'bg-green-600'
-            }`}>
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Crown size={100} fill="white" />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="bg-white/10 p-2 rounded-full"><Trophy size={20} fill="white" /></div>
-                  <h3 className="font-black uppercase tracking-widest text-xs">{user.membershipTier || 'Bronze'} Member</h3>
-                </div>
-                <button
-                  onClick={() => setShowRewardsModal(true)}
-                  className="p-1 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <Info size={16} />
-                </button>
-              </div>
-              <p className="text-4xl font-black mb-1 italic transform -skew-x-12">{user.membershipTier || 'Bronze'}</p>
-              <p className="text-[10px] font-black opacity-70 uppercase tracking-[0.3em]">Neural Tier Status</p>
-
-              {/* Progress to next tier */}
-              <div className="mt-8">
-                <div className="flex justify-between items-end mb-2">
-                  <p className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                    Rewards Progression
-                  </p>
-                  <p className="text-[11px] font-black">
-                    ₹{(user.totalSpent || 0).toLocaleString()} / ₹{
-                      user.membershipTier === 'Silver' ? '50,000' : user.membershipTier === 'Gold' ? '1,00,000' : '10,000'
-                    }
-                  </p>
-                </div>
-                <div className="w-full bg-white/20 h-2 rounded-full overflow-hidden backdrop-blur-md">
-                  <div
-                    className="bg-white h-full transition-all duration-1000 ease-out"
-                    style={{ width: `${Math.min(100, ((user.totalSpent || 0) / (user.membershipTier === 'Silver' ? 50000 : user.membershipTier === 'Gold' ? 100000 : 10000)) * 100)}%` }}
-                  ></div>
-                </div>
-                <div className="flex justify-between items-center mt-3">
-                  <p className="text-[9px] font-black uppercase tracking-widest opacity-60">
-                    Unlocked: {user.membershipTier === 'Platinum' ? 'Max Tier' : 'Standard Perks'}
-                  </p>
-                  {user.membershipTier !== 'Platinum' && (
-                    <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-full backdrop-blur-md">
-                      <Zap size={10} fill="white" />
-                      <p className="text-[8px] font-black uppercase tracking-tighter">Next: {
-                        user.membershipTier === 'Silver' ? 'Gold' : user.membershipTier === 'Gold' ? 'Platinum' : 'Silver'
-                      }</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
 
           <AccountCard
             icon={Info}

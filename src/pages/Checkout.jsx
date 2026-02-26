@@ -21,10 +21,8 @@ const Checkout = () => {
   const [couponApplied, setCouponApplied] = useState(null); // { code, discountAmount }
   const [discountError, setDiscountError] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-  const [pointsRedeemed, setPointsRedeemed] = useState(0); // NEW: Loyalty Logic
   const [isGift, setIsGift] = useState(false);
   const [giftNote, setGiftNote] = useState('');
-  const [premiumPackaging, setPremiumPackaging] = useState(false);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -67,9 +65,7 @@ const Checkout = () => {
 
   const taxPrice = (subtotal * (siteSettings.taxRate / 100));
   const shippingPrice = subtotal >= siteSettings.freeShippingThreshold ? 0 : siteSettings.shippingCharge;
-  const packagingPrice = premiumPackaging ? 250 : 0; // Premium SLOOK Packaging
-
-  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice + packagingPrice);
+  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice);
 
   const getDeliveryEstimate = () => {
     const deliveryDate = new Date();
@@ -152,16 +148,14 @@ const Checkout = () => {
         shippingPrice,
         discountAmount,
         couponCode: couponApplied?.code || (coupon?.code || ''),
-        pointsToRedeem: pointsRedeemed,
         orderNote: isGift ? `GIFT: ${giftNote}` : formData.orderNote,
-        isGift,
-        premiumPackaging
+        isGift
       };
 
       // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
       if (step !== 'cod') {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
-        const finalAmountToPay = total - (pointsRedeemed || 0);
+        const finalAmountToPay = total;
 
         console.log("PAYMENT: Starting Flow for method:", step);
         // A. Fetch Key
@@ -334,7 +328,7 @@ const Checkout = () => {
 
   return (
     <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a]">
-      <div className="container mx-auto px-6 max-w-7xl">
+      <div className="container-responsive">
 
         {/* TOP NAV */}
         <button
@@ -349,8 +343,8 @@ const Checkout = () => {
           {step === 'shipping' ? 'Back to Bag' : 'Change Method'}
         </button>
 
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 italic transform -skew-x-3">
-          Secure <span className="text-red-500">Checkout</span>
+        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12">
+          Secure Checkout
         </h1>
 
         {/* GRID LAYOUT: LEFT (FORM) | RIGHT (SUMMARY) */}
@@ -431,7 +425,7 @@ const Checkout = () => {
                         <div className="p-2 bg-white rounded-xl shadow-sm"><Gift size={18} className="text-zinc-900" /></div>
                         <div>
                           <p className="text-xs font-black uppercase tracking-tight">Gift Options</p>
-                          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Make it a SLOOK Moment</p>
+                          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Add a personal message</p>
                         </div>
                       </div>
                       <button
@@ -446,25 +440,11 @@ const Checkout = () => {
                     {isGift && (
                       <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
                         <textarea
-                          placeholder="WRITE A HEARTFELT NOTE..."
+                          placeholder="WRITE A NOTE..."
                           className="w-full bg-white border border-zinc-100 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-black transition-all"
                           value={giftNote}
                           onChange={(e) => setGiftNote(e.target.value)}
                         />
-
-                        <div
-                          onClick={() => setPremiumPackaging(!premiumPackaging)}
-                          className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${premiumPackaging ? 'border-black bg-white shadow-md' : 'border-zinc-100 opacity-60'}`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Zap size={16} className={premiumPackaging ? 'text-amber-400 fill-amber-400' : 'text-zinc-300'} />
-                            <div>
-                              <p className="text-[10px] font-black uppercase">Premium SLOOK Packaging</p>
-                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">+ ₹250.00</p>
-                            </div>
-                          </div>
-                          {premiumPackaging && <CheckCircle2 size={16} className="text-black" />}
-                        </div>
                       </div>
                     )}
                   </div>
@@ -593,9 +573,9 @@ const Checkout = () => {
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
-                <div className="flex justify-between text-xl font-black uppercase italic transform -skew-x-2 pt-2">
+                <div className="flex justify-between text-xl font-black uppercase pt-2">
                   <span>Total</span>
-                  <Price amount={total - (pointsRedeemed || 0)} />
+                  <Price amount={total} />
                 </div>
               </div>
 
@@ -609,110 +589,6 @@ const Checkout = () => {
                 <p className="text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
               </div>
 
-              {/* SLOOK COINS — MNC TIER CARD */}
-              {(() => {
-                const coins = user?.loyaltyPoints || 0;
-                const tier = user?.membershipTier || 'Bronze';
-                const MIN_REDEEM = 100;
-                const canRedeem = coins >= MIN_REDEEM;
-                const coinsToNext = MIN_REDEEM - (coins % MIN_REDEEM);
-                const progressPct = Math.min(100, ((coins % MIN_REDEEM) / MIN_REDEEM) * 100);
-
-                const tierConfig = {
-                  Bronze: { bg: 'from-amber-900/10 to-amber-700/10', border: 'border-amber-800/30', badge: 'bg-gradient-to-r from-amber-700 to-amber-500', text: 'text-amber-700', icon: '🥉', next: 'Silver', nextAt: 10000 },
-                  Silver: { bg: 'from-slate-400/10 to-slate-300/10', border: 'border-slate-400/30', badge: 'bg-gradient-to-r from-slate-500 to-slate-400', text: 'text-slate-600', icon: '🥈', next: 'Gold', nextAt: 50000 },
-                  Gold: { bg: 'from-yellow-400/10 to-amber-300/10', border: 'border-yellow-400/30', badge: 'bg-gradient-to-r from-yellow-500 to-amber-400', text: 'text-yellow-600', icon: '🥇', next: 'Platinum', nextAt: 100000 },
-                  Platinum: { bg: 'from-purple-500/10 to-indigo-400/10', border: 'border-purple-400/30', badge: 'bg-gradient-to-r from-purple-600 to-indigo-500', text: 'text-purple-600', icon: '💎', next: null, nextAt: null },
-                };
-                const t = tierConfig[tier] || tierConfig.Bronze;
-
-                if (coins === 0) return null;
-
-                return (
-                  <div className={`mt-8 bg-gradient-to-br ${t.bg} rounded-2xl border ${t.border} overflow-hidden`}>
-                    {/* Header */}
-                    <div className="flex items-center justify-between p-5 pb-3">
-                      <div className="flex items-center gap-3">
-                        <span className={`${t.badge} text-white text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-sm`}>
-                          {t.icon} {tier} Member
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-2xl font-black ${t.text} leading-none`}>{coins}</p>
-                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">SLOOK Coins</p>
-                      </div>
-                    </div>
-
-                    {/* Progress to next redeem */}
-                    <div className="px-5 pb-4">
-                      <div className="flex justify-between items-center mb-1.5">
-                        <span className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
-                          {canRedeem ? `${Math.floor(coins / MIN_REDEEM) * MIN_REDEEM} coins ready` : `${coinsToNext} more to unlock`}
-                        </span>
-                        <span className="text-[9px] font-bold text-zinc-400">Next redeem: {Math.ceil(coins / MIN_REDEEM) * MIN_REDEEM} coins</span>
-                      </div>
-                      <div className="w-full bg-black/10 rounded-full h-1.5">
-                        <div
-                          className={`h-1.5 rounded-full transition-all duration-500 ${t.badge}`}
-                          style={{ width: `${progressPct}%` }}
-                        />
-                      </div>
-                      <p className="text-[9px] font-bold text-zinc-400 mt-1.5 uppercase tracking-widest">
-                        💡 1 Coin per ₹100 (Online) / ₹500 (COD) · Tier Bonuses apply · 90-day expiry
-                      </p>
-                    </div>
-
-                    {/* Redeem Action */}
-                    <div className="px-5 pb-5">
-                      {canRedeem ? (
-                        !pointsRedeemed ? (
-                          <button
-                            onClick={() => {
-                              if (total === 0) return addToast("Cart total is 0", "info");
-                              // REFINED RULES: 
-                              // 1. Max 100 coins per order
-                              // 2. Max 30% of order value
-                              const MAX_COINS = 100;
-                              const MAX_PCT_LIMIT = Math.floor(total * 0.30);
-
-                              const limit = Math.min(MAX_COINS, MAX_PCT_LIMIT);
-                              const userBalanceAvailable = Math.floor(coins / MIN_REDEEM) * MIN_REDEEM;
-
-                              const redeemable = Math.min(userBalanceAvailable, limit);
-
-                              if (redeemable < MIN_REDEEM) {
-                                if (limit < MIN_REDEEM) {
-                                  return addToast(`Order total too low. Min 30% cap (${MAX_PCT_LIMIT}) or limit is under 100 coins.`, "info");
-                                }
-                                return addToast(`Minimum 100 coins required to redeem.`, "info");
-                              }
-
-                              setPointsRedeemed(redeemable);
-                              addToast(`🪙 ${redeemable} Coins redeemed — You save ₹${redeemable}!`, "success");
-                            }}
-                            className={`w-full ${t.badge} text-white py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest hover:opacity-90 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5`}
-                          >
-                            🪙 Redeem SLOOK Coins — Save up to ₹100
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm p-4 rounded-xl border border-green-200">
-                            <div>
-                              <p className="text-[10px] font-black uppercase text-green-600 tracking-widest">✅ {pointsRedeemed} Coins Applied</p>
-                              <p className="text-[9px] text-zinc-400 font-bold mt-0.5">You're saving ₹{pointsRedeemed} on this order</p>
-                            </div>
-                            <button onClick={() => setPointsRedeemed(0)} className="text-[9px] font-black uppercase text-red-400 hover:text-red-600 transition ml-4">Remove</button>
-                          </div>
-                        )
-                      ) : (
-                        <div className="bg-white/50 rounded-xl p-4 text-center border border-dashed border-zinc-300">
-                          <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">🔒 Earn {coinsToNext} more coins to unlock</p>
-                          <p className="text-[9px] text-zinc-400 mt-1">Shop ₹{coinsToNext * 50} more to reach 100 coins</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })()}
 
               {/* DESKTOP ACTION BUTTON */}
               <div className="hidden lg:block mt-8">
