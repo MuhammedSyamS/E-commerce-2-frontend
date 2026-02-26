@@ -156,6 +156,20 @@ export const useStore = create(
       logout: () => {
         set({ user: null, coupon: null, flashSale: null });
         localStorage.removeItem('slook-storage');
+      },
+
+      // Refresh user data from server (keeps loyalty points, tier, cart in sync)
+      refreshUser: async () => {
+        const state = get();
+        if (!state.user?.token) return;
+        try {
+          const { data } = await api.get('/users/profile', {
+            headers: { Authorization: `Bearer ${state.user.token}` }
+          });
+          set({ user: { ...data, token: state.user.token } });
+        } catch (err) {
+          console.error('refreshUser failed:', err);
+        }
       }
     }),
     {

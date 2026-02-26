@@ -34,7 +34,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-[#0a0a0a] text-white border-t border-zinc-900">
+    <footer id="site-footer" className="bg-[#0a0a0a] text-white border-t border-zinc-900">
 
       {/* --- TRUST BAR (Inverted to Dark) --- */}
       <div className="border-b border-zinc-900 py-10 px-6">

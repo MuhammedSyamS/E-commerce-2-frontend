@@ -265,6 +265,15 @@ const Navbar = () => {
               <span className="absolute -top-1 -right-4 bg-red-600 text-[6px] px-1 rounded animate-pulse text-white">LIVE</span>
             </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
+            <button
+              onClick={() => {
+                const footer = document.getElementById('site-footer');
+                if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="text-white hover:text-zinc-400 transition whitespace-nowrap"
+            >
+              Need Help?
+            </button>
           </div>
 
           {/* 3. RIGHT SECTION (ICONS) */}

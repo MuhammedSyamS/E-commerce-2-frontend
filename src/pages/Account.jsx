@@ -133,6 +133,18 @@ const Account = () => {
 
         {/* Header Section */}
         <div className="mb-12 text-center">
+          <div className="inline-block mb-6">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <div className="bg-zinc-950 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-xl border border-white/10">
+                <Crown size={14} className="text-amber-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest italic">{user?.tier || 'Silver'} Elite</span>
+              </div>
+              <div className="bg-white text-zinc-950 px-6 py-2 rounded-full flex items-center gap-2 shadow-lg border border-zinc-100">
+                <Trophy size={14} className="text-amber-500" />
+                <span className="text-[10px] font-black uppercase tracking-widest">{user?.loyaltyPoints || 0} Coins</span>
+              </div>
+            </div>
+          </div>
           <h1 className="text-3xl md:text-4xl font-black text-zinc-900 mb-4 tracking-tight">
             My Account
           </h1>
@@ -143,6 +155,13 @@ const Account = () => {
 
         {/* Grid Layout - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+          <AccountCard
+            icon={Trophy}
+            title="Loyalty Rewards"
+            subtext="Manage SLOOK coins & Elite status"
+            onClick={() => navigate('/account/loyalty')}
+          />
 
           <AccountCard
             icon={Package}

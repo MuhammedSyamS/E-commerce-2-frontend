@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, RotateCcw, Lock, Award, Check } from 'lucide-react';
+import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, RotateCcw, Lock, Award, Check, Sparkles } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
@@ -39,6 +40,11 @@ const ProductDetails = () => {
   const [zoomScale, setZoomScale] = useState(1);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
+  const [showSizeConsultant, setShowSizeConsultant] = useState(false);
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [fitPreference, setFitPreference] = useState('Standard');
+  const [aiRecommendation, setAiRecommendation] = useState(null);
 
   // Dynamic Delivery Logic
   const deliveryDate = useMemo(() => {
@@ -496,7 +502,7 @@ const ProductDetails = () => {
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter leading-[0.85]">
+              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight">
                 {product.name}
               </h1>
             </div>
@@ -575,7 +581,10 @@ const ProductDetails = () => {
                     );
                   })}
                 </div>
-                <button className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2">
+                <button
+                  onClick={() => setShowSizeConsultant(true)}
+                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                >
                   <Sparkles size={16} /> AI Size Consultant
                 </button>
               </div>
