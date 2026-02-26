@@ -705,325 +705,323 @@ const ProductDetails = () => {
             </div>
           </div>
         </div>
-      </div>
 
 
 
-      {/* PREMIUM TABS SECTION */}
-      <div className="container-responsive">
-        <div ref={reviewsRef} className="mt-32 space-y-12">
-          <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
-            <button
-              className="px-10 py-6 text-xs font-bold uppercase tracking-widest text-black relative shrink-0"
-            >
-              Verified Reviews
-              <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
-            </button>
-          </div>
+        {/* PREMIUM TABS SECTION */}
+        <div className="container-responsive">
+          <div ref={reviewsRef} className="mt-32 space-y-12">
+            <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
+              <button
+                className="px-10 py-6 text-xs font-bold uppercase tracking-widest text-black relative shrink-0"
+              >
+                Verified Reviews
+                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
+              </button>
+            </div>
 
-          <div className="min-h-[400px]">
+            <div className="min-h-[400px]">
 
-            {/* REVIEWS SECTION */}
-            <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-                {/* REVIEW SUMMARY & FILTERS */}
-                <div className="lg:col-span-4 space-y-12">
-                  <div className="space-y-6">
-                    <div className="flex items-baseline gap-4">
-                      <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
-                      <div className="flex flex-col gap-1">
-                        <div className="flex text-black">
-                          {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
+              {/* REVIEWS SECTION */}
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                  {/* REVIEW SUMMARY & FILTERS */}
+                  <div className="lg:col-span-4 space-y-12">
+                    <div className="space-y-6">
+                      <div className="flex items-baseline gap-4">
+                        <h2 className="text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
+                        <div className="flex flex-col gap-1">
+                          <div className="flex text-black">
+                            {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
+                          </div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
+                      </div>
+
+                      {/* RATING DISTRIBUTION GRAPH */}
+                      <div className="space-y-3">
+                        {[5, 4, 3, 2, 1].map((star) => {
+                          const count = ratingDistribution[star] || 0;
+                          const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
+                          return (
+                            <div key={star} className="flex items-center gap-4 group cursor-pointer">
+                              <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
+                              <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${percentage}%` }}
+                                  transition={{ duration: 1, ease: "circOut" }}
+                                  className="h-full bg-zinc-900"
+                                />
+                              </div>
+                              <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
 
-                    {/* RATING DISTRIBUTION GRAPH */}
-                    <div className="space-y-3">
-                      {[5, 4, 3, 2, 1].map((star) => {
-                        const count = ratingDistribution[star] || 0;
-                        const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
-                        return (
-                          <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                            <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
-                            <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
-                              <motion.div
-                                initial={{ width: 0 }}
-                                animate={{ width: `${percentage}%` }}
-                                transition={{ duration: 1, ease: "circOut" }}
-                                className="h-full bg-zinc-900"
-                              />
-                            </div>
-                            <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
-                          </div>
-                        );
-                      })}
+                    <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
+                      <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
+                      <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
+                      <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
+                      <div className="flex gap-3">
+                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
+                        <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
+                      </div>
+                      <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
                     </div>
                   </div>
 
-                  <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
-                    <h3 className="text-xs font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
-                    <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
-                    <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
-                    <div className="flex gap-3">
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
+                  {/* REVIEWS LIST */}
+                  <div className="lg:col-span-8 space-y-12">
+                    <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
+                      <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
+                      <div className="flex items-center gap-4">
+                        <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
+                        <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                          <option value="newest">Newest</option>
+                          <option value="highest">Best Rating</option>
+                          <option value="helpful">Helpful</option>
+                        </select>
+                      </div>
                     </div>
-                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                    <div className="space-y-16">
+                      {sortedReviews.map((rev, i) => (
+                        <div key={i} onClick={() => {
+                          const videos = rev.videos || (rev.video ? [rev.video] : []);
+                          const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                          const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+                          setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
+                        }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-4">
+                              <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
+                              <div className="space-y-1">
+                                <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
+                                <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                              {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
+                            </div>
+                          </div>
+                          <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
+                          <div className="flex gap-3 ml-12">
+                            {(rev.images || []).slice(0, 4).map((img, idx) => (
+                              <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
+                                <img src={img} className="w-full h-full object-cover" alt="" />
+                              </div>
+                            ))}
+                            {(rev.videos || []).length > 0 && (
+                              <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                                <Play size={24} className="text-white fill-white" />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* REVIEWS LIST */}
-                <div className="lg:col-span-8 space-y-12">
-                  <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                    <h2 className="text-2xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
-                    <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
-                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
-                        <option value="newest">Newest</option>
-                        <option value="highest">Best Rating</option>
-                        <option value="helpful">Helpful</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="space-y-16">
-                    {sortedReviews.map((rev, i) => (
-                      <div key={i} onClick={() => {
-                        const videos = rev.videos || (rev.video ? [rev.video] : []);
-                        const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                        const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
-                        setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
-                      }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
-                        <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
-                            <div className="space-y-1">
-                              <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
-                              <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
-                            {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
-                          </div>
-                        </div>
-                        <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
-                        <div className="flex gap-3 ml-12">
-                          {(rev.images || []).slice(0, 4).map((img, idx) => (
-                            <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
-                              <img src={img} className="w-full h-full object-cover" alt="" />
-                            </div>
-                          ))}
-                          {(rev.videos || []).length > 0 && (
-                            <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
-                              <Play size={24} className="text-white fill-white" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
+            {/* LIGHTBOX MODAL */}
+            {showLightbox && (
+              <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
+                <button className="absolute top-8 right-8 text-white/50 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-[210]"><X size={32} /></button>
+                <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
+                  <button
+                    disabled={lightboxIndex === 0}
+                    onClick={() => setLightboxIndex(prev => prev - 1)}
+                    className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                  >
+                    <ChevronLeft size={32} />
+                  </button>
+                  <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                  <button
+                    disabled={lightboxIndex === mediaItems.length - 1}
+                    onClick={() => setLightboxIndex(prev => prev + 1)}
+                    className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                  >
+                    <ChevronRight size={32} />
+                  </button>
+
+                  <div className="absolute bottom-12 flex gap-3">
+                    {mediaItems.map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setLightboxIndex(i)}
+                        className={`w-2 h-2 rounded-full transition-all ${lightboxIndex === i ? 'bg-white scale-150' : 'bg-white/30'}`}
+                      />
                     ))}
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
+            )}
 
-          {/* LIGHTBOX MODAL */}
-          {showLightbox && (
-            <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
-              <button className="absolute top-8 right-8 text-white/50 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-[210]"><X size={32} /></button>
-              <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
-                <button
-                  disabled={lightboxIndex === 0}
-                  onClick={() => setLightboxIndex(prev => prev - 1)}
-                  className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
-                >
-                  <ChevronLeft size={32} />
-                </button>
-                <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
-                <button
-                  disabled={lightboxIndex === mediaItems.length - 1}
-                  onClick={() => setLightboxIndex(prev => prev + 1)}
-                  className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
-                >
-                  <ChevronRight size={32} />
-                </button>
+            <RecentlyViewed currentProductId={product._id} />
 
-                <div className="absolute bottom-12 flex gap-3">
-                  {mediaItems.map((_, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setLightboxIndex(i)}
-                      className={`w-2 h-2 rounded-full transition-all ${lightboxIndex === i ? 'bg-white scale-150' : 'bg-white/30'}`}
-                    />
+            {/* RECOMMENDED PRODUCTS */}
+            {suggestions.length > 0 && (
+              <div className="mt-32 pt-20 border-t border-zinc-100">
+                <div className="flex justify-between items-end mb-12">
+                  <div>
+                    <h2 className="text-2xl font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
+                  </div>
+                  <Link to="/shop" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                  {suggestions.slice(0, 4).map((item) => (
+                    <Link key={item._id} to={`/product/${item.slug}`} className="group block space-y-4">
+                      <div className="aspect-[3/4] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
+                        <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+                      </div>
+                      <div className="space-y-1 px-1">
+                        <p className="text-[10px] font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
+                        <div className="flex justify-between items-center">
+                          <Price amount={item.price} className="text-[11px] font-black" />
+                          <span className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
+                        </div>
+                      </div>
+                    </Link>
                   ))}
                 </div>
               </div>
-            </div>
-          )}
-
-          <RecentlyViewed currentProductId={product._id} />
-
-          {/* RECOMMENDED PRODUCTS */}
-          {suggestions.length > 0 && (
-            <div className="mt-32 pt-20 border-t border-zinc-100">
-              <div className="flex justify-between items-end mb-12">
-                <div>
-                  <h2 className="text-2xl font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
-                </div>
-                <Link to="/shop" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-                {suggestions.slice(0, 4).map((item) => (
-                  <Link key={item._id} to={`/product/${item.slug}`} className="group block space-y-4">
-                    <div className="aspect-[3/4] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
-                      <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
-                    </div>
-                    <div className="space-y-1 px-1">
-                      <p className="text-[10px] font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
-                      <div className="flex justify-between items-center">
-                        <Price amount={item.price} className="text-[11px] font-black" />
-                        <span className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* AI SIZE CONSULTANT MODAL */}
-          <AnimatePresence>
-            {showSizeConsultant && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
-              >
-                <motion.div
-                  initial={{ scale: 0.9, y: 20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  exit={{ scale: 0.9, y: 20 }}
-                  className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
-                >
-                  <div className="p-8 bg-zinc-900 text-white relative">
-                    <button onClick={() => setShowSizeConsultant(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
-                    <div className="flex items-center gap-4 mb-2">
-                      <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
-                      <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
-                    </div>
-                    <p className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
-                  </div>
-
-                  <div className="p-8 space-y-6">
-                    {!aiRecommendation ? (
-                      <>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
-                            <input
-                              type="number"
-                              placeholder="e.g. 180"
-                              value={height}
-                              onChange={(e) => setHeight(e.target.value)}
-                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
-                            <input
-                              type="number"
-                              placeholder="e.g. 75"
-                              value={weight}
-                              onChange={(e) => setWeight(e.target.value)}
-                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-3">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
-                          <div className="flex gap-2">
-                            {['Slim', 'Standard', 'Oversized'].map(fit => (
-                              <button
-                                key={fit}
-                                onClick={() => setFitPreference(fit)}
-                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
-                              >
-                                {fit}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <button
-                          disabled={!height || !weight}
-                          onClick={() => {
-                            const h = parseInt(height);
-                            const w = parseInt(weight);
-                            let baseSize = 'M';
-                            if (h > 185 || w > 85) baseSize = 'XL';
-                            else if (h > 175 || w > 70) baseSize = 'L';
-                            else if (h < 165 || w < 55) baseSize = 'S';
-
-                            setAiRecommendation({
-                              size: baseSize,
-                              confidence: 94,
-                              reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
-                            });
-                          }}
-                          className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
-                        >
-                          Analyze Profile
-                        </button>
-                      </>
-                    ) : (
-                      <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
-                        <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
-                          {aiRecommendation.size}
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
-                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
-                        </div>
-                        <div className="flex gap-3">
-                          <button
-                            onClick={() => {
-                              setAiRecommendation(null);
-                              setHeight('');
-                              setWeight('');
-                            }}
-                            className="flex-1 py-4 border border-zinc-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
-                          >
-                            Reset
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedSize(aiRecommendation.size);
-                              setShowSizeConsultant(false);
-                              setAiRecommendation(null);
-                              setSelectedColor(selectedColor); // Trigger re-render
-                            }}
-                            className="flex-[2] py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
-                          >
-                            Apply {aiRecommendation.size}
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </motion.div>
-              </motion.div>
             )}
-          </AnimatePresence>
+
+            {/* AI SIZE CONSULTANT MODAL */}
+            <AnimatePresence>
+              {showSizeConsultant && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+                >
+                  <motion.div
+                    initial={{ scale: 0.9, y: 20 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.9, y: 20 }}
+                    className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
+                  >
+                    <div className="p-8 bg-zinc-900 text-white relative">
+                      <button onClick={() => setShowSizeConsultant(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
+                        <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
+                      </div>
+                      <p className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
+                    </div>
+
+                    <div className="p-8 space-y-6">
+                      {!aiRecommendation ? (
+                        <>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
+                              <input
+                                type="number"
+                                placeholder="e.g. 180"
+                                value={height}
+                                onChange={(e) => setHeight(e.target.value)}
+                                className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
+                              <input
+                                type="number"
+                                placeholder="e.g. 75"
+                                value={weight}
+                                onChange={(e) => setWeight(e.target.value)}
+                                className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-3">
+                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
+                            <div className="flex gap-2">
+                              {['Slim', 'Standard', 'Oversized'].map(fit => (
+                                <button
+                                  key={fit}
+                                  onClick={() => setFitPreference(fit)}
+                                  className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+                                >
+                                  {fit}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <button
+                            disabled={!height || !weight}
+                            onClick={() => {
+                              const h = parseInt(height);
+                              const w = parseInt(weight);
+                              let baseSize = 'M';
+                              if (h > 185 || w > 85) baseSize = 'XL';
+                              else if (h > 175 || w > 70) baseSize = 'L';
+                              else if (h < 165 || w < 55) baseSize = 'S';
+
+                              setAiRecommendation({
+                                size: baseSize,
+                                confidence: 94,
+                                reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
+                              });
+                            }}
+                            className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
+                          >
+                            Analyze Profile
+                          </button>
+                        </>
+                      ) : (
+                        <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
+                          <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
+                            {aiRecommendation.size}
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
+                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
+                          </div>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={() => {
+                                setAiRecommendation(null);
+                                setHeight('');
+                                setWeight('');
+                              }}
+                              className="flex-1 py-4 border border-zinc-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
+                            >
+                              Reset
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedSize(aiRecommendation.size);
+                                setShowSizeConsultant(false);
+                                setAiRecommendation(null);
+                                setSelectedColor(selectedColor); // Trigger re-render
+                              }}
+                              className="flex-[2] py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
+                            >
+                              Apply {aiRecommendation.size}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-    </div>
-  </div >
-  );
+      );
 };
 
-export default ProductDetails;
+      export default ProductDetails;
