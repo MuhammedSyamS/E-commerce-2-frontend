@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Share2, Heart, ShoppingBag, Truck, ShieldCheck, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, RotateCcw, Lock, Award, Check, Sparkles } from 'lucide-react';
+import { Share2, Heart, ShoppingBag, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Check, Sparkles } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
@@ -11,7 +11,6 @@ import Price from '../components/Price';
 import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
 import RecentlyViewed from '../components/RecentlyViewed';
-import TrustBadges from '../components/TrustBadges';
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -418,8 +417,8 @@ const ProductDetails = () => {
       <div className="container-responsive py-12">
         <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
 
-          {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-6) */}
-          <div className="lg:col-span-6 flex gap-6">
+          {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-7) */}
+          <div className="lg:col-span-7 flex gap-6">
             {/* THUMBNAILS STRIP */}
             <div className="hidden xl:flex flex-col gap-3 sticky top-32 h-fit w-16 shrink-0">
               {mediaItems.map((item, i) => (
@@ -494,8 +493,8 @@ const ProductDetails = () => {
             </div>
           </div>
 
-          {/* COLUMN 2: INFORMATION HUB (lg:col-span-3) */}
-          <div className="lg:col-span-3 space-y-12">
+          {/* COLUMN 2: INFORMATION HUB (lg:col-span-5) */}
+          <div className="lg:col-span-5 space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
@@ -590,80 +589,50 @@ const ProductDetails = () => {
               </div>
             )}
 
-            <TrustBadges />
-          </div>
-
-          {/* COLUMN 3: CONVERSION VAULT (lg:col-span-3) */}
-          <div className="lg:col-span-3 sticky top-40 h-fit space-y-8">
-            <div className="bg-white border border-zinc-100 rounded-[2.5rem] p-6 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] space-y-6 relative overflow-hidden group/vault">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl opacity-50 -mr-16 -mt-16 group-hover/vault:bg-amber-500/10 transition-colors animate-pulse" />
-
-              <div className="space-y-6">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <span className="text-2xl font-black text-zinc-900 tracking-tighter">
-                      <Price amount={currentPrice} />
-                    </span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">In Stock</span>
-                    </div>
+            <div className="flex flex-col gap-6 pt-8 border-t border-zinc-100">
+              <div className="flex justify-between items-start">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">In Stock</span>
                   </div>
-                  <button onClick={handleWishlist} className={`p-3 rounded-2xl transition-all ${isWishlisted ? 'bg-zinc-900 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900'}`}>
-                    <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
-                  </button>
                 </div>
-
+                <button onClick={handleWishlist} className={`p-4 rounded-2xl transition-all ${isWishlisted ? 'bg-zinc-900 text-white' : 'bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900'}`}>
+                  <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+                </button>
               </div>
 
-              {!isOutOfStock && (
+              {!isOutOfStock ? (
                 <div className="space-y-6">
                   {/* QUANTITY & ACTIONS */}
                   <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Qty</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Quantity</span>
                     <div className="flex items-center gap-6">
-                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-400 hover:text-black transition-colors"><Minus size={14} /></button>
-                      <span className="font-black text-sm w-4 text-center">{quantity}</span>
-                      <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-400 hover:text-black transition-colors"><Plus size={14} /></button>
+                      <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-600 hover:text-black transition-colors"><Minus size={16} /></button>
+                      <span className="font-black text-sm w-6 text-center">{quantity}</span>
+                      <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-600 hover:text-black transition-colors"><Plus size={16} /></button>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <button
                       onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                      className="w-full h-14 bg-white border-2 border-zinc-900 text-zinc-900 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-zinc-900 hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                      className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
                     >
-                      <ShoppingBag size={16} /> Add to Bag
+                      <ShoppingBag size={20} /> Add to Bag
                     </button>
                   </div>
                 </div>
-              )}
-
-              {isOutOfStock && (
+              ) : (
                 <button
                   onClick={() => setShowWaitlistModal(true)}
-                  className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all"
+                  className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl"
                 >
-                  <BellRing size={18} /> Waitlist Enrollment
+                  <BellRing size={20} /> Waitlist Enrollment
                 </button>
               )}
-
-
-              <div className="pt-6 flex items-center justify-center gap-6">
-                <div className="flex flex-col items-center gap-2">
-                  <RotateCcw size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Returns</span>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Lock size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Secure Payment</span>
-                </div>
-                <div className="flex flex-col items-center gap-2">
-                  <Award size={16} className="text-zinc-300" />
-                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Authentic Product</span>
-                </div>
-              </div>
             </div>
           </div>
+
         </div>
       </div>
 
