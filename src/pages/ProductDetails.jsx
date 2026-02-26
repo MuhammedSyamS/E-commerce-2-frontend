@@ -632,22 +632,24 @@ const ProductDetails = () => {
               )}
 
               {/* TRUST ELEMENTS BAR (Directly Under Actions) */}
-              <div className="grid grid-cols-2 gap-4 pt-6 border-t border-zinc-100 mt-2">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck size={18} className="text-zinc-900" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Secure Checkout</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RotateCcw size={18} className="text-zinc-900" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">7 Days Return</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Lock size={18} className="text-zinc-900" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Secured Payment</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Award size={18} className="text-zinc-900" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Authentic Product</span>
+              <div className="flex flex-col gap-4 pt-8 border-t border-zinc-100 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+                    <ShieldCheck size={18} className="text-zinc-900" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Secure Checkout</span>
+                  </div>
+                  <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+                    <RotateCcw size={18} className="text-zinc-900" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">7 Days Return</span>
+                  </div>
+                  <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+                    <Lock size={18} className="text-zinc-900" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Secured Payment</span>
+                  </div>
+                  <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+                    <Award size={18} className="text-zinc-900" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Authentic Product</span>
+                  </div>
                 </div>
               </div>
             </div>
