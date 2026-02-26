@@ -529,7 +529,7 @@ const ProductDetails = () => {
                 )}
               </div>
               <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">
-                Price Includes Global Duty & Insurance
+                Free Delivery Across India
               </p>
             </div>
             {/* PREMIUM VARIANT UX: COLOR SWATCHES */}
@@ -687,6 +687,42 @@ const ProductDetails = () => {
           </div>
         </div>
       )}
+
+      {/* MOBILE PRODUCT SUMMARY — shown before tabs on small screens */}
+      <div className="md:hidden container-responsive pb-2 pt-2">
+        <div className="bg-white border border-zinc-100 rounded-2xl p-4 space-y-3 shadow-sm">
+          {/* Name */}
+          <h2 className="text-lg font-black uppercase tracking-tight leading-tight">{product.name}</h2>
+          {/* Rating */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-0.5 text-amber-400">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={12} fill={i < Math.floor(product.rating || 5) ? 'currentColor' : 'none'} />
+              ))}
+            </div>
+            <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest">{product.numReviews} Reviews</span>
+          </div>
+          {/* Price */}
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-black text-zinc-900 tracking-tighter"><Price amount={currentPrice} /></span>
+            {currentPrice < product.price * 1.2 && (
+              <del className="text-zinc-300 text-sm font-bold"><Price amount={product.price * 1.4} /></del>
+            )}
+          </div>
+          <p className="text-[9px] font-black text-green-600 uppercase tracking-widest">Free Delivery Across India</p>
+          {/* Add to Bag */}
+          {!isOutOfStock ? (
+            <button
+              onClick={handleAddToCart}
+              className="w-full h-12 bg-black text-white rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all"
+            >
+              <ShoppingBag size={14} /> Add to Bag
+            </button>
+          ) : (
+            <div className="w-full h-12 bg-zinc-100 text-zinc-400 rounded-xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center">Out of Stock</div>
+          )}
+        </div>
+      </div>
 
       {/* PREMIUM TABS SECTION */}
       <div className="container-responsive">

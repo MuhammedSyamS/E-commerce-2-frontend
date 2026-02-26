@@ -23,11 +23,21 @@ const Shipping = () => {
                 </div>
 
                 <div className="space-y-4">
-                    <h2 className="text-xl font-black uppercase tracking-tight">International Shipping</h2>
+                    <h2 className="text-xl font-black uppercase tracking-tight">Delivery Coverage</h2>
                     <p className="text-xs text-zinc-500 leading-relaxed">
-                        We currently ship worldwide. International orders may be subject to customs duties and taxes,
-                        which are the responsibility of the recipient.
+                        We currently deliver across <span className="text-black font-bold">India only</span>.
+                        Free shipping is available on all orders above ₹1,999. Orders below this threshold
+                        are subject to a flat delivery charge, which will be displayed at checkout.
                     </p>
+                </div>
+
+                <div className="space-y-4">
+                    <h2 className="text-xl font-black uppercase tracking-tight">Delivery Timelines</h2>
+                    <div className="space-y-2 text-xs text-zinc-500 leading-relaxed">
+                        <p>🏙️ <span className="text-black font-bold">Metro Cities</span> — 3–5 business days</p>
+                        <p>🌆 <span className="text-black font-bold">Tier-2 / Tier-3 Cities</span> — 5–7 business days</p>
+                        <p>🏘️ <span className="text-black font-bold">Remote Locations</span> — 7–14 business days</p>
+                    </div>
                 </div>
             </div>
         </div>
