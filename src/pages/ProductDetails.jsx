@@ -616,9 +616,18 @@ const ProductDetails = () => {
                   <div className="space-y-3">
                     <button
                       onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                      className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
+                      className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
                     >
                       <ShoppingBag size={20} /> Add to Bag
+                    </button>
+                    <button
+                      onClick={() => {
+                        const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                        navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                      }}
+                      className="w-full h-16 bg-white border-2 border-black text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    >
+                      <ShieldCheck size={20} /> Secure Checkout
                     </button>
                   </div>
                 </div>
