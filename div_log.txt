@@ -1,0 +1,226 @@
+323: <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans">
+324: <div className="container-responsive">
+326: <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+327: <div className="lg:col-span-7">
+329: <div className="grid grid-cols-4 gap-4 mt-6">
+331: </div>
+332: </div>
+333: <div className="lg:col-span-5 space-y-8">
+334: <div className="space-y-4">
+338: </div>
+340: </div>
+341: </div>
+342: </div>
+343: </div>
+346: if (!product) return (<div className="h-screen flex items-center justify-center">Product Not Found</div>);
+384: <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
+391: <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
+393: <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+394: <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
+402: </div>
+403: <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
+404: <div className="flex items-center gap-3 mb-6">
+405: <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
+406: <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
+407: </div>
+409: <div className="mt-6 pt-6 border-t border-zinc-100">
+411: </div>
+412: </div>
+413: </div>
+414: </div>
+419: <div className="container-responsive py-12">
+420: <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
+423: <div className="lg:col-span-7 flex gap-6">
+425: <div className="hidden xl:flex flex-col gap-3 sticky top-32 h-fit w-16 shrink-0">
+433: <div className="w-full h-full flex items-center justify-center bg-zinc-100"><Play size={12} className="text-zinc-400" /></div>
+439: </div>
+442: <div className="flex-1 space-y-10">
+443: <div
+475: </div>
+477: </div>
+478: </div>
+481: <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
+482: <div className="flex flex-col gap-4">
+483: <div className="flex items-center gap-4">
+487: </div>
+491: </div>
+492: <div className="flex items-center gap-4">
+493: <div className="flex items-center gap-1 text-black">
+497: </div>
+501: </div>
+504: <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
+505: <div className="space-y-3">
+508: </div>
+509: <div className="space-y-3">
+511: <div className="grid grid-cols-2 gap-3">
+513: <div key={i} className="flex items-center gap-2 text-[10px] font-black text-zinc-900 uppercase">
+516: </div>
+518: </div>
+519: </div>
+520: </div>
+522: <div className="hidden lg:flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
+523: <div className="flex items-baseline gap-3">
+532: </div>
+536: </div>
+539: <div className="space-y-6">
+540: <div className="flex justify-between items-center">
+542: </div>
+543: <div className="flex flex-wrap gap-4">
+552: <div className="w-full h-full rounded-full overflow-hidden border border-zinc-100 p-0.5">
+554: </div>
+555: {isSelected && <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full border-2 border-white"><Check size={8} /></div>}
+559: </div>
+560: </div>
+565: <div className="space-y-6">
+566: <div className="flex justify-between items-center">
+568: </div>
+569: <div className="flex flex-wrap gap-2">
+585: </div>
+592: </div>
+595: <div className="flex flex-col gap-6 pt-8 border-t border-zinc-100">
+596: <div className="flex justify-between items-start">
+597: <div className="space-y-1">
+598: <div className="flex items-center gap-2">
+600: </div>
+601: </div>
+605: </div>
+608: <div className="space-y-6">
+610: <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
+612: <div className="flex items-center gap-6">
+616: </div>
+617: </div>
+619: <div className="hidden lg:flex flex-col space-y-3">
+635: </div>
+636: </div>
+645: </div>
+649: <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden animate-in slide-in-from-bottom-full duration-700">
+650: <div className="flex items-center gap-4 max-w-lg mx-auto">
+651: <div className="flex-1">
+654: </div>
+655: <div className="flex-[2.5] flex gap-2">
+671: </div>
+672: </div>
+673: </div>
+675: <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden">
+682: </div>
+686: <div className="flex flex-col gap-4 pt-8 border-t border-zinc-100 mt-4">
+687: <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+688: <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+691: </div>
+692: <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+695: </div>
+696: <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+699: </div>
+700: <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
+703: </div>
+704: </div>
+705: </div>
+706: </div>
+707: </div>
+708: </div>
+713: <div className="container-responsive">
+714: <div ref={reviewsRef} className="mt-32 space-y-12">
+715: <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
+720: <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
+722: </div>
+724: <div className="min-h-[400px]">
+727: <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+728: <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+730: <div className="lg:col-span-4 space-y-12">
+731: <div className="space-y-6">
+732: <div className="flex items-baseline gap-4">
+734: <div className="flex flex-col gap-1">
+735: <div className="flex text-black">
+737: </div>
+739: </div>
+740: </div>
+743: <div className="space-y-3">
+748: <div key={star} className="flex items-center gap-4 group cursor-pointer">
+750: <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
+757: </div>
+759: </div>
+762: </div>
+763: </div>
+765: <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
+767: <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
+769: <div className="flex gap-3">
+772: </div>
+774: </div>
+775: </div>
+778: <div className="lg:col-span-8 space-y-12">
+779: <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
+781: <div className="flex items-center gap-4">
+788: </div>
+789: </div>
+790: <div className="space-y-16">
+792: <div key={i} onClick={() => {
+798: <div className="flex justify-between items-center">
+799: <div className="flex items-center gap-4">
+800: <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
+801: <div className="space-y-1">
+803: <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
+804: </div>
+805: </div>
+806: <div className="flex items-center gap-4">
+809: </div>
+810: </div>
+812: <div className="flex gap-3 ml-12">
+814: <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
+816: </div>
+819: <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+821: </div>
+823: </div>
+824: </div>
+826: </div>
+827: </div>
+828: </div>
+829: </div>
+830: </div>
+834: <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
+836: <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
+853: <div className="absolute bottom-12 flex gap-3">
+861: </div>
+862: </div>
+863: </div>
+870: <div className="mt-32 pt-20 border-t border-zinc-100">
+871: <div className="flex justify-between items-end mb-12">
+872: <div>
+875: </div>
+877: </div>
+878: <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+881: <div className="aspect-[3/4] bg-zinc-50 rounded-2xl overflow-hidden border border-zinc-100 transition-all duration-500 hover:shadow-xl hover:-translate-y-1">
+883: </div>
+884: <div className="space-y-1 px-1">
+886: <div className="flex justify-between items-center">
+889: </div>
+890: </div>
+893: </div>
+894: </div>
+912: <div className="p-8 bg-zinc-900 text-white relative">
+914: <div className="flex items-center gap-4 mb-2">
+915: <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
+917: </div>
+919: </div>
+921: <div className="p-8 space-y-6">
+924: <div className="grid grid-cols-2 gap-4">
+925: <div className="space-y-2">
+934: </div>
+935: <div className="space-y-2">
+944: </div>
+945: </div>
+947: <div className="space-y-3">
+949: <div className="flex gap-2">
+959: </div>
+960: </div>
+984: <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
+985: <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
+987: </div>
+988: <div>
+991: </div>
+992: <div className="flex gap-3">
+1014: </div>
+1015: </div>
+1017: </div>
+1022: </div>
+1023: </div>
+1024: </div>
