@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Share2, Heart, ShoppingBag, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Check, Sparkles } from 'lucide-react';
+import { Share2, Heart, ShoppingBag, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Check, Sparkles, ShieldCheck, RotateCcw, Lock, Award } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
@@ -506,7 +506,7 @@ const ProductDetails = () => {
               </h1>
             </div>
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1 text-amber-400">
+              <div className="flex items-center gap-1 text-black">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                 ))}
@@ -630,6 +630,25 @@ const ProductDetails = () => {
                   <BellRing size={20} /> Waitlist Enrollment
                 </button>
               )}
+            </div>
+
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 py-8 border-t border-zinc-100 mt-8">
+              <div className="flex flex-col items-center text-center gap-2">
+                <ShieldCheck size={20} className="text-zinc-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Secure Checkout</span>
+              </div>
+              <div className="flex flex-col items-center text-center gap-2">
+                <RotateCcw size={20} className="text-zinc-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">7 Days Return</span>
+              </div>
+              <div className="flex flex-col items-center text-center gap-2">
+                <Lock size={20} className="text-zinc-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Secured Payment</span>
+              </div>
+              <div className="flex flex-col items-center text-center gap-2">
+                <Award size={20} className="text-zinc-400" />
+                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Authentic Product</span>
+              </div>
             </div>
           </div>
 
