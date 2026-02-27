@@ -35,7 +35,7 @@ const RecentlyViewed = ({ currentProductId }) => {
         <section className="mt-20 pt-10 border-t border-zinc-100">
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h2 className="text-xl font-black uppercase tracking-tighter">Recently <span className="text-zinc-300">Viewed</span></h2>
+                    <h2 className="text-lg font-black uppercase tracking-tighter">Recently <span className="text-zinc-300">Viewed</span></h2>
                     <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Pick up where you left off</p>
                 </div>
                 <Link to="/shop" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black flex items-center gap-1 transition-colors">
