@@ -487,11 +487,11 @@ const ProductDetails = () => {
           <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <span className="text-sm md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
+                <span className="text-[11px] md:text-[9px] font-black uppercase tracking-mega text-zinc-400">{product.category}</span>
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
-                <span className="text-sm md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
+                <span className="text-[11px] md:text-[9px] font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter leading-tighter">
+              <h1 className="text-lg md:text-3xl font-black uppercase tracking-tighter leading-tighter">
                 {product.name}
               </h1>
             </div>
@@ -504,7 +504,7 @@ const ProductDetails = () => {
                   <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                 ))}
               </button>
-              <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+              <button onClick={scrollToReviews} className="text-[9px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
                 {product.numReviews} Verified Reviews
               </button>
             </div>
@@ -512,11 +512,11 @@ const ProductDetails = () => {
             {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
-                <h3 className="text-[10px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <h3 className="text-[9px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
                 <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-[10px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <h3 className="text-[9px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm md:text-[] font-black text-zinc-900 uppercase">
@@ -530,7 +530,7 @@ const ProductDetails = () => {
 
             <div className="hidden lg:flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-black text-zinc-900 tracking-tighter">
+                <span className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tighter">
                   <Price amount={currentPrice} />
                 </span>
                 {currentPrice < product.price * 1.2 && (
@@ -539,7 +539,7 @@ const ProductDetails = () => {
                   </del>
                 )}
               </div>
-              <p className="text-[10px] font-black text-green-600 uppercase tracking-mega">
+              <p className="text-[9px] font-black text-green-600 uppercase tracking-mega">
                 Free Delivery Across India
               </p>
             </div>
@@ -547,7 +547,7 @@ const ProductDetails = () => {
             {colors.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-mega text-zinc-400">Color / {selectedColor}</span>
+                  <span className="text-[9px] font-black uppercase tracking-mega text-zinc-400">Color / {selectedColor}</span>
                 </div>
                 <div className="flex flex-wrap gap-4">
                   {colors.map((color, idx) => {
@@ -573,7 +573,7 @@ const ProductDetails = () => {
             {allSizes.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-mega text-zinc-400">Select Size</span>
+                  <span className="text-[9px] font-black uppercase tracking-mega text-zinc-400">Select Size</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {allSizes.map((size, idx) => {
@@ -585,7 +585,7 @@ const ProductDetails = () => {
                         key={idx}
                         disabled={isOOS}
                         onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
-                        className={`py-3 rounded-xl border-2 font-black text-sm md:text-[] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                        className={`py-2 px-4 rounded-xl border-2 font-black text-xs md:text-[] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
                       >
                         {size}
                       </button>
@@ -594,7 +594,7 @@ const ProductDetails = () => {
                 </div>
                 <button
                   onClick={() => setShowSizeConsultant(true)}
-                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking- mega text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-12 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-mega text-[9px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles size={16} /> AI Size Consultant
                 </button>
