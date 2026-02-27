@@ -11,17 +11,24 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Font Scaling: Root font size adjustment for mobile */
+  /* Font Scaling: Root font size adjustment */
   font-size: 16px;
   line-height: 1.5;
   color: #1a1a1a;
 }
 
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+    /* Global reduction for mobile */
+  }
+}
+
 :root {
-  --fluid-h1: clamp(1.5rem, 4vw + 1rem, 4.5rem);
-  --fluid-h2: clamp(1.25rem, 3vw + 1rem, 3.75rem);
-  --fluid-h3: clamp(1.1rem, 2vw + 1rem, 2.5rem);
-  --fluid-label: clamp(0.55rem, 0.4vw + 0.4rem, 0.75rem);
+  --fluid-h1: clamp(1.2rem, 3vw + 0.8rem, 4.5rem);
+  --fluid-h2: clamp(1.1rem, 2vw + 0.8rem, 3.75rem);
+  --fluid-h3: clamp(1rem, 1.5vw + 0.7rem, 2.5rem);
+  --fluid-label: clamp(0.5rem, 0.4vw + 0.4rem, 0.75rem);
 }
 
 @layer utilities {

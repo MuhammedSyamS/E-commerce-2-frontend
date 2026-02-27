@@ -113,7 +113,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         {/* OVERLAYS */}
         {isFlashSale && (
           <div className="absolute top-0 left-0 bg-red-600 text-white px-3 py-1.5 z-20">
-            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+            <p className="text-[8px] font-black uppercase tracking-mega flex items-center gap-1">
               <Zap size={10} fill="currentColor" /> Flash Sale
             </p>
           </div>
@@ -121,19 +121,19 @@ const ProductCard = ({ product, onAddToCart }) => {
 
         {product.isNewArrival && !isFlashSale && (
           <div className="absolute top-0 left-0 bg-black text-white px-3 py-1.5 z-20">
-            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">New Arrival</p>
+            <p className="text-[8px] font-black uppercase tracking-mega">New Arrival</p>
           </div>
         )}
 
         {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
           <div className="absolute top-0 left-0 bg-zinc-800 text-white px-3 py-1.5 z-20">
-            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">Elite Choice</p>
+            <p className="text-[8px] font-black uppercase tracking-mega">Elite Choice</p>
           </div>
         )}
 
         {product.countInStock > 0 && product.countInStock < 5 && (
           <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-20 animate-pulse">
-            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">Limited Stock</p>
+            <p className="text-[8px] font-black uppercase tracking-mega">Limited Stock</p>
           </div>
         )}
 
@@ -181,7 +181,7 @@ const ProductCard = ({ product, onAddToCart }) => {
           <button
             onClick={handleAddToCart}
             disabled={cartLoading}
-            className="absolute bottom-0 left-0 w-full bg-black text-white py-4 text-sm md:text-[10px] font-black uppercase tracking-[0.3em] translate-y-full opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-500 z-20 disabled:bg-zinc-800"
+            className="absolute bottom-0 left-0 w-full bg-black text-white py-4 text-[9px] font-black uppercase tracking- mega translate-y-full opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-500 z-20 disabled:bg-zinc-800"
           >
             {cartLoading ? 'Syncing...' : 'Add to Bag'}
           </button>
@@ -236,15 +236,15 @@ const ProductCard = ({ product, onAddToCart }) => {
 
       {/* PRODUCT INFO */}
       <div className="px-1 text-center">
-        <h3 className="text-xs md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
+        <h3 className="text-[10px] md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
         <div className="flex items-center justify-center gap-2">
           {isFlashSale ? (
             <>
-              <Price amount={discountPrice} className="text-xs md:text-[12px] font-black text-red-600" />
-              <Price amount={product.price} className="text-[9px] text-zinc-400 line-through" />
+              <Price amount={discountPrice} className="text-[11px] md:text-[12px] font-black text-red-600" />
+              <Price amount={product.price} className="text-[8px] text-zinc-400 line-through" />
             </>
           ) : (
-            <Price amount={product.price} className="text-xs md:text-[12px] font-black" />
+            <Price amount={product.price} className="text-[11px] md:text-[12px] font-black" />
           )}
         </div>
 
@@ -260,7 +260,7 @@ const ProductCard = ({ product, onAddToCart }) => {
               />
             ))}
           </div>
-          <span className="text-sm md:text-[9px] font-bold text-zinc-400">({product.numReviews || 0})</span>
+          <span className="text-[8px] md:text-[9px] font-bold text-zinc-400">({product.numReviews || 0})</span>
         </div>
       </div>
     </div>

@@ -212,7 +212,7 @@ const Navbar = () => {
         {/* Message Container - Now using Flex Centering */}
         <div className="h-full w-full max-w-[280px] md:max-w-[400px] relative overflow-hidden mx-2">
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-            <p className="font-black tracking-mega uppercase text-[9px] text-center">
+            <p className="font-black tracking-mega uppercase text-[8px] text-center">
               {messages[currentMsgIndex]}
             </p>
           </div>
@@ -243,7 +243,7 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-lg md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-base md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
               {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
 
@@ -330,8 +330,8 @@ const Navbar = () => {
                                   {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm md:text-[11px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
-                                  <p className="text-sm md:text-[10px] text-zinc-600 leading-relaxed">{n.message}</p>
+                                  <p className="text-[10px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
+                                  <p className="text-[9px] text-zinc-600 leading-relaxed">{n.message}</p>
                                   <p className="text-sm md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                                 </div>
                               </div>
@@ -453,21 +453,21 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
             <div className="pt-10 flex flex-col gap-6">
-              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
-              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
-              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-base md:text-sm font-black uppercase tracking-widest mt-4">Support Hub</Link>
-              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-base md:text-sm font-black uppercase tracking-widest">Track Order</Link>
+              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
+              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
+              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-4">Support Hub</Link>
+              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Track Order</Link>
             </div>
 
             <div className="border-t border-white/10 pt-8">
               {user ? (
                 <div className="flex flex-col gap-4">
-                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-base md:text-[10px]">My Account</Link>
-                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-base md:text-[10px] text-left">Log Out</button>
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[9px]">My Account</Link>
+                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-[9px] text-left">Log Out</button>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-base md:text-[10px]">Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[9px]">Sign In</Link>
               )}
             </div>
           </div>

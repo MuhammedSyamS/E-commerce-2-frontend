@@ -151,9 +151,9 @@ const Home = () => {
                 />
                 <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
                   <div className="text-center">
-                    <p className="text-white/80 text-[10px] md:text-sm font-black uppercase tracking-mega mb-6">{slide.subtitle}</p>
+                    <p className="text-white/80 text-[8px] md:text-sm font-black uppercase tracking-mega mb-6">{slide.subtitle}</p>
                     <h2 className="text-white text-3xl md:text-6xl lg:text-8xl font-black uppercase tracking-tighter mb-10 leading-tighter">{slide.title}</h2>
-                    <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
+                    <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[9px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 z-10"></div>
@@ -175,10 +175,10 @@ const Home = () => {
               <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
                 <div className="flex justify-between items-end mb-12">
                   <div>
-                    <h2 className="text-xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
-                    <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{section.subtitle}</p>
+                    <h2 className="text-lg md:text-4xl lg:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
+                    <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{section.subtitle}</p>
                   </div>
-                  <Link to={section.link} className="text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All</Link>
+                  <Link to={section.link} className="text-[9px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All</Link>
                 </div>
 
                 <div className="relative flex items-center group/scroller">
@@ -223,10 +223,10 @@ const Home = () => {
           <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="text-xl md:text-4xl lg:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
-                <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Community Curation #StyledBySLOOK</p>
+                <h2 className="text-lg md:text-4xl lg:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
+                <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Community Curation #StyledBySLOOK</p>
               </div>
-              <Link to="/looks" className="text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
+              <Link to="/looks" className="text-[9px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {MOCK_LOOKS.filter(look => look && look.user).map((look) => (
@@ -248,12 +248,12 @@ const Home = () => {
             <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 blur-[120px] rounded-full -mr-32 -mt-32"></div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8 relative z-10 px-8">
               <div className="space-y-4">
-                <p className="text-amber-500 text-[9px] font-black uppercase tracking-mega">Elite Rewards</p>
-                <h2 className="text-3xl md:text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-none">Loyalty <br /> <span className="text-zinc-800">Milestones.</span></h2>
+                <p className="text-amber-500 text-[8px] font-black uppercase tracking-mega">Elite Rewards</p>
+                <h2 className="text-2xl md:text-6xl lg:text-8xl font-black uppercase tracking-tighter leading-none">Loyalty <br /> <span className="text-zinc-800">Milestones.</span></h2>
               </div>
               <div className="max-w-xs">
-                <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-6">Earn coins on every artifact purchase. Unlock exclusive tiers and baseline rewards.</p>
-                <Link to="/account/loyalty" className="text-[10px] font-black uppercase tracking-widest bg-white text-black px-8 py-4 rounded-full hover:bg-zinc-200 transition-all">View My Ledger</Link>
+                <p className="text-zinc-500 text-[8px] font-bold uppercase tracking-widest leading-relaxed mb-6">Earn coins on every artifact purchase. Unlock exclusive tiers and baseline rewards.</p>
+                <Link to="/account/loyalty" className="text-[9px] font-black uppercase tracking-widest bg-white text-black px-8 py-4 rounded-full hover:bg-zinc-200 transition-all">View My Ledger</Link>
               </div>
             </div>
 
