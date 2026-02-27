@@ -151,9 +151,9 @@ const Home = () => {
                 />
                 <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
                   <div className="text-center">
-                    <p className="text-white/80 text-[8px] md:text-base font-black uppercase tracking-mega mb-6">{slide.subtitle}</p>
-                    <h2 className="text-white text-3xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-10 leading-tighter">{slide.title}</h2>
-                    <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[9px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
+                    <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slide.subtitle}</p>
+                    <h2 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 leading-tighter">{slide.title}</h2>
+                    <button onClick={scrollToProducts} className="bg-white text-black px-8 py-3 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
                   </div>
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 z-10"></div>
@@ -175,7 +175,7 @@ const Home = () => {
               <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
                 <div className="flex justify-between items-end mb-12">
                   <div>
-                    <h2 className="text-lg md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
+                    <h2 className="text-xs md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
                     <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{section.subtitle}</p>
                   </div>
                   <Link to={section.link} className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All</Link>
@@ -223,7 +223,7 @@ const Home = () => {
           <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="text-lg md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
+                <h2 className="text-xs md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
                 <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Community Curation #StyledBySLOOK</p>
               </div>
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
@@ -249,7 +249,7 @@ const Home = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-16 gap-8 relative z-10 px-8">
               <div className="space-y-4">
                 <p className="text-amber-500 text-[8px] md:text-[10px] font-black uppercase tracking-mega">Elite Rewards</p>
-                <h2 className="text-2xl md:text-7xl font-black uppercase tracking-tighter leading-none">Loyalty <br /> <span className="text-zinc-800">Milestones.</span></h2>
+                <h2 className="text-base md:text-7xl font-black uppercase tracking-tighter leading-none">Loyalty <br /> <span className="text-zinc-800">Milestones.</span></h2>
               </div>
               <div className="max-w-xs">
                 <p className="text-zinc-500 text-[8px] md:text-[10px] font-bold uppercase tracking-widest leading-relaxed mb-6">Earn coins on every artifact purchase. Unlock exclusive tiers and baseline rewards.</p>
@@ -266,7 +266,7 @@ const Home = () => {
               ].map((m, i) => (
                 <div key={i} className="min-w-[280px] bg-zinc-900/50 backdrop-blur-xl border border-white/5 p-8 rounded-[2.5rem] snap-center group hover:border-amber-500/30 transition-all">
                   <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${m.color} mb-8 shadow-lg group-hover:scale-110 transition-transform`}></div>
-                  <h3 className="text-2xl font-black uppercase tracking-tight mb-2">Elite {m.tier}</h3>
+                  <h3 className="text-sm md:text-2xl font-black uppercase tracking-tight mb-2">Elite {m.tier}</h3>
                   <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-6">Unlocked at ₹{m.spend}</p>
                   <p className="text-xs font-black uppercase text-amber-500">{m.perk}</p>
                 </div>

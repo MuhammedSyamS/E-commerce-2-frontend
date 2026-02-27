@@ -19,8 +19,8 @@ body {
 
 @media (max-width: 768px) {
   html {
-    font-size: 14px;
-    /* Global reduction for mobile */
+    font-size: 13px;
+    /* Aggressive reduction for mobile only */
   }
 }
 

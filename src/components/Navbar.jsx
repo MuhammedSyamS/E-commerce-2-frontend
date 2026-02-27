@@ -243,7 +243,7 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-base md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-sm md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
               {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
 
@@ -453,9 +453,9 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
             <div className="pt-10 flex flex-col gap-6">
-              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
-              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-xl md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
+              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
+              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
               <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-4">Support Hub</Link>
               <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Track Order</Link>
             </div>

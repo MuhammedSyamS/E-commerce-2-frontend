@@ -491,7 +491,7 @@ const ProductDetails = () => {
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
                 <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="text-base md:text-3xl font-black uppercase tracking-tighter leading-tighter">
+              <h1 className="text-sm md:text-3xl font-black uppercase tracking-tighter leading-tighter">
                 {product.name}
               </h1>
             </div>
@@ -513,13 +513,13 @@ const ProductDetails = () => {
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
                 <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                <p className="text-zinc-600 text-[11px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
                 <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm md:text-[10px] font-black text-zinc-900 uppercase">
+                    <div key={i} className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-zinc-900 uppercase">
                       <Check size={12} className="text-green-500" />
                       <span>{spec}</span>
                     </div>
@@ -585,7 +585,7 @@ const ProductDetails = () => {
                         key={idx}
                         disabled={isOOS}
                         onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
-                        className={`py-2 px-4 rounded-xl border-2 font-black text-xs md:text-[] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                        className={`py-2 px-4 rounded-xl border-2 font-black text-[9px] md:text-xs transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
                       >
                         {size}
                       </button>
