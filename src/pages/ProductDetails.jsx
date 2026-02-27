@@ -1021,7 +1021,8 @@ const ProductDetails = () => {
           </div>
         </div>
       </div>
-      );
+    </div>
+  );
 };
 
-      export default ProductDetails;
+export default ProductDetails;
