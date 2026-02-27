@@ -25,10 +25,10 @@ body {
 }
 
 :root {
-  --fluid-h1: clamp(1.2rem, 3vw + 0.8rem, 4.5rem);
-  --fluid-h2: clamp(1.1rem, 2vw + 0.8rem, 3.75rem);
-  --fluid-h3: clamp(1rem, 1.5vw + 0.7rem, 2.5rem);
-  --fluid-label: clamp(0.5rem, 0.4vw + 0.4rem, 0.75rem);
+  --fluid-h1: clamp(1.2rem, 5vw + 1rem, 4.5rem);
+  --fluid-h2: clamp(1.1rem, 4vw + 1rem, 3.75rem);
+  --fluid-h3: clamp(1rem, 3vw + 1rem, 2.5rem);
+  --fluid-label: clamp(0.5rem, 0.5vw + 0.4rem, 0.75rem);
 }
 
 @layer utilities {

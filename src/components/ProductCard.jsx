@@ -241,7 +241,7 @@ const ProductCard = ({ product, onAddToCart }) => {
           {isFlashSale ? (
             <>
               <Price amount={discountPrice} className="text-[11px] md:text-[12px] font-black text-red-600" />
-              <Price amount={product.price} className="text-[8px] text-zinc-400 line-through" />
+              <Price amount={product.price} className="text-[8px] md:text-[10px] text-zinc-400 line-through" />
             </>
           ) : (
             <Price amount={product.price} className="text-[11px] md:text-[12px] font-black" />

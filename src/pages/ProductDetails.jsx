@@ -487,9 +487,9 @@ const ProductDetails = () => {
           <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <span className="text-[10px] md:text-[9px] font-black uppercase tracking-mega text-zinc-400">{product.category}</span>
+                <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.category}</span>
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
-                <span className="text-[10px] md:text-[9px] font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
+                <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
               </div>
               <h1 className="text-base md:text-3xl font-black uppercase tracking-tighter leading-tighter">
                 {product.name}
@@ -504,7 +504,7 @@ const ProductDetails = () => {
                   <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                 ))}
               </button>
-              <button onClick={scrollToReviews} className="text-[8px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+              <button onClick={scrollToReviews} className="text-[8px] md:text-sm font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
                 {product.numReviews} Verified Reviews
               </button>
             </div>
@@ -512,14 +512,14 @@ const ProductDetails = () => {
             {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
-                <h3 className="text-[8px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
                 <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-[8px] font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm md:text-[] font-black text-zinc-900 uppercase">
+                    <div key={i} className="flex items-center gap-2 text-sm md:text-[10px] font-black text-zinc-900 uppercase">
                       <Check size={12} className="text-green-500" />
                       <span>{spec}</span>
                     </div>
@@ -530,7 +530,7 @@ const ProductDetails = () => {
 
             <div className="hidden lg:flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
               <div className="flex items-baseline gap-3">
-                <span className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tighter">
+                <span className="text-lg md:text-3xl font-black text-zinc-900 tracking-tighter">
                   <Price amount={currentPrice} />
                 </span>
                 {currentPrice < product.price * 1.2 && (
@@ -539,7 +539,7 @@ const ProductDetails = () => {
                   </del>
                 )}
               </div>
-              <p className="text-[8px] font-black text-green-600 uppercase tracking-mega">
+              <p className="text-[8px] md:text-[10px] font-black text-green-600 uppercase tracking-mega">
                 Free Delivery Across India
               </p>
             </div>
