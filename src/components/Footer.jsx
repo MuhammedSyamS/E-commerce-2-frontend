@@ -38,18 +38,18 @@ const Footer = () => {
 
       {/* --- TRUST BAR (Inverted to Dark) --- */}
       <div className="border-b border-zinc-900 py-10 px-6">
-        <div className="container-responsive grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-          <div className="flex flex-col items-center gap-2 group cursor-default">
-            <Truck size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Free Shipping</p>
+        <div className="container-responsive grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 text-center">
+          <div className="flex items-center justify-center gap-3 md:flex-col md:gap-2 group cursor-default">
+            <Truck size={16} md:size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
+            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Free Shipping</p>
           </div>
-          <div className="flex flex-col items-center gap-2 group cursor-default">
-            <ShieldCheck size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Secured</p>
+          <div className="flex items-center justify-center gap-3 md:flex-col md:gap-2 group cursor-default">
+            <ShieldCheck size={16} md:size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
+            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">Secured</p>
           </div>
-          <div className="flex flex-col items-center gap-2 group cursor-default">
-            <RotateCcw size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
-            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">7-Day Easy Returns</p>
+          <div className="flex items-center justify-center gap-3 md:flex-col md:gap-2 group cursor-default">
+            <RotateCcw size={16} md:size={20} strokeWidth={1.5} className="text-zinc-400 group-hover:text-white transition-colors" />
+            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-300">7-Day Easy Returns</p>
           </div>
         </div>
       </div>
