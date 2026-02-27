@@ -237,10 +237,6 @@ em,
 
 /* 3. Media Query for specific mobile adjustments (below 768px) */
 @media (max-width: 768px) {
-  body {
-    padding: 0 20px !important;
-    /* Prevents text from touching screen edges */
-  }
 
   .container {
     width: 100% !important;
