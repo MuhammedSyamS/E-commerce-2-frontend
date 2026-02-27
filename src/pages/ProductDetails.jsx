@@ -481,11 +481,11 @@ const ProductDetails = () => {
           <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
+                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight">
+              <h1 className="text-xl md:text-3xl font-black uppercase tracking-tight leading-tight">
                 {product.name}
               </h1>
             </div>
@@ -495,7 +495,7 @@ const ProductDetails = () => {
                   <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                 ))}
               </div>
-              <button onClick={scrollToReviews} className="text-[10px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+              <button onClick={scrollToReviews} className="text-[9px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
                 {product.numReviews} Verified Reviews
               </button>
             </div>
@@ -503,14 +503,14 @@ const ProductDetails = () => {
             {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                <p className="text-zinc-600 text-sm leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[10px] font-black text-zinc-900 uppercase">
+                    <div key={i} className="flex items-center gap-2 text-[9px] font-black text-zinc-900 uppercase">
                       <Check size={12} className="text-green-500" />
                       <span>{spec}</span>
                     </div>
@@ -538,7 +538,7 @@ const ProductDetails = () => {
             {colors.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
                 </div>
                 <div className="flex flex-wrap gap-4">
                   {colors.map((color, idx) => {
@@ -564,7 +564,7 @@ const ProductDetails = () => {
             {allSizes.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {allSizes.map((size, idx) => {
@@ -576,7 +576,7 @@ const ProductDetails = () => {
                         key={idx}
                         disabled={isOOS}
                         onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
-                        className={`py-3 rounded-xl border-2 font-black text-[10px] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                        className={`py-3 rounded-xl border-2 font-black text-[9px] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
                       >
                         {size}
                       </button>
@@ -585,7 +585,7 @@ const ProductDetails = () => {
                 </div>
                 <button
                   onClick={() => setShowSizeConsultant(true)}
-                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles size={16} /> AI Size Consultant
                 </button>
@@ -650,12 +650,12 @@ const ProductDetails = () => {
                 <div className="flex items-center gap-4 max-w-lg mx-auto">
                   <div className="flex-1">
                     <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Premium Access</p>
-                    <Price amount={currentPrice} className="text-xl font-black text-zinc-900 tracking-tighter" />
+                    <Price amount={currentPrice} className="text-lg font-black text-zinc-900 tracking-tighter" />
                   </div>
                   <div className="flex-[2.5] flex gap-2">
                     <button
                       onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                      className="flex-1 h-14 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
+                      className="flex-1 h-14 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
                     >
                       <ShoppingBag size={14} />
                     </button>
@@ -664,7 +664,7 @@ const ProductDetails = () => {
                         const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
                         navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
                       }}
-                      className="flex-[3] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
+                      className="flex-[3] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
                     >
                       <Zap size={14} fill="currentColor" /> Checkout
                     </button>
