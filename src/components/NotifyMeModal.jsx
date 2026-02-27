@@ -51,23 +51,23 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant }) => {
                             <Bell size={28} className="text-black" />
                         </div>
                         <h2 className="text-2xl font-black uppercase tracking-tighter mb-2">Back in Stock Notification</h2>
-                        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                        <p className="text-sm md:text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
                             {product.name} {variant ? `(${variant.size} / ${variant.color})` : ''}
                         </p>
                     </div>
 
                     {!success ? (
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <p className="text-xs text-zinc-500 font-medium leading-relaxed">
+                            <p className="text-sm md:text-xs text-zinc-500 font-medium leading-relaxed">
                                 This item is currently out of stock. Enter your email below, and we'll send you an exclusive alert the moment it returns to our studio.
                             </p>
                             <div className="space-y-2">
-                                <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Email Address</label>
+                                <label className="text-sm md:text-[9px] font-black uppercase tracking-widest text-zinc-400">Email Address</label>
                                 <input
                                     type="email"
                                     required
                                     placeholder="name@example.com"
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-4 text-xs font-bold outline-none focus:border-black transition-all"
+                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-4 text-sm md:text-xs font-bold outline-none focus:border-black transition-all"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -75,7 +75,7 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant }) => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-black text-white py-5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all disabled:bg-zinc-800"
+                                className="w-full bg-black text-white py-5 rounded-xl text-base md:text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all disabled:bg-zinc-800"
                             >
                                 {loading ? <Loader2 className="animate-spin" size={16} /> : 'Notify Me'}
                             </button>
@@ -85,8 +85,8 @@ const NotifyMeModal = ({ isOpen, onClose, product, variant }) => {
                             <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <CheckCircle2 size={40} />
                             </div>
-                            <h3 className="text-lg font-black uppercase tracking-tight mb-2">Request Saved</h3>
-                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest leading-loose">
+                            <h3 className="text-xl md:text-lg font-black uppercase tracking-tight mb-2">Request Saved</h3>
+                            <p className="text-sm md:text-xs text-zinc-400 font-bold uppercase tracking-widest leading-loose">
                                 You're on the list. Keep an eye on your inbox.
                             </p>
                         </div>

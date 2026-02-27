@@ -114,7 +114,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
       <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold uppercase tracking-tighter text-center mb-2">
+        <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-center mb-2">
           {showOtp ? <span>Verify <span className="text-red-500">OTP</span></span> : <span>Create <span className="text-red-500">Account</span></span>}
         </h1>
 
@@ -140,7 +140,7 @@ const Register = () => {
             />
             <div className="relative w-full">
               <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200"></div></div>
-              <div className="relative flex justify-center text-[10px] uppercase font-bold tracking-widest"><span className="bg-white px-2 text-gray-400">Or using email</span></div>
+              <div className="relative flex justify-center text-sm md:text-[10px] uppercase font-bold tracking-widest"><span className="bg-white px-2 text-gray-400">Or using email</span></div>
             </div>
           </div>
         )}
@@ -152,14 +152,14 @@ const Register = () => {
                 <input
                   type="text"
                   placeholder="First Name"
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                 />
                 <input
                   type="text"
                   placeholder="Last Name"
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                 />
@@ -167,30 +167,30 @@ const Register = () => {
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Referral Code (Optional)"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 uppercase"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 uppercase font-bold text-sm md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
               />
-              <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest hover:bg-gray-800 transition">
+              <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-base md:text-sm hover:bg-gray-800 transition active:scale-95">
                 {loading ? "Sending OTP..." : "Create Account"}
               </button>
             </form>
             <div className="text-center mt-4">
-              <p className="text-sm font-medium text-gray-500">
-                Already a user? <Link to="/login" className="text-black font-bold uppercase tracking-wide border-b border-black pb-1 ml-1">Login</Link>
+              <p className="text-sm md:text-xs font-medium text-gray-500">
+                Already a user? <Link to="/login" className="text-black font-bold uppercase tracking-wide border-b border-black pb-1 ml-1 text-sm md:text-xs">Login</Link>
               </p>
             </div>
           </div>
@@ -202,15 +202,15 @@ const Register = () => {
                   <input key={i} type="text" maxLength="1" className="w-12 h-14 border-b-2 border-gray-300 text-center text-xl font-bold focus:border-black outline-none" value={data} onChange={(e) => handleOtpChange(e, i)} />
                 ))}
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-bold uppercase tracking-widest">
+              <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-base md:text-sm active:scale-95 transition-all">
                 {loading ? "Verifying..." : "Verify & Create"}
               </button>
             </form>
             <div className="text-center">
               {canResend ? (
-                <button onClick={handleRegisterSubmit} className="text-xs font-bold uppercase border-b border-black pb-1">Resend OTP</button>
+                <button onClick={handleRegisterSubmit} className="text-sm md:text-xs font-black uppercase border-b border-black pb-1">Resend OTP</button>
               ) : (
-                <p className="text-xs text-gray-400 font-bold uppercase">Resend in {timer}s</p>
+                <p className="text-sm md:text-xs text-gray-400 font-black uppercase">Resend in {timer}s</p>
               )}
             </div>
           </div>

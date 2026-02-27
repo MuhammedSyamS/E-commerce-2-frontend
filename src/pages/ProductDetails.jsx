@@ -407,7 +407,7 @@ const ProductDetails = () => {
               </div>
               <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
               <div className="mt-6 pt-6 border-t border-zinc-100">
-                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
+                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base md:text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
               </div>
             </div>
           </div>
@@ -487,11 +487,11 @@ const ProductDetails = () => {
           <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
+                <span className="text-sm md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.category}</span>
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
-                <span className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
+                <span className="text-sm md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="text-xl md:text-3xl font-black uppercase tracking-tight leading-tight">
+              <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter leading-tight">
                 {product.name}
               </h1>
             </div>
@@ -504,7 +504,7 @@ const ProductDetails = () => {
                   <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
                 ))}
               </button>
-              <button onClick={scrollToReviews} className="text-[9px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+              <button onClick={scrollToReviews} className="text-sm md:text-[9px] font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
                 {product.numReviews} Verified Reviews
               </button>
             </div>
@@ -512,14 +512,14 @@ const ProductDetails = () => {
             {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <h3 className="text-sm md:text-[] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
                 <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <h3 className="text-sm md:text-[] font-black uppercase tracking-[0.3em] text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[9px] font-black text-zinc-900 uppercase">
+                    <div key={i} className="flex items-center gap-2 text-sm md:text-[] font-black text-zinc-900 uppercase">
                       <Check size={12} className="text-green-500" />
                       <span>{spec}</span>
                     </div>
@@ -539,7 +539,7 @@ const ProductDetails = () => {
                   </del>
                 )}
               </div>
-              <p className="text-[10px] font-black text-green-600 uppercase tracking-widest">
+              <p className="text-sm md:text-[] font-black text-green-600 uppercase tracking-widest">
                 Free Delivery Across India
               </p>
             </div>
@@ -547,7 +547,7 @@ const ProductDetails = () => {
             {colors.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
+                  <span className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400">Color / {selectedColor}</span>
                 </div>
                 <div className="flex flex-wrap gap-4">
                   {colors.map((color, idx) => {
@@ -573,7 +573,7 @@ const ProductDetails = () => {
             {allSizes.length > 0 && (
               <div className="space-y-6">
                 <div className="flex justify-between items-center">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
+                  <span className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400">Select Size</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {allSizes.map((size, idx) => {
@@ -585,7 +585,7 @@ const ProductDetails = () => {
                         key={idx}
                         disabled={isOOS}
                         onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
-                        className={`py-3 rounded-xl border-2 font-black text-[9px] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                        className={`py-3 rounded-xl border-2 font-black text-sm md:text-[] transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
                       >
                         {size}
                       </button>
@@ -594,7 +594,7 @@ const ProductDetails = () => {
                 </div>
                 <button
                   onClick={() => setShowSizeConsultant(true)}
-                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[9px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-sm md:text-[] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
                 >
                   <Sparkles size={16} /> AI Size Consultant
                 </button>
@@ -605,7 +605,7 @@ const ProductDetails = () => {
               <div className="flex justify-between items-start">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">In Stock</span>
+                    <span className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-500">In Stock</span>
                   </div>
                 </div>
               </div>
@@ -615,7 +615,7 @@ const ProductDetails = () => {
               <div className="space-y-6">
                 {/* QUANTITY & ACTIONS */}
                 <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Quantity</span>
+                  <span className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400">Quantity</span>
                   <div className="flex items-center gap-6">
                     <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-600 hover:text-black transition-colors"><Minus size={16} /></button>
                     <span className="font-black text-sm w-6 text-center">{quantity}</span>
@@ -626,7 +626,7 @@ const ProductDetails = () => {
                 <div className="hidden lg:flex flex-col space-y-3">
                   <button
                     onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                    className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
+                    className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
                   >
                     <ShoppingBag size={20} /> Add to Bag
                   </button>
@@ -635,7 +635,7 @@ const ProductDetails = () => {
                       const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
                       navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
                     }}
-                    className="w-full h-16 bg-white border-2 border-black text-black rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-black hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                    className="w-full h-16 bg-white border-2 border-black text-black rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-black hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3"
                   >
                     <ShieldCheck size={20} /> Secure Checkout
                   </button>
@@ -644,7 +644,7 @@ const ProductDetails = () => {
             ) : (
               <button
                 onClick={() => setShowWaitlistModal(true)}
-                className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl lg:flex hidden"
+                className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl lg:flex hidden"
               >
                 <BellRing size={20} /> Waitlist Enrollment
               </button>
@@ -656,13 +656,13 @@ const ProductDetails = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden animate-in slide-in-from-bottom-full duration-700">
               <div className="flex items-center gap-4 max-w-lg mx-auto">
                 <div className="flex-1">
-                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Premium Access</p>
-                  <Price amount={currentPrice} className="text-lg font-black text-zinc-900 tracking-tighter" />
+                  <p className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 mb-0.5">Premium Access</p>
+                  <Price amount={currentPrice} className="text-2xl md:text-lg font-black text-zinc-900 tracking-tighter" />
                 </div>
                 <div className="flex-[2.5] flex gap-2">
                   <button
                     onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                    className="flex-1 h-14 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
+                    className="flex-1 h-14 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest text-sm md:text-[] flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
                   >
                     <ShoppingBag size={14} />
                   </button>
@@ -671,7 +671,7 @@ const ProductDetails = () => {
                       const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
                       navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
                     }}
-                    className="flex-[3] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-[8px] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
+                    className="flex-[3] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm md:text-[] flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
                   >
                     <Zap size={14} fill="currentColor" /> Checkout
                   </button>
@@ -682,7 +682,7 @@ const ProductDetails = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden">
               <button
                 onClick={() => setShowWaitlistModal(true)}
-                className="w-full h-14 bg-amber-400 text-black rounded-2xl font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 shadow-lg"
+                className="w-full h-14 bg-amber-400 text-black rounded-2xl font-black uppercase tracking-widest text-sm md:text-[] flex items-center justify-center gap-2 shadow-lg"
               >
                 <BellRing size={16} /> Join Waitlist
               </button>
@@ -694,19 +694,19 @@ const ProductDetails = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
                 <ShieldCheck size={18} className="text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Secure Checkout</span>
+                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Secure Checkout</span>
               </div>
               <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
                 <RotateCcw size={18} className="text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">7 Days Return</span>
+                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">7 Days Return</span>
               </div>
               <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
                 <Lock size={18} className="text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Secured Payment</span>
+                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Secured Payment</span>
               </div>
               <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
                 <Award size={18} className="text-zinc-900" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-zinc-600">Authentic Product</span>
+                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Authentic Product</span>
               </div>
             </div>
           </div>
@@ -720,7 +720,7 @@ const ProductDetails = () => {
         <div ref={reviewsRef} className="mt-32 space-y-12">
           <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
             <button
-              className="px-10 py-6 text-[10px] font-bold uppercase tracking-widest text-black relative shrink-0"
+              className="px-10 py-6 text-sm md:text-[] font-bold uppercase tracking-widest text-black relative shrink-0"
             >
               Verified Reviews
               <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
@@ -741,7 +741,7 @@ const ProductDetails = () => {
                         <div className="flex text-black">
                           {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
                         </div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
+                        <p className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
                       </div>
                     </div>
 
@@ -752,7 +752,7 @@ const ProductDetails = () => {
                         const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
                         return (
                           <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                            <span className="text-[10px] font-black text-zinc-900 w-2">{star}</span>
+                            <span className="text-sm md:text-[] font-black text-zinc-900 w-2">{star}</span>
                             <div className="flex-1 h-2 bg-zinc-100 rounded-full overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
@@ -761,7 +761,7 @@ const ProductDetails = () => {
                                 className="h-full bg-zinc-900"
                               />
                             </div>
-                            <span className="text-[9px] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
+                            <span className="text-sm md:text-[] font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
                           </div>
                         );
                       })}
@@ -769,24 +769,24 @@ const ProductDetails = () => {
                   </div>
 
                   <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
-                    <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
+                    <h3 className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
                     <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
                     <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
                     <div className="flex gap-3">
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-sm md:text-[] font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 text-sm md:text-[] font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
                     </div>
-                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest text-sm md:text-[] shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
                   </div>
                 </div>
 
                 {/* REVIEWS LIST */}
                 <div className="lg:col-span-8 space-y-12">
                   <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                    <h2 className="text-lg font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
+                    <h2 className="text-xl md:text-lg font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
                     <div className="flex items-center gap-4">
-                      <span className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
-                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-[10px] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                      <span className="text-sm md:text-[] font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
+                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-sm md:text-[] font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
                         <option value="newest">Newest</option>
                         <option value="highest">Best Rating</option>
                         <option value="helpful">Helpful</option>
@@ -810,7 +810,7 @@ const ProductDetails = () => {
                             </div>
                           </div>
                           <div className="flex items-center gap-4">
-                            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                            <span className="text-sm md:text-[] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
                             {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
                           </div>
                         </div>
@@ -876,10 +876,10 @@ const ProductDetails = () => {
             <div className="mt-32 pt-20 border-t border-zinc-100">
               <div className="flex justify-between items-end mb-12">
                 <div>
-                  <h2 className="text-lg font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
+                  <h2 className="text-xl md:text-lg font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
+                  <p className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
                 </div>
-                <Link to="/shop" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
+                <Link to="/shop" className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 {suggestions.slice(0, 4).map((item) => (
@@ -888,10 +888,10 @@ const ProductDetails = () => {
                       <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                     </div>
                     <div className="space-y-1 px-1">
-                      <p className="text-[10px] font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
+                      <p className="text-sm md:text-[] font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
                       <div className="flex justify-between items-center">
-                        <Price amount={item.price} className="text-[11px] font-black" />
-                        <span className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
+                        <Price amount={item.price} className="text-sm md:text-[] font-black" />
+                        <span className="text-sm md:text-[] font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
                       </div>
                     </div>
                   </Link>
@@ -921,7 +921,7 @@ const ProductDetails = () => {
                       <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
                       <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
                     </div>
-                    <p className="text-zinc-400 text-[9px] font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
+                    <p className="text-zinc-400 text-sm md:text-[] font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
                   </div>
 
                   <div className="p-8 space-y-6">
@@ -929,7 +929,7 @@ const ProductDetails = () => {
                       <>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
+                            <label className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
                             <input
                               type="number"
                               placeholder="e.g. 180"
@@ -939,7 +939,7 @@ const ProductDetails = () => {
                             />
                           </div>
                           <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
+                            <label className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
                             <input
                               type="number"
                               placeholder="e.g. 75"
@@ -951,13 +951,13 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="space-y-3">
-                          <label className="text-[9px] font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
+                          <label className="text-sm md:text-[] font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
                           <div className="flex gap-2">
                             {['Slim', 'Standard', 'Oversized'].map(fit => (
                               <button
                                 key={fit}
                                 onClick={() => setFitPreference(fit)}
-                                className={`flex-1 py-3 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+                                className={`flex-1 py-3 rounded-xl text-sm md:text-[] font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
                               >
                                 {fit}
                               </button>
@@ -981,7 +981,7 @@ const ProductDetails = () => {
                               reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
                             });
                           }}
-                          className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
+                          className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-[] shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
                         >
                           Analyze Profile
                         </button>
@@ -993,7 +993,7 @@ const ProductDetails = () => {
                         </div>
                         <div>
                           <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
-                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
+                          <p className="text-sm md:text-[] font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
                         </div>
                         <div className="flex gap-3">
                           <button
@@ -1002,7 +1002,7 @@ const ProductDetails = () => {
                               setHeight('');
                               setWeight('');
                             }}
-                            className="flex-1 py-4 border border-zinc-100 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
+                            className="flex-1 py-4 border border-zinc-100 rounded-2xl text-sm md:text-[] font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
                           >
                             Reset
                           </button>
@@ -1013,7 +1013,7 @@ const ProductDetails = () => {
                               setAiRecommendation(null);
                               setSelectedColor(selectedColor); // Trigger re-render
                             }}
-                            className="flex-[2] py-4 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
+                            className="flex-[2] py-4 bg-black text-white rounded-2xl text-sm md:text-[] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
                           >
                             Apply {aiRecommendation.size}
                           </button>

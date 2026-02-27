@@ -212,7 +212,7 @@ const Navbar = () => {
         {/* Message Container - Now using Flex Centering */}
         <div className="h-full w-full max-w-[280px] md:max-w-[400px] relative overflow-hidden mx-2">
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-            <p className="font-black tracking-[0.2em] uppercase text-[9px] text-center">
+            <p className="font-black tracking-[0.2em] uppercase text-sm md:text-[9px] text-center">
               {messages[currentMsgIndex]}
             </p>
           </div>
@@ -243,7 +243,7 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
               {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
 
@@ -277,7 +277,7 @@ const Navbar = () => {
           </div>
 
           {/* 3. RIGHT SECTION (ICONS) */}
-          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6">
+          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
             <button onClick={toggleSearch} className="relative group">
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
@@ -308,14 +308,14 @@ const Navbar = () => {
                   <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
                     <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
                       <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
-                        <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
+                        <h3 className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
                         <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
                       </div>
                       <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
                         {!Array.isArray(notifications) || notifications.length === 0 ? (
                           <div className="p-8 text-center flex flex-col items-center gap-2">
                             <Bell size={24} className="text-zinc-200" />
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
+                            <p className="text-sm md:text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
                           </div>
                         ) : (
                           notifications.map(n => (
@@ -330,9 +330,9 @@ const Navbar = () => {
                                   {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-[11px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
-                                  <p className="text-[10px] text-zinc-600 leading-relaxed">{n.message}</p>
-                                  <p className="text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
+                                  <p className="text-sm md:text-[11px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
+                                  <p className="text-sm md:text-[10px] text-zinc-600 leading-relaxed">{n.message}</p>
+                                  <p className="text-sm md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                                 </div>
                               </div>
                             </div>
@@ -340,7 +340,7 @@ const Navbar = () => {
                         )}
                       </div>
                       <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
-                        <Link to="/account/notifications" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
+                        <Link to="/account/notifications" className="text-sm md:text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
                       </div>
                     </div>
                   </div>
@@ -393,26 +393,26 @@ const Navbar = () => {
 
                     {/* HEADER */}
                     <div className="border-b border-zinc-100 pb-4 mb-4">
-                      <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-1">Signed in as</p>
-                      <p className="font-black text-sm truncate">{user.firstName} {user.lastName}</p>
+                      <p className="text-sm md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-1">Signed in as</p>
+                      <p className="text-base md:text-sm font-black truncate">{user.firstName} {user.lastName}</p>
                     </div>
 
                     {/* LINKS */}
                     <div className="space-y-3">
-                      <Link to="/account" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                      <Link to="/account" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         My Account
                       </Link>
-                      <Link to="/my-orders" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                      <Link to="/my-orders" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         My Orders
                       </Link>
-                      <Link to="/wishlist" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                      <Link to="/wishlist" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                         Wishlist
                       </Link>
-                      <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                      <Link to="/account/settings" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
                       </Link>
                       <Link
                         to="/support"
-                        className="block text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black hover:pl-2 transition-all mt-3"
+                        className="block text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black hover:pl-2 transition-all mt-3"
                       >
                         Support Hub
                       </Link>
@@ -422,7 +422,7 @@ const Navbar = () => {
                     <div className="border-t border-zinc-100 mt-4 pt-4">
                       <button
                         onClick={() => { useStore.getState().logout(); navigate('/login'); }}
-                        className="w-full text-left text-xs font-black uppercase tracking-wide text-red-500 hover:text-red-700 hover:pl-2 transition-all"
+                        className="w-full text-left text-base md:text-xs font-black uppercase tracking-wide text-red-500 hover:text-red-700 hover:pl-2 transition-all"
                       >
                         Log Out
                       </button>
@@ -453,21 +453,21 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
             <div className="pt-10 flex flex-col gap-6">
-              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
-              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-3xl font-black uppercase tracking-tighter">Shop All</Link>
-              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-sm font-black uppercase tracking-widest mt-4">Support Hub</Link>
-              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-sm font-black uppercase tracking-widest">Track Order</Link>
+              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
+              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
+              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-base md:text-sm font-black uppercase tracking-widest mt-4">Support Hub</Link>
+              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-base md:text-sm font-black uppercase tracking-widest">Track Order</Link>
             </div>
 
             <div className="border-t border-white/10 pt-8">
               {user ? (
                 <div className="flex flex-col gap-4">
-                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[10px]">My Account</Link>
-                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-[10px] text-left">Log Out</button>
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-base md:text-[10px]">My Account</Link>
+                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-base md:text-[10px] text-left">Log Out</button>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[10px]">Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-base md:text-[10px]">Sign In</Link>
               )}
             </div>
           </div>
@@ -482,7 +482,7 @@ const Navbar = () => {
                 autoFocus
                 type="text"
                 placeholder="SEARCH SLOOK..."
-                className="flex-1 bg-transparent outline-none px-4 text-xs font-black uppercase tracking-widest h-full"
+                className="flex-1 bg-transparent outline-none px-4 text-base md:text-xs font-black uppercase tracking-widest h-full"
                 onChange={(e) => handleSearchInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -499,7 +499,7 @@ const Navbar = () => {
                 {/* CATEGORIES GROUP */}
                 {suggestions.categories?.length > 0 && (
                   <div className="p-6 border-b border-zinc-100 bg-white/50">
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Categories</p>
+                    <p className="text-sm md:text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Categories</p>
                     <div className="flex flex-wrap gap-2">
                       {suggestions.categories.map((cat, idx) => (
                         <button
@@ -508,7 +508,7 @@ const Navbar = () => {
                             toggleSearch();
                             navigate(`/shop?category=${cat}`);
                           }}
-                          className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
+                          className="px-4 py-2 bg-zinc-50 border border-zinc-100 rounded-full text-sm md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm"
                         >
                           {cat}
                         </button>
@@ -520,7 +520,7 @@ const Navbar = () => {
                 {/* PRODUCTS GROUP */}
                 {suggestions.products?.length > 0 && (
                   <div className="p-6">
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Products</p>
+                    <p className="text-sm md:text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Products</p>
                     <div className="grid grid-cols-1 gap-2">
                       {suggestions.products.map((p) => (
                         <div
@@ -535,13 +535,13 @@ const Navbar = () => {
                             <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                           </div>
                           <div className="flex-1">
-                            <h4 className="text-[11px] font-black uppercase tracking-tight text-black flex items-center gap-2">
+                            <h4 className="text-base md:text-[11px] font-black uppercase tracking-tight text-black flex items-center gap-2">
                               {p.name}
                               <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors" />
                             </h4>
                             <div className="flex items-center gap-3 mt-1">
-                              <Price amount={p.price} className="text-[10px] text-zinc-400 font-bold" />
-                              <span className="text-[8px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400">{p.category}</span>
+                              <Price amount={p.price} className="text-sm md:text-[10px] text-zinc-400 font-bold" />
+                              <span className="text-sm md:text-[8px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400">{p.category}</span>
                             </div>
                           </div>
                           <ChevronRight size={14} className="text-zinc-100 group-hover:text-black group-hover:translate-x-1 transition-all" />
@@ -553,7 +553,7 @@ const Navbar = () => {
 
                 <div
                   onClick={() => toggleSearch()}
-                  className="p-6 text-center text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white"
+                  className="p-6 text-center text-sm md:text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white"
                 >
                   View all results
                 </div>

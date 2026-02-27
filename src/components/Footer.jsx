@@ -59,8 +59,8 @@ const Footer = () => {
 
           {/* BRAND STORY */}
           <div className="lg:col-span-3 space-y-6 text-center lg:text-left">
-            <h2 className="text-4xl font-black uppercase tracking-tighter text-white">SLOOK</h2>
-            <p className="text-zinc-500 text-xs leading-relaxed max-w-sm font-medium">
+            <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">SLOOK</h2>
+            <p className="text-zinc-500 text-base md:text-xs leading-relaxed max-w-sm font-medium">
               Premium essentials for the modern lifestyle.
               Curated for quality, designed for life.
             </p>
@@ -74,8 +74,8 @@ const Footer = () => {
 
           {/* SHOP LINKS */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Shop</h3>
-            <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Shop</h3>
+            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/shop" className="hover:text-white transition-colors">New Arrivals</Link></li>
               <li><Link to="/shop?filter=best-sellers" className="hover:text-white transition-colors">Best Sellers</Link></li>
               <li><Link to="/shop" className="hover:text-white transition-colors">All Products</Link></li>
@@ -84,8 +84,8 @@ const Footer = () => {
 
           {/* SUPPORT LINKS */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
-            <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
+            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/contact" className="hover:text-white transition-colors text-orange-400">Contact Us</Link></li>
               <li><Link to="/about" className="hover:text-white transition-colors">Our Story</Link></li>
               <li><Link to="/support" className="hover:text-white transition-colors">Support Hub & FAQ</Link></li>
@@ -96,8 +96,8 @@ const Footer = () => {
 
           {/* TRACK LINKS */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
-            <ul className="space-y-4 text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
+            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Order Track</Link></li>
               <li><Link to="/track-order?type=return" className="hover:text-white transition-colors">Return Track</Link></li>
               <li><Link to="/track-order?type=exchange" className="hover:text-white transition-colors">Exchange Track</Link></li>
@@ -106,8 +106,8 @@ const Footer = () => {
 
           {/* NEWSLETTER */}
           <div className="lg:col-span-3 space-y-6">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest leading-loose">
+            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
+            <p className="text-zinc-500 text-sm md:text-[10px] font-bold uppercase tracking-widest leading-loose">
               Join for early access to drops and exclusive updates.
             </p>
             <div className="relative group">

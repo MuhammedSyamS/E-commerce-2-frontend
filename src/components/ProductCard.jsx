@@ -113,7 +113,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         {/* OVERLAYS */}
         {isFlashSale && (
           <div className="absolute top-0 left-0 bg-red-600 text-white px-3 py-1.5 z-20">
-            <p className="text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
+            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest flex items-center gap-1">
               <Zap size={10} fill="currentColor" /> Flash Sale
             </p>
           </div>
@@ -121,25 +121,25 @@ const ProductCard = ({ product, onAddToCart }) => {
 
         {product.isNewArrival && !isFlashSale && (
           <div className="absolute top-0 left-0 bg-black text-white px-3 py-1.5 z-20">
-            <p className="text-[10px] font-black uppercase tracking-widest">New Arrival</p>
+            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">New Arrival</p>
           </div>
         )}
 
         {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
           <div className="absolute top-0 left-0 bg-zinc-800 text-white px-3 py-1.5 z-20">
-            <p className="text-[10px] font-black uppercase tracking-widest">Elite Choice</p>
+            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">Elite Choice</p>
           </div>
         )}
 
         {product.countInStock > 0 && product.countInStock < 5 && (
           <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-20 animate-pulse">
-            <p className="text-[10px] font-black uppercase tracking-widest">Limited Stock</p>
+            <p className="text-sm md:text-[10px] font-black uppercase tracking-widest">Limited Stock</p>
           </div>
         )}
 
         {product.countInStock === 0 && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
-            <span className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
+            <span className="bg-black text-white px-4 py-2 text-sm md:text-[10px] font-black uppercase tracking-widest">
               Out of Stock
             </span>
           </div>
@@ -181,7 +181,7 @@ const ProductCard = ({ product, onAddToCart }) => {
           <button
             onClick={handleAddToCart}
             disabled={cartLoading}
-            className="absolute bottom-0 left-0 w-full bg-black text-white py-4 text-[10px] font-black uppercase tracking-[0.3em] translate-y-full opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-500 z-20 disabled:bg-zinc-800"
+            className="absolute bottom-0 left-0 w-full bg-black text-white py-4 text-sm md:text-[10px] font-black uppercase tracking-[0.3em] translate-y-full opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-500 z-20 disabled:bg-zinc-800"
           >
             {cartLoading ? 'Syncing...' : 'Add to Bag'}
           </button>
@@ -208,13 +208,13 @@ const ProductCard = ({ product, onAddToCart }) => {
             </button>
 
             <div className="space-y-4">
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-1">Select Size</p>
+              <p className="text-sm md:text-[9px] font-black uppercase tracking-[0.3em] text-white/40 mb-1">Select Size</p>
               <div className="flex flex-wrap gap-1.5">
                 {[...new Set(product.variants.map(v => v.size))].map(size => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`min-w-8 h-8 px-2 rounded-lg text-[10px] font-black border transition-all ${selectedSize === size ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/20 hover:border-white/40'
+                    className={`min-w-8 h-8 px-2 rounded-lg text-sm md:text-[10px] font-black border transition-all ${selectedSize === size ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/20 hover:border-white/40'
                       }`}
                   >
                     {size}
@@ -225,7 +225,7 @@ const ProductCard = ({ product, onAddToCart }) => {
               <button
                 onClick={handleAddToCart}
                 disabled={cartLoading || !selectedSize}
-                className="w-full bg-white text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-2"
+                className="w-full bg-white text-black py-3 rounded-xl text-sm md:text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center gap-2"
               >
                 {cartLoading ? <Loader2 size={12} className="animate-spin" /> : 'Confirm Selection'}
               </button>
@@ -236,15 +236,15 @@ const ProductCard = ({ product, onAddToCart }) => {
 
       {/* PRODUCT INFO */}
       <div className="px-1 text-center">
-        <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
+        <h3 className="text-base md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
         <div className="flex items-center justify-center gap-2">
           {isFlashSale ? (
             <>
-              <Price amount={discountPrice} className="text-[11px] md:text-[12px] font-black text-red-600" />
-              <Price amount={product.price} className="text-[9px] md:text-[10px] text-zinc-400 line-through" />
+              <Price amount={discountPrice} className="text-base md:text-[12px] font-black text-red-600" />
+              <Price amount={product.price} className="text-sm md:text-[10px] text-zinc-400 line-through" />
             </>
           ) : (
-            <Price amount={product.price} className="text-[11px] md:text-[12px] font-black" />
+            <Price amount={product.price} className="text-base md:text-[12px] font-black" />
           )}
         </div>
 
@@ -260,7 +260,7 @@ const ProductCard = ({ product, onAddToCart }) => {
               />
             ))}
           </div>
-          <span className="text-[9px] font-bold text-zinc-400">({product.numReviews || 0})</span>
+          <span className="text-sm md:text-[9px] font-bold text-zinc-400">({product.numReviews || 0})</span>
         </div>
       </div>
     </div>

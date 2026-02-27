@@ -357,7 +357,7 @@ const Checkout = () => {
           <div className="lg:col-span-7 xl:col-span-8 order-2 lg:order-1">
 
             {/* STEP INDICATOR (Optional visual aid) */}
-            <div className="flex items-center gap-4 mb-10 text-[10px] font-black uppercase tracking-widest text-zinc-300">
+            <div className="flex items-center gap-4 mb-10 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-300">
               <span className={`flex items-center gap-2 ${step === 'shipping' ? 'text-black' : 'text-green-500'}`}>
                 <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center">1</span> Shipping
               </span>
@@ -370,25 +370,25 @@ const Checkout = () => {
             {/* STEP 1: SHIPPING FORM */}
             {step === 'shipping' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <h2 className="text-xl font-black uppercase tracking-tight mb-8">Shipping Details</h2>
+                <h2 className="text-2xl md:text-xl font-black uppercase tracking-tight mb-8">Shipping Details</h2>
 
                 <form id="checkout-form" onSubmit={goToSelection} className="space-y-8">
                   {user?.addresses?.length > 0 && (
                     <div className="mb-10">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">Saved Locations</p>
+                      <p className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-4">Saved Locations</p>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {user.addresses.map((addr, i) => (
                           <div key={i} onClick={() => {
                             setFormData({ ...formData, address: addr.street, city: addr.city, zip: addr.zip, phone: addr.phone || formData.phone });
                           }} className="p-5 border border-zinc-200 rounded-2xl cursor-pointer hover:border-black hover:bg-zinc-50 transition-all text-left">
-                            <p className="font-bold text-xs uppercase mb-1">{addr.label}</p>
-                            <p className="text-[11px] text-zinc-500 leading-relaxed font-medium">{addr.street}, {addr.city}</p>
+                            <p className="font-bold text-sm md:text-xs uppercase mb-1">{addr.label}</p>
+                            <p className="text-sm md:text-[11px] text-zinc-500 leading-relaxed font-medium">{addr.street}, {addr.city}</p>
                           </div>
                         ))}
                       </div>
                       <div className="flex items-center gap-4 my-8">
                         <div className="h-px bg-zinc-100 flex-1"></div>
-                        <span className="text-[9px] font-black uppercase text-zinc-300">OR ENTER NEW</span>
+                        <span className="text-sm md:text-[9px] font-black uppercase text-zinc-300">OR ENTER NEW</span>
                         <div className="h-px bg-zinc-100 flex-1"></div>
                       </div>
                     </div>
@@ -396,28 +396,28 @@ const Checkout = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">First Name</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">First Name</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Last Name</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Last Name</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Address</label>
-                    <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+                    <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Address</label>
+                    <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">City</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">City</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
+                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
                     </div>
                   </div>
 
@@ -427,8 +427,8 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-xl shadow-sm transition-colors ${isGift ? 'bg-white/10' : 'bg-white'}`}><Gift size={18} className={isGift ? 'text-white' : 'text-zinc-900'} /></div>
                         <div>
-                          <p className="text-xs font-black uppercase tracking-tight italic transform -skew-x-3">Elite Gift Packaging</p>
-                          <p className={`text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
+                          <p className="text-sm md:text-xs font-black uppercase tracking-tight italic transform -skew-x-3">Elite Gift Packaging</p>
+                          <p className={`text-xs md:text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
                         </div>
                       </div>
                       <button
@@ -453,13 +453,13 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
-                    <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                    <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
+                    <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
 
                   {/* MOBILE CONTINUE BUTTON */}
                   <div className="lg:hidden pt-8">
-                    <button type="submit" className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs">
+                    <button type="submit" className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-xs active:scale-95 transition-all">
                       Continue to Payment
                     </button>
                   </div>
@@ -470,7 +470,7 @@ const Checkout = () => {
             {/* STEP 2: PAYMENT METHOD */}
             {step !== 'shipping' && (
               <div className="animate-in fade-in slide-in-from-right-8 duration-500">
-                <h2 className="text-xl font-black uppercase tracking-tight mb-8">Select Payment Method</h2>
+                <h2 className="text-2xl md:text-xl font-black uppercase tracking-tight mb-8">Select Payment Method</h2>
 
                 <div className="space-y-4">
                   {[
@@ -489,8 +489,8 @@ const Checkout = () => {
                           {method.icon}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-bold text-sm md:text-base uppercase tracking-wide">{method.name}</h3>
-                          <p className={`text-[10px] font-medium mt-1 uppercase tracking-widest ${step === method.id ? 'text-zinc-400' : 'text-zinc-500'}`}>{method.desc}</p>
+                          <h3 className="font-black text-base uppercase tracking-wide">{method.name}</h3>
+                          <p className={`text-sm md:text-[10px] font-medium mt-1 uppercase tracking-widest ${step === method.id ? 'text-zinc-400' : 'text-zinc-500'}`}>{method.desc}</p>
                         </div>
                         {step === method.id && <CheckCircle2 className="text-green-500" size={24} />}
                       </button>
@@ -518,7 +518,7 @@ const Checkout = () => {
                     <button
                       onClick={handlePlaceOrder}
                       disabled={isSubmitting}
-                      className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-xs disabled:opacity-50"
+                      className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-xs active:scale-95 transition-all disabled:opacity-50"
                     >
                       {isSubmitting ? 'Processing...' : 'Place Order'}
                     </button>
@@ -531,7 +531,7 @@ const Checkout = () => {
           {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
           <div className="lg:col-span-5 xl:col-span-4 order-1 lg:order-2">
             <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
-              <h3 className="text-xs font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
+              <h3 className="text-sm md:text-xs font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
 
               <div className="space-y-4 mb-8 custom-scrollbar max-h-[40vh] overflow-y-auto pr-2">
                 {cartItems.map((item, idx) => {
@@ -546,10 +546,10 @@ const Checkout = () => {
                         {itemImg && <img src={itemImg} alt={itemName} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold uppercase truncate">{itemName}</p>
+                        <p className="text-sm md:text-xs font-bold uppercase truncate">{itemName}</p>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
-                          <Price amount={itemPrice} className="text-[10px] font-bold" />
+                          <span className="text-xs md:text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
+                          <Price amount={itemPrice} className="text-xs md:text-[10px] font-bold" />
                         </div>
                       </div>
                     </div>
@@ -565,8 +565,8 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
                         <div>
-                          <p className="text-[10px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
-                          <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
+                          <p className="text-sm md:text-[10px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
+                          <p className="text-xs md:text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
                         </div>
                       </div>
                       <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
@@ -576,33 +576,33 @@ const Checkout = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Subtotal</span>
                   <Price amount={subtotal} />
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-green-600">
+                  <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-green-600">
                     <span>Coupon Discount</span>
                     <Price amount={discountAmount} />
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-amber-600">
+                  <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-amber-600">
                     <span>Loyalty Redemption</span>
                     <span>-₹{loyaltyDiscount}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Tax ({siteSettings.taxRate}%)</span>
                   <Price amount={taxPrice} />
                 </div>
-                <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
-                <div className="flex justify-between text-xl font-black uppercase pt-2 italic transform -skew-x-3">
+                <div className="flex justify-between text-2xl md:text-xl font-black uppercase pt-2 italic transform -skew-x-3">
                   <span>Total</span>
-                  <Price amount={Math.max(0, total - loyaltyDiscount)} />
+                  <Price amount={Math.max(0, total - loyaltyDiscount)} className="text-3xl md:text-2xl" />
                 </div>
               </div>
 
@@ -610,10 +610,10 @@ const Checkout = () => {
               <div className="mt-8 pt-6 border-t border-zinc-100">
                 <div className="flex items-center gap-3 text-zinc-400 mb-2">
                   <Truck size={14} />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
+                  <span className="text-sm md:text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
                 </div>
-                <p className="text-xs font-bold text-black">{getDeliveryEstimate()}</p>
-                <p className="text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
+                <p className="text-sm md:text-xs font-bold text-black">{getDeliveryEstimate()}</p>
+                <p className="text-xs md:text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
               </div>
 
 
@@ -623,7 +623,7 @@ const Checkout = () => {
                   <button
                     form="checkout-form"
                     type="submit"
-                    className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] hover:bg-zinc-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1"
+                    className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-[10px] hover:bg-zinc-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95"
                   >
                     Confirm Shipping
                   </button>
@@ -631,7 +631,7 @@ const Checkout = () => {
                   <button
                     onClick={handlePlaceOrder}
                     disabled={step === 'selection' || isSubmitting}
-                    className={`w-full py-5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 ${step === 'selection' || isSubmitting
+                    className={`w-full py-5 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-[10px] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 ${step === 'selection' || isSubmitting
                       ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed shadow-none transform-none'
                       : 'bg-black text-white hover:bg-zinc-900'
                       }`}

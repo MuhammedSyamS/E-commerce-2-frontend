@@ -34,8 +34,8 @@ const AlertModal = ({ isOpen, onClose, title, message, type = 'info' }) => {
                 </div>
 
                 <div className="flex-1 space-y-1 pr-6">
-                    <h3 className="text-[11px] font-black uppercase tracking-widest text-black">{title}</h3>
-                    <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tight italic">
+                    <h3 className="text-sm md:text-[11px] font-black uppercase tracking-widest text-black">{title}</h3>
+                    <p className="text-xs md:text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tight italic">
                         {message}
                     </p>
                 </div>
