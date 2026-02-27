@@ -512,14 +512,14 @@ const ProductDetails = () => {
             {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
             <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
               <div className="space-y-3">
-                <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                <p className="text-zinc-600 text-[11px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
               </div>
               <div className="space-y-3">
-                <h3 className="text-[8px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
                 <div className="grid grid-cols-2 gap-3">
                   {['Bespoke Craftsmanship', 'Limited Edition Run', 'Sustainable Ethics', 'Global Priority Shipping'].map((spec, i) => (
-                    <div key={i} className="flex items-center gap-2 text-[9px] md:text-[10px] font-black text-zinc-900 uppercase">
+                    <div key={i} className="flex items-center gap-2 text-[11px] md:text-[10px] font-black text-zinc-900 uppercase">
                       <Check size={12} className="text-green-500" />
                       <span>{spec}</span>
                     </div>

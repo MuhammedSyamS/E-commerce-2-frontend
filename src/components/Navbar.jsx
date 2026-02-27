@@ -243,7 +243,7 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-sm md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-lg md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
               {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
 
