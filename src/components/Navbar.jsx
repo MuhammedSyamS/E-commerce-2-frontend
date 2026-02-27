@@ -212,7 +212,7 @@ const Navbar = () => {
         {/* Message Container - Now using Flex Centering */}
         <div className="h-full w-full max-w-[280px] md:max-w-[400px] relative overflow-hidden mx-2">
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-            <p className="font-black tracking-[0.2em] uppercase text-sm md:text-[9px] text-center">
+            <p className="font-black tracking-mega uppercase text-[10px] text-center">
               {messages[currentMsgIndex]}
             </p>
           </div>
@@ -243,15 +243,15 @@ const Navbar = () => {
               </button>
             )}
 
-            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-2xl md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
+            <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-xl md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
               {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
 
               {/* DYNAMIC ROLE SUFFIX */}
               {user?.role === 'admin' || user?.isAdmin ? (
-                <span className="text-red-500 drop-shadow-md">ADMIN</span>
+                <span className="text-red-500 drop-shadow-md text-xs md:text-sm">ADMIN</span>
               ) : user?.role === 'manager' ? (
-                <span className="text-blue-400 drop-shadow-md">MANAGER</span>
+                <span className="text-blue-400 drop-shadow-md text-xs md:text-sm">MANAGER</span>
               ) : null}
             </Link>
           </div>
@@ -262,7 +262,7 @@ const Navbar = () => {
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
             <Link to="/community" className="text-white hover:text-zinc-400 transition group relative">
               COMMUNITY
-              <span className="absolute -top-1 -right-4 bg-red-600 text-[6px] px-1 rounded animate-pulse text-white">LIVE</span>
+              <span className="absolute -top-1 -right-4 bg-red-600 text-[6px] px-1 rounded animate-pulse text-white tracking-normal">LIVE</span>
             </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
             <button

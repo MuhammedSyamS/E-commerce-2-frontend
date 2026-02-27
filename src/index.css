@@ -10,8 +10,32 @@ body {
   margin: 0;
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* Font Scaling: Root font size adjustment for mobile */
   font-size: 16px;
+  line-height: 1.5;
+  color: #1a1a1a;
+}
+
+:root {
+  --fluid-h1: clamp(1.75rem, 5vw + 1rem, 4.5rem);
+  --fluid-h2: clamp(1.5rem, 4vw + 1rem, 3.75rem);
+  --fluid-h3: clamp(1.25rem, 3vw + 1rem, 2.5rem);
+  --fluid-label: clamp(0.6rem, 0.5vw + 0.4rem, 0.75rem);
+}
+
+@layer utilities {
+  .tracking-extrawide {
+    letter-spacing: 0.4em;
+  }
+
+  .tracking-mega {
+    letter-spacing: 0.8em;
+  }
+
+  .leading-tighter {
+    line-height: 1.1;
+  }
 }
 
 /* Instant Responsive Images Snippet */

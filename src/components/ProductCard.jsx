@@ -236,15 +236,15 @@ const ProductCard = ({ product, onAddToCart }) => {
 
       {/* PRODUCT INFO */}
       <div className="px-1 text-center">
-        <h3 className="text-base md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
+        <h3 className="text-sm md:text-[12px] font-black uppercase tracking-tight mb-0.5 md:mb-1 truncate">{product.name}</h3>
         <div className="flex items-center justify-center gap-2">
           {isFlashSale ? (
             <>
-              <Price amount={discountPrice} className="text-base md:text-[12px] font-black text-red-600" />
-              <Price amount={product.price} className="text-sm md:text-[10px] text-zinc-400 line-through" />
+              <Price amount={discountPrice} className="text-sm md:text-[12px] font-black text-red-600" />
+              <Price amount={product.price} className="text-[10px] text-zinc-400 line-through" />
             </>
           ) : (
-            <Price amount={product.price} className="text-base md:text-[12px] font-black" />
+            <Price amount={product.price} className="text-sm md:text-[12px] font-black" />
           )}
         </div>
 
