@@ -294,7 +294,16 @@ const Navbar = () => {
             {/* NOTIFICATIONS BELL */}
             {user && (
               <div className="relative group">
-                <button onClick={() => setShowNotif(!showNotif)} className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all">
+                <button
+                  onClick={() => {
+                    if (window.innerWidth < 768) {
+                      navigate('/account/notifications');
+                    } else {
+                      setShowNotif(!showNotif);
+                    }
+                  }}
+                  className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
+                >
                   <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
                   {unreadCount > 0 && (
                     <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">

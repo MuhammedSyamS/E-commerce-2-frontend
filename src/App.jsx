@@ -12,84 +12,86 @@ import ErrorBoundary from './components/ErrorBoundary';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 
 // Lazy Load Pages
-const Home = lazy(() => import('./pages/Home'));
-const Shop = lazy(() => import('./pages/Shop'));
-const ProductDetails = lazy(() => import('./pages/ProductDetails'));
-const SocialFeed = lazy(() => import('./pages/SocialFeed'));
-const Login = lazy(() => import('./pages/Login'));
-const Register = lazy(() => import('./pages/Register'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const Home = lazyWithRetry(() => import('./pages/Home'));
+const Shop = lazyWithRetry(() => import('./pages/Shop'));
+const ProductDetails = lazyWithRetry(() => import('./pages/ProductDetails'));
+const SocialFeed = lazyWithRetry(() => import('./pages/SocialFeed'));
+const Login = lazyWithRetry(() => import('./pages/Login'));
+const Register = lazyWithRetry(() => import('./pages/Register'));
+const ForgotPassword = lazyWithRetry(() => import('./pages/ForgotPassword'));
+
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Account & Settings
-const Account = lazy(() => import('./pages/Account'));
-const EditProfile = lazy(() => import('./pages/EditProfile'));
-const LoyaltyLedger = lazy(() => import('./pages/account/LoyaltyLedger'));
-const AddressBook = lazy(() => import('./pages/settings/AddressBook'));
-const Notifications = lazy(() => import('./pages/settings/Notifications'));
-const Payments = lazy(() => import('./pages/settings/Payments'));
-const Security = lazy(() => import('./pages/settings/Security'));
-const Settings = lazy(() => import('./pages/settings/Settings'));
+const Account = lazyWithRetry(() => import('./pages/Account'));
+const EditProfile = lazyWithRetry(() => import('./pages/EditProfile'));
+const LoyaltyLedger = lazyWithRetry(() => import('./pages/account/LoyaltyLedger'));
+const AddressBook = lazyWithRetry(() => import('./pages/settings/AddressBook'));
+const Notifications = lazyWithRetry(() => import('./pages/settings/Notifications'));
+const Payments = lazyWithRetry(() => import('./pages/settings/Payments'));
+const Security = lazyWithRetry(() => import('./pages/settings/Security'));
+const Settings = lazyWithRetry(() => import('./pages/settings/Settings'));
 
 // Orders & Checkout
-const Wishlist = lazy(() => import('./pages/Wishlist'));
-const SharedWishlist = lazy(() => import('./pages/SharedWishlist')); // NEW
-const Orders = lazy(() => import('./pages/Orders'));
-const OrderDetails = lazy(() => import('./pages/OrderDetails'));
-const MyReturns = lazy(() => import('./pages/MyReturns'));
-const UserReviews = lazy(() => import('./pages/UserReviews'));
-const TrackOrder = lazy(() => import('./pages/TrackOrder')); // NEW
-const Returns = lazy(() => import('./pages/Returns'));
-const Contact = lazy(() => import('./pages/support/Contact'));
-const Checkout = lazy(() => import('./pages/Checkout'));
-const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
-const NotFound = lazy(() => import('./pages/NotFound'));
-const Reviews = lazy(() => import('./pages/Reviews'));
-const SupportHub = lazy(() => import('./pages/SupportHub'));
-const ReturnPortal = lazy(() => import('./pages/ReturnPortal'));
-const Invoice = lazy(() => import('./pages/Invoice'));
+const Wishlist = lazyWithRetry(() => import('./pages/Wishlist'));
+const SharedWishlist = lazyWithRetry(() => import('./pages/SharedWishlist')); // NEW
+const Orders = lazyWithRetry(() => import('./pages/Orders'));
+const OrderDetails = lazyWithRetry(() => import('./pages/OrderDetails'));
+const MyReturns = lazyWithRetry(() => import('./pages/MyReturns'));
+const UserReviews = lazyWithRetry(() => import('./pages/UserReviews'));
+const TrackOrder = lazyWithRetry(() => import('./pages/TrackOrder')); // NEW
+const Returns = lazyWithRetry(() => import('./pages/Returns'));
+const Contact = lazyWithRetry(() => import('./pages/support/Contact'));
+const Checkout = lazyWithRetry(() => import('./pages/Checkout'));
+const OrderSuccess = lazyWithRetry(() => import('./pages/OrderSuccess'));
+const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
+const Reviews = lazyWithRetry(() => import('./pages/Reviews'));
+const SupportHub = lazyWithRetry(() => import('./pages/SupportHub'));
+const ReturnPortal = lazyWithRetry(() => import('./pages/ReturnPortal'));
+const Invoice = lazyWithRetry(() => import('./pages/Invoice'));
 
 // Content Pages
-const About = lazy(() => import('./pages/About'));
-const Shipping = lazy(() => import('./pages/Shipping'));
-const CareGuide = lazy(() => import('./pages/CareGuide'));
-const Privacy = lazy(() => import('./pages/Privacy'));
-const Terms = lazy(() => import('./pages/Terms'));
-const HelpCenter = lazy(() => import('./pages/support/HelpCenter')); // NEW: Added HelpCenter lazy import
-const TicketForm = lazy(() => import('./pages/support/TicketForm'));
+const About = lazyWithRetry(() => import('./pages/About'));
+const Shipping = lazyWithRetry(() => import('./pages/Shipping'));
+const CareGuide = lazyWithRetry(() => import('./pages/CareGuide'));
+const Privacy = lazyWithRetry(() => import('./pages/Privacy'));
+const Terms = lazyWithRetry(() => import('./pages/Terms'));
+const HelpCenter = lazyWithRetry(() => import('./pages/support/HelpCenter')); // NEW: Added HelpCenter lazy import
+const TicketForm = lazyWithRetry(() => import('./pages/support/TicketForm'));
 
 // Content Pages
-const Blog = lazy(() => import('./pages/Blog')); // NEW
-const BlogPost = lazy(() => import('./pages/BlogPost')); // NEW
+const Blog = lazyWithRetry(() => import('./pages/Blog')); // NEW
+const BlogPost = lazyWithRetry(() => import('./pages/BlogPost')); // NEW
 
 // Admin Pages
-const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
-const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
-const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'));
-const AnalyticsRevenue = lazy(() => import('./pages/admin/analytics/AnalyticsRevenue')); // Explicit Import
-const AnalyticsOrders = lazy(() => import('./pages/admin/analytics/AnalyticsOrders'));
-const AnalyticsUsers = lazy(() => import('./pages/admin/analytics/AnalyticsUsers'));
-const AdminProducts = lazy(() => import('./pages/admin/Admin'));
-const AdminHealth = lazy(() => import('./pages/admin/AdminHealth'));
-const AddProduct = lazy(() => import('./pages/admin/AddProduct'));
-const EditProduct = lazy(() => import('./pages/admin/EditProduct'));
-const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
-const AdminBulkEditor = lazy(() => import('./pages/admin/AdminBulkEditor'));
-const AdminReturns = lazy(() => import('./pages/admin/AdminReturns'));
-const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
-const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
-const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
-const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
-const AdminMarketing = lazy(() => import('./pages/admin/AdminMarketing'));
-const AdminLooks = lazy(() => import('./pages/admin/AdminLooks')); // NEW
-const AdminBlog = lazy(() => import('./pages/admin/AdminBlog')); // NEW
-const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
-const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
-const AdminSupport = lazy(() => import('./pages/admin/AdminSupport'));
-const AdminEnquiries = lazy(() => import('./pages/admin/AdminEnquiries')); // NEW
-// const HelpCenter = lazy(() => import('./pages/help/HelpCenter')); // Replaced by earlier import or different path?
-// Keeping existing import on line 52 as: const HelpCenter = lazy(() => import('./pages/support/HelpCenter'));
-const TicketDetails = lazy(() => import('./pages/help/TicketDetails'));
-const SupportTickets = lazy(() => import('./pages/help/SupportTickets'));
+const AdminLayout = lazyWithRetry(() => import('./pages/admin/AdminLayout'));
+const AdminDashboard = lazyWithRetry(() => import('./pages/admin/Dashboard'));
+const AdminAnalytics = lazyWithRetry(() => import('./pages/admin/AdminAnalytics'));
+const AnalyticsRevenue = lazyWithRetry(() => import('./pages/admin/analytics/AnalyticsRevenue')); // Explicit Import
+const AnalyticsOrders = lazyWithRetry(() => import('./pages/admin/analytics/AnalyticsOrders'));
+const AnalyticsUsers = lazyWithRetry(() => import('./pages/admin/analytics/AnalyticsUsers'));
+const AdminProducts = lazyWithRetry(() => import('./pages/admin/Admin'));
+const AdminHealth = lazyWithRetry(() => import('./pages/admin/AdminHealth'));
+const AddProduct = lazyWithRetry(() => import('./pages/admin/AddProduct'));
+const EditProduct = lazyWithRetry(() => import('./pages/admin/EditProduct'));
+const AdminOrders = lazyWithRetry(() => import('./pages/admin/AdminOrders'));
+const AdminBulkEditor = lazyWithRetry(() => import('./pages/admin/AdminBulkEditor'));
+const AdminReturns = lazyWithRetry(() => import('./pages/admin/AdminReturns'));
+const AdminUsers = lazyWithRetry(() => import('./pages/admin/AdminUsers'));
+const AdminSettings = lazyWithRetry(() => import('./pages/admin/AdminSettings'));
+const AdminReviews = lazyWithRetry(() => import('./pages/admin/AdminReviews'));
+const AdminPayments = lazyWithRetry(() => import('./pages/admin/AdminPayments'));
+const AdminMarketing = lazyWithRetry(() => import('./pages/admin/AdminMarketing'));
+const AdminLooks = lazyWithRetry(() => import('./pages/admin/AdminLooks')); // NEW
+const AdminBlog = lazyWithRetry(() => import('./pages/admin/AdminBlog')); // NEW
+const AdminLogs = lazyWithRetry(() => import('./pages/admin/AdminLogs'));
+const AdminReports = lazyWithRetry(() => import('./pages/admin/AdminReports'));
+const AdminSupport = lazyWithRetry(() => import('./pages/admin/AdminSupport'));
+const AdminEnquiries = lazyWithRetry(() => import('./pages/admin/AdminEnquiries')); // NEW
+// const HelpCenter = lazyWithRetry(() => import('./pages/help/HelpCenter')); // Replaced by earlier import or different path?
+// Keeping existing import on line 52 as: const HelpCenter = lazyWithRetry(() => import('./pages/support/HelpCenter'));
+const TicketDetails = lazyWithRetry(() => import('./pages/help/TicketDetails'));
+const SupportTickets = lazyWithRetry(() => import('./pages/help/SupportTickets'));
 
 
 // Loading Fallback

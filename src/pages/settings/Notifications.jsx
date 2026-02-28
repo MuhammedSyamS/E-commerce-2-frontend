@@ -101,10 +101,10 @@ const Notifications = () => {
             <button onClick={() => navigate('/account')} className="group flex items-center gap-2 text-zinc-400 font-medium text-xs hover:text-black mb-6 transition-colors tracking-wide">
               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> BACK TO DASHBOARD
             </button>
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-2">
+            <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-2">
               Inbox
             </h1>
-            <p className="text-zinc-500 font-medium">
+            <p className="text-xs md:text-sm text-zinc-500 font-medium tracking-tight">
               Stay updated on your orders and exclusive drops.
             </p>
           </div>
@@ -202,7 +202,7 @@ const Notifications = () => {
                     {/* Middle: Text Content */}
                     <div className="flex-1 min-w-0 pt-0.5">
                       <div className="flex justify-between items-baseline mb-1 pr-6">
-                        <h4 className={`text-base font-semibold truncate ${!notif.isRead ? 'text-zinc-900' : 'text-zinc-600'}`}>
+                        <h4 className={`text-sm md:text-base font-semibold truncate ${!notif.isRead ? 'text-zinc-900' : 'text-zinc-600'}`}>
                           {notif.title}
                         </h4>
                         <span className="text-xs text-zinc-400 whitespace-nowrap ml-4">
@@ -210,7 +210,7 @@ const Notifications = () => {
                         </span>
                       </div>
 
-                      <p className={`text-sm leading-relaxed mb-3 ${!notif.isRead ? 'text-zinc-600' : 'text-zinc-400'}`}>
+                      <p className={`text-[11px] md:text-sm leading-relaxed mb-3 ${!notif.isRead ? 'text-zinc-600' : 'text-zinc-400'}`}>
                         {notif.message}
                       </p>
 
