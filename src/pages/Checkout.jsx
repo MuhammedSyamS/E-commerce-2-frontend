@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useStore } from '../store/useStore';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
@@ -103,10 +103,20 @@ const Checkout = () => {
     }
   }, [cartItems.length, navigate, isSubmitting]);
 
+  const paymentRef = useRef(null);
+
   const goToSelection = (e) => {
     e.preventDefault();
     setStep('selection');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Scroll directly to the payment/step indicator section
+    setTimeout(() => {
+      if (paymentRef.current) {
+        paymentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100);
   };
 
   const goToPayment = (type) => {
@@ -353,24 +363,23 @@ const Checkout = () => {
         {/* GRID LAYOUT: LEFT (FORM) | RIGHT (SUMMARY) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
-          {/* LEFT COLUMN: FORMS & ACTIONS */}
-          <div className="lg:col-span-7 xl:col-span-8 order-1">
+          <div className="lg:col-span-7 xl:col-span-8 order-1 scroll-mt-40 md:scroll-mt-52" ref={paymentRef}>
 
             {/* STEP INDICATOR (Optional visual aid) */}
-            <div className="flex items-center gap-4 mb-10 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-300">
+            <div className="flex items-center gap-4 mb-10 !text-[8px] md:!text-[10px] font-black uppercase tracking-widest text-zinc-300">
               <span className={`flex items-center gap-2 ${step === 'shipping' ? 'text-black' : 'text-green-500'}`}>
-                <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center">1</span> Shipping
+                <span className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-current flex items-center justify-center">1</span> Shipping
               </span>
               <div className="w-8 h-px bg-zinc-200"></div>
               <span className={`flex items-center gap-2 ${step !== 'shipping' ? 'text-black' : ''}`}>
-                <span className="w-5 h-5 rounded-full border border-current flex items-center justify-center">2</span> Payment
+                <span className="w-4 h-4 md:w-5 md:h-5 rounded-full border border-current flex items-center justify-center">2</span> Payment
               </span>
             </div>
 
             {/* STEP 1: SHIPPING FORM */}
             {step === 'shipping' && (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <h2 className="text-2xl md:text-xl font-black uppercase tracking-tight mb-8">Shipping Details</h2>
+                <h2 className="!text-lg md:!text-xl font-black uppercase tracking-tight mb-8">Shipping Details</h2>
 
                 <form id="checkout-form" onSubmit={goToSelection} className="space-y-8">
                   {user?.addresses?.length > 0 && (
@@ -388,7 +397,7 @@ const Checkout = () => {
                       </div>
                       <div className="flex items-center gap-4 my-8">
                         <div className="h-px bg-zinc-100 flex-1"></div>
-                        <span className="text-sm md:text-[9px] font-black uppercase text-zinc-300">OR ENTER NEW</span>
+                        <span className="!text-[8px] md:!text-[9px] font-black uppercase text-zinc-300">OR ENTER NEW</span>
                         <div className="h-px bg-zinc-100 flex-1"></div>
                       </div>
                     </div>
@@ -396,28 +405,28 @@ const Checkout = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">First Name</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
+                      <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">First Name</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.firstName} onChange={e => setFormData({ ...formData, firstName: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Last Name</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
+                      <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">Last Name</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.lastName} onChange={e => setFormData({ ...formData, lastName: e.target.value })} />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Address</label>
-                    <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
+                    <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">Address</label>
+                    <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.address} onChange={e => setFormData({ ...formData, address: e.target.value })} />
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">
-                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">City</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
+                      <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">City</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
-                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
+                      <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
+                      <input type="text" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
                     </div>
                   </div>
 
@@ -427,8 +436,8 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-xl shadow-sm transition-colors ${isGift ? 'bg-white/10' : 'bg-white'}`}><Gift size={18} className={isGift ? 'text-white' : 'text-zinc-900'} /></div>
                         <div>
-                          <p className="text-sm md:text-xs font-black uppercase tracking-tight">Elite Gift Packaging</p>
-                          <p className={`text-xs md:text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
+                          <p className="!text-[10px] md:!text-xs font-black uppercase tracking-tight">Elite Gift Packaging</p>
+                          <p className={`!text-[8px] md:!text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
                         </div>
                       </div>
                       <button
@@ -453,8 +462,8 @@ const Checkout = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
-                    <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                    <label className="!text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
+                    <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold !text-xs md:!text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
 
                 </form>
@@ -513,7 +522,7 @@ const Checkout = () => {
           {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
           <div className="lg:col-span-5 xl:col-span-4 order-2">
             <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
-              <h3 className="text-sm md:text-xs font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
+              <h3 className="!text-xs md:!text-[10px] font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
 
               <div className="space-y-4 mb-8 custom-scrollbar max-h-[40vh] overflow-y-auto pr-2">
                 {cartItems.map((item, idx) => {
@@ -524,14 +533,14 @@ const Checkout = () => {
 
                   return (
                     <div key={idx} className="flex gap-4 items-center">
-                      <div className="w-12 h-16 bg-white rounded-lg border border-zinc-200 overflow-hidden shrink-0">
+                      <div className="w-10 h-14 md:w-12 md:h-16 bg-white rounded-lg border border-zinc-200 overflow-hidden shrink-0">
                         {itemImg && <img src={itemImg} alt={itemName} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm md:text-xs font-bold uppercase truncate">{itemName}</p>
+                        <p className="!text-[10px] md:!text-xs font-bold uppercase truncate">{itemName}</p>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs md:text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
-                          <Price amount={itemPrice} className="text-xs md:text-[10px] font-bold" />
+                          <span className="!text-[8px] md:!text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
+                          <Price amount={itemPrice} className="!text-[9px] md:!text-[10px] font-bold" />
                         </div>
                       </div>
                     </div>
@@ -547,8 +556,8 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
                         <div>
-                          <p className="text-sm md:text-[10px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
-                          <p className="text-xs md:text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
+                          <p className="!text-[9px] md:!text-[10px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
+                          <p className="!text-[7px] md:!text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
                         </div>
                       </div>
                       <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
@@ -558,33 +567,33 @@ const Checkout = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between !text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Subtotal</span>
                   <Price amount={subtotal} />
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-green-600">
+                  <div className="flex justify-between !text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-green-600">
                     <span>Coupon Discount</span>
                     <Price amount={discountAmount} />
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-amber-600">
+                  <div className="flex justify-between !text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-amber-600">
                     <span>Loyalty Redemption</span>
                     <span>-₹{loyaltyDiscount}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between !text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Tax ({siteSettings.taxRate}%)</span>
                   <Price amount={taxPrice} />
                 </div>
-                <div className="flex justify-between text-sm md:text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+                <div className="flex justify-between !text-[9px] md:!text-[10px] font-bold uppercase tracking-widest text-zinc-500">
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
-                <div className="flex justify-between text-2xl md:text-xl font-black uppercase pt-2">
+                <div className="flex justify-between !text-lg md:!text-xl font-black uppercase pt-2">
                   <span>Total</span>
-                  <Price amount={Math.max(0, total - loyaltyDiscount)} className="text-3xl md:text-2xl" />
+                  <Price amount={Math.max(0, total - loyaltyDiscount)} className="!text-xl md:!text-2xl" />
                 </div>
               </div>
 
@@ -592,10 +601,10 @@ const Checkout = () => {
               <div className="mt-8 pt-6 border-t border-zinc-100">
                 <div className="flex items-center gap-3 text-zinc-400 mb-2">
                   <Truck size={14} />
-                  <span className="text-sm md:text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
+                  <span className="!text-[9px] md:!text-[10px] font-black uppercase tracking-widest">Estimated Delivery</span>
                 </div>
-                <p className="text-sm md:text-xs font-bold text-black">{getDeliveryEstimate()}</p>
-                <p className="text-xs md:text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
+                <p className="!text-[10px] md:!text-xs font-bold text-black">{getDeliveryEstimate()}</p>
+                <p className="!text-[8px] md:!text-[9px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
               </div>
 
 
