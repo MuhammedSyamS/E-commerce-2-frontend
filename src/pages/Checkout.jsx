@@ -473,7 +473,7 @@ const Checkout = () => {
             {/* STEP 2: PAYMENT METHOD */}
             {step !== 'shipping' && (
               <div className="animate-in fade-in slide-in-from-right-8 duration-500">
-                <h2 className="font-black uppercase tracking-tight mb-8" style={{ fontSize: 'clamp(18px, 4vw, 22px)' }}>Select Payment Method</h2>
+                <h2 className="font-black uppercase tracking-tight mb-8" style={{ fontSize: 'clamp(14px, 3vw, 18px)' }}>Select Payment Method</h2>
 
                 <div className="space-y-4">
                   {[
@@ -492,8 +492,8 @@ const Checkout = () => {
                           {method.icon}
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-black uppercase tracking-wide" style={{ fontSize: 'clamp(14px, 3.5vw, 16px)' }}>{method.name}</h3>
-                          <p className={`font-medium mt-1 uppercase tracking-widest ${step === method.id ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>{method.desc}</p>
+                          <h3 className="font-black uppercase tracking-wide" style={{ fontSize: 'clamp(11px, 2.5vw, 14px)' }}>{method.name}</h3>
+                          <p className={`font-medium mt-1 uppercase tracking-widest ${step === method.id ? 'text-zinc-400' : 'text-zinc-500'}`} style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>{method.desc}</p>
                         </div>
                         {step === method.id && <CheckCircle2 className="text-green-500" size={24} />}
                       </button>
@@ -522,7 +522,7 @@ const Checkout = () => {
           {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
           <div className="lg:col-span-5 xl:col-span-4 order-2">
             <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
-              <h3 className="font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4" style={{ fontSize: 'clamp(11px, 2.5vw, 14px)' }}>Bag Summary</h3>
+              <h3 className="font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4" style={{ fontSize: 'clamp(12px, 3vw, 16px)' }}>Bag Summary</h3>
 
               <div className="space-y-4 mb-8 custom-scrollbar max-h-[40vh] overflow-y-auto pr-2">
                 {cartItems.map((item, idx) => {
@@ -537,10 +537,10 @@ const Checkout = () => {
                         {itemImg && <img src={itemImg} alt={itemName} className="w-full h-full object-cover" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold uppercase truncate" style={{ fontSize: 'clamp(10px, 2.5vw, 12px)' }}>{itemName}</p>
+                        <p className="font-bold uppercase truncate" style={{ fontSize: 'clamp(12px, 3vw, 14px)' }}>{itemName}</p>
                         <div className="flex justify-between items-center mt-1">
-                          <span className="text-zinc-500 font-mono" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>Qty: {itemQty}</span>
-                          <Price amount={itemPrice} className="font-bold" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }} />
+                          <span className="text-zinc-500 font-mono" style={{ fontSize: 'clamp(10px, 2.5vw, 12px)' }}>Qty: {itemQty}</span>
+                          <Price amount={itemPrice} className="font-bold" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }} />
                         </div>
                       </div>
                     </div>
@@ -556,8 +556,8 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
                         <div>
-                          <p className="font-black uppercase tracking-tight" style={{ fontSize: 'clamp(9px, 2.2vw, 11px)' }}>Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
-                          <p className="font-bold text-zinc-400 uppercase tracking-widest" style={{ fontSize: 'clamp(7px, 1.8vw, 9px)' }}>Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
+                          <p className="font-black uppercase tracking-tight" style={{ fontSize: 'clamp(10px, 2.5vw, 12px)' }}>Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
+                          <p className="font-bold text-zinc-400 uppercase tracking-widest" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
                         </div>
                       </div>
                       <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
@@ -567,27 +567,27 @@ const Checkout = () => {
                   </div>
                 )}
 
-                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
                   <span>Subtotal</span>
                   <Price amount={subtotal} />
                 </div>
                 {discountAmount > 0 && (
-                  <div className="flex justify-between font-bold uppercase tracking-widest text-green-600" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+                  <div className="flex justify-between font-bold uppercase tracking-widest text-green-600" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
                     <span>Coupon Discount</span>
                     <Price amount={discountAmount} />
                   </div>
                 )}
                 {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between font-bold uppercase tracking-widest text-amber-600" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+                  <div className="flex justify-between font-bold uppercase tracking-widest text-amber-600" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
                     <span>Loyalty Redemption</span>
                     <span>-₹{loyaltyDiscount}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
                   <span>Tax ({siteSettings.taxRate}%)</span>
                   <Price amount={taxPrice} />
                 </div>
-                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(9px, 2vw, 11px)' }}>
+                <div className="flex justify-between font-bold uppercase tracking-widest text-zinc-500" style={{ fontSize: 'clamp(11px, 2.5vw, 13px)' }}>
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
