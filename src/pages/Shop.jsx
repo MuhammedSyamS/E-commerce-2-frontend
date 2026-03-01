@@ -273,18 +273,18 @@ const Shop = () => {
       </Helmet>
 
       {/* --- ELITE SHOP HERO --- */}
-      <section className="relative pt-40 pb-24 md:pt-56 md:pb-32 px-6 overflow-hidden">
+      <section className="relative pt-36 pb-20 md:pt-56 md:pb-32 px-6 overflow-hidden">
         {/* Abstract Background Elements */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-zinc-50 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 animate-pulse" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-zinc-50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 -z-10" />
 
         <div className="container-responsive relative">
           <div className="max-w-3xl">
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.85] mb-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+            <h1 className="!text-5xl md:!text-8xl lg:!text-9xl font-black uppercase tracking-tighter leading-[0.85] mb-4 md:mb-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
               The<br />
               Collection
             </h1>
-            <div className="flex flex-col md:flex-row md:items-center gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
               <div className="h-px w-20 bg-black hidden md:block" />
               <p className="text-[10px] md:text-xs font-black uppercase tracking-[0.5em] text-zinc-400">
                 Spring-Summer 2026 Collection
@@ -364,11 +364,11 @@ const Shop = () => {
           ...(category !== 'All' ? [{ label: category, path: `/shop?category=${category}` }] : [])
         ]} />
 
-        <div className="flex flex-col lg:flex-row gap-16 mt-8">
+        <div className="flex flex-col lg:flex-row gap-8 md:gap-16 mt-6 md:mt-8">
           {/* --- DESKTOP SIDEBAR --- */}
           <aside className="hidden lg:block w-72 shrink-0 sticky top-48 h-[calc(100vh-240px)] overflow-y-auto no-scrollbar pb-20">
             <div className="mb-12">
-              <h2 className="text-4xl font-black uppercase tracking-tighter leading-none mb-1">Catalog</h2>
+              <h2 className="!text-3xl lg:!text-4xl font-black uppercase tracking-tighter leading-none mb-1">Catalog</h2>
               <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-300">Hand-Picked Selection</p>
             </div>
             <FilterContent />
@@ -434,10 +434,10 @@ const Shop = () => {
             className={`absolute top-0 right-0 w-full max-w-[480px] h-full bg-zinc-950 text-white shadow-3xl transition-transform duration-700 cubic-bezier(0.16, 1, 0.3, 1) p-10 md:p-14 flex flex-col ${isDrawerOpen ? 'translate-x-0' : 'translate-x-full'
               }`}
           >
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center justify-between mb-8 md:mb-12">
               <div>
-                <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">Catalog</h2>
-                <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Products</p>
+                <h2 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter text-white leading-none">Catalog</h2>
+                <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-1 md:mt-2">Filter Products</p>
               </div>
               <button
                 onClick={() => setIsDrawerOpen(false)}
