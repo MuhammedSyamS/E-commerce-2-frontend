@@ -58,13 +58,13 @@ const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-8">
 
           {/* BRAND STORY */}
-          <div className="lg:col-span-3 space-y-6 text-center lg:text-left">
-            <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter text-white">SLOOK</h2>
-            <p className="text-zinc-500 text-base md:text-xs leading-relaxed max-w-sm font-medium">
+          <div className="lg:col-span-3 space-y-4 md:space-y-6 text-center lg:text-left">
+            <h2 className="text-3xl md:text-4xl font-black uppercase tracking-tighter text-white">SLOOK</h2>
+            <p className="text-zinc-500 text-[11px] md:text-xs leading-relaxed max-w-sm font-medium mx-auto lg:mx-0">
               Premium essentials for the modern lifestyle.
               Curated for quality, designed for life.
             </p>
-            <div className="flex justify-center lg:justify-start gap-6 pt-4">
+            <div className="flex justify-center lg:justify-start gap-6 pt-2 md:pt-4">
               <Instagram className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
               <XIcon className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
               <Facebook className="w-4 h-4 cursor-pointer text-zinc-500 hover:text-white transition-all" />
@@ -73,9 +73,9 @@ const Footer = () => {
           </div>
 
           {/* SHOP LINKS */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Shop</h3>
-            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+            <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Shop</h3>
+            <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/shop" className="hover:text-white transition-colors">New Arrivals</Link></li>
               <li><Link to="/shop?filter=best-sellers" className="hover:text-white transition-colors">Best Sellers</Link></li>
               <li><Link to="/shop" className="hover:text-white transition-colors">All Products</Link></li>
@@ -83,9 +83,9 @@ const Footer = () => {
           </div>
 
           {/* SUPPORT LINKS */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
-            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+            <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
+            <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/contact" className="hover:text-white transition-colors text-orange-400">Contact Us</Link></li>
               <li><Link to="/about" className="hover:text-white transition-colors">Our Story</Link></li>
               <li><Link to="/support" className="hover:text-white transition-colors">Support Hub & FAQ</Link></li>
@@ -95,9 +95,9 @@ const Footer = () => {
           </div>
 
           {/* TRACK LINKS */}
-          <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
-            <ul className="space-y-4 text-base md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+            <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
+            <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Order Track</Link></li>
               <li><Link to="/track-order?type=return" className="hover:text-white transition-colors">Return Track</Link></li>
               <li><Link to="/track-order?type=exchange" className="hover:text-white transition-colors">Exchange Track</Link></li>
@@ -105,9 +105,9 @@ const Footer = () => {
           </div>
 
           {/* NEWSLETTER */}
-          <div className="lg:col-span-3 space-y-6">
-            <h3 className="text-lg md:text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
-            <p className="text-zinc-500 text-sm md:text-[10px] font-bold uppercase tracking-widest leading-loose">
+          <div className="lg:col-span-3 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+            <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">The Inner Circle</h3>
+            <p className="text-zinc-500 text-[10px] md:text-[10px] font-bold uppercase tracking-widest leading-loose">
               Join for early access to drops and exclusive updates.
             </p>
             <div className="relative group">
