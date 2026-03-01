@@ -720,7 +720,8 @@ const ProductDetails = () => {
         <div ref={reviewsRef} className="mt-32 space-y-12">
           <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
             <button
-              className="px-6 py-4 md:px-10 md:py-6 text-xs md:text-sm font-bold uppercase tracking-widest text-black relative shrink-0"
+              className="px-6 py-4 md:px-10 md:py-6 font-bold uppercase tracking-widest text-black relative shrink-0"
+              style={{ fontSize: 'clamp(0.75rem, 3vw, 0.875rem)' }}
             >
               Verified Reviews
               <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black animate-in fade-in slide-in-from-bottom-1" />
@@ -769,7 +770,7 @@ const ProductDetails = () => {
                   </div>
 
                   <div className="space-y-6 bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100">
-                    <h3 className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900">Share Your Experience</h3>
+                    <div role="heading" aria-level="3" className="font-black uppercase tracking-widest text-zinc-900" style={{ fontSize: 'clamp(0.75rem, 3vw, 0.875rem)' }}>Share Your Experience</div>
                     <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
                     <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
                     <div className="flex gap-3">
@@ -783,10 +784,10 @@ const ProductDetails = () => {
                 {/* REVIEWS LIST */}
                 <div className="lg:col-span-8 space-y-12">
                   <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                    <h2 className="text-lg md:text-xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</h2>
+                    <div role="heading" aria-level="2" className="text-lg md:text-xl font-black tracking-tight text-zinc-900 uppercase" style={{ fontSize: 'clamp(1.125rem, 5vw, 1.25rem)' }}>Social Proof</div>
                     <div className="flex items-center gap-2 md:gap-4">
-                      <span className="text-xs md:text-sm font-black text-zinc-400 uppercase tracking-widest">Sort By</span>
-                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-xs md:text-sm font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                      <span className="text-xs md:text-sm font-black text-zinc-400 uppercase tracking-widest" style={{ fontSize: '10px' }}>Sort By</span>
+                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-xs md:text-sm font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1" style={{ fontSize: '10px' }}>
                         <option value="newest">Newest</option>
                         <option value="highest">Best Rating</option>
                         <option value="helpful">Helpful</option>
