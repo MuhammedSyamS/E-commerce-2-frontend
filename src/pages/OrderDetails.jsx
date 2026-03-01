@@ -139,7 +139,7 @@ const OrderDetails = () => {
                   Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
-              <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4">
+              <h1 className="!text-2xl md:!text-4xl font-black uppercase tracking-tighter mb-4">
                 Order #{order._id?.slice(-6).toUpperCase()}
               </h1>
 
@@ -179,7 +179,7 @@ const OrderDetails = () => {
 
           <div className="flex flex-col items-start lg:items-end gap-2">
             <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
-            <Price amount={order.totalPrice} className="text-4xl md:text-5xl font-black tracking-tighter" />
+            <Price amount={order.totalPrice} className="!text-2xl md:!text-4xl font-black tracking-tighter" />
           </div>
         </div>
 
@@ -203,8 +203,8 @@ const OrderDetails = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
             <div>
               <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
-              <h2 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
-                <Truck className="text-black" size={24} />
+              <h2 className="!text-xl md:!text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
+                <Truck className="text-black" size={20} />
                 {order.returnId ? (
                   <div className="flex flex-col">
                     <span className="text-orange-500 flex items-center gap-2">
@@ -386,7 +386,7 @@ const OrderDetails = () => {
                   </button>
                 </div>
               ) : (
-                <p className="text-zinc-500 italic">Expected dispatch within 24hrs</p>
+                <p className="text-zinc-500 font-medium">Expected dispatch within 24hrs</p>
               )}
             </div>
           </div>
@@ -400,7 +400,7 @@ const OrderDetails = () => {
               <span className="text-[10px] font-black uppercase tracking-widest">Special Delivery Instructions</span>
             </div>
             <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
-              <p className="text-xs font-bold text-zinc-600 leading-relaxed uppercase tracking-tight italic">
+              <p className="!text-[10px] md:!text-xs font-bold text-zinc-600 leading-relaxed uppercase tracking-tight">
                 "{order.orderNote}"
               </p>
             </div>
@@ -411,7 +411,7 @@ const OrderDetails = () => {
       {/* ITEMS SECTION */}
       <div className="bg-white rounded-3xl shadow-sm border border-zinc-100 overflow-hidden">
         <div className="p-8 border-b border-zinc-100">
-          <h2 className="text-xl font-black uppercase tracking-tight">Order Items ({order.orderItems?.length})</h2>
+          <h2 className="!text-lg md:!text-xl font-black uppercase tracking-tight">Order Items ({order.orderItems?.length})</h2>
         </div>
 
         {/* DESKTOP TABLE VIEW (Visible on lg+) */}
@@ -525,18 +525,18 @@ const OrderDetails = () => {
             return (
               <div key={i} className="p-6 flex flex-col gap-4">
                 <div className="flex gap-4">
-                  <div className="w-20 h-24 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
+                  <div className="w-16 h-20 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-bold text-sm uppercase leading-tight mb-1">{item.name}</h3>
+                    <h3 className="font-bold !text-[10px] md:!text-sm uppercase leading-tight mb-1">{item.name}</h3>
                     {item.selectedVariant && (
-                      <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
+                      <p className="!text-[9px] md:!text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">
                         {item.selectedVariant.size} {item.selectedVariant.color && `/ ${item.selectedVariant.color}`}
                       </p>
                     )}
-                    <p className="text-xs text-zinc-500 font-mono mb-2"><Price amount={item.price} /> x {item.qty}</p>
-                    <p className="font-black text-sm">Total: <Price amount={item.price * item.qty} /></p>
+                    <p className="!text-[10px] md:text-xs text-zinc-500 font-mono mb-2"><Price amount={item.price} /> x {item.qty}</p>
+                    <p className="font-black !text-[11px] md:text-sm">Total: <Price amount={item.price * item.qty} /></p>
 
                     <div className="mt-3 flex flex-wrap gap-2">
                       {item.status === 'Cancelled' ? (
