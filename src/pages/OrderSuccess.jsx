@@ -48,20 +48,20 @@ const OrderSuccess = () => {
           <CheckCircle size={48} strokeWidth={2.5} />
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-4">
+        <h1 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter mb-4">
           Order Confirmed
         </h1>
 
-        <p className="text-zinc-500 font-medium text-lg mb-10 leading-relaxed">
+        <p className="text-zinc-500 font-medium !text-sm md:!text-lg mb-10 leading-relaxed">
           Thank you for your purchase. We have received your order and will begin processing it shortly.
         </p>
 
         <div className="bg-zinc-50 p-6 rounded-2xl mb-6 border border-zinc-200 inline-block w-full">
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Order Reference</p>
-          <p className="text-xl md:text-2xl font-black font-mono tracking-widest select-all text-zinc-800">
+          <p className="!text-[10px] md:!text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Order Reference</p>
+          <p className="!text-lg md:!text-2xl font-black font-mono tracking-widest select-all text-zinc-800">
             #{orderId.slice(-8).toUpperCase()}
           </p>
-          <p className="text-[10px] text-zinc-400 mt-1 font-mono">{orderId}</p>
+          <p className="!text-[10px] md:!text-xs text-zinc-400 mt-1 font-mono">{orderId}</p>
         </div>
 
         {/* STYLISH TIMELINE */}
@@ -95,8 +95,8 @@ const OrderSuccess = () => {
             <AlertTriangle size={20} />
           </div>
           <div>
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-700 mb-1">Important: Return Policy</h4>
-            <p className="text-[11px] font-medium text-orange-800 leading-relaxed uppercase tracking-tight">
+            <h4 className="!text-[10px] md:!text-xs font-black uppercase tracking-widest text-orange-700 mb-1">Important: Return Policy</h4>
+            <p className="!text-[11px] md:!text-sm font-medium text-orange-800 leading-relaxed uppercase tracking-tight">
               Please record an <strong>Unboxing Video</strong> and take pictures when your package arrives.
               Returns and exchanges will <strong>ONLY</strong> be accepted with valid video proof.
             </p>

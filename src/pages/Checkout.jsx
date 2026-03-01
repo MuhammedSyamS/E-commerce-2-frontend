@@ -82,8 +82,10 @@ const Checkout = () => {
     lastName: user?.lastName || '',
     address: '',
     city: '',
+    state: '',
     zip: '',
     phone: '',
+    alternatePhone: '',
     orderNote: ''
   });
 
@@ -152,8 +154,10 @@ const Checkout = () => {
         shippingAddress: {
           address: formData.address,
           city: formData.city,
+          state: formData.state,
           postalCode: formData.zip,
-          phone: formData.phone
+          phone: formData.phone,
+          alternatePhone: formData.alternatePhone
         },
         paymentMethod: step,
         totalPrice: total, // Send the final total (including tax/shipping)
@@ -388,10 +392,10 @@ const Checkout = () => {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         {user.addresses.map((addr, i) => (
                           <div key={i} onClick={() => {
-                            setFormData({ ...formData, address: addr.street, city: addr.city, zip: addr.zip, phone: addr.phone || formData.phone });
+                            setFormData({ ...formData, address: addr.street, city: addr.city, state: addr.state || '', zip: addr.zip, phone: addr.phone || formData.phone, alternatePhone: addr.alternatePhone || formData.alternatePhone });
                           }} className="p-5 border border-zinc-200 rounded-2xl cursor-pointer hover:border-black hover:bg-zinc-50 transition-all text-left">
                             <p className="font-bold text-sm md:text-xs uppercase mb-1">{addr.label}</p>
-                            <p className="text-sm md:text-[11px] text-zinc-500 leading-relaxed font-medium">{addr.street}, {addr.city}</p>
+                            <p className="text-sm md:text-[11px] text-zinc-500 leading-relaxed font-medium">{addr.street}, {addr.city}{addr.state ? `, ${addr.state}` : ''}</p>
                           </div>
                         ))}
                       </div>
@@ -425,9 +429,14 @@ const Checkout = () => {
                       <input type="text" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} />
                     </div>
                     <div className="space-y-2">
-                      <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
-                      <input type="text" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
+                      <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">State</label>
+                      <input type="text" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} />
                     </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">Postal Code</label>
+                    <input type="text" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
                   </div>
 
                   {/* PREMIUM GIFT OPTIONS */}
@@ -461,9 +470,15 @@ const Checkout = () => {
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
-                    <input type="tel" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-2">
+                      <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">Phone</label>
+                      <input type="tel" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="!text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-400">Alternate Phone <span className="text-[8px] font-normal tracking-normal lowercase">(Optional)</span></label>
+                      <input type="tel" className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.alternatePhone} onChange={e => setFormData({ ...formData, alternatePhone: e.target.value })} />
+                    </div>
                   </div>
 
                 </form>
@@ -473,6 +488,52 @@ const Checkout = () => {
             {/* STEP 2: PAYMENT METHOD */}
             {step !== 'shipping' && (
               <div className="animate-in fade-in slide-in-from-right-8 duration-500">
+
+                {/* COUPON SECTION IN PAYMENT */}
+                <div className="mb-10 bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Zap size={18} className="text-zinc-900" />
+                    <h3 className="!text-[11px] md:!text-[13px] font-black uppercase tracking-widest">Apply Coupon</h3>
+                  </div>
+
+                  {couponApplied ? (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 p-4 rounded-2xl">
+                      <div>
+                        <p className="text-[10px] md:text-xs font-black uppercase text-green-700 tracking-widest">{couponApplied.code}</p>
+                        <p className="text-[9px] md:text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">
+                          Savings applied
+                        </p>
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 relative">
+                      <input
+                        type="text"
+                        placeholder="ENTER COUPON CODE"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-3 !text-[11px] md:!text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-colors"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={isValidatingCoupon || !couponCode.trim()}
+                        className="bg-black text-white px-6 rounded-2xl !text-[10px] md:!text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isValidatingCoupon ? 'Wait' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {discountError && (
+                    <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2 ml-2">{discountError}</p>
+                  )}
+                </div>
+
                 <h2 className="!text-sm md:!text-lg font-black uppercase tracking-tight mb-8">Select Payment Method</h2>
 
                 <div className="space-y-4">

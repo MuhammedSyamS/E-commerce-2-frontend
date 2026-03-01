@@ -18,6 +18,7 @@ const AddressBook = () => {
     state: '',
     zip: '',
     phone: '',
+    alternatePhone: '',
     isDefault: false
   });
 
@@ -40,7 +41,7 @@ const AddressBook = () => {
       setAddresses(data);
       setUser({ ...user, addresses: data });
       setShowForm(false);
-      setFormData({ label: 'Home', street: '', city: '', state: '', zip: '', phone: '', isDefault: false });
+      setFormData({ label: 'Home', street: '', city: '', state: '', zip: '', phone: '', alternatePhone: '', isDefault: false });
     } catch (err) {
       console.error("Add Address Error:", err);
       // Show explicit error: Server Message OR Network Message OR Fallback
@@ -88,6 +89,7 @@ const AddressBook = () => {
               <input required placeholder="City" value={formData.city} onChange={e => setFormData({ ...formData, city: e.target.value })} className="bg-white p-4 rounded-xl text-sm font-medium outline-none border border-transparent focus:border-black" />
               <input required placeholder="State" value={formData.state} onChange={e => setFormData({ ...formData, state: e.target.value })} className="bg-white p-4 rounded-xl text-sm font-medium outline-none border border-transparent focus:border-black" />
               <input required placeholder="ZIP Code" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} className="bg-white p-4 rounded-xl text-sm font-medium outline-none border border-transparent focus:border-black" />
+              <input placeholder="Alternate Phone (Optional)" value={formData.alternatePhone} onChange={e => setFormData({ ...formData, alternatePhone: e.target.value })} className="bg-white p-4 rounded-xl text-sm font-medium outline-none border border-transparent focus:border-black" />
 
               <button type="submit" className="md:col-span-2 bg-black text-white py-4 rounded-xl font-black uppercase text-xs tracking-widest hover:bg-zinc-800 transition">Save Address</button>
             </form>
@@ -109,7 +111,10 @@ const AddressBook = () => {
                 </div>
                 <p className="font-bold text-lg mb-1">{addr.street}</p>
                 <p className="text-zinc-500 text-sm">{addr.city}, {addr.state} {addr.zip}</p>
-                <p className="text-zinc-400 text-xs mt-4 font-mono">{addr.phone}</p>
+                <p className="text-zinc-400 text-xs mt-4 font-mono">
+                  {addr.phone}
+                  {addr.alternatePhone && <span className="text-zinc-300 ml-2">| {addr.alternatePhone}</span>}
+                </p>
               </div>
             ))}
           </div>
