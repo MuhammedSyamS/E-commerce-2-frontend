@@ -656,24 +656,26 @@ const ProductDetails = () => {
             <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden animate-in slide-in-from-bottom-full duration-700">
               <div className="flex items-center gap-4 max-w-lg mx-auto">
                 <div className="flex-1">
-                  <p className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 mb-0.5">Premium Access</p>
-                  <Price amount={currentPrice} className="text-2xl md:text-lg font-black text-zinc-900 tracking-tighter" />
+                  <p className="font-black uppercase tracking-widest text-zinc-400 mb-0.5" style={{ fontSize: 'clamp(7px, 1.5vw, 10px)' }}>Premium Access</p>
+                  <Price amount={currentPrice} className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(14px, 4vw, 18px)' }} />
                 </div>
                 <div className="flex-[2.5] flex gap-2">
                   <button
                     onClick={() => addToCart({ ...product, price: currentPrice, selectedVariant, quantity })}
-                    className="flex-1 h-14 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest text-sm md:text-xs flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
+                    className="flex-1 bg-zinc-100 text-black rounded-2xl font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
+                    style={{ height: 'clamp(2.5rem, 10vw, 3.5rem)', fontSize: 'clamp(9px, 2.5vw, 12px)' }}
                   >
-                    <ShoppingBag size={14} />
+                    <ShoppingBag size={12} />
                   </button>
                   <button
                     onClick={() => {
                       const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
                       navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
                     }}
-                    className="flex-[3] h-14 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm md:text-xs flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
+                    className="flex-[3] bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-all shadow-xl"
+                    style={{ height: 'clamp(2.5rem, 10vw, 3.5rem)', fontSize: 'clamp(9px, 2.5vw, 12px)' }}
                   >
-                    <Zap size={14} fill="currentColor" /> Checkout
+                    <Zap size={12} fill="currentColor" /> Secure Checkout
                   </button>
                 </div>
               </div>
@@ -691,22 +693,22 @@ const ProductDetails = () => {
 
           {/* TRUST ELEMENTS BAR (Directly Under Actions) */}
           <div className="flex flex-col gap-4 pt-8 border-t border-zinc-100 mt-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
-                <ShieldCheck size={18} className="text-zinc-900" />
-                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Secure Checkout</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-4">
+              <div className="flex items-center gap-2 md:gap-3 bg-zinc-50/50 p-2 md:p-3 rounded-xl border border-zinc-100/50">
+                <ShieldCheck size={14} className="text-zinc-900" />
+                <span className="font-black uppercase tracking-widest text-zinc-600" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>Secure Checkout</span>
               </div>
-              <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
-                <RotateCcw size={18} className="text-zinc-900" />
-                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">7 Days Return</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-zinc-50/50 p-2 md:p-3 rounded-xl border border-zinc-100/50">
+                <RotateCcw size={14} className="text-zinc-900" />
+                <span className="font-black uppercase tracking-widest text-zinc-600" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>7 Days Return</span>
               </div>
-              <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
-                <Lock size={18} className="text-zinc-900" />
-                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Secured Payment</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-zinc-50/50 p-2 md:p-3 rounded-xl border border-zinc-100/50">
+                <Lock size={14} className="text-zinc-900" />
+                <span className="font-black uppercase tracking-widest text-zinc-600" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>Secured Payment</span>
               </div>
-              <div className="flex items-center gap-3 bg-zinc-50/50 p-3 rounded-xl border border-zinc-100/50">
-                <Award size={18} className="text-zinc-900" />
-                <span className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600">Authentic Product</span>
+              <div className="flex items-center gap-2 md:gap-3 bg-zinc-50/50 p-2 md:p-3 rounded-xl border border-zinc-100/50">
+                <Award size={14} className="text-zinc-900" />
+                <span className="font-black uppercase tracking-widest text-zinc-600" style={{ fontSize: 'clamp(8px, 2vw, 10px)' }}>Authentic Product</span>
               </div>
             </div>
           </div>
