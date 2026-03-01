@@ -736,12 +736,12 @@ const ProductDetails = () => {
                 <div className="lg:col-span-4 space-y-12">
                   <div className="space-y-6">
                     <div className="flex items-baseline gap-2 md:gap-4">
-                      <h2 className="text-4xl md:text-5xl font-black text-zinc-900 tracking-tighter">{(product.rating || 0).toFixed(1)}</h2>
+                      <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
                       <div className="flex flex-col gap-1">
                         <div className="flex text-black">
                           {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
                         </div>
-                        <p className="!text-[10px] md:!text-xs font-black uppercase tracking-widest text-zinc-400">Based on {product.numReviews} Reviews</p>
+                        <p className="font-black uppercase tracking-widest text-zinc-400" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>Based on {product.numReviews} Reviews</p>
                       </div>
                     </div>
 
@@ -752,7 +752,7 @@ const ProductDetails = () => {
                         const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
                         return (
                           <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                            <span className="!text-[10px] md:!text-xs font-black text-zinc-900 w-2">{star}</span>
+                            <span className="font-black text-zinc-900 w-2" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{star}</span>
                             <div className="flex-1 h-1.5 md:h-2 bg-zinc-100 rounded-full overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
@@ -761,7 +761,7 @@ const ProductDetails = () => {
                                 className="h-full bg-zinc-900"
                               />
                             </div>
-                            <span className="!text-[10px] md:!text-xs font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6">{count}</span>
+                            <span className="font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{count}</span>
                           </div>
                         );
                       })}
@@ -773,10 +773,10 @@ const ProductDetails = () => {
                     <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
                     <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Artifact performance & aesthetics..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner" />
                     <div className="flex gap-2 md:gap-3">
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-2 md:py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 !text-[10px] md:!text-xs font-black uppercase tracking-widest"><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
-                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 py-2 md:py-3 rounded-xl hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 !text-[10px] md:!text-xs font-black uppercase tracking-widest"><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 font-black uppercase tracking-widest rounded-xl" style={{ fontSize: 'clamp(8px, 2vw, 12px)', height: 'clamp(2rem, 8vw, 3rem)' }}><Camera size={14} /> Image<input type="file" accept="image/*" multiple onChange={handleImageUpload} className="hidden" /></label>
+                      <label className="flex-1 cursor-pointer bg-white border border-zinc-200 hover:bg-zinc-50 transition-all flex items-center justify-center gap-2 font-black uppercase tracking-widest rounded-xl" style={{ fontSize: 'clamp(8px, 2vw, 12px)', height: 'clamp(2rem, 8vw, 3rem)' }}><Video size={14} /> Video<input type="file" accept="video/*" multiple onChange={handleVideoUpload} className="hidden" /></label>
                     </div>
-                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full h-10 md:h-14 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest !text-[10px] md:!text-xs shadow-lg hover:bg-black active:scale-95 transition-all">{submitting ? "Processing..." : "Submit Review"}</button>
+                    <button onClick={handleReviewSubmit} disabled={submitting} className="w-full bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-black active:scale-95 transition-all" style={{ fontSize: 'clamp(9px, 2.5vw, 12px)', height: 'clamp(2.5rem, 10vw, 3.5rem)' }}>{submitting ? "Processing..." : "Submit Review"}</button>
                   </div>
                 </div>
 
@@ -876,10 +876,10 @@ const ProductDetails = () => {
             <div className="mt-32 pt-20 border-t border-zinc-100">
               <div className="flex justify-between items-end mb-6 md:mb-12">
                 <div>
-                  <h2 className="!text-base md:!text-2xl font-black uppercase tracking-tighter">Recommended <span className="text-zinc-300">Artifacts</span></h2>
-                  <p className="!text-[10px] md:!text-xs font-black uppercase tracking-widest text-zinc-400 mt-1">Curated for your aesthetic</p>
+                  <h2 className="font-black uppercase tracking-tighter" style={{ fontSize: 'clamp(14px, 4vw, 24px)' }}>Recommended <span className="text-zinc-300">Artifacts</span></h2>
+                  <p className="font-black uppercase tracking-widest text-zinc-400 mt-1" style={{ fontSize: 'clamp(8px, 1.5vw, 12px)' }}>Curated for your aesthetic</p>
                 </div>
-                <Link to="/shop" className="!text-[10px] md:!text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All</Link>
+                <Link to="/shop" className="font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors" style={{ fontSize: 'clamp(8px, 1.5vw, 12px)' }}>View All</Link>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                 {suggestions.slice(0, 4).map((item) => (
@@ -888,10 +888,10 @@ const ProductDetails = () => {
                       <img src={item.image} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
                     </div>
                     <div className="space-y-1 px-1">
-                      <p className="!text-[10px] md:!text-sm font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1">{item.name}</p>
+                      <p className="font-black uppercase text-zinc-900 group-hover:text-black transition-colors line-clamp-1" style={{ fontSize: 'clamp(9px, 2vw, 14px)' }}>{item.name}</p>
                       <div className="flex justify-between items-center">
-                        <Price amount={item.price} className="!text-[10px] md:!text-sm font-black" />
-                        <span className="!text-[8px] md:!text-xs font-bold text-zinc-300 uppercase tracking-widest">{item.category}</span>
+                        <Price amount={item.price} className="font-black" style={{ fontSize: 'clamp(10px, 2.5vw, 14px)' }} />
+                        <span className="font-bold text-zinc-300 uppercase tracking-widest" style={{ fontSize: 'clamp(7px, 1.5vw, 12px)' }}>{item.category}</span>
                       </div>
                     </div>
                   </Link>
