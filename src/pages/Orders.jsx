@@ -49,7 +49,7 @@ const Orders = () => {
       <div className="container mx-auto max-w-5xl">
         <div className="mb-12 flex justify-between items-end">
           <div>
-            <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3 leading-none">
+            <h1 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter transform -skew-x-3 leading-none">
               My <span className="text-red-500">Orders</span>
             </h1>
             <div className="h-1 w-20 bg-black mt-4"></div>
@@ -69,7 +69,7 @@ const Orders = () => {
                   {/* LEFT: Order Info & Product Thumbnails */}
                   <div className="space-y-8 flex-grow">
                     <div className="flex items-center gap-4">
-                      <p className="font-black text-xl tracking-tighter uppercase italic">#{order._id.slice(-8).toUpperCase()}</p>
+                      <p className="font-black !text-lg md:!text-xl tracking-tighter uppercase">#{order._id.slice(-8).toUpperCase()}</p>
 
                       {/* STATUS BADGE LOGIC */}
                       {(() => {
@@ -136,13 +136,13 @@ const Orders = () => {
                   {/* RIGHT: Price & Action */}
                   <div className="flex flex-col justify-between items-end gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-6 lg:pt-0 lg:pl-10">
                     <div className="text-right">
-                      <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
-                      <Price amount={order.totalPrice} className="text-3xl font-black italic tracking-tighter transform -skew-x-3" />
+                      <p className="!text-[9px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
+                      <Price amount={order.totalPrice} className="!text-2xl md:!text-3xl font-black tracking-tighter transform -skew-x-3" />
                     </div>
 
                     <button
                       onClick={() => navigate(`/order/${order._id}`)}
-                      className="w-full lg:w-auto px-10 py-5 bg-black text-white font-black uppercase tracking-[0.2em] text-[10px] hover:bg-zinc-800 transition shadow-2xl active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full lg:w-auto px-10 py-5 bg-black text-white font-black uppercase tracking-[0.2em] !text-[9px] md:!text-[10px] hover:bg-zinc-800 transition shadow-2xl active:scale-95 flex items-center justify-center gap-2"
                     >
                       View Details <ChevronRight size={14} />
                     </button>
@@ -154,8 +154,8 @@ const Orders = () => {
         ) : (
           <div className="text-center py-32 bg-zinc-50 rounded-[3rem] border border-dashed border-zinc-200">
             <ShoppingBag size={48} className="mx-auto text-zinc-200 mb-6" />
-            <p className="text-zinc-400 font-black uppercase tracking-widest text-xs italic">The history is empty</p>
-            <button onClick={() => navigate('/shop')} className="mt-8 bg-black text-white px-10 py-5 rounded-full font-black uppercase tracking-widest text-[10px] shadow-xl">Back to Shop</button>
+            <p className="text-zinc-400 font-black uppercase tracking-widest !text-[10px] md:!text-xs">The history is empty</p>
+            <button onClick={() => navigate('/shop')} className="mt-8 bg-black text-white px-10 py-5 rounded-full font-black uppercase tracking-widest !text-[9px] md:!text-[10px] shadow-xl">Back to Shop</button>
           </div>
         )}
       </div>
