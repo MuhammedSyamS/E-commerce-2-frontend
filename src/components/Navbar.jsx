@@ -398,7 +398,7 @@ const Navbar = () => {
 
                 {/* DROPDOWN MENU */}
                 <div className="absolute right-0 top-full pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <div className="bg-white rounded-2xl shadow-2xl p-6 w-64 border border-zinc-100 animate-in slide-in-from-top-4">
+                  <div className="bg-white rounded-2xl shadow-2xl p-4 w-48 border border-zinc-100 animate-in slide-in-from-top-4">
 
                     {/* HEADER */}
                     <div className="border-b border-zinc-100 pb-4 mb-4">
@@ -407,31 +407,20 @@ const Navbar = () => {
                     </div>
 
                     {/* LINKS */}
-                    <div className="space-y-3">
-                      <Link to="/account" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                    <div className="space-y-2">
+                      <Link to="/account" className="flex items-center gap-3 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-black hover:pl-2 transition-all">
                         My Account
                       </Link>
-                      <Link to="/my-orders" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                      <Link to="/my-orders" className="flex items-center gap-3 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-black hover:pl-2 transition-all">
                         My Orders
-                      </Link>
-                      <Link to="/wishlist" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
-                        Wishlist
-                      </Link>
-                      <Link to="/account/settings" className="flex items-center gap-3 text-base md:text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
-                      </Link>
-                      <Link
-                        to="/support"
-                        className="block text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black hover:pl-2 transition-all mt-3"
-                      >
-                        Support Hub
                       </Link>
                     </div>
 
                     {/* LOGOUT */}
-                    <div className="border-t border-zinc-100 mt-4 pt-4">
+                    <div className="border-t border-zinc-100 mt-3 pt-3">
                       <button
                         onClick={() => { useStore.getState().logout(); navigate('/login'); }}
-                        className="w-full text-left text-base md:text-xs font-black uppercase tracking-wide text-red-500 hover:text-red-700 hover:pl-2 transition-all"
+                        className="w-full text-left flex items-center gap-2 text-sm md:text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 hover:pl-2 transition-all"
                       >
                         Log Out
                       </button>
@@ -465,7 +454,6 @@ const Navbar = () => {
               <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
               <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
               <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
-              <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-4">Support Hub</Link>
               <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Track Order</Link>
               <button
                 onClick={() => {
