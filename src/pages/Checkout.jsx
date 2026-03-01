@@ -346,7 +346,7 @@ const Checkout = () => {
           {step === 'shipping' ? 'Back to Bag' : 'Change Method'}
         </button>
 
-        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12 italic transform -skew-x-3">
+        <h1 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-12">
           Secure Checkout
         </h1>
 
@@ -354,7 +354,7 @@ const Checkout = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
 
           {/* LEFT COLUMN: FORMS & ACTIONS */}
-          <div className="lg:col-span-7 xl:col-span-8 order-2 lg:order-1">
+          <div className="lg:col-span-7 xl:col-span-8 order-1">
 
             {/* STEP INDICATOR (Optional visual aid) */}
             <div className="flex items-center gap-4 mb-10 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-300">
@@ -427,7 +427,7 @@ const Checkout = () => {
                       <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-xl shadow-sm transition-colors ${isGift ? 'bg-white/10' : 'bg-white'}`}><Gift size={18} className={isGift ? 'text-white' : 'text-zinc-900'} /></div>
                         <div>
-                          <p className="text-sm md:text-xs font-black uppercase tracking-tight italic transform -skew-x-3">Elite Gift Packaging</p>
+                          <p className="text-sm md:text-xs font-black uppercase tracking-tight">Elite Gift Packaging</p>
                           <p className={`text-xs md:text-[10px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
                         </div>
                       </div>
@@ -457,12 +457,6 @@ const Checkout = () => {
                     <input type="tel" required className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold text-sm" value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} />
                   </div>
 
-                  {/* MOBILE CONTINUE BUTTON */}
-                  <div className="lg:hidden pt-8">
-                    <button type="submit" className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-xs active:scale-95 transition-all">
-                      Continue to Payment
-                    </button>
-                  </div>
                 </form>
               </div>
             )}
@@ -512,24 +506,12 @@ const Checkout = () => {
                   ))}
                 </div>
 
-                {/* FINAL CONFIRMATION BUTTON (MOBILE) */}
-                {step !== 'selection' && (
-                  <div className="lg:hidden mt-8 pt-4 border-t border-zinc-100">
-                    <button
-                      onClick={handlePlaceOrder}
-                      disabled={isSubmitting}
-                      className="w-full bg-black text-white py-4 rounded-full font-black uppercase tracking-[0.2em] text-base md:text-xs active:scale-95 transition-all disabled:opacity-50"
-                    >
-                      {isSubmitting ? 'Processing...' : 'Place Order'}
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
 
           {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
-          <div className="lg:col-span-5 xl:col-span-4 order-1 lg:order-2">
+          <div className="lg:col-span-5 xl:col-span-4 order-2">
             <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
               <h3 className="text-sm md:text-xs font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
 
@@ -600,7 +582,7 @@ const Checkout = () => {
                   <span>Shipping</span>
                   <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
                 </div>
-                <div className="flex justify-between text-2xl md:text-xl font-black uppercase pt-2 italic transform -skew-x-3">
+                <div className="flex justify-between text-2xl md:text-xl font-black uppercase pt-2">
                   <span>Total</span>
                   <Price amount={Math.max(0, total - loyaltyDiscount)} className="text-3xl md:text-2xl" />
                 </div>
@@ -617,8 +599,8 @@ const Checkout = () => {
               </div>
 
 
-              {/* DESKTOP ACTION BUTTON */}
-              <div className="hidden lg:block mt-8">
+              {/* ACTION BUTTON */}
+              <div className="mt-8">
                 {step === 'shipping' ? (
                   <button
                     form="checkout-form"
