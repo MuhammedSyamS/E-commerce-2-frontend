@@ -95,21 +95,21 @@ const Account = () => {
   const AccountCard = ({ icon: Icon, title, subtext, onClick, danger = false }) => (
     <button
       onClick={onClick}
-      className={`group flex items-center p-6 border rounded-xl transition-all duration-300 text-left
+      className={`group flex items-center p-5 md:p-6 border rounded-[1.5rem] transition-all duration-300 text-left
         ${danger
           ? 'bg-red-50 border-red-100 hover:bg-red-100 hover:border-red-200'
           : 'bg-white border-zinc-200 hover:border-zinc-800 hover:shadow-lg'
         }`}
     >
-      <div className={`p-4 rounded-full mr-5 transition-colors
+      <div className={`p-3 md:p-4 rounded-full mr-4 md:mr-5 transition-colors
         ${danger ? 'bg-red-100/50 text-red-600' : 'bg-zinc-50 text-zinc-900 group-hover:bg-black group-hover:text-white'}`}>
-        <Icon size={24} strokeWidth={1.5} />
+        <Icon className="w-5 h-5 md:w-6 md:h-6" strokeWidth={1.5} />
       </div>
       <div className="flex-1">
-        <h3 className={`font-bold text-lg mb-1 ${danger ? 'text-red-700' : 'text-zinc-900'}`}>{title}</h3>
-        <p className={`text-sm ${danger ? 'text-red-500' : 'text-zinc-500'}`}>{subtext}</p>
+        <h3 className={`font-black uppercase tracking-tight text-base md:text-lg mb-1 ${danger ? 'text-red-700' : 'text-zinc-900'}`}>{title}</h3>
+        <p className={`text-[9px] md:text-[10px] font-bold uppercase tracking-widest ${danger ? 'text-red-500' : 'text-zinc-500'}`}>{subtext}</p>
       </div>
-      <ChevronRight size={20} className={`opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${danger ? 'text-red-400' : 'text-zinc-400'}`} />
+      <ChevronRight className={`w-4 h-4 md:w-5 md:h-5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all ${danger ? 'text-red-400' : 'text-zinc-400'}`} />
     </button>
   );
 
@@ -127,7 +127,7 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-24 md:pt-32">
+    <div className="min-h-screen bg-white pb-20 px-4 md:px-6 pt-44 md:pt-52 font-sans text-[#1a1a1a]">
       <div className="max-w-7xl mx-auto">
         {showRewardsModal && <RewardsModal />}
 
@@ -145,16 +145,16 @@ const Account = () => {
               </div>
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl font-black text-zinc-900 mb-4 tracking-tight">
-            My Account
+          <h1 className="!text-3xl md:!text-5xl font-black text-black mb-2 md:mb-4 uppercase tracking-tighter leading-none">
+            My <span className="text-zinc-400">Account</span>
           </h1>
-          <p className="text-zinc-500 text-lg">
-            Welcome back, <span className="text-black font-semibold">{displayName}</span>
+          <p className="text-zinc-500 text-[10px] md:text-sm font-bold uppercase tracking-widest">
+            Welcome back, <span className="text-black font-black">{displayName}</span>
           </p>
         </div>
 
         {/* Grid Layout - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-8 md:mt-12">
 
           <AccountCard
             icon={Trophy}
@@ -510,14 +510,14 @@ const Account = () => {
         <div id="slooks-section" className="mt-20 pt-20 border-t border-zinc-200">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Social Proof</p>
-              <h2 className="text-4xl font-black uppercase tracking-tighter italic transform -skew-x-3">Your <span className="text-zinc-300">Signature</span> Looks</h2>
+              <p className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Social Proof</p>
+              <h2 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter leading-none">Your <span className="text-zinc-300">Signature</span> Looks</h2>
             </div>
             <button
               onClick={() => setShowUploadModal(true)}
-              className="bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center gap-2 group"
+              className="mt-6 md:mt-0 w-full md:w-auto bg-black text-white px-6 py-4 md:px-8 md:py-4 rounded-xl md:rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition shadow-xl active:scale-95 flex items-center justify-center gap-2 group"
             >
-              <PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" /> Upload New Look
+              <PlusCircle size={14} className="md:w-4 md:h-4 group-hover:rotate-90 transition-transform duration-300" /> Upload New Look
             </button>
           </div>
 
