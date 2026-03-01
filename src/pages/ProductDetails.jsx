@@ -491,9 +491,9 @@ const ProductDetails = () => {
                 <span className="w-1 h-1 bg-zinc-200 rounded-full" />
                 <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
               </div>
-              <h1 className="!text-xl md:!text-4xl lg:!text-5xl font-black uppercase tracking-tighter leading-tighter">
+              <div role="heading" aria-level="1" className="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-tighter text-zinc-900">
                 {product.name}
-              </h1>
+              </div>
             </div>
             <div className="flex items-center gap-4">
               <button
