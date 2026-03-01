@@ -467,6 +467,16 @@ const Navbar = () => {
               <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
               <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest mt-4">Support Hub</Link>
               <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Track Order</Link>
+              <button
+                onClick={() => {
+                  setIsMenuOpen(false);
+                  const footer = document.getElementById('site-footer');
+                  if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="text-zinc-500 text-[10px] font-black uppercase tracking-widest text-left"
+              >
+                Need Help?
+              </button>
             </div>
 
             <div className="border-t border-white/10 pt-8">
