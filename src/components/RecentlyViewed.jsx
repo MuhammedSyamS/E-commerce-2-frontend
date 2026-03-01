@@ -35,10 +35,10 @@ const RecentlyViewed = ({ currentProductId }) => {
         <section className="mt-20 pt-10 border-t border-zinc-100">
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h2 className="text-lg font-black uppercase tracking-tighter">Recently <span className="text-zinc-300">Viewed</span></h2>
-                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Pick up where you left off</p>
+                    <h2 className="!text-sm md:!text-lg font-black uppercase tracking-tighter">Recently <span className="text-zinc-300">Viewed</span></h2>
+                    <p className="!text-[8px] md:!text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Pick up where you left off</p>
                 </div>
-                <Link to="/shop" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black flex items-center gap-1 transition-colors">
+                <Link to="/shop" className="!text-[8px] md:!text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black flex items-center gap-1 transition-colors">
                     Explore More <ChevronRight size={12} />
                 </Link>
             </div>
@@ -59,10 +59,10 @@ const RecentlyViewed = ({ currentProductId }) => {
                             />
                             <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </div>
-                        <h4 className="text-[10px] font-black uppercase tracking-tight line-clamp-1 mb-1">{product.name}</h4>
+                        <h4 className="!text-[8px] md:!text-[10px] font-black uppercase tracking-tight line-clamp-1 mb-1">{product.name}</h4>
                         <div className="flex justify-between items-center">
-                            <Price amount={product.price} className="text-[11px] font-black" />
-                            <div className="flex items-center gap-1 text-[8px] font-black uppercase tracking-widest text-zinc-300 group-hover:text-black transition-colors">
+                            <Price amount={product.price} className="!text-[9px] md:!text-[11px] font-black" />
+                            <div className="flex items-center gap-1 !text-[7px] md:!text-[8px] font-black uppercase tracking-widest text-zinc-300 group-hover:text-black transition-colors">
                                 <Eye size={10} /> View
                             </div>
                         </div>
