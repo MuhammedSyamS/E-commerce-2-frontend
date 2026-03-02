@@ -167,13 +167,12 @@ const TrackOrder = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12 text-center"
+          className="mb-8 md:mb-12 text-center"
         >
-          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter leading-none">
+          <h1 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-none">
             {config.title} <span className="text-zinc-300">{config.subtitle}</span>
           </h1>
         </motion.div>
-
         {/* Tracking Form */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
@@ -181,28 +180,28 @@ const TrackOrder = () => {
           transition={{ delay: 0.2 }}
           className="bg-zinc-50 border border-zinc-100 p-1 flex flex-col items-center rounded-[2rem] shadow-sm relative group"
         >
-          <form onSubmit={handleSubmit} className="w-full p-8 md:p-10 flex flex-col md:flex-row gap-6 items-end relative z-10">
-            <div className="flex-1 w-full space-y-3">
-              <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">{config.label}</label>
+          <form onSubmit={handleSubmit} className="w-full p-6 md:p-10 flex flex-col md:flex-row gap-5 md:gap-6 items-end relative z-10">
+            <div className="flex-1 w-full space-y-2 md:space-y-3">
+              <label className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">{config.label}</label>
               <input
                 type="text" required value={orderId} onChange={(e) => setOrderId(e.target.value)}
                 placeholder={config.placeholder}
-                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
+                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-sm md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
               />
             </div>
-            <div className="flex-1 w-full space-y-3">
-              <label className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">Email</label>
+            <div className="flex-1 w-full space-y-2 md:space-y-3">
+              <label className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">Email</label>
               <input
                 type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="EMAIL ADDRESS"
-                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
+                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-sm md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
               />
             </div>
             <button
               type="submit" disabled={loading}
-              className="w-full md:w-auto px-10 h-14 bg-black text-white rounded-xl font-black uppercase tracking-widest hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4 group"
+              className="w-full md:w-auto px-10 h-12 md:h-14 bg-black text-white rounded-xl font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4 group"
             >
-              {loading ? <Loader className="w-5 h-5 animate-spin" /> : <>{config.buttonText} <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" /></>}
+              {loading ? <Loader className="w-4 h-4 animate-spin" /> : <>{config.buttonText} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></>}
             </button>
           </form>
 
@@ -230,10 +229,10 @@ const TrackOrder = () => {
               animate={{ opacity: 1, y: 0 }}
               className="mt-12 space-y-12"
             >
-              <div className="text-center group pt-8 flex flex-col items-center">
-                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Live Status</p>
-                <h3 className="text-3xl font-black uppercase text-black tracking-tighter flex items-center gap-3">
-                  <Truck className="text-black" size={28} />
+              <div className="text-center group pt-4 md:pt-8 flex flex-col items-center">
+                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Live Status</p>
+                <h3 className="text-xl md:text-3xl font-black uppercase text-black tracking-tighter flex items-center gap-3">
+                  <Truck className="text-black md:w-7 md:h-7" size={24} />
                   {orderData.orderStatus}
                 </h3>
                 <p className="text-[10px] items-center justify-center font-bold text-zinc-400 mt-2 uppercase flex flex-col gap-1">
@@ -286,14 +285,14 @@ const TrackOrder = () => {
 
                     return (
                       <div key={idx} className="relative z-10 flex flex-col items-center">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-700 border ${isActive ? 'bg-black border-black text-white shadow-lg scale-110' :
+                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border ${isActive ? 'bg-black border-black text-white shadow-lg scale-110' :
                           isCompleted ? 'bg-zinc-50 border-zinc-200 text-black' :
                             'bg-white border-zinc-100 text-zinc-200'
                           }`}>
-                          <Icon size={20} />
+                          <Icon size={18} className="md:w-5 md:h-5" />
                         </div>
-                        <div className="absolute top-16 text-center flex flex-col items-center gap-1 w-24">
-                          <p className={`text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-black' : isCompleted ? 'text-zinc-500' : 'text-zinc-200'}`}>
+                        <div className="absolute top-14 md:top-16 text-center flex flex-col items-center gap-1 w-20 md:w-24">
+                          <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-black' : isCompleted ? 'text-zinc-500' : 'text-zinc-200'}`}>
                             {m.label}
                           </p>
                           {date && (
@@ -308,11 +307,11 @@ const TrackOrder = () => {
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-center py-6">
-                <Link to="/support" className="flex items-center gap-4 text-[9px] font-black uppercase tracking-[0.6em] text-zinc-400 hover:text-black transition-all group">
-                  <div className="w-8 h-px bg-zinc-100 group-hover:bg-black transition-all" />
+              <div className="mt-6 md:mt-8 flex justify-center py-4 md:py-6">
+                <Link to="/support" className="flex items-center gap-3 md:gap-4 text-[8px] md:text-[9px] font-black uppercase tracking-[0.6em] text-zinc-400 hover:text-black transition-all group">
+                  <div className="w-6 md:w-8 h-px bg-zinc-100 group-hover:bg-black transition-all" />
                   Support Hub
-                  <div className="w-8 h-px bg-zinc-100 group-hover:bg-black transition-all" />
+                  <div className="w-6 md:w-8 h-px bg-zinc-100 group-hover:bg-black transition-all" />
                 </Link>
               </div>
             </motion.div>

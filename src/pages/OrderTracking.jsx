@@ -50,33 +50,33 @@ const OrderTracking = () => {
 
             <div className="container mx-auto px-6 max-w-4xl">
 
-                <div className="text-center mb-16">
-                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">Track Your Order</h1>
-                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Enter your details below to see current status</p>
+                <div className="text-center mb-10 md:mb-16">
+                    <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter mb-4">Track Your Order</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[8px] md:text-[10px]">Enter your details below to see current status</p>
                 </div>
 
                 {/* INPUT FORM */}
                 <div className="bg-zinc-50 p-8 md:p-12 rounded-[2.5rem] border border-zinc-100 shadow-sm max-w-2xl mx-auto mb-16">
                     <form onSubmit={handleTrack} className="space-y-6">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Order ID</label>
+                            <label className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Order ID</label>
                             <input
                                 type="text"
                                 placeholder="e.g. 64f..."
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value)}
-                                className="w-full bg-white border border-zinc-200 rounded-2xl px-6 py-4 font-bold outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-3 md:px-6 md:py-4 font-bold text-sm md:text-base outline-none focus:border-black transition-colors"
                                 required
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Email Address</label>
+                            <label className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Email Address</label>
                             <input
                                 type="email"
                                 placeholder="Same as used during checkout"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white border border-zinc-200 rounded-2xl px-6 py-4 font-bold outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-3 md:px-6 md:py-4 font-bold text-sm md:text-base outline-none focus:border-black transition-colors"
                                 required
                             />
                         </div>
@@ -105,14 +105,14 @@ const OrderTracking = () => {
                         <div className="bg-white border border-zinc-100 rounded-3xl p-8 mb-8 shadow-sm">
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
                                 <div>
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
-                                    <h2 className={`text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
+                                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
+                                    <h2 className={`text-xl md:text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
                                         {order.status}
                                     </h2>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Expected Delivery</p>
-                                    <p className="text-lg font-bold">
+                                <div className="text-left md:text-right">
+                                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Expected Delivery</p>
+                                    <p className="text-base md:text-lg font-bold">
                                         {order.isDelivered ? 'Delivered' : 'Est. 3-5 Business Days'}
                                     </p>
                                 </div>
@@ -132,14 +132,14 @@ const OrderTracking = () => {
                                             const current = getCurrentStep(order.status);
                                             const completed = idx <= current;
                                             return (
-                                                <div key={step.status} className="flex flex-col items-center gap-3">
-                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${completed ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-300'}`}>
-                                                        <step.icon size={16} />
+                                                <div key={step.status} className="flex flex-col items-center gap-2 md:gap-3">
+                                                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all ${completed ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-300'}`}>
+                                                        <step.icon size={14} className="md:w-4 md:h-4" />
                                                     </div>
                                                     <div className="flex flex-col items-center">
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest ${active ? 'text-black' : 'text-zinc-300'}`}>{step.label}</span>
+                                                        <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-widest ${completed ? 'text-black' : 'text-zinc-300'}`}>{step.label}</span>
                                                         {completed && (
-                                                            <span className="text-[7px] text-zinc-400 font-bold uppercase mt-1">
+                                                            <span className="text-[6px] md:text-[7px] text-zinc-400 font-bold uppercase mt-1">
                                                                 {step.status === 'Placed' && new Date(order.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                                                                 {step.status === 'Processing' && order.paidAt && new Date(order.paidAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
                                                                 {step.status === 'Delivered' && order.deliveredAt && new Date(order.deliveredAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}
