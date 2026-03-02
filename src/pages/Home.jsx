@@ -172,11 +172,11 @@ const Home = () => {
         <React.Fragment key={section.id}>
           {(activeView === 'all' || activeView === section.id) && (
             <Reveal width="100%" delay={idx * 0.1}>
-              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-44 md:pt-48' : ''}`}>
-                <div className="flex justify-between items-end mb-12">
+              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-52 md:pt-48' : ''}`}>
+                <div className="flex justify-between items-end mb-12 px-2">
                   <div>
-                    <h2 className="text-xs md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
-                    <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">{section.subtitle}</p>
+                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
+                    <p className="text-[9px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">{section.subtitle}</p>
                   </div>
                   <Link to={section.link} className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All</Link>
                 </div>

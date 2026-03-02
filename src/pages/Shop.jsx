@@ -273,7 +273,7 @@ const Shop = () => {
       </Helmet>
 
       {/* --- ELITE SHOP HERO --- */}
-      <section className="relative pt-32 pb-16 md:pt-56 md:pb-32 px-6 overflow-hidden bg-zinc-50/30">
+      <section className="relative pt-52 pb-16 md:pt-56 md:pb-32 px-6 overflow-hidden bg-zinc-50/30">
         {/* Abstract Background Elements */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 opacity-50" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-zinc-100/50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 -z-10" />
@@ -307,12 +307,12 @@ const Shop = () => {
           <div className="bg-white/90 backdrop-blur-2xl border border-zinc-100/50 rounded-3xl md:rounded-full px-4 py-2 md:px-8 md:py-3 shadow-2xl shadow-black/5 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 overflow-hidden">
 
             {/* Horizontal Categories (Scrollable on Mobile) */}
-            <div className="flex items-center gap-6 md:gap-8 overflow-x-auto no-scrollbar w-full md:w-auto pb-1 md:pb-0 border-b md:border-none border-zinc-100/50">
+            <div className="flex items-center gap-6 md:gap-8 overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0 border-b md:border-none border-zinc-100">
               {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => { setCategory(cat); setSubcategory('All'); }}
-                  className={`text-[9px] md:text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 py-1 ${category === cat ? 'text-black border-b-2 border-black' : 'text-zinc-400 hover:text-zinc-600'}`}
+                  className={`text-[10px] md:text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 py-1 ${category === cat ? 'text-black border-b-2 border-black' : 'text-zinc-300 hover:text-zinc-600'}`}
                 >
                   {cat}
                 </button>
