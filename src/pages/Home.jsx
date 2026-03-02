@@ -172,7 +172,7 @@ const Home = () => {
         <React.Fragment key={section.id}>
           {(activeView === 'all' || activeView === section.id) && (
             <Reveal width="100%" delay={idx * 0.1}>
-              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
+              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-32 md:pt-48' : ''}`}>
                 <div className="flex justify-between items-end mb-12">
                   <div>
                     <h2 className="text-xs md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
@@ -188,10 +188,10 @@ const Home = () => {
                       <button onClick={() => scroll(section.ref, 'right')} className="absolute -right-2 md:-right-20 top-[30%] md:top-[40%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"><ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} /></button>
                     </>
                   )}
-                  <div ref={section.ref} className={`flex gap-3 md:gap-4 w-full ${activeView === 'all' ? 'overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10' : 'flex-wrap justify-center'}`}>
+                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
                     {products.length > 0 ? (
                       section.items.filter(p => p && p._id).map((product) => (
-                        <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start' : 'w-[181.03px] md:w-[18%]'} flex-shrink-0`}><ProductCard product={product} /></div>
+                        <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0' : 'w-full'}`}><ProductCard product={product} /></div>
                       ))
                     ) : (
                       [...Array(4)].map((_, i) => (
