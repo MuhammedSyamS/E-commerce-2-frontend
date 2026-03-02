@@ -12,14 +12,14 @@ const Orders = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchOrders = async () => {
+    const fetchOrders = async (isInitial = false) => {
       if (!user?.token) {
         setLoading(false);
         return;
       }
 
       try {
-        setLoading(true);
+        if (isInitial) setLoading(true);
 
         const res = await api.get(`/orders/myorders?t=${Date.now()}`);
 
@@ -29,12 +29,12 @@ const Orders = () => {
         console.error("Fetch Error:", err.response?.data?.message || err.message);
         setOrders([]);
       } finally {
-        setLoading(false);
+        if (isInitial) setLoading(false);
       }
     };
 
-    fetchOrders();
-    const interval = setInterval(fetchOrders, 15000); // 15s Polling
+    fetchOrders(true);
+    const interval = setInterval(() => fetchOrders(false), 15000); // 15s Polling
     return () => clearInterval(interval);
   }, [user]);
 
@@ -134,8 +134,8 @@ const Orders = () => {
                   </div>
 
                   {/* RIGHT: Price & Action */}
-                  <div className="flex flex-col justify-between items-end gap-4 md:gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-4 md:pt-6 lg:pt-0 lg:pl-10">
-                    <div className="absolute right-4 top-4 md:static text-right">
+                  <div className="flex flex-col justify-between items-end gap-4 md:gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-4 md:pt-6 lg:pt-0 lg:pl-10 w-full lg:w-auto">
+                    <div className="text-right">
                       <p className="!text-[8px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
                       <Price amount={order.totalPrice} className="!text-lg md:!text-3xl font-black tracking-tighter" />
                     </div>
