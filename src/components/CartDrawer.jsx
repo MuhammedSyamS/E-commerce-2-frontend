@@ -458,7 +458,11 @@ const CartDrawer = () => {
             </div>
           </div>
           <button
-            onClick={() => { toggleCart(false); navigate('/checkout'); }}
+            onClick={() => {
+              window.scrollTo(0, 0);
+              toggleCart(false);
+              navigate('/checkout');
+            }}
             className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
           >
             <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />

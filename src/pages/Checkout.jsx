@@ -533,176 +533,178 @@ const Checkout = () => {
                   ))}
                 </div>
 
-                {/* RELOCATED COUPON SECTION - UNDER CASH ON DELIVERY */}
-                <div className="mt-10 bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100 animate-in slide-in-from-top-4 duration-500">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Zap size={18} className="text-zinc-900" />
-                    <h3 className="!text-[11px] md:!text-[13px] font-black uppercase tracking-widest">Apply Promo Code</h3>
-                  </div>
+                {/* RELOCATED COUPON SECTION - TARGETED FLOW */}
+            <div className="mt-8 pt-8 border-t border-zinc-100 flex flex-col gap-8 animate-in slide-in-from-top-4 duration-700">
+              <div className="bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100">
+                <div className="flex items-center gap-3 mb-4">
+                  <Zap size={18} className="text-zinc-900" />
+                  <h3 className="!text-[11px] md:!text-[13px] font-black uppercase tracking-widest">Applying a Promo Code?</h3>
+                </div>
 
-                  {couponApplied ? (
-                    <div className="flex items-center justify-between bg-green-50 border border-green-200 p-4 rounded-2xl">
-                      <div>
-                        <p className="text-[10px] md:text-xs font-black uppercase text-green-700 tracking-widest">{couponApplied.code}</p>
-                        <p className="text-[9px] md:text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">
-                          Savings applied
-                        </p>
-                      </div>
-                      <button
-                        onClick={removeCoupon}
-                        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        Remove
-                      </button>
+                {couponApplied ? (
+                  <div className="flex items-center justify-between bg-green-50 border border-green-200 p-4 rounded-2xl">
+                    <div>
+                      <p className="text-[10px] md:text-xs font-black uppercase text-green-700 tracking-widest">{couponApplied.code}</p>
+                      <p className="text-[9px] md:text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">
+                        Savings applied to your order
+                      </p>
                     </div>
-                  ) : (
-                    <div className="flex gap-2 relative">
-                      <input
-                        type="text"
-                        placeholder="ENTER COUPON CODE"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-3 !text-[11px] md:!text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-colors shadow-sm"
-                      />
-                      <button
-                        onClick={handleApplyCoupon}
-                        disabled={isValidatingCoupon || !couponCode.trim()}
-                        className="bg-black text-white px-6 rounded-2xl !text-[10px] md:!text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md"
-                      >
-                        {isValidatingCoupon ? 'Wait' : 'Apply'}
-                      </button>
-                    </div>
-                  )}
-                  {discountError && (
-                    <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2 ml-2">{discountError}</p>
-                  )}
-                </div>
-
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
-          <div className="lg:col-span-5 xl:col-span-4 order-2">
-            <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
-              <h3 className="!text-[12px] md:!text-[14px] font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
-
-              <div className="space-y-4 mb-8 custom-scrollbar max-h-[40vh] overflow-y-auto pr-2">
-                {cartItems.map((item, idx) => {
-                  const itemName = item.name || item.product?.name || 'Item';
-                  const itemPrice = item.price || item.product?.price || 0;
-                  const itemQty = item.quantity || 1;
-                  const itemImg = item.image || item.product?.image;
-
-                  return (
-                    <div key={idx} className="flex gap-4 items-center">
-                      <div className="w-10 h-14 md:w-12 md:h-16 bg-white rounded-lg border border-zinc-200 overflow-hidden shrink-0">
-                        {itemImg && <img src={itemImg} alt={itemName} className="w-full h-full object-cover" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="!text-[11px] md:!text-xs font-bold uppercase truncate">{itemName}</p>
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="!text-[9px] md:!text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
-                          <Price amount={itemPrice} className="!text-[10px] md:!text-[11px] font-bold" />
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="space-y-3 border-t border-dashed border-zinc-200 pt-6">
-                {/* LOYALTY POINTS REDEMPTION */}
-                {user?.loyaltyPoints > 0 && (
-                  <div className={`p-4 rounded-2xl border transition-all cursor-pointer mb-4 ${useLoyaltyPoints ? 'bg-amber-50 border-amber-200' : 'bg-white border-zinc-100'}`} onClick={() => setUseLoyaltyPoints(!useLoyaltyPoints)}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
-                        <div>
-                          <p className="!text-[10px] md:!text-[11px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
-                          <p className="!text-[8px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
-                        </div>
-                      </div>
-                      <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
-                        <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${useLoyaltyPoints ? 'left-4.5' : 'left-0.5'}`} />
-                      </div>
-                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                    >
+                      Remove
+                    </button>
                   </div>
-                )}
-
-                <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
-                  <span>Subtotal</span>
-                  <Price amount={subtotal} />
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-green-600">
-                    <span>Coupon Discount</span>
-                    <Price amount={discountAmount} />
-                  </div>
-                )}
-                {loyaltyDiscount > 0 && (
-                  <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-amber-600">
-                    <span>Loyalty Redemption</span>
-                    <span>-₹{loyaltyDiscount}</span>
-                  </div>
-                )}
-                <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
-                  <span>Tax ({siteSettings.taxRate}%)</span>
-                  <Price amount={taxPrice} />
-                </div>
-                <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
-                  <span>Shipping</span>
-                  <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
-                </div>
-                <div className="flex justify-between !text-[14px] md:!text-base font-black uppercase pt-2">
-                  <span>Total</span>
-                  <Price amount={Math.max(0, total - loyaltyDiscount)} className="!text-[18px] md:!text-xl" />
-                </div>
-              </div>
-
-              {/* DELIVERY ESTIMATE */}
-              <div className="mt-8 pt-6 border-t border-zinc-100">
-                <div className="flex items-center gap-3 text-zinc-400 mb-2">
-                  <Truck size={14} />
-                  <span className="!text-[10px] md:!text-[12px] font-black uppercase tracking-widest">Estimated Delivery</span>
-                </div>
-                <p className="!text-[11px] md:!text-[13px] font-bold text-black">{getDeliveryEstimate()}</p>
-                <p className="!text-[9px] md:!text-[11px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
-              </div>
-
-
-              {/* ACTION BUTTON */}
-              <div className="mt-8">
-                {step === 'shipping' ? (
-                  <button
-                    form="checkout-form"
-                    type="submit"
-                    className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 !text-[12px] md:!text-[14px]"
-                  >
-                    Confirm Shipping
-                  </button>
                 ) : (
-                  <button
-                    onClick={handlePlaceOrder}
-                    disabled={step === 'selection' || isSubmitting}
-                    className={`w-full py-5 rounded-full font-black uppercase tracking-[0.2em] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 !text-[12px] md:!text-[14px] ${step === 'selection' || isSubmitting
-                      ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed shadow-none transform-none'
-                      : 'bg-black text-white hover:bg-zinc-900'
-                      }`}
-                  >
-                    {isSubmitting ? 'Confirming...' : 'Complete Payment'}
-                  </button>
+                  <div className="flex gap-2 relative">
+                    <input
+                      type="text"
+                      placeholder="ENTER COUPON CODE"
+                      value={couponCode}
+                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                      className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-3 !text-[11px] md:!text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-colors shadow-sm"
+                    />
+                    <button
+                      onClick={handleApplyCoupon}
+                      disabled={isValidatingCoupon || !couponCode.trim()}
+                      className="bg-black text-white px-6 rounded-2xl !text-[10px] md:!text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md"
+                    >
+                      {isValidatingCoupon ? 'Wait' : 'Apply'}
+                    </button>
+                  </div>
                 )}
-
-                <p className="!text-[9px] md:!text-[10px] text-zinc-400 text-center mt-4 font-bold uppercase tracking-widest">
-                  <ShieldCheck size={12} className="inline mr-1 mb-0.5" />
-                  Secure 256-bit SSL Encrypted
-                </p>
+                {discountError && (
+                  <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2 ml-2">{discountError}</p>
+                )}
               </div>
             </div>
-          </div>
 
+
+          </div>
+            )}
         </div>
+
+        {/* RIGHT COLUMN: ORDER SUMMARY (STICKY) */}
+        <div className="lg:col-span-5 xl:col-span-4 order-2">
+          <div className="bg-zinc-50 p-8 rounded-[2rem] border border-zinc-100 lg:sticky lg:top-32">
+            <h3 className="!text-[12px] md:!text-[14px] font-black uppercase tracking-widest mb-6 border-b border-zinc-200 pb-4">Bag Summary</h3>
+
+            <div className="space-y-4 mb-8 custom-scrollbar max-h-[40vh] overflow-y-auto pr-2">
+              {cartItems.map((item, idx) => {
+                const itemName = item.name || item.product?.name || 'Item';
+                const itemPrice = item.price || item.product?.price || 0;
+                const itemQty = item.quantity || 1;
+                const itemImg = item.image || item.product?.image;
+
+                return (
+                  <div key={idx} className="flex gap-4 items-center">
+                    <div className="w-10 h-14 md:w-12 md:h-16 bg-white rounded-lg border border-zinc-200 overflow-hidden shrink-0">
+                      {itemImg && <img src={itemImg} alt={itemName} className="w-full h-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="!text-[11px] md:!text-xs font-bold uppercase truncate">{itemName}</p>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="!text-[9px] md:!text-[10px] text-zinc-500 font-mono">Qty: {itemQty}</span>
+                        <Price amount={itemPrice} className="!text-[10px] md:!text-[11px] font-bold" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="space-y-3 border-t border-dashed border-zinc-200 pt-6">
+              {/* LOYALTY POINTS REDEMPTION */}
+              {user?.loyaltyPoints > 0 && (
+                <div className={`p-4 rounded-2xl border transition-all cursor-pointer mb-4 ${useLoyaltyPoints ? 'bg-amber-50 border-amber-200' : 'bg-white border-zinc-100'}`} onClick={() => setUseLoyaltyPoints(!useLoyaltyPoints)}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-1.5 rounded-full ${useLoyaltyPoints ? 'bg-amber-400 text-white' : 'bg-zinc-100 text-zinc-400'}`}><Star size={10} fill="currentColor" /></div>
+                      <div>
+                        <p className="!text-[10px] md:!text-[11px] font-black uppercase tracking-tight">Redeem {Math.min(user.loyaltyPoints, subtotal)} Coins</p>
+                        <p className="!text-[8px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Saves ₹{Math.min(user.loyaltyPoints, subtotal)} on this order</p>
+                      </div>
+                    </div>
+                    <div className={`w-8 h-4 rounded-full relative transition-colors ${useLoyaltyPoints ? 'bg-amber-400' : 'bg-zinc-200'}`}>
+                      <div className={`absolute top-0.5 w-3 h-3 bg-white rounded-full transition-transform ${useLoyaltyPoints ? 'left-4.5' : 'left-0.5'}`} />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
+                <span>Subtotal</span>
+                <Price amount={subtotal} />
+              </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-green-600">
+                  <span>Coupon Discount</span>
+                  <Price amount={discountAmount} />
+                </div>
+              )}
+              {loyaltyDiscount > 0 && (
+                <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-amber-600">
+                  <span>Loyalty Redemption</span>
+                  <span>-₹{loyaltyDiscount}</span>
+                </div>
+              )}
+              <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
+                <span>Tax ({siteSettings.taxRate}%)</span>
+                <Price amount={taxPrice} />
+              </div>
+              <div className="flex justify-between !text-[10px] md:!text-[12px] font-bold uppercase tracking-widest text-zinc-500">
+                <span>Shipping</span>
+                <span>{shippingPrice === 0 ? 'FREE' : <Price amount={shippingPrice} />}</span>
+              </div>
+              <div className="flex justify-between !text-[14px] md:!text-base font-black uppercase pt-2">
+                <span>Total</span>
+                <Price amount={Math.max(0, total - loyaltyDiscount)} className="!text-[18px] md:!text-xl" />
+              </div>
+            </div>
+
+            {/* DELIVERY ESTIMATE */}
+            <div className="mt-8 pt-6 border-t border-zinc-100">
+              <div className="flex items-center gap-3 text-zinc-400 mb-2">
+                <Truck size={14} />
+                <span className="!text-[10px] md:!text-[12px] font-black uppercase tracking-widest">Estimated Delivery</span>
+              </div>
+              <p className="!text-[11px] md:!text-[13px] font-bold text-black">{getDeliveryEstimate()}</p>
+              <p className="!text-[9px] md:!text-[11px] text-zinc-400 mt-1">Standard Shipping to {formData.city || 'your city'}</p>
+            </div>
+
+
+            {/* ACTION BUTTON */}
+            <div className="mt-8">
+              {step === 'shipping' ? (
+                <button
+                  form="checkout-form"
+                  type="submit"
+                  className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 !text-[12px] md:!text-[14px]"
+                >
+                  Confirm Shipping
+                </button>
+              ) : (
+                <button
+                  onClick={handlePlaceOrder}
+                  disabled={step === 'selection' || isSubmitting}
+                  className={`w-full py-5 rounded-full font-black uppercase tracking-[0.2em] transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 active:scale-95 !text-[12px] md:!text-[14px] ${step === 'selection' || isSubmitting
+                    ? 'bg-zinc-200 text-zinc-400 cursor-not-allowed shadow-none transform-none'
+                    : 'bg-black text-white hover:bg-zinc-900'
+                    }`}
+                >
+                  {isSubmitting ? 'Confirming...' : 'Complete Payment'}
+                </button>
+              )}
+
+              <p className="!text-[9px] md:!text-[10px] text-zinc-400 text-center mt-4 font-bold uppercase tracking-widest">
+                <ShieldCheck size={12} className="inline mr-1 mb-0.5" />
+                Secure 256-bit SSL Encrypted
+              </p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
