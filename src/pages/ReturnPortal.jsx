@@ -161,7 +161,7 @@ const ReturnPortal = () => {
     ) || [];
 
     return (
-        <div className="bg-gray-50 min-h-screen pt-28 md:pt-52 pb-20 px-4 md:px-6">
+        <div className="bg-gray-50 min-h-screen pt-44 md:pt-52 pb-20 px-4 md:px-6">
             <Helmet>
                 <title>Returns Portal | SLOOK</title>
             </Helmet>

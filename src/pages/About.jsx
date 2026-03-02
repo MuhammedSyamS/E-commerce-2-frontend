@@ -2,7 +2,7 @@ import React from 'react';
 
 const About = () => {
     return (
-        <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+        <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 px-6">
             <div className="max-w-3xl mx-auto space-y-12">
                 <div className="space-y-4 text-center">
                     <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">The Mission</h1>

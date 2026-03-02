@@ -74,7 +74,7 @@ const LoyaltyLedger = () => {
     }
 
     return (
-        <div className="min-h-screen bg-white pt-24 md:pt-32 pb-24 overflow-x-hidden">
+        <div className="min-h-screen bg-white pt-44 md:pt-52 pb-24 overflow-x-hidden">
             <div className="max-w-2xl mx-auto px-4">
 
                 {/* Header */}
@@ -166,8 +166,8 @@ const LoyaltyLedger = () => {
                             <div key={tx._id} className="bg-white border border-zinc-100 hover:border-zinc-300 p-4 sm:p-5 rounded-2xl transition-all flex items-center justify-between gap-3">
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'spend' ? 'bg-red-50 text-red-500' :
-                                            tx.type === 'earn' ? 'bg-green-50 text-green-500' :
-                                                'bg-zinc-50 text-zinc-500'
+                                        tx.type === 'earn' ? 'bg-green-50 text-green-500' :
+                                            'bg-zinc-50 text-zinc-500'
                                         }`}>
                                         {getIcon(tx.type)}
                                     </div>

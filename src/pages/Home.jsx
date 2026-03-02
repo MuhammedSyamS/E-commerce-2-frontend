@@ -172,7 +172,7 @@ const Home = () => {
         <React.Fragment key={section.id}>
           {(activeView === 'all' || activeView === section.id) && (
             <Reveal width="100%" delay={idx * 0.1}>
-              <section id={section.id} className={`container-responsive py-12 md:py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-52 md:pt-48' : ''}`}>
+              <section id={section.id} className={`container-responsive relative ${section.bg} ${activeView !== 'all' ? 'pt-44 md:pt-52 pb-24 md:pb-32' : 'py-12 md:py-24'}`}>
                 <div className="flex justify-between items-end mb-12 px-2">
                   <div>
                     <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>

@@ -28,7 +28,7 @@ const BlogPost = () => {
     if (!post) return <div className="min-h-screen bg-white flex items-center justify-center text-xs font-bold uppercase text-zinc-400">Story Not Found</div>;
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-white pt-44 md:pt-52 pb-20">
             <Navbar />
 
             <article className="pt-32 pb-16">

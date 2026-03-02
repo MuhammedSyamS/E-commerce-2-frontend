@@ -49,7 +49,7 @@ const UserReviews = () => {
     if (loading) return <div className="text-center pt-52">Loading your contributions...</div>;
 
     return (
-        <div className="min-h-screen bg-zinc-50 pt-32 pb-20">
+        <div className="min-h-screen bg-zinc-50 pt-44 md:pt-52 pb-20">
             {/* LIGHTBOX MODAL (White Theme) */}
             {/* GLOBAL LIGHTBOX (Gallery Mode) */}
             {selectedReview && (

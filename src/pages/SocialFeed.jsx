@@ -199,7 +199,7 @@ const SocialFeed = () => {
     );
 
     return (
-        <div className="min-h-screen bg-zinc-50/50 pt-32 lg:pt-44 pb-20">
+        <div className="min-h-screen bg-zinc-50/50 pt-44 md:pt-52 pb-20">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* HEADER */}

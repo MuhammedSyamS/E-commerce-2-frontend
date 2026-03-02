@@ -27,7 +27,7 @@ const Blog = () => {
         <div className="min-h-screen bg-white">
             <Navbar />
 
-            <section className="pt-32 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
+            <section className="pt-44 md:pt-52 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
                 <div className="text-center mb-16">
                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400 mb-3">Journal</p>
                     <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">The <span className="text-zinc-300">Edit</span></h1>

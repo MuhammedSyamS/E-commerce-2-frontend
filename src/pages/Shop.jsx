@@ -302,63 +302,61 @@ const Shop = () => {
       </section>
 
       {/* --- STICKY GLASS CONTROL BAR --- */}
-      <nav className="sticky top-[104px] md:top-[120px] z-[100] px-4 md:px-6 py-2 md:py-4 transition-all duration-500">
-        <div className="container-responsive">
-          <div className="bg-white/90 backdrop-blur-2xl border border-zinc-100/50 rounded-3xl md:rounded-full px-4 py-2 md:px-8 md:py-3 shadow-2xl shadow-black/5 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4 overflow-hidden">
+      <nav className="sticky top-[104px] md:top-[120px] z-[90] px-4 md:px-6 py-2 md:py-4 transition-all duration-500">
+        <div className="bg-white border border-zinc-100/50 rounded-2xl md:rounded-full px-4 py-2 md:px-8 md:py-3 shadow-2xl shadow-black/5 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-4">
 
-            {/* Horizontal Categories (Scrollable on Mobile) */}
-            <div className="flex items-center gap-6 md:gap-8 overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0 border-b md:border-none border-zinc-100">
-              {categories.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => { setCategory(cat); setSubcategory('All'); }}
-                  className={`text-[10px] md:text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 py-1 ${category === cat ? 'text-black border-b-2 border-black' : 'text-zinc-300 hover:text-zinc-600'}`}
-                >
-                  {cat}
-                </button>
-              ))}
+          {/* Horizontal Categories (Scrollable on Mobile) */}
+          <div className="flex items-center gap-6 md:gap-8 overflow-x-auto no-scrollbar w-full md:w-auto pb-2 md:pb-0 border-b md:border-none border-zinc-100">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => { setCategory(cat); setSubcategory('All'); }}
+                className={`text-[10px] md:text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all duration-300 py-1 ${category === cat ? 'text-black border-b-2 border-black' : 'text-zinc-300 hover:text-zinc-600'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between w-full md:w-auto gap-4">
+            {/* Search Trigger */}
+            <div className="relative group flex items-center flex-1 md:flex-none">
+              <input
+                type="text"
+                placeholder="Seach Collection..."
+                value={keyword}
+                onChange={handleSearchChange}
+                className="bg-zinc-50/50 md:bg-transparent border-none py-2 px-3 md:px-1 text-[9px] md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
+              />
+              <Search className="absolute right-3 md:relative md:right-0 text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
             </div>
 
-            <div className="flex items-center justify-between w-full md:w-auto gap-4">
-              {/* Search Trigger */}
-              <div className="relative group flex items-center flex-1 md:flex-none">
-                <input
-                  type="text"
-                  placeholder="Seach Collection..."
-                  value={keyword}
-                  onChange={handleSearchChange}
-                  className="bg-zinc-50/50 md:bg-transparent border-none py-2 px-3 md:px-1 text-[9px] md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
-                />
-                <Search className="absolute right-3 md:relative md:right-0 text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
-              </div>
-
-              <div className="flex items-center gap-2 md:gap-4">
-                {/* Sort Dropdown (Visible on Desktop) */}
-                <div className="relative group hidden md:block">
-                  <select
-                    value={sort}
-                    onChange={(e) => setSort(e.target.value)}
-                    className="appearance-none bg-transparent text-[10px] font-black uppercase tracking-[0.2em] pr-8 outline-none cursor-pointer text-zinc-500 hover:text-black transition-colors border-none focus:ring-0"
-                  >
-                    <option value="newest">Latest arrivals</option>
-                    <option value="price-asc">Price (Low-High)</option>
-                    <option value="price-desc">Price (High-Low)</option>
-                    <option value="rating">Top customer rated</option>
-                  </select>
-                  <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-300 group-hover:text-black" size={12} />
-                </div>
-
-                <div className="w-px h-6 bg-zinc-100 hidden md:block" />
-
-                {/* Filter Trigger */}
-                <button
-                  onClick={() => setIsDrawerOpen(true)}
-                  className="flex items-center gap-2 bg-black text-white px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-black/10 group"
+            <div className="flex items-center gap-2 md:gap-4">
+              {/* Sort Dropdown (Visible on Desktop) */}
+              <div className="relative group hidden md:block">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value)}
+                  className="appearance-none bg-transparent text-[10px] font-black uppercase tracking-[0.2em] pr-8 outline-none cursor-pointer text-zinc-500 hover:text-black transition-colors border-none focus:ring-0"
                 >
-                  <SlidersHorizontal size={12} strokeWidth={3} className="group-hover:rotate-180 transition-transform duration-500" />
-                  <span className="hidden sm:inline">Filters</span>
-                </button>
+                  <option value="newest">Latest arrivals</option>
+                  <option value="price-asc">Price (Low-High)</option>
+                  <option value="price-desc">Price (High-Low)</option>
+                  <option value="rating">Top customer rated</option>
+                </select>
+                <ChevronDown className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-300 group-hover:text-black" size={12} />
               </div>
+
+              <div className="w-px h-6 bg-zinc-100 hidden md:block" />
+
+              {/* Filter Trigger */}
+              <button
+                onClick={() => setIsDrawerOpen(true)}
+                className="flex items-center gap-2 bg-black text-white px-4 py-2 md:px-5 md:py-2.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all active:scale-95 shadow-xl shadow-black/10 group"
+              >
+                <SlidersHorizontal size={12} strokeWidth={3} className="group-hover:rotate-180 transition-transform duration-500" />
+                <span className="hidden sm:inline">Filters</span>
+              </button>
             </div>
           </div>
         </div>
@@ -474,7 +472,7 @@ const Shop = () => {
           </div>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

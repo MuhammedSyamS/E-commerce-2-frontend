@@ -44,7 +44,7 @@ const Wishlist = () => {
   };
 
   if (loading && user) {
-    return <div className="min-h-screen pt-44 md:pt-52 text-center uppercase font-black tracking-widest text-[10px] text-zinc-400">Loading Vault...</div>;
+    return <div className="min-h-screen bg-white pb-20 pt-44 md:pt-52 px-4 md:px-6 font-sans text-[#1a1a1a] text-center uppercase font-black tracking-widest text-[10px] text-zinc-400">Loading Vault...</div>;
   }
 
   return (

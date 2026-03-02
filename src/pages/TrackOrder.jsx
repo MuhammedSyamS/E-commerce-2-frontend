@@ -162,7 +162,7 @@ const TrackOrder = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-[#1a1a1a] pt-20 pb-20 px-4 md:px-10 selection:bg-black selection:text-white flex flex-col justify-center items-center">
+    <div className="bg-gray-50 min-h-screen pt-44 md:pt-52 pb-20 px-4 md:px-6 selection:bg-black selection:text-white flex flex-col justify-center items-center">
       <div className="container-responsive">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

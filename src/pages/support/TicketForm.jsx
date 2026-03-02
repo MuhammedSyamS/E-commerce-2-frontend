@@ -51,7 +51,7 @@ const TicketForm = () => {
   if (!user) return null;
 
   return (
-    <div className="bg-white min-h-screen pt-40 pb-20">
+    <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20">
       <div className="container mx-auto px-6 max-w-2xl">
         <button
           onClick={() => navigate(-1)}

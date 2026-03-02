@@ -45,7 +45,7 @@ const SupportHub = () => {
     );
 
     return (
-        <div className="bg-white min-h-screen pt-24 md:pt-32 pb-20">
+        <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20">
             <Helmet>
                 <title>Support Hub | SLOOK</title>
             </Helmet>

@@ -37,7 +37,7 @@ const Reviews = () => {
     if (loading) return <div className="min-h-screen flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Reviews...</div>;
 
     return (
-        <div className="bg-white min-h-screen pt-40 px-6 pb-20">
+        <div className="bg-white min-h-screen pt-44 md:pt-52 px-6 pb-20 text-[#1a1a1a]">
             <Helmet>
                 <title>Customer Reviews | SLOOK</title>
                 <meta name="description" content="Read what our customers are saying about SLOOK." />

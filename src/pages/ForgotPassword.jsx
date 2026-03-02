@@ -58,7 +58,7 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-6 pt-40 lg:pt-52 pb-20">
+    <div className="min-h-screen bg-white flex items-center justify-center px-6 pt-44 md:pt-52 pb-20">
       <div className="max-w-sm w-full">
         <button
           onClick={() => step === 1 ? navigate('/login') : setStep(1)}

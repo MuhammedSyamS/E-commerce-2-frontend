@@ -27,7 +27,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-40 pb-20 px-6">
+    <div className="min-h-screen bg-white pt-44 md:pt-52 pb-20 px-6">
       <div className="container mx-auto max-w-6xl">
 
         {/* Header */}

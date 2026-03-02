@@ -381,7 +381,7 @@ const ProductDetails = () => {
   })();
 
   return (
-    <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
+    <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
       <Helmet>
         <title>{`${product.name} | SLOOK`}</title>
         <meta name="description" content={product.description} />

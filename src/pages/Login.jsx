@@ -65,7 +65,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
+    <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-44 md:pt-52 pb-20">
       <div className="w-full max-w-md">
         <h1 className="text-2xl md:text-3xl font-black uppercase tracking-tighter text-center mb-2">Welcome <span className="text-red-500">Back</span></h1>
         <p className="text-sm md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account</p>

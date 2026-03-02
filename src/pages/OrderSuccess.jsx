@@ -38,7 +38,7 @@ const OrderSuccess = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50 font-sans text-[#1a1a1a] px-4 md:px-6 pt-20 pb-20">
+    <div className="min-h-screen flex items-center justify-center bg-zinc-50 font-sans text-[#1a1a1a] px-4 md:px-6 pt-44 md:pt-52 pb-20">
       <Helmet>
         <title>Order Confirmed | SLOOK</title>
       </Helmet>
