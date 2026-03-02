@@ -328,7 +328,7 @@ const AdminOrders = () => {
                                                         </span>
                                                     )}
                                                     {/* Item Status Badge */}
-                                                    {item.status !== 'Ordered' && item.status !== 'Delivered' && (
+                                                    {item.status && item.status !== 'Ordered' && item.status !== 'Delivered' && (
                                                         <span className={`text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded w-fit ${item.status.includes('Returned') ? 'bg-red-100 text-red-600' :
                                                             item.status.includes('Exchanged') ? 'bg-blue-100 text-blue-600' :
                                                                 item.status.includes('Requested') ? 'bg-yellow-100 text-yellow-600' :
@@ -361,7 +361,7 @@ const AdminOrders = () => {
                                     <td className="px-4 py-4 md:px-8 md:py-6 text-[10px] font-bold uppercase tracking-widest text-zinc-400">
                                         {new Date(order.createdAt).toLocaleDateString()}
                                     </td>
-                                    <td className="px-4 py-4 md:px-8 md:py-6 text-sm font-black text-zinc-800">₹{order.totalPrice.toLocaleString()}</td>
+                                    <td className="px-4 py-4 md:px-8 md:py-6 text-sm font-black text-zinc-800">₹{(order.totalPrice || 0).toLocaleString()}</td>
                                     <td className="px-4 py-4 md:px-8 md:py-6">
                                         <div className="flex flex-col items-start gap-1">
                                             <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${order.isPaid ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'}`}>

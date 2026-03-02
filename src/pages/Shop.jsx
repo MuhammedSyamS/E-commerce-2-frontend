@@ -273,21 +273,28 @@ const Shop = () => {
       </Helmet>
 
       {/* --- ELITE SHOP HERO --- */}
-      <section className="relative pt-36 pb-20 md:pt-56 md:pb-32 px-6 overflow-hidden">
+      <section className="relative pt-32 pb-16 md:pt-56 md:pb-32 px-6 overflow-hidden bg-zinc-50/30">
         {/* Abstract Background Elements */}
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-zinc-50 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 animate-pulse" />
-        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-zinc-50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 -z-10" />
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-white rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2 -z-10 opacity-50" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-zinc-100/50 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2 -z-10" />
 
         <div className="container-responsive relative">
-          <div className="max-w-3xl">
-            <h1 className="!text-5xl md:!text-8xl lg:!text-9xl font-black uppercase tracking-tighter leading-[0.85] mb-2 md:mb-8 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+          <div className="max-w-4xl mx-auto text-center md:text-left">
+            <div className="inline-block mb-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <span className="text-[7px] md:text-[10px] font-black uppercase tracking-[0.6em] text-zinc-400 bg-zinc-100/50 px-3 py-1 rounded-full border border-zinc-200/50">
+                Curated Artifacts
+              </span>
+            </div>
+
+            <h1 className="text-5xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.8] mb-6 md:mb-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
               The<br />
-              Collection
+              <span className="text-zinc-300">Collection</span>
             </h1>
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
-              <div className="h-px w-20 bg-black hidden md:block" />
-              <p className="text-[8px] md:text-xs font-black uppercase tracking-[0.5em] text-zinc-400">
-                Spring-Summer 2026 Collection
+
+            <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
+              <div className="h-px w-12 md:w-20 bg-zinc-200" />
+              <p className="text-[7px] md:text-xs font-black uppercase tracking-[0.4em] text-zinc-500 max-w-[280px] md:max-w-none leading-relaxed">
+                Spring-Summer 2026 • Limited Studio Drops
               </p>
             </div>
           </div>
