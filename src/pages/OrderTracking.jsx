@@ -42,7 +42,7 @@ const OrderTracking = () => {
     };
 
     return (
-        <div className="bg-white min-h-screen pt-40 pb-20">
+        <div className="bg-white min-h-screen pt-32 pb-12 md:pt-40 md:pb-20">
             <Helmet>
                 <title>Track Your Order | SLOOK</title>
                 <meta name="description" content="Track the status of your SLOOK order." />
@@ -50,43 +50,47 @@ const OrderTracking = () => {
 
             <div className="container mx-auto px-6 max-w-4xl">
 
-                <div className="text-center mb-10 md:mb-16">
-                    <h1 className="text-2xl md:text-4xl font-black uppercase tracking-tighter mb-4">Track Your Order</h1>
-                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[8px] md:text-[10px]">Enter your details below to see current status</p>
+                <div className="text-center mb-6 md:mb-16">
+                    <h1 className="text-lg md:text-4xl font-black uppercase tracking-tighter mb-2 md:mb-4">Track Your Order</h1>
+                    <p className="text-zinc-500 font-bold uppercase tracking-widest text-[7px] md:text-[10px]">Enter your details below to see current status</p>
                 </div>
 
+
                 {/* INPUT FORM */}
-                <div className="bg-zinc-50 p-8 md:p-12 rounded-[2.5rem] border border-zinc-100 shadow-sm max-w-2xl mx-auto mb-16">
+                <div className="bg-zinc-50 p-5 md:p-12 rounded-[1.5rem] md:rounded-[2.5rem] border border-zinc-100 shadow-sm max-w-2xl mx-auto mb-10 md:mb-16">
                     <form onSubmit={handleTrack} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Order ID</label>
+                        <div className="space-y-1 md:space-y-2">
+                            <label className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-2 md:pl-4">Order ID</label>
                             <input
                                 type="text"
                                 placeholder="e.g. 64f..."
                                 value={orderId}
                                 onChange={(e) => setOrderId(e.target.value)}
-                                className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-3 md:px-6 md:py-4 font-bold text-sm md:text-base outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-zinc-200 rounded-lg md:rounded-xl px-4 py-2.5 md:px-6 md:py-4 font-bold text-xs md:text-base outline-none focus:border-black transition-colors"
                                 required
                             />
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-4">Email Address</label>
+
+                        <div className="space-y-1 md:space-y-2">
+                            <label className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 pl-2 md:pl-4">Email Address</label>
                             <input
                                 type="email"
                                 placeholder="Same as used during checkout"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full bg-white border border-zinc-200 rounded-xl px-5 py-3 md:px-6 md:py-4 font-bold text-sm md:text-base outline-none focus:border-black transition-colors"
+                                className="w-full bg-white border border-zinc-200 rounded-lg md:rounded-xl px-4 py-2.5 md:px-6 md:py-4 font-bold text-xs md:text-base outline-none focus:border-black transition-colors"
                                 required
                             />
                         </div>
+
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-4"
+                            className="w-full bg-black text-white py-4 md:py-5 rounded-full font-black uppercase tracking-[0.2em] text-[10px] md:text-xs hover:bg-zinc-800 transition-all shadow-lg hover:shadow-xl active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed mt-2 md:mt-4"
                         >
-                            {loading ? 'Locating...' : 'Track Artifact'}
+                            {loading ? 'Locating...' : 'Track Order'}
                         </button>
+
                     </form>
 
                     {error && (
@@ -102,21 +106,22 @@ const OrderTracking = () => {
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
 
                         {/* STATUS BAR */}
-                        <div className="bg-white border border-zinc-100 rounded-3xl p-8 mb-8 shadow-sm">
-                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+                        <div className="bg-white border border-zinc-100 rounded-2xl md:rounded-3xl p-5 md:p-8 mb-6 md:mb-8 shadow-sm">
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-3 md:gap-4">
                                 <div>
-                                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
-                                    <h2 className={`text-xl md:text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
+                                    <p className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
+                                    <h2 className={`text-base md:text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
                                         {order.status}
                                     </h2>
                                 </div>
                                 <div className="text-left md:text-right">
-                                    <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Expected Delivery</p>
-                                    <p className="text-base md:text-lg font-bold">
+                                    <p className="text-[7px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Expected Delivery</p>
+                                    <p className="text-sm md:text-lg font-bold">
                                         {order.isDelivered ? 'Delivered' : 'Est. 3-5 Business Days'}
                                     </p>
                                 </div>
                             </div>
+
 
                             {/* PROGRESS BAR */}
                             {order.status !== 'Cancelled' && (
@@ -132,10 +137,11 @@ const OrderTracking = () => {
                                             const current = getCurrentStep(order.status);
                                             const completed = idx <= current;
                                             return (
-                                                <div key={step.status} className="flex flex-col items-center gap-2 md:gap-3">
-                                                    <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all ${completed ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-300'}`}>
-                                                        <step.icon size={14} className="md:w-4 md:h-4" />
+                                                <div key={step.status} className="flex flex-col items-center gap-1.5 md:gap-3">
+                                                    <div className={`w-6 h-6 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all ${completed ? 'bg-black border-black text-white' : 'bg-white border-zinc-200 text-zinc-300'}`}>
+                                                        <step.icon size={10} className="md:w-4 md:h-4" />
                                                     </div>
+
                                                     <div className="flex flex-col items-center">
                                                         <span className={`text-[7px] md:text-[9px] font-black uppercase tracking-widest ${completed ? 'text-black' : 'text-zinc-300'}`}>{step.label}</span>
                                                         {completed && (

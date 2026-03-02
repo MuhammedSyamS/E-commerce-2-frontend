@@ -161,7 +161,8 @@ const ReturnPortal = () => {
     ) || [];
 
     return (
-        <div className="bg-gray-50 min-h-screen pt-32 md:pt-44 pb-12 md:pb-20 px-4 md:px-6">
+        <div className="bg-gray-50 min-h-screen pt-28 md:pt-44 pb-10 md:pb-20 px-4 md:px-6">
+
             <Helmet>
                 <title>Returns Portal | SLOOK</title>
             </Helmet>
@@ -177,47 +178,48 @@ const ReturnPortal = () => {
                         <button onClick={() => window.location.reload()} className="text-xs font-black uppercase underline tracking-widest p-4">Process Another</button>
                     </div>
                 ) : !order ? (
-                    <div className="bg-white p-5 md:p-16 rounded-[2rem] md:rounded-[3rem] shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700">
-                        <div className="flex justify-center mb-6 md:mb-10">
-                            <div className="w-12 h-12 md:w-16 md:h-16 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400">
-                                <RotateCcw size={24} className="md:w-8 md:h-8" />
+                    <div className="bg-white p-4 md:p-16 rounded-[1.5rem] md:rounded-[3rem] shadow-xl animate-in fade-in slide-in-from-bottom-6 duration-700">
+                        <div className="flex justify-center mb-5 md:mb-10">
+                            <div className="w-10 h-10 md:w-16 md:h-16 bg-zinc-50 rounded-full flex items-center justify-center text-zinc-400">
+                                <RotateCcw size={20} className="md:w-8 md:h-8" />
                             </div>
                         </div>
 
-                        <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-center mb-2 md:mb-4">Returns <span className="text-zinc-300">Portal</span></h1>
-                        <p className="text-[8px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-6 md:mb-12">Enter details to initiate return or exchange</p>
+                        <h1 className="text-lg md:text-3xl font-black uppercase tracking-tighter text-center mb-1.5 md:mb-4">Returns <span className="text-zinc-300">Portal</span></h1>
+                        <p className="text-[7px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-5 md:mb-12">Enter details to initiate return or exchange</p>
+
 
                         <form onSubmit={handleLookup} className="space-y-6 md:space-y-8">
-                            <div className="space-y-2">
-                                <label className="text-[8px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Order Identifier</label>
+                            <div className="space-y-1.5 md:space-y-2">
+                                <label className="text-[7px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Order Identifier</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. 65a4fc..."
                                     required
                                     value={orderId}
                                     onChange={e => setOrderId(e.target.value)}
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 md:p-5 text-sm font-bold outline-none focus:border-black transition-all appearance-none"
+                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-3 md:p-5 text-xs md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-[8px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Email_Address</label>
+                            <div className="space-y-1.5 md:space-y-2">
+                                <label className="text-[7px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Email_Address</label>
                                 <input
                                     type="email"
                                     placeholder="name@example.com"
                                     required
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 md:p-5 text-sm font-bold outline-none focus:border-black transition-all appearance-none"
+                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-3 md:p-5 text-xs md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-black text-white py-3.5 md:py-5 rounded-xl md:rounded-2xl font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 touch-manipulation"
+                                className="w-full bg-black text-white py-3 md:py-5 rounded-lg md:rounded-2xl font-black uppercase text-[9px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 touch-manipulation"
                             >
                                 {loading ? "Searching..." : "Find Order"}
-                                {!loading && <ArrowRight size={16} />}
+                                {!loading && <ArrowRight size={14} className="md:w-4 md:h-4" />}
                             </button>
                         </form>
 
@@ -229,13 +231,13 @@ const ReturnPortal = () => {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-white p-5 md:p-12 rounded-[2rem] md:rounded-[3rem] shadow-xl animate-in zoom-in duration-500">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-5 md:mb-8 gap-4">
+                    <div className="bg-white p-4 md:p-12 rounded-[1.5rem] md:rounded-[3rem] shadow-xl animate-in zoom-in duration-500">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 gap-3 md:gap-4">
                             <div>
-                                <h2 className="text-lg md:text-2xl font-black uppercase italic">Select Items</h2>
-                                <p className="text-[8px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Order #{order._id.slice(-6)}</p>
+                                <h2 className="text-base md:text-2xl font-black uppercase italic">Select Items</h2>
+                                <p className="text-[7px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Order #{order._id.slice(-6).toUpperCase()}</p>
                             </div>
-                            <button onClick={() => setOrder(null)} className="text-[8px] md:text-[10px] font-bold underline text-left md:text-right p-2 -ml-2 md:ml-0">Change Order</button>
+                            <button onClick={() => setOrder(null)} className="text-[7px] md:text-[10px] font-bold underline text-left md:text-right p-1 -ml-1 md:ml-0">Change Order</button>
                         </div>
                         <form onSubmit={handleSubmitReturn}>
                             <div className="space-y-4 mb-8">
@@ -266,7 +268,8 @@ const ReturnPortal = () => {
                                                     <p className="text-xs md:text-[11px] font-black mt-1">₹{item.price}</p>
                                                 </div>
                                             </label>
-                                            打
+
+
                                             {/* Variant Picker for Exchange */}
                                             {returnType === 'Exchange' && selectedItems.includes(item._id) && (
                                                 <div className="ml-10 p-4 bg-zinc-50 rounded-2xl border border-zinc-100 animate-in fade-in slide-in-from-top-2">
@@ -342,7 +345,8 @@ const ReturnPortal = () => {
                                     <div className="space-y-2">
                                         <label className="text-[8px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Unboxing Proof (Images/Video)</label>
                                         <div className="bg-zinc-50 border border-dashed border-zinc-200 rounded-xl p-5 md:p-6 text-center transition-colors hover:border-black group relative">
-                                            打                                            <input
+
+                                            <input
                                                 type="file"
                                                 multiple
                                                 accept="image/*,video/*"

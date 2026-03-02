@@ -162,14 +162,14 @@ const TrackOrder = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen pt-44 md:pt-52 pb-20 px-4 md:px-6 selection:bg-black selection:text-white flex flex-col justify-center items-center">
+    <div className="bg-gray-50 min-h-screen pt-32 md:pt-52 pb-12 md:pb-20 px-4 md:px-6 selection:bg-black selection:text-white flex flex-col justify-center items-center">
       <div className="container-responsive">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 md:mb-12 text-center"
+          className="mb-6 md:mb-12 text-center"
         >
-          <h1 className="text-2xl md:text-5xl font-black uppercase tracking-tighter leading-none">
+          <h1 className="text-lg md:text-5xl font-black uppercase tracking-tighter leading-none">
             {config.title} <span className="text-zinc-300">{config.subtitle}</span>
           </h1>
         </motion.div>
@@ -177,32 +177,35 @@ const TrackOrder = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-zinc-50 border border-zinc-100 p-1 flex flex-col items-center rounded-[2rem] shadow-sm relative group"
+          className="bg-zinc-50 border border-zinc-100 p-0.5 md:p-1 flex flex-col items-center rounded-[1.5rem] md:rounded-[2rem] shadow-sm relative group"
         >
-          <form onSubmit={handleSubmit} className="w-full p-6 md:p-10 flex flex-col md:flex-row gap-5 md:gap-6 items-end relative z-10">
-            <div className="flex-1 w-full space-y-2 md:space-y-3">
-              <label className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">{config.label}</label>
+          <form onSubmit={handleSubmit} className="w-full p-5 md:p-10 flex flex-col md:flex-row gap-4 md:gap-6 items-end relative z-10">
+
+            <div className="flex-1 w-full space-y-1.5 md:space-y-3">
+              <label className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">{config.label}</label>
               <input
                 type="text" required value={orderId} onChange={(e) => setOrderId(e.target.value)}
                 placeholder={config.placeholder}
-                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-sm md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
+                className="w-full bg-white border border-zinc-200 py-2.5 px-4 md:py-3 md:px-5 rounded-lg md:rounded-xl text-xs md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
               />
             </div>
-            <div className="flex-1 w-full space-y-2 md:space-y-3">
-              <label className="text-[8px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">Email</label>
+
+            <div className="flex-1 w-full space-y-1.5 md:space-y-3">
+              <label className="text-[7px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">Email</label>
               <input
                 type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="EMAIL ADDRESS"
-                className="w-full bg-white border border-zinc-200 py-3 px-5 rounded-xl text-sm md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
+                className="w-full bg-white border border-zinc-200 py-2.5 px-4 md:py-3 md:px-5 rounded-lg md:rounded-xl text-xs md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all placeholder:text-zinc-200"
               />
             </div>
+
             <button
               type="submit" disabled={loading}
-              className="w-full md:w-auto px-10 h-12 md:h-14 bg-black text-white rounded-xl font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4 group"
+              className="w-full md:w-auto px-8 h-12 md:px-10 md:h-14 bg-black text-white rounded-lg md:rounded-xl font-black uppercase text-[9px] md:text-xs tracking-widest hover:bg-zinc-800 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-4 group"
             >
-              {loading ? <Loader className="w-4 h-4 animate-spin" /> : <>{config.buttonText} <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" /></>}
+              {loading ? <Loader className="w-4 h-4 animate-spin" /> : <>{config.buttonText} <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform md:w-4 md:h-4" /></>}
             </button>
+
           </form>
 
           <AnimatePresence>
@@ -229,12 +232,13 @@ const TrackOrder = () => {
               animate={{ opacity: 1, y: 0 }}
               className="mt-12 space-y-12"
             >
-              <div className="text-center group pt-4 md:pt-8 flex flex-col items-center">
-                <p className="text-[8px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-2">Live Status</p>
-                <h3 className="text-xl md:text-3xl font-black uppercase text-black tracking-tighter flex items-center gap-3">
-                  <Truck className="text-black md:w-7 md:h-7" size={24} />
+              <div className="text-center group pt-2 md:pt-8 flex flex-col items-center">
+                <p className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-1.5">Live Status</p>
+                <h3 className="text-base md:text-3xl font-black uppercase text-black tracking-tighter flex items-center gap-2">
+                  <Truck className="text-black md:w-7 md:h-7" size={18} />
                   {orderData.orderStatus}
                 </h3>
+
                 <p className="text-[10px] items-center justify-center font-bold text-zinc-400 mt-2 uppercase flex flex-col gap-1">
                   {orderData.returnId ? (
                     <>
@@ -285,16 +289,18 @@ const TrackOrder = () => {
 
                     return (
                       <div key={idx} className="relative z-10 flex flex-col items-center">
-                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center transition-all duration-700 border ${isActive ? 'bg-black border-black text-white shadow-lg scale-110' :
+                        <div className={`w-8 h-8 md:w-12 md:h-12 rounded-lg md:rounded-2xl flex items-center justify-center transition-all duration-700 border ${isActive ? 'bg-black border-black text-white shadow-lg scale-110' :
                           isCompleted ? 'bg-zinc-50 border-zinc-200 text-black' :
                             'bg-white border-zinc-100 text-zinc-200'
                           }`}>
-                          <Icon size={18} className="md:w-5 md:h-5" />
+                          <Icon size={14} className="md:w-5 md:h-5" />
                         </div>
-                        <div className="absolute top-14 md:top-16 text-center flex flex-col items-center gap-1 w-20 md:w-24">
-                          <p className={`text-[8px] md:text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-black' : isCompleted ? 'text-zinc-500' : 'text-zinc-200'}`}>
+
+                        <div className="absolute top-12 md:top-16 text-center flex flex-col items-center gap-1 w-16 md:w-24">
+                          <p className={`text-[7px] md:text-[9px] font-black uppercase tracking-tighter ${isActive ? 'text-black' : isCompleted ? 'text-zinc-500' : 'text-zinc-200'}`}>
                             {m.label}
                           </p>
+
                           {date && (
                             <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
                               {formatDate(date)}
