@@ -185,47 +185,47 @@ const ReturnPortal = () => {
                             </div>
                         </div>
 
-                        <h1 className="text-lg md:text-3xl font-black uppercase tracking-tighter text-center mb-1.5 md:mb-4">Returns <span className="text-zinc-300">Portal</span></h1>
-                        <p className="text-[7px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-5 md:mb-12">Enter details to initiate return or exchange</p>
+                        <h1 className="text-sm md:text-3xl font-black uppercase tracking-tighter text-center mb-1.5 md:mb-4">Returns <span className="text-zinc-300">Portal</span></h1>
+                        <p className="text-[6px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest text-center mb-5 md:mb-12">Enter details to initiate return or exchange</p>
 
 
                         <form onSubmit={handleLookup} className="space-y-6 md:space-y-8">
                             <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[7px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Order Identifier</label>
+                                <label className="text-[6px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Order Identifier</label>
                                 <input
                                     type="text"
                                     placeholder="e.g. 65a4fc..."
                                     required
                                     value={orderId}
                                     onChange={e => setOrderId(e.target.value)}
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-3 md:p-5 text-xs md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
+                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-2.5 md:p-5 text-[10px] md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
                                 />
                             </div>
 
                             <div className="space-y-1.5 md:space-y-2">
-                                <label className="text-[7px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Email_Address</label>
+                                <label className="text-[6px] md:text-[10px] font-black tracking-widest uppercase text-zinc-400 ml-1">Email_Address</label>
                                 <input
                                     type="email"
                                     placeholder="name@example.com"
                                     required
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-3 md:p-5 text-xs md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
+                                    className="w-full bg-zinc-50 border border-zinc-100 rounded-lg md:rounded-xl p-2.5 md:p-5 text-[10px] md:text-sm font-bold outline-none focus:border-black transition-all appearance-none"
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full bg-black text-white py-3 md:py-5 rounded-lg md:rounded-2xl font-black uppercase text-[9px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 touch-manipulation"
+                                className="w-full bg-black text-white py-3 md:py-5 rounded-lg md:rounded-2xl font-black uppercase text-[8px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50 touch-manipulation"
                             >
                                 {loading ? "Searching..." : "Find Order"}
-                                {!loading && <ArrowRight size={14} className="md:w-4 md:h-4" />}
+                                {!loading && <ArrowRight size={12} className="md:w-4 md:h-4" />}
                             </button>
                         </form>
 
                         <div className="mt-6 md:mt-12 p-4 md:p-6 bg-blue-50 rounded-2xl flex items-start gap-4">
-                            <AlertCircle className="text-blue-500 shrink-0 mt-0.5" size={16} />
-                            <p className="text-[8px] md:text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">
+                            <AlertCircle className="text-blue-500 shrink-0 mt-0.5" size={14} />
+                            <p className="text-[7px] md:text-[10px] font-bold text-blue-600 uppercase tracking-widest leading-relaxed">
                                 Eligibility: Items can be returned within 7 days. Must be in original condition with tags. Unboxing video required for damaged items.
                             </p>
                         </div>
@@ -234,10 +234,10 @@ const ReturnPortal = () => {
                     <div className="bg-white p-4 md:p-12 rounded-[1.5rem] md:rounded-[3rem] shadow-xl animate-in zoom-in duration-500">
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-8 gap-3 md:gap-4">
                             <div>
-                                <h2 className="text-base md:text-2xl font-black uppercase italic">Select Items</h2>
-                                <p className="text-[7px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Order #{order._id.slice(-6).toUpperCase()}</p>
+                                <h2 className="text-sm md:text-2xl font-black uppercase italic">Select Items</h2>
+                                <p className="text-[6px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Order #{order._id.slice(-6).toUpperCase()}</p>
                             </div>
-                            <button onClick={() => setOrder(null)} className="text-[7px] md:text-[10px] font-bold underline text-left md:text-right p-1 -ml-1 md:ml-0">Change Order</button>
+                            <button onClick={() => setOrder(null)} className="text-[6px] md:text-[10px] font-bold underline text-left md:text-right p-1 -ml-1 md:ml-0">Change Order</button>
                         </div>
                         <form onSubmit={handleSubmitReturn}>
                             <div className="space-y-4 mb-8">
@@ -261,11 +261,11 @@ const ReturnPortal = () => {
                                                 <img src={item.image} alt="" className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg md:rounded-xl bg-zinc-200" />
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
-                                                        <p className="font-bold text-[10px] md:text-xs uppercase truncate">{item.name}</p>
-                                                        {isExpired && <span className="text-[7px] md:text-[8px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase ml-2">Period Expired</span>}
+                                                        <p className="font-bold text-[9px] md:text-xs uppercase truncate">{item.name}</p>
+                                                        {isExpired && <span className="text-[6px] md:text-[8px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase ml-2">Period Expired</span>}
                                                     </div>
-                                                    <p className="text-[8px] md:text-[10px] text-zinc-500 mt-0.5">Qty: {item.qty} | Size: {item.selectedVariant?.size || 'N/A'}</p>
-                                                    <p className="text-xs md:text-[11px] font-black mt-1">₹{item.price}</p>
+                                                    <p className="text-[7px] md:text-[10px] text-zinc-500 mt-0.5">Qty: {item.qty} | Size: {item.selectedVariant?.size || 'N/A'}</p>
+                                                    <p className="text-[10px] md:text-[11px] font-black mt-1">₹{item.price}</p>
                                                 </div>
                                             </label>
 
@@ -312,7 +312,7 @@ const ReturnPortal = () => {
                                                     key={type}
                                                     type="button"
                                                     onClick={() => setReturnType(type)}
-                                                    className={`flex-1 py-3 md:py-3 rounded-xl font-black uppercase text-[9px] md:text-[10px] tracking-widest border transition-all touch-manipulation ${returnType === type ? 'bg-black text-white border-black' : 'bg-white text-zinc-400 border-zinc-200'}`}
+                                                    className={`flex-1 py-3 md:py-3 rounded-xl font-black uppercase text-[8px] md:text-[10px] tracking-widest border transition-all touch-manipulation ${returnType === type ? 'bg-black text-white border-black' : 'bg-white text-zinc-400 border-zinc-200'}`}
                                                 >
                                                     {type}
                                                 </button>
@@ -327,7 +327,7 @@ const ReturnPortal = () => {
                                                 required
                                                 value={reason}
                                                 onChange={(e) => setReason(e.target.value)}
-                                                className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 md:p-4 text-xs font-bold outline-none focus:border-black appearance-none"
+                                                className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 md:p-4 text-[10px] font-bold outline-none focus:border-black appearance-none"
                                             >
                                                 <option value="">Select Reason</option>
                                                 <option value="Size Issue">Size Issue (Too Big/Small)</option>
@@ -357,7 +357,7 @@ const ReturnPortal = () => {
                                                 <div className={`p-2.5 md:p-3 rounded-full ${uploading ? 'bg-zinc-100 animate-pulse' : 'bg-white shadow-sm'}`}>
                                                     <RotateCcw size={18} className={uploading ? 'animate-spin' : 'text-zinc-400'} />
                                                 </div>
-                                                <p className="text-[7px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-black">
+                                                <p className="text-[6px] md:text-[9px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-black">
                                                     {uploading ? 'Processing File...' : 'Click or Drag to Upload'}
                                                 </p>
                                                 <p className="text-[6px] md:text-[7px] font-bold text-zinc-300 uppercase tracking-tighter">MAX 5MB · MP4, JPG, PNG</p>
@@ -392,13 +392,13 @@ const ReturnPortal = () => {
                                             value={comment}
                                             onChange={e => setComment(e.target.value)}
                                             placeholder="Please provide details..."
-                                            className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 text-sm md:text-xs font-bold outline-none focus:border-black h-20 md:h-24 resize-none"
+                                            className="w-full bg-zinc-50 border border-zinc-100 rounded-xl p-3.5 text-[10px] md:text-xs font-bold outline-none focus:border-black h-20 md:h-24 resize-none"
                                         ></textarea>
                                     </div>
                                     <button
                                         type="submit"
                                         disabled={loading || uploading}
-                                        className="w-full bg-black text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase text-[10px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 block touch-manipulation disabled:opacity-50"
+                                        className="w-full bg-black text-white py-4 md:py-5 rounded-xl md:rounded-2xl font-black uppercase text-[9px] md:text-xs tracking-widest hover:bg-zinc-900 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1 block touch-manipulation disabled:opacity-50"
                                     >
                                         {loading ? "Processing..." : `Confirm ${returnType}`}
                                     </button>

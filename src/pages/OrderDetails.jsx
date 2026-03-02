@@ -124,7 +124,7 @@ const OrderDetails = () => {
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
             <div className="w-full lg:w-auto">
               <div className="flex items-center gap-2 mb-3">
-                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+                <span className={`px-2 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
                   order.orderStatus === 'Shipped' ? 'bg-purple-100 text-purple-700' :
                     order.orderStatus === 'Dispatched' ? 'bg-indigo-100 text-indigo-700' :
                       order.orderStatus === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
@@ -135,12 +135,12 @@ const OrderDetails = () => {
                   }`}>
                   {order.orderStatus || 'Pending'}
                 </span>
-                <span className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">
+                <span className="text-[7px] text-zinc-400 font-bold uppercase tracking-widest">
                   Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
 
-              <h1 className="!text-sm md:!text-xl font-black uppercase tracking-tight mb-4">
+              <h1 className="!text-[10px] md:!text-xl font-black uppercase tracking-tight mb-4">
                 Order #{order._id?.slice(-6).toUpperCase()}
               </h1>
 
@@ -203,9 +203,9 @@ const OrderDetails = () => {
         <div className="bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-6 lg:p-8 shadow-sm border border-zinc-100 mb-6 md:mb-8 overflow-hidden relative">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-10">
             <div>
-              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-1.5">Shipment Status</p>
-              <h2 className="!text-base md:!text-lg font-black uppercase tracking-tighter flex items-center gap-3">
-                <Truck className="text-black" size={18} />
+              <p className="text-[7px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-1.5">Shipment Status</p>
+              <h2 className="!text-sm md:!text-lg font-black uppercase tracking-tighter flex items-center gap-3">
+                <Truck className="text-black" size={14} />
                 {order.returnId ? (
                   <div className="flex flex-col">
                     <span className="text-orange-500 flex items-center gap-2 !text-xs">
@@ -293,14 +293,14 @@ const OrderDetails = () => {
                         return (
                           <div key={idx} className="flex flex-col items-center group w-24 md:w-32">
                             <div className={`
-                              w-8 h-8 md:w-10 md:h-10 rounded-2xl flex items-center justify-center transition-all duration-700 relative border
+                              w-6 h-6 md:w-10 md:h-10 rounded-2xl flex items-center justify-center transition-all duration-700 relative border
                               ${isActive ? 'bg-black border-black text-white shadow-xl scale-110' :
                                 isCompleted ? 'bg-zinc-50 border-zinc-200 text-black' :
                                   'bg-white border-zinc-100 text-zinc-200'}
                               ${isActive ? 'ring-[6px] ring-zinc-50' : ''}
                             `}>
                               <div className="flex items-center justify-center">
-                                <Icon size={18} />
+                                <Icon size={12} />
                               </div>
                               {isActive && (
                                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white animate-bounce" />
@@ -308,11 +308,11 @@ const OrderDetails = () => {
                             </div>
 
                             <div className="mt-3 md:mt-4 text-center">
-                              <p className={`!text-[8px] md:!text-[9px] font-black uppercase tracking-widest mb-1 transition-colors ${isActive ? 'text-black' : isCompleted ? 'text-zinc-600' : 'text-zinc-300'}`}>
+                              <p className={`!text-[7px] md:!text-[9px] font-black uppercase tracking-widest mb-1 transition-colors ${isActive ? 'text-black' : isCompleted ? 'text-zinc-600' : 'text-zinc-300'}`}>
                                 {step.label}
                               </p>
                               {date && (
-                                <p className="!text-[7px] md:!text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
+                                <p className="!text-[6px] md:!text-[8px] font-black text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
                                   {new Date(date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                                 </p>
                               )}
@@ -332,10 +332,10 @@ const OrderDetails = () => {
           {/* SHIPPING INFO */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-zinc-400">
-              <MapPin size={16} />
-              <span className="!text-[9px] md:!text-[10px] font-black uppercase tracking-widest">Shipping Address</span>
+              <MapPin size={14} />
+              <span className="!text-[8px] md:!text-[10px] font-black uppercase tracking-widest">Shipping Address</span>
             </div>
-            <div className="!text-xs md:!text-sm font-bold text-zinc-700 leading-relaxed uppercase">
+            <div className="!text-[10px] md:!text-sm font-bold text-zinc-700 leading-relaxed uppercase">
               <p>{order.shippingAddress?.address}</p>
               <p>{order.shippingAddress?.city}, {order.shippingAddress?.postalCode}</p>
               <p className="text-zinc-400 mt-1">Ph: {order.shippingAddress?.phone}</p>
@@ -345,15 +345,15 @@ const OrderDetails = () => {
           {/* PAYMENT INFO */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-zinc-400">
-              <CreditCard size={16} />
-              <span className="!text-[9px] md:!text-[10px] font-black uppercase tracking-widest">Payment Method</span>
+              <CreditCard size={14} />
+              <span className="!text-[8px] md:!text-[10px] font-black uppercase tracking-widest">Payment Method</span>
             </div>
             <div>
-              <p className="!text-xs md:!text-sm font-bold text-zinc-700 uppercase">
+              <p className="!text-[10px] md:!text-sm font-bold text-zinc-700 uppercase">
                 {order.paymentMethod === 'cod' ? 'Cash On Delivery' : order.paymentMethod}
               </p>
-              <p className="!text-[9px] md:!text-[10px] font-bold text-green-600 mt-1 uppercase flex items-center gap-1">
-                <CheckCircle size={12} /> Payment {order.isPaid ? 'Completed' : 'Pending'}
+              <p className="!text-[8px] md:!text-[10px] font-bold text-green-600 mt-1 uppercase flex items-center gap-1">
+                <CheckCircle size={10} /> Payment {order.isPaid ? 'Completed' : 'Pending'}
               </p>
             </div>
           </div>
@@ -361,15 +361,15 @@ const OrderDetails = () => {
           {/* DELIVERY STATUS */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-zinc-400">
-              <Truck size={16} />
-              <span className="!text-[9px] md:!text-[10px] font-black uppercase tracking-widest">Delivery Details</span>
+              <Truck size={14} />
+              <span className="!text-[8px] md:!text-[10px] font-black uppercase tracking-widest">Delivery Details</span>
             </div>
-            <div className="!text-xs md:!text-sm font-bold text-zinc-700">
+            <div className="!text-[10px] md:!text-sm font-bold text-zinc-700">
               {order.isDispatched ? (
                 <div className="space-y-1">
                   <p className="uppercase">{order.deliveryPartner || 'Standard Courier'}</p>
-                  <p className="font-mono text-zinc-400 !text-[10px] md:!text-xs">TRK: {order.trackingId || 'Pending'}</p>
-                  <button onClick={() => navigate('/track-order')} className="!text-[9px] md:!text-[10px] font-black underline mt-2 hover:text-black">
+                  <p className="font-mono text-zinc-400 !text-[9px] md:!text-xs">TRK: {order.trackingId || 'Pending'}</p>
+                  <button onClick={() => navigate('/track-order')} className="!text-[8px] md:!text-[10px] font-black underline mt-2 hover:text-black">
                     TRACK PACKAGE
                   </button>
                 </div>

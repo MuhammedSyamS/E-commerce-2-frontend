@@ -47,15 +47,15 @@ const MyReturns = () => {
     }
 
     return (
-        <div className="min-h-screen bg-zinc-50/50 pt-40 pb-20 px-6 font-sans">
+        <div className="min-h-screen bg-zinc-50/50 pt-32 md:pt-40 pb-12 md:pb-20 px-4 md:px-6 font-sans">
             <div className="max-w-5xl mx-auto">
-                <div className="flex items-center gap-4 mb-12">
-                    <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm">
-                        <ChevronRight size={20} className="rotate-180" />
+                <div className="flex items-center gap-4 mb-8 md:mb-12">
+                    <button onClick={() => navigate('/account')} className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-all shadow-sm">
+                        <ChevronRight size={16} className="rotate-180 md:w-5 md:h-5" />
                     </button>
                     <div>
-                        <h1 className="text-3xl font-black uppercase tracking-tighter italic">My Returns</h1>
-                        <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Track your requests & history</p>
+                        <h1 className="!text-xl md:!text-3xl font-black uppercase tracking-tighter italic">My Returns</h1>
+                        <p className="text-zinc-500 text-[7px] md:text-xs font-bold uppercase tracking-widest mt-1">Track your requests & history</p>
                     </div>
                 </div>
 
@@ -89,47 +89,47 @@ const MyReturns = () => {
                             };
 
                             return (
-                                <div key={ret._id} className="bg-white rounded-3xl p-6 md:p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-all group">
-                                    <div className="flex flex-col md:flex-row gap-8">
+                                <div key={ret._id} className="bg-white rounded-3xl p-3 md:p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-all group">
+                                    <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                                         {/* IMAGE */}
-                                        <div className="w-24 h-32 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-200">
+                                        <div className="w-14 h-20 md:w-24 md:h-32 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-200">
                                             <img src={ret.orderItem.image} alt="" className="w-full h-full object-cover mix-blend-multiply" />
                                         </div>
 
                                         {/* DETAILS */}
                                         <div className="flex-1">
-                                            <div className="flex justify-between items-start mb-4">
+                                            <div className="flex justify-between items-start mb-2 md:mb-4">
                                                 <div>
-                                                    <span className={`inline-block px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest mb-2 ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'
+                                                    <span className={`inline-block px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-1 md:mb-2 ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'
                                                         }`}>
                                                         {ret.type} Request
                                                     </span>
-                                                    <h3 className="font-bold uppercase text-lg leading-tight">{ret.orderItem.name}</h3>
-                                                    <p className="text-xs text-zinc-500 font-mono mt-1">Order #{ret.order?._id?.slice(-6)}</p>
+                                                    <h3 className="font-bold uppercase text-xs md:text-lg leading-tight">{ret.orderItem.name}</h3>
+                                                    <p className="text-[8px] md:text-xs text-zinc-500 font-mono mt-0.5 md:mt-1">Order #{ret.order?._id?.slice(-6)}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className={`text-xs font-black uppercase tracking-widest ${isRejected ? 'text-red-500' : isDone ? 'text-green-500' : 'text-blue-500'}`}>
+                                                    <div className={`text-[8px] md:text-xs font-black uppercase tracking-widest ${isRejected ? 'text-red-500' : isDone ? 'text-green-500' : 'text-blue-500'}`}>
                                                         {ret.status}
                                                     </div>
-                                                    {ret.reason && <p className="text-[10px] text-zinc-400 mt-1 font-medium bg-zinc-50 px-2 py-1 rounded inline-block">{ret.reason}</p>}
+                                                    {ret.reason && <p className="text-[7px] md:text-[10px] text-zinc-400 mt-1 font-medium bg-zinc-50 px-2 py-1 rounded inline-block">{ret.reason}</p>}
                                                 </div>
                                             </div>
 
                                             {/* LOGISTICS INFO (Like Shipping Tracking) */}
                                             {ret.pickupDetails?.courier && (
-                                                <div className="mb-6 p-4 bg-zinc-50 rounded-xl border border-zinc-200 flex items-center justify-between">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center">
-                                                            <Truck size={14} className="text-zinc-600" />
+                                                <div className="mb-4 md:mb-6 p-3 md:p-4 bg-zinc-50 rounded-xl border border-zinc-200 flex items-center justify-between gap-4">
+                                                    <div className="flex items-center gap-2 md:gap-3">
+                                                        <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white border border-zinc-200 flex items-center justify-center">
+                                                            <Truck size={12} className="text-zinc-600 md:w-4 md:h-4" />
                                                         </div>
                                                         <div>
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Courier Partner</p>
-                                                            <p className="text-xs font-bold uppercase">{ret.pickupDetails.courier}</p>
+                                                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Courier Partner</p>
+                                                            <p className="text-[9px] md:text-xs font-bold uppercase">{ret.pickupDetails.courier}</p>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Tracking ID</p>
-                                                        <p className="text-xs font-mono font-bold">{ret.pickupDetails.trackingId || 'Pending'}</p>
+                                                        <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400">Tracking ID</p>
+                                                        <p className="text-[9px] md:text-xs font-mono font-bold">{ret.pickupDetails.trackingId || 'Pending'}</p>
                                                     </div>
                                                 </div>
                                             )}
@@ -164,11 +164,11 @@ const MyReturns = () => {
                                                                     {isRejected && i === 4 && <XCircle size={8} className="text-white absolute -top-4 left-1/2 -translate-x-1/2" />}
                                                                 </div>
                                                                 <div className="text-center">
-                                                                    <span className={`block text-[9px] font-bold uppercase tracking-widest mb-0.5 ${activeState ? 'text-black' : 'text-zinc-300'}`}>
+                                                                    <span className={`block text-[6px] md:text-[9px] font-bold uppercase tracking-widest mb-0.5 ${activeState ? 'text-black' : 'text-zinc-300'}`}>
                                                                         {isRejected && i === 4 ? 'Rejected' : label}
                                                                     </span>
                                                                     {activeState && date && (
-                                                                        <span className="block text-[8px] font-mono text-zinc-400">{date}</span>
+                                                                        <span className="block text-[6px] md:text-[8px] font-mono text-zinc-400">{date}</span>
                                                                     )}
                                                                 </div>
                                                             </div>

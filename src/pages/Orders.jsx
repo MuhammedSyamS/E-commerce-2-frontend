@@ -36,7 +36,7 @@ const Orders = () => {
     fetchOrders(true);
     const interval = setInterval(() => fetchOrders(false), 15000); // 15s Polling
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user?.token]); // Changed from [user] to fix unnecessary reloading
 
   if (loading) return (
     <div className="h-screen flex items-center justify-center bg-white pt-40">
@@ -49,10 +49,10 @@ const Orders = () => {
       <div className="container mx-auto max-w-5xl">
         <div className="mb-12 flex justify-between items-end">
           <div>
-            <h1 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter leading-none">
+            <h1 className="!text-xl md:!text-5xl font-black uppercase tracking-tighter leading-none">
               My <span className="text-red-500">Orders</span>
             </h1>
-            <div className="h-1 w-20 bg-black mt-4"></div>
+            <div className="h-0.5 w-10 bg-black mt-2 md:mt-4"></div>
           </div>
           {/* REFRESH BTN */}
           <button onClick={() => window.location.reload()} className="text-xs font-bold uppercase tracking-widest text-zinc-400 hover:text-black">
@@ -69,7 +69,7 @@ const Orders = () => {
                   {/* LEFT: Order Info & Product Thumbnails */}
                   <div className="space-y-4 md:space-y-6 flex-grow">
                     <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                      <p className="font-black !text-[12px] md:!text-xl tracking-tighter uppercase">#{order._id.slice(-8).toUpperCase()}</p>
+                      <p className="font-black !text-[10px] md:!text-xl tracking-tighter uppercase">#{order._id.slice(-8).toUpperCase()}</p>
 
                       {/* STATUS BADGE LOGIC */}
                       {(() => {
@@ -104,11 +104,11 @@ const Orders = () => {
 
                         return (
                           <div className="flex items-center gap-3">
-                            <span className={`px-2 md:px-4 py-1 rounded-full !text-[8px] md:!text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+                            <span className={`px-2 md:px-4 py-1 rounded-full !text-[7px] md:!text-9px] font-black uppercase tracking-widest ${colorClass}`}>
                               {status}
                             </span>
                             {currentDate && (
-                              <span className="!text-[8px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                              <span className="!text-[7px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                                 {new Date(currentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
@@ -136,8 +136,8 @@ const Orders = () => {
                   {/* RIGHT: Price & Action */}
                   <div className="flex flex-col justify-between items-end gap-4 md:gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-4 md:pt-6 lg:pt-0 lg:pl-10 w-full lg:w-auto">
                     <div className="text-right">
-                      <p className="!text-[8px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
-                      <Price amount={order.totalPrice} className="!text-lg md:!text-3xl font-black tracking-tighter" />
+                      <p className="!text-[7px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
+                      <Price amount={order.totalPrice} className="!text-base md:!text-3xl font-black tracking-tighter" />
                     </div>
 
                     <button
