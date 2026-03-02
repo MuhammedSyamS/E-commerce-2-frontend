@@ -382,52 +382,16 @@ const Navbar = () => {
               return null;
             })()}
 
-            {/* USER PROFILE DROPDOWN */}
+            {/* USER PROFILE DIRECT LINK */}
             {user ? (
-              <div className="relative group">
-                <button className="flex items-center gap-2 outline-none relative group/badge">
-                  <User className="w-5 h-5 transition-all text-white fill-white scale-110" />
-                  {user && (
-                    <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse ${(user.totalSpend || 0) >= 50000 ? 'bg-gradient-to-tr from-zinc-200 to-zinc-400' :
-                      (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
-                        (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
-                          'bg-orange-700'
-                      }`} title={`${(user.totalSpend || 0) >= 50000 ? 'Platinum' : (user.totalSpend || 0) >= 20000 ? 'Gold' : (user.totalSpend || 0) >= 5000 ? 'Silver' : 'Bronze'} Member`} />
-                  )}
-                </button>
-
-                {/* DROPDOWN MENU */}
-                <div className="absolute right-0 top-full pt-4 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
-                  <div className="bg-white rounded-2xl shadow-2xl p-4 w-48 border border-zinc-100 animate-in slide-in-from-top-4">
-
-                    {/* HEADER */}
-                    <div className="border-b border-zinc-100 pb-4 mb-4">
-                      <p className="text-sm md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mb-1">Signed in as</p>
-                      <p className="text-base md:text-sm font-black truncate">{user.firstName} {user.lastName}</p>
-                    </div>
-
-                    {/* LINKS */}
-                    <div className="space-y-2">
-                      <Link to="/account" className="flex items-center gap-3 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-black hover:pl-2 transition-all">
-                        My Account
-                      </Link>
-                      <Link to="/my-orders" className="flex items-center gap-3 text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-600 hover:text-black hover:pl-2 transition-all">
-                        My Orders
-                      </Link>
-                    </div>
-
-                    {/* LOGOUT */}
-                    <div className="border-t border-zinc-100 mt-3 pt-3">
-                      <button
-                        onClick={() => { useStore.getState().logout(); navigate('/login'); }}
-                        className="w-full text-left flex items-center gap-2 text-sm md:text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 hover:pl-2 transition-all"
-                      >
-                        Log Out
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <Link to="/account" className="relative group flex items-center gap-2 outline-none group/badge">
+                <User className="w-5 h-5 transition-all text-white fill-white scale-110 md:hover:text-zinc-400" />
+                <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse ${(user.totalSpend || 0) >= 50000 ? 'bg-gradient-to-tr from-zinc-200 to-zinc-400' :
+                  (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
+                    (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
+                      'bg-orange-700'
+                  }`} title={`${(user.totalSpend || 0) >= 50000 ? 'Platinum' : (user.totalSpend || 0) >= 20000 ? 'Gold' : (user.totalSpend || 0) >= 5000 ? 'Silver' : 'Bronze'} Member`} />
+              </Link>
             ) : (
               <Link to="/login">
                 <User className="w-5 h-5 text-white hover:text-zinc-400 transition" />
@@ -451,17 +415,20 @@ const Navbar = () => {
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
             <div className="pt-10 flex flex-col gap-6">
-              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
-              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-3xl font-black uppercase tracking-tighter">Shop All</Link>
-              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-zinc-500 text-[10px] font-black uppercase tracking-widest">Track Order</Link>
+              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-2xl font-black uppercase tracking-tighter text-left">New Arrivals</button>
+              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-2xl font-black uppercase tracking-tighter text-left">Best Sellers</button>
+              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl font-black uppercase tracking-tighter">Shop All</Link>
+              {user && (
+                <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl font-black uppercase tracking-tighter">My Orders</Link>
+              )}
+              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl font-black uppercase tracking-tighter">Track Order</Link>
               <button
                 onClick={() => {
                   setIsMenuOpen(false);
                   const footer = document.getElementById('site-footer');
                   if (footer) footer.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="text-zinc-500 text-[10px] font-black uppercase tracking-widest text-left"
+                className="text-white text-2xl font-black uppercase tracking-tighter text-left"
               >
                 Need Help?
               </button>
@@ -469,12 +436,11 @@ const Navbar = () => {
 
             <div className="border-t border-white/10 pt-8">
               {user ? (
-                <div className="flex flex-col gap-4">
-                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[9px]">My Account</Link>
-                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 font-bold uppercase tracking-widest text-[9px] text-left">Log Out</button>
+                <div className="flex flex-col gap-6">
+                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 text-2xl font-black uppercase tracking-tighter text-left">Log Out</button>
                 </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white font-bold uppercase tracking-widest text-[9px]">Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white text-2xl font-black uppercase tracking-tighter">Sign In</Link>
               )}
             </div>
           </div>

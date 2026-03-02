@@ -63,13 +63,13 @@ const Orders = () => {
         {orders.length > 0 ? (
           <div className="space-y-4 md:space-y-6">
             {orders.map((order) => (
-              <div key={order._id} className="border border-zinc-100 p-5 md:p-10 rounded-3xl md:rounded-[2rem] bg-white hover:border-black transition-all duration-500 group shadow-sm hover:shadow-xl">
+              <div key={order._id} className="relative border border-zinc-100 p-4 md:p-10 rounded-2xl md:rounded-[2rem] bg-white hover:border-black transition-all duration-500 group shadow-sm hover:shadow-xl">
                 <div className="flex flex-col lg:flex-row justify-between gap-6 md:gap-10">
 
                   {/* LEFT: Order Info & Product Thumbnails */}
                   <div className="space-y-4 md:space-y-6 flex-grow">
                     <div className="flex flex-wrap items-center gap-2 md:gap-4">
-                      <p className="font-black !text-base md:!text-xl tracking-tighter uppercase">#{order._id.slice(-8).toUpperCase()}</p>
+                      <p className="font-black !text-[12px] md:!text-xl tracking-tighter uppercase">#{order._id.slice(-8).toUpperCase()}</p>
 
                       {/* STATUS BADGE LOGIC */}
                       {(() => {
@@ -104,11 +104,11 @@ const Orders = () => {
 
                         return (
                           <div className="flex items-center gap-3">
-                            <span className={`px-3 md:px-4 py-1 rounded-full !text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
+                            <span className={`px-2 md:px-4 py-1 rounded-full !text-[8px] md:!text-[9px] font-black uppercase tracking-widest ${colorClass}`}>
                               {status}
                             </span>
                             {currentDate && (
-                              <span className="!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                              <span className="!text-[8px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
                                 {new Date(currentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
@@ -118,9 +118,9 @@ const Orders = () => {
                     </div>
 
                     {/* PRODUCT IMAGES PREVIEW - EFFECT REMOVED */}
-                    <div className="flex flex-wrap gap-3">
+                    <div className="flex flex-wrap gap-2 md:gap-3">
                       {order.orderItems && order.orderItems.map((item, idx) => (
-                        <div key={idx} className="relative w-16 h-20 md:w-20 md:h-24 bg-zinc-50 rounded-xl overflow-hidden border border-zinc-100">
+                        <div key={idx} className="relative w-12 h-16 md:w-20 md:h-24 bg-zinc-50 rounded-lg md:rounded-xl overflow-hidden border border-zinc-100">
                           <img
                             src={item.image}
                             alt={item.name}
@@ -135,14 +135,14 @@ const Orders = () => {
 
                   {/* RIGHT: Price & Action */}
                   <div className="flex flex-col justify-between items-end gap-4 md:gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-4 md:pt-6 lg:pt-0 lg:pl-10">
-                    <div className="text-right">
-                      <p className="!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
-                      <Price amount={order.totalPrice} className="!text-2xl md:!text-3xl font-black tracking-tighter" />
+                    <div className="absolute right-4 top-4 md:static text-right">
+                      <p className="!text-[8px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
+                      <Price amount={order.totalPrice} className="!text-lg md:!text-3xl font-black tracking-tighter" />
                     </div>
 
                     <button
                       onClick={() => navigate(`/order/${order._id}`)}
-                      className="w-full lg:w-auto px-8 py-4 md:px-10 md:py-5 bg-black text-white font-black uppercase tracking-[0.2em] !text-[10px] hover:bg-zinc-800 transition shadow-xl active:scale-95 flex items-center justify-center gap-2 rounded-xl"
+                      className="w-full lg:w-auto px-6 py-3 md:px-10 md:py-5 bg-black text-white font-black uppercase tracking-[0.2em] !text-[9px] hover:bg-zinc-800 transition shadow-xl active:scale-95 flex items-center justify-center gap-2 rounded-xl"
                     >
                       View Details <ChevronRight size={14} />
                     </button>
