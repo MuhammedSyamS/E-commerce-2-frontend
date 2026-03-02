@@ -489,50 +489,6 @@ const Checkout = () => {
             {step !== 'shipping' && (
               <div className="animate-in fade-in slide-in-from-right-8 duration-500">
 
-                {/* COUPON SECTION IN PAYMENT */}
-                <div className="mb-10 bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Zap size={18} className="text-zinc-900" />
-                    <h3 className="!text-[11px] md:!text-[13px] font-black uppercase tracking-widest">Apply Coupon</h3>
-                  </div>
-
-                  {couponApplied ? (
-                    <div className="flex items-center justify-between bg-green-50 border border-green-200 p-4 rounded-2xl">
-                      <div>
-                        <p className="text-[10px] md:text-xs font-black uppercase text-green-700 tracking-widest">{couponApplied.code}</p>
-                        <p className="text-[9px] md:text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">
-                          Savings applied
-                        </p>
-                      </div>
-                      <button
-                        onClick={removeCoupon}
-                        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="flex gap-2 relative">
-                      <input
-                        type="text"
-                        placeholder="ENTER COUPON CODE"
-                        value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                        className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-3 !text-[11px] md:!text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-colors"
-                      />
-                      <button
-                        onClick={handleApplyCoupon}
-                        disabled={isValidatingCoupon || !couponCode.trim()}
-                        className="bg-black text-white px-6 rounded-2xl !text-[10px] md:!text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {isValidatingCoupon ? 'Wait' : 'Apply'}
-                      </button>
-                    </div>
-                  )}
-                  {discountError && (
-                    <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2 ml-2">{discountError}</p>
-                  )}
-                </div>
 
                 <h2 className="!text-sm md:!text-lg font-black uppercase tracking-tight mb-8">Select Payment Method</h2>
 
@@ -574,6 +530,51 @@ const Checkout = () => {
                       )}
                     </div>
                   ))}
+                </div>
+
+                {/* RELOCATED COUPON SECTION - UNDER CASH ON DELIVERY */}
+                <div className="mt-10 bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100 animate-in slide-in-from-top-4 duration-500">
+                  <div className="flex items-center gap-3 mb-4">
+                    <Zap size={18} className="text-zinc-900" />
+                    <h3 className="!text-[11px] md:!text-[13px] font-black uppercase tracking-widest">Apply Promo Code</h3>
+                  </div>
+
+                  {couponApplied ? (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 p-4 rounded-2xl">
+                      <div>
+                        <p className="text-[10px] md:text-xs font-black uppercase text-green-700 tracking-widest">{couponApplied.code}</p>
+                        <p className="text-[9px] md:text-[10px] font-bold text-green-600 uppercase tracking-widest mt-1">
+                          Savings applied
+                        </p>
+                      </div>
+                      <button
+                        onClick={removeCoupon}
+                        className="text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 relative">
+                      <input
+                        type="text"
+                        placeholder="ENTER COUPON CODE"
+                        value={couponCode}
+                        onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                        className="flex-1 bg-white border border-zinc-200 rounded-2xl px-4 py-3 !text-[11px] md:!text-xs font-bold uppercase tracking-widest outline-none focus:border-black transition-colors shadow-sm"
+                      />
+                      <button
+                        onClick={handleApplyCoupon}
+                        disabled={isValidatingCoupon || !couponCode.trim()}
+                        className="bg-black text-white px-6 rounded-2xl !text-[10px] md:!text-[11px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 shadow-md"
+                      >
+                        {isValidatingCoupon ? 'Wait' : 'Apply'}
+                      </button>
+                    </div>
+                  )}
+                  {discountError && (
+                    <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2 ml-2">{discountError}</p>
+                  )}
                 </div>
 
               </div>

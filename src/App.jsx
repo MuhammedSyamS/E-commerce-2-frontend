@@ -10,6 +10,7 @@ import Footer from './components/Footer';
 import CartDrawer from './components/CartDrawer';
 import ErrorBoundary from './components/ErrorBoundary';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
+import ScrollToTop from './components/ScrollToTop';
 
 // Lazy Load Pages
 const Home = lazyWithRetry(() => import('./pages/Home'));
@@ -144,6 +145,7 @@ const App = () => {
           <Navbar />
 
           <main className="flex-grow">
+            <ScrollToTop />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={<Home />} />
