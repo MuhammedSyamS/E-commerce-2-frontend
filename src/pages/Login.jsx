@@ -11,7 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const { setUser, user } = useStore();
+  const { setUser, user, syncGuestWishlist } = useStore();
   const { addToast } = useToast();
 
   const isStaff = (u) => u && (u.isAdmin || ['manager', 'client_support_executive', 'digital_marketing_executive'].includes(u.role));
@@ -31,6 +31,7 @@ const Login = () => {
 
       if (res.data.token) {
         setUser(res.data);
+        syncGuestWishlist(); // Sync any guest items
         addToast("Logged in with Google", "success");
         if (isStaff(res.data)) navigate('/admin');
         else navigate('/account');
@@ -53,6 +54,7 @@ const Login = () => {
 
       if (res.data && res.data.token) {
         setUser(res.data);
+        syncGuestWishlist(); // Sync any guest items
         addToast("WELCOME BACK!", "success");
         if (isStaff(res.data)) navigate('/admin');
         else navigate('/account');

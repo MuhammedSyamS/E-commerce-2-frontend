@@ -13,16 +13,37 @@ const TrackOrder = () => {
   const location = useLocation();
   const { addToast } = useToast();
   const queryParams = new URLSearchParams(location.search);
-  const type = queryParams.get('type') || 'order'; // 'order', 'return', 'exchange'
+  const typeParam = queryParams.get('type') || 'order'; // 'order', 'return', 'exchange'
 
   const [orderId, setOrderId] = useState('');
   const [email, setEmail] = useState('');
   const [orderData, setOrderData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeType, setActiveType] = React.useState(typeParam);
+
+  // Auto-detect type based on ID prefix
+  React.useEffect(() => {
+    const upperId = orderId.toUpperCase();
+    if (upperId.startsWith('RTN-')) {
+      setActiveType('return');
+    } else if (upperId.startsWith('EXC-')) {
+      setActiveType('exchange');
+    } else if (upperId.length > 0 && !upperId.startsWith('RTN-') && !upperId.startsWith('EXC-')) {
+      // Logic for standard orders or full MongoDB IDs
+      // If it's a 24 char hex, it could be either, but default to param or 'order'
+      if (orderId.length === 24 && /^[0-9a-fA-F]{24}$/.test(orderId)) {
+        // Keep current activeType unless explicitly changed by parameter
+      } else {
+        setActiveType('order');
+      }
+    } else if (orderId.length === 0) {
+      setActiveType(typeParam);
+    }
+  }, [orderId, typeParam]);
 
   const getPageConfig = () => {
-    switch (type) {
+    switch (activeType) {
       case 'return':
         return {
           title: 'Track',
@@ -81,7 +102,7 @@ const TrackOrder = () => {
 
   const getMilestones = () => {
     // RETURN / EXCHANGE FLOW
-    if (type === 'return' || type === 'exchange') {
+    if (activeType === 'return' || activeType === 'exchange') {
       return [
         { label: 'Requested', icon: Box, status: 'Requested' },
         { label: 'Approved', icon: CheckCircle, status: 'Approved' },
@@ -113,7 +134,7 @@ const TrackOrder = () => {
     if (!orderData) return 'pending';
 
     // RETURN / EXCHANGE LOGIC
-    if (type === 'return' || type === 'exchange') {
+    if (activeType === 'return' || activeType === 'exchange') {
       const milestones = getMilestones();
       const currentStatus = orderData.returnStatus || 'Requested';
 

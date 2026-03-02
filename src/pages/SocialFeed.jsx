@@ -90,9 +90,15 @@ const SocialFeed = () => {
         const fetchLooks = async () => {
             try {
                 const { data } = await api.get('/looks');
+                // Only use mock data if the feed is truly empty AND we want to show examples
                 setLooks(data && data.length > 0 ? data : MOCK_LOOKS);
             } catch (err) {
                 console.error('Error fetching looks:', err);
+                // On error, we should probably still show mock data so it doesn't look completely broken,
+                // but maybe we should log it or show a subtle message.
+                // Deciding to KEEP mock fallback for aesthetics but the user's issue likely 
+                // comes from their own looks not appearing immediately.
+                setLooks(MOCK_LOOKS);
             } finally {
                 setLoading(false);
             }

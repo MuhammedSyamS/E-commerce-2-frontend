@@ -6,6 +6,7 @@ export const useStore = create(
   persist(
     (set, get) => ({
       user: null,
+      wishlist: [], // Guest Vault (Persists even if logged out)
       isCartOpen: false,
       isSearchOpen: false,
       toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
@@ -32,42 +33,57 @@ export const useStore = create(
       // ✅ OPTIMISTIC WISHLIST TOGGLE
       toggleWishlist: async (product) => {
         const state = get();
-        if (!state.user) return;
+        const productId = (product._id || product).toString();
 
-        const originalUser = state.user;
-        const currentWishlist = state.user.wishlist || [];
-        const productId = product._id || product;
+        // CASE A: LOGGED IN USER
+        if (state.user) {
+          const originalUser = state.user;
+          const currentWishlist = state.user.wishlist || [];
 
-        // Check availability
-        const exists = currentWishlist.some(item =>
-          (item._id || item).toString() === productId.toString()
-        );
-
-        // 1. Optimistic Update (Immediate Feedback)
-        let newWishlist;
-        if (exists) {
-          newWishlist = currentWishlist.filter(item =>
-            (item._id || item).toString() !== productId.toString()
+          const exists = currentWishlist.some(item =>
+            (item._id || item).toString() === productId
           );
-        } else {
-          newWishlist = [...currentWishlist, product];
+
+          // 1. Optimistic Update
+          let newWishlist;
+          if (exists) {
+            newWishlist = currentWishlist.filter(item =>
+              (item._id || item).toString() !== productId
+            );
+          } else {
+            newWishlist = [...currentWishlist, product];
+          }
+
+          set({ user: { ...state.user, wishlist: newWishlist } });
+
+          // 2. Backend Sync
+          try {
+            const { data } = await api.post('/wishlist', { productId }, {
+              headers: { Authorization: `Bearer ${state.user.token}` }
+            });
+            set({ user: { ...get().user, wishlist: data } });
+          } catch (error) {
+            console.error("Wishlist sync failed:", error);
+            set({ user: originalUser });
+          }
         }
+        // CASE B: GUEST USER
+        else {
+          const currentWishlist = state.wishlist || [];
+          const exists = currentWishlist.some(item =>
+            (item._id || item).toString() === productId
+          );
 
-        set({ user: { ...state.user, wishlist: newWishlist } });
+          let newWishlist;
+          if (exists) {
+            newWishlist = currentWishlist.filter(item =>
+              (item._id || item).toString() !== productId
+            );
+          } else {
+            newWishlist = [...currentWishlist, product];
+          }
 
-        // 2. Background Sync
-        try {
-          const { data } = await api.post('/wishlist', { productId }, {
-            headers: { Authorization: `Bearer ${state.user.token}` }
-          });
-
-          // 3. Final Sync (Optional, keeps consistent with DB)
-          set({ user: { ...get().user, wishlist: data } });
-
-        } catch (error) {
-          console.error("Wishlist sync failed:", error);
-          // 4. Rollback on Error
-          set({ user: originalUser });
+          set({ wishlist: newWishlist });
         }
       },
 
@@ -154,8 +170,13 @@ export const useStore = create(
       setCurrencyRates: (rates) => set({ currencyRates: rates }),
 
       logout: () => {
-        set({ user: null, coupon: null, flashSale: null });
-        localStorage.removeItem('slook-storage');
+        // Only clear session-specific data, keep 'wishlist' and 'cart' (guest versions)
+        set({
+          user: null,
+          coupon: null,
+          flashSale: null
+        });
+        // Do NOT remove slook-storage entirely, just let the state persist naturally
       },
 
       // Refresh user data from server (keeps loyalty points, tier, cart in sync)
@@ -169,6 +190,30 @@ export const useStore = create(
           set({ user: { ...data, token: state.user.token } });
         } catch (err) {
           console.error('refreshUser failed:', err);
+        }
+      },
+
+      syncGuestWishlist: async () => {
+        const state = get();
+        if (!state.user?.token || !state.wishlist?.length) return;
+
+        console.log("Syncing guest wishlist to account...");
+        const guestItems = state.wishlist;
+
+        try {
+          const productIds = guestItems.map(item => (item._id || item).toString());
+          const { data } = await api.post('/users/wishlist/bulk', { productIds }, {
+            headers: { Authorization: `Bearer ${state.user.token}` }
+          });
+
+          // Update user wishlist and CLEAR guest wishlist
+          set({
+            user: { ...get().user, wishlist: data },
+            wishlist: []
+          });
+          console.log("Guest wishlist synced successfully.");
+        } catch (err) {
+          console.error("Failed to sync guest wishlist:", err);
         }
       }
     }),
