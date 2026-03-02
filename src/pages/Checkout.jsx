@@ -103,6 +103,7 @@ const Checkout = () => {
     if (cartItems.length === 0 && !isSubmitting) {
       navigate('/shop');
     }
+    window.scrollTo(0, 0);
   }, [cartItems.length, navigate, isSubmitting]);
 
   const paymentRef = useRef(null);

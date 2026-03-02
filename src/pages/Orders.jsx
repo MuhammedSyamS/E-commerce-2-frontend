@@ -34,6 +34,7 @@ const Orders = () => {
     };
 
     fetchOrders(true);
+    window.scrollTo(0, 0);
     const interval = setInterval(() => fetchOrders(false), 15000); // 15s Polling
     return () => clearInterval(interval);
   }, [user?.token]); // Changed from [user] to fix unnecessary reloading

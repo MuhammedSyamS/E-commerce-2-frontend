@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CheckCircle, AlertTriangle, Share2, Sparkles, ChevronRight, Zap } from 'lucide-react';
 import { useStore } from '../store/useStore';
@@ -24,6 +24,7 @@ const OrderSuccess = () => {
       }
     };
     fetchUpsell();
+    window.scrollTo(0, 0);
   }, []);
 
   const shareText = `Just secured my latest look from SLOOK! 💎 Order #${orderId.slice(-8).toUpperCase()}`;

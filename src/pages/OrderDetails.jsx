@@ -79,6 +79,7 @@ const OrderDetails = () => {
       }
     };
     fetchOrder();
+    window.scrollTo(0, 0);
   }, [id, user?.token]);
 
   if (loading) return (

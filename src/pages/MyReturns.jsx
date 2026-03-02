@@ -23,6 +23,7 @@ const MyReturns = () => {
             }
         };
         fetchReturns();
+        window.scrollTo(0, 0);
     }, [user.token]);
 
     const getStatusStep = (status) => {
