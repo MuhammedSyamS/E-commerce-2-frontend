@@ -120,11 +120,11 @@ const OrderDetails = () => {
         </button>
 
         {/* HEADER SECTION */}
-        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
+        <div className="bg-white rounded-2xl md:rounded-3xl p-6 md:p-10 shadow-sm border border-zinc-100 mb-6 md:mb-8">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="w-full lg:w-auto">
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest ${order.orderStatus === 'Delivered' ? 'bg-green-100 text-green-700' :
                   order.orderStatus === 'Shipped' ? 'bg-purple-100 text-purple-700' :
                     order.orderStatus === 'Dispatched' ? 'bg-indigo-100 text-indigo-700' :
                       order.orderStatus === 'Confirmed' ? 'bg-blue-100 text-blue-700' :
@@ -135,19 +135,20 @@ const OrderDetails = () => {
                   }`}>
                   {order.orderStatus || 'Pending'}
                 </span>
-                <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">
+                <span className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest">
                   Ordered on {new Date(order.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
               </div>
-              <h1 className="!text-lg md:!text-3xl font-black uppercase tracking-tighter mb-4">
+
+              <h1 className="!text-sm md:!text-xl font-black uppercase tracking-tight mb-4">
                 Order #{order._id?.slice(-6).toUpperCase()}
               </h1>
 
-              <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-lg border border-zinc-200">
-                  <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{order._id}</span>
-                  <button onClick={() => { navigator.clipboard.writeText(order._id); addToast("ID Copied!", "success") }} className="text-zinc-400 hover:text-black transition-colors" title="Copy ID">
-                    <Copy size={12} />
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center gap-2 bg-zinc-50 px-2 py-1 rounded-md border border-zinc-100">
+                  <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">{order._id}</span>
+                  <button onClick={() => { navigator.clipboard.writeText(order._id); addToast("ID Copied!", "success") }} className="text-zinc-300 hover:text-black transition-colors" title="Copy ID">
+                    <Copy size={10} />
                   </button>
                 </div>
 
@@ -169,29 +170,29 @@ const OrderDetails = () => {
                       addToast("Failed to download invoice", "error");
                     }
                   }}
-                  className="flex items-center gap-2 !text-[9px] md:text-[10px] font-black uppercase tracking-widest bg-black text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full hover:bg-zinc-800 transition-all shadow-md active:scale-95"
+                  className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest bg-black text-white px-3 py-1.5 rounded-full hover:bg-zinc-800 transition-all shadow-md active:scale-95"
                 >
-                  <Package size={14} className="w-3 h-3 md:w-4 md:h-4" /> Download Invoice
+                  <Package size={12} className="w-3 h-3" /> Download Invoice
                 </button>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-col items-start lg:items-end gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
-            <Price amount={order.totalPrice} className="!text-2xl md:!text-4xl font-black tracking-tighter" />
+            <div className="flex flex-col items-start lg:items-end gap-1 border-t lg:border-t-0 pt-4 lg:pt-0 w-full lg:w-auto">
+              <span className="text-[8px] font-bold uppercase tracking-widest text-zinc-400">Total Amount</span>
+              <Price amount={order.totalPrice} className="!text-xl md:!text-2xl font-black tracking-tighter" />
+            </div>
           </div>
         </div>
 
         {/* UNBOXING REMINDER FOR DELIVERED ORDERS */}
         {order.orderStatus === 'Delivered' && (
-          <div className="bg-orange-50 border border-orange-100 rounded-3xl p-6 mb-8 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center shrink-0 text-orange-600">
-              <AlertTriangle size={24} />
+          <div className="bg-orange-50 border border-orange-100 rounded-2xl p-4 mb-6 md:mb-8 flex items-center gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center shrink-0 text-orange-600">
+              <AlertTriangle size={20} />
             </div>
             <div className="flex-1">
-              <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-700 mb-1">Unboxing Reminder</h4>
-              <p className="text-[11px] font-bold text-orange-800 leading-relaxed uppercase tracking-tight">
+              <h4 className="text-[8px] font-black uppercase tracking-widest text-orange-700 mb-0.5">Unboxing Reminder</h4>
+              <p className="text-[9px] font-bold text-orange-800 leading-tight uppercase tracking-tight">
                 Please ensure you have recorded an <strong>Unboxing Video</strong>. It is <strong>Mandatory</strong> for any return or exchange requests.
               </p>
             </div>
@@ -199,37 +200,24 @@ const OrderDetails = () => {
         )}
 
         {/* ORDER TRACKING */}
-        <div className="bg-white rounded-[1.5rem] md:rounded-[2.5rem] p-5 md:p-8 lg:p-12 shadow-sm border border-zinc-100 mb-6 md:mb-8 overflow-hidden relative">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+        <div className="bg-white rounded-2xl md:rounded-[2rem] p-4 md:p-6 lg:p-8 shadow-sm border border-zinc-100 mb-6 md:mb-8 overflow-hidden relative">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 md:mb-10">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
-              <h2 className="!text-xl md:!text-2xl font-black uppercase tracking-tighter flex items-center gap-3">
-                <Truck className="text-black" size={20} />
+              <p className="text-[8px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-1.5">Shipment Status</p>
+              <h2 className="!text-base md:!text-lg font-black uppercase tracking-tighter flex items-center gap-3">
+                <Truck className="text-black" size={18} />
                 {order.returnId ? (
                   <div className="flex flex-col">
-                    <span className="text-orange-500 flex items-center gap-2 !text-xs md:!text-sm">
+                    <span className="text-orange-500 flex items-center gap-2 !text-xs">
                       Track {order.returnType === 'Exchange' ? 'Exchange' : 'Return'}: {order.returnId}
-                      <span className="!text-[8px] md:!text-[10px] bg-orange-100 px-2 py-0.5 rounded-full text-orange-600 not-italic">
+                      <span className="!text-[8px] bg-orange-100 px-2 py-0.5 rounded-full text-orange-600 not-italic">
                         {order.returnQty} {order.returnQty === 1 ? 'PC' : 'PCS'}
                       </span>
                     </span>
                     {order.returnTrackingId && (
-                      <span className="!text-[9px] md:!text-[10px] text-zinc-400 font-bold tracking-widest not-italic mt-1">
+                      <span className="!text-[8px] text-zinc-400 font-bold tracking-widest not-italic mt-1">
                         {order.returnType === 'Exchange' ? 'EXC' : 'RTN'} TRK: {order.returnTrackingId} <span className="text-zinc-200">/</span> {order.returnCourier || 'LOGISTICS'}
                       </span>
-                    )}
-                    {order.returnPickupDate && (
-                      <span className="text-[9px] text-zinc-500 font-black not-italic mt-0.5 uppercase tracking-widest">
-                        Pickup: {new Date(order.returnPickupDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} ({order.returnPickupMethod})
-                      </span>
-                    )}
-                    {order.returnIdFull && (
-                      <div className="flex items-center gap-2 mt-2 bg-zinc-50 px-2 py-1 rounded-md border border-zinc-100 self-start">
-                        <span className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest">{order.returnIdFull}</span>
-                        <button onClick={() => { navigator.clipboard.writeText(order.returnIdFull); addToast(`${order.returnType === 'Exchange' ? 'Exchange' : 'System'} ID Copied!`, "success") }} className="text-zinc-300 hover:text-black transition-colors" title="Copy System ID">
-                          <Copy size={10} />
-                        </button>
-                      </div>
                     )}
                   </div>
                 ) : (
@@ -239,13 +227,13 @@ const OrderDetails = () => {
             </div>
 
             {order.orderStatus !== 'Delivered' && !['Return Requested', 'Returned'].includes(order.orderStatus) && (
-              <div className="bg-zinc-50 px-4 py-3 md:px-6 md:py-4 rounded-3xl border border-zinc-100 flex items-center gap-4">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-black text-white rounded-full flex items-center justify-center animate-pulse">
-                  <Calendar size={16} />
+              <div className="bg-zinc-50 px-3 py-2 md:px-4 md:py-3 rounded-2xl border border-zinc-100 flex items-center gap-3">
+                <div className="w-7 h-7 md:w-8 md:h-8 bg-black text-white rounded-full flex items-center justify-center animate-pulse">
+                  <Calendar size={14} />
                 </div>
                 <div>
-                  <p className="!text-[8px] md:!text-[9px] font-black uppercase tracking-widest text-zinc-400">Estimated Arrival</p>
-                  <p className="!text-[10px] md:!text-xs font-black uppercase">{new Date(new Date(order.createdAt).setDate(new Date(order.createdAt).getDate() + 5)).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+                  <p className="!text-[7px] md:!text-[8px] font-black uppercase tracking-widest text-zinc-400">Estimated Arrival</p>
+                  <p className="!text-[9px] md:!text-[10px] font-black uppercase">{new Date(new Date(order.createdAt).setDate(new Date(order.createdAt).getDate() + 5)).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
                 </div>
               </div>
             )}
