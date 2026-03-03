@@ -388,26 +388,29 @@ const ProductDetails = () => {
       </Helmet>
 
       {selectedReview && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
-          <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50"><X size={24} /></button>
-          <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
+        <div className="fixed inset-0 z-[110] bg-black/95 md:bg-black/90 backdrop-blur-xl flex items-center justify-center p-0 md:p-8" onClick={() => setSelectedReview(null)}>
+          <button className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors p-3 bg-white/10 rounded-full z-[120] md:z-50"><X size={20} md:size={24} /></button>
+          <div className="bg-white w-full max-w-6xl h-full md:h-[85vh] md:rounded-[2rem] overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+            <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-[50vh] md:h-1/2 lg:h-full group">
               {selectedReview.media?.length > 1 && (
                 <>
-                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronLeft size={24} /></button>
-                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronRight size={24} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 md:p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all scale-75 md:scale-100"><ChevronLeft size={24} /></button>
+                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 md:p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all scale-75 md:scale-100"><ChevronRight size={24} /></button>
                 </>
               )}
               {selectedReview.currentMedia?.type === 'video' ? <video controls autoPlay src={selectedReview.currentMedia.url} className="w-full h-full object-contain bg-black" /> : <img src={selectedReview.currentMedia?.url || selectedReview.image} alt="Review" className="w-full h-full object-contain" />}
             </div>
-            <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
-              <div className="flex items-center gap-3 mb-6">
+            <div className="lg:col-span-1 bg-white p-6 md:p-10 overflow-y-auto flex flex-col h-[40vh] md:h-1/2 lg:h-full">
+              <div className="flex items-center gap-3 mb-4 md:mb-6">
                 <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
-                <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
+                <div className="flex flex-col">
+                  <p className="text-sm font-black uppercase tracking-tight text-zinc-900 leading-none">{selectedReview.name}</p>
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mt-1">Verified Experience</p>
+                </div>
               </div>
-              <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
-              <div className="mt-6 pt-6 border-t border-zinc-100">
-                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base md:text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
+              <p className="text-sm md:text-base text-zinc-600 leading-relaxed mb-6 font-medium italic">"{selectedReview.comment}"</p>
+              <div className="mt-auto pt-6 border-t border-zinc-100">
+                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
               </div>
             </div>
           </div>

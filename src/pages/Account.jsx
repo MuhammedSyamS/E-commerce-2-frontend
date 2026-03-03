@@ -268,23 +268,23 @@ const Account = () => {
                 initial={{ scale: 0.9, y: 20 }}
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
-                className="bg-white w-full max-w-4xl rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[70vh] shadow-2xl"
+                className="bg-white w-full max-w-4xl md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row h-full md:h-[70vh] shadow-2xl relative"
               >
                 {/* LEFT SIDE: PREVIEW */}
-                <div className="w-full md:w-1/2 bg-zinc-100 relative group">
+                <div className="w-full md:w-1/2 bg-zinc-100 relative group h-[40vh] md:h-auto shrink-0 md:shrink">
                   {selectedImage ? (
                     <div className="w-full h-full relative">
                       <img src={selectedImage} className="w-full h-full object-cover" alt="Preview" />
                       {uploadStep === 2 && (
                         <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <p className="text-white text-[10px] font-black uppercase tracking-widest bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">
-                            Tap image to pin tag (Coming Soon)
+                          <p className="text-white text-[9px] font-black uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
+                            Tap image to pin tag
                           </p>
                         </div>
                       )}
                     </div>
                   ) : (
-                    <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-zinc-200">
+                    <div className="w-full h-full flex flex-col items-center justify-center p-8 md:p-12 text-center border-2 border-dashed border-zinc-200">
                       <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl mb-6">
                         <Camera size={32} className="text-zinc-300" />
                       </div>
@@ -319,9 +319,9 @@ const Account = () => {
                 </div>
 
                 {/* RIGHT SIDE: ACTIONS */}
-                <div className="w-full md:w-1/2 p-8 flex flex-col bg-white">
-                  <div className="flex justify-between items-center mb-8">
-                    <h3 className="text-2xl font-black uppercase tracking-tighter italic">Step {uploadStep}/3</h3>
+                <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-white overflow-y-auto no-scrollbar pb-24 md:pb-8">
+                  <div className="flex justify-between items-center mb-6 md:mb-8">
+                    <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">Step {uploadStep}/3</h3>
                     <button onClick={() => setShowUploadModal(false)} className="p-2 hover:bg-zinc-50 rounded-full">
                       <X size={24} />
                     </button>
@@ -336,7 +336,7 @@ const Account = () => {
                             value={caption}
                             onChange={(e) => setCaption(e.target.value)}
                             placeholder="Tell the community about this look..."
-                            className="w-full h-32 p-4 bg-zinc-50 border border-zinc-100 rounded-3xl text-sm outline-none focus:border-black transition-all resize-none"
+                            className="w-full h-24 md:h-32 p-4 bg-zinc-50 border border-zinc-100 rounded-3xl text-sm outline-none focus:border-black transition-all resize-none"
                           />
                         </div>
                         <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
@@ -443,7 +443,7 @@ const Account = () => {
                     )}
                   </div>
 
-                  <div className="pt-8 mt-auto border-t border-zinc-50 flex gap-4">
+                  <div className="md:pt-8 mt-auto md:border-t border-zinc-50 flex gap-4 absolute md:relative bottom-0 left-0 right-0 p-6 md:p-0 bg-white/80 md:bg-transparent backdrop-blur-md md:backdrop-blur-none z-10">
                     {uploadStep > 1 && (
                       <button
                         onClick={() => setUploadStep(uploadStep - 1)}
@@ -457,9 +457,9 @@ const Account = () => {
                         // Disable next until image is selected
                         disabled={uploadStep === 1 && !selectedImage}
                         onClick={() => setUploadStep(uploadStep + 1)}
-                        className={`flex-1 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${selectedImage || uploadStep > 1 ? 'bg-black text-white hover:bg-zinc-800' : 'bg-zinc-100 text-zinc-300 cursor-not-allowed'}`}
+                        className={`flex-1 px-8 py-4 md:py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${selectedImage || uploadStep > 1 ? 'bg-black text-white hover:bg-zinc-800' : 'bg-zinc-100 text-zinc-300 cursor-not-allowed'}`}
                       >
-                        Next
+                        Next Step
                       </button>
                     ) : (
                       <button
