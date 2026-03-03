@@ -413,35 +413,56 @@ const Navbar = () => {
 
         {/* MOBILE MENU DRAWER */}
         {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 flex flex-col gap-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
-            <div className="pt-10 flex flex-col gap-6">
-              <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-base md:text-lg font-black uppercase tracking-tighter text-left">New Arrivals</button>
-              <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-base md:text-lg font-black uppercase tracking-tighter text-left">Best Sellers</button>
-              <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-lg font-black uppercase tracking-tighter">Shop All</Link>
-              {user && (
-                <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-lg font-black uppercase tracking-tighter">My Orders</Link>
-              )}
-              <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-lg font-black uppercase tracking-tighter">Track Order</Link>
-              <button
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  const footer = document.getElementById('site-footer');
-                  if (footer) footer.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="text-white text-base md:text-lg font-black uppercase tracking-tighter text-left"
-              >
-                Need Help?
-              </button>
+          <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
+            <div className="pt-10 grid grid-cols-2 gap-x-8 gap-y-8">
+              {/* Left Column: Core Shopping */}
+              <div className="flex flex-col gap-6">
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Discovery</p>
+                <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">New Arrivals</button>
+                <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">Best Sellers</button>
+                <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Shop All</Link>
+                <Link to="/community" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
+                  Community
+                  <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping" />
+                </Link>
+              </div>
+
+              {/* Right Column: Account & Support */}
+              <div className="flex flex-col gap-6">
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">My Account</p>
+                {user && (
+                  <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">My Orders</Link>
+                )}
+                <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    const footer = document.getElementById('site-footer');
+                    if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-white text-[11px] font-black uppercase tracking-widest text-left"
+                >
+                  Need Help?
+                </button>
+              </div>
             </div>
 
-            <div className="border-t border-white/10 pt-8">
+            <div className="border-t border-white/10 mt-10 pt-8 flex items-center justify-between">
               {user ? (
-                <div className="flex flex-col gap-6">
-                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 text-base md:text-lg font-black uppercase tracking-tighter text-left">Log Out</button>
-                </div>
+                <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 text-[11px] font-black uppercase tracking-widest">Log Out</button>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white text-base md:text-lg font-black uppercase tracking-tighter">Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Sign In</Link>
               )}
+
+              <div className="flex items-center gap-4">
+                <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full">
+                  <Heart size={14} className={wishlistCount > 0 ? 'fill-white' : ''} />
+                </Link>
+                <div onClick={() => { setIsMenuOpen(false); toggleCart(); }} className="text-white p-2 bg-white/5 rounded-full relative">
+                  <ShoppingBag size={14} />
+                  {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">{cartCount}</span>}
+                </div>
+              </div>
             </div>
           </div>
         )}
