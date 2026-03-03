@@ -4,6 +4,7 @@ import { ShoppingBag, Heart, Share2, X, Plus, ChevronRight, User } from 'lucide-
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
+import { resolveMediaURL } from '../utils/mediaUtils';
 import Price from '../components/Price';
 import { useToast } from '../context/ToastContext';
 
@@ -120,7 +121,7 @@ const SocialFeed = () => {
             <div className="bg-white w-full max-w-6xl h-full max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
                 {/* IMAGE SIDE */}
                 <div className="relative flex-1 bg-zinc-100 overflow-hidden group">
-                    <img src={look.image} className="w-full h-full object-cover" alt="" />
+                    <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover" alt="" />
                     {look.products.map(prod => (
                         <div
                             key={prod._id}
@@ -145,7 +146,7 @@ const SocialFeed = () => {
                 {/* DETAILS SIDE */}
                 <div className="w-full md:w-[400px] flex flex-col p-8 bg-white">
                     <div className="flex items-center gap-3 mb-8 pb-8 border-b border-zinc-50">
-                        <img src={look.user?.avatar || "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-12 h-12 rounded-full border-2 border-zinc-50" alt="" />
+                        <img src={look.user?.avatar ? resolveMediaURL(look.user.avatar) : "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-12 h-12 rounded-full border-2 border-zinc-50" alt="" />
                         <div>
                             <p className="text-sm font-black uppercase tracking-tight">{look.user?.firstName} {look.user?.lastName}</p>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">SLOOK ELITE MEMBER</p>
@@ -249,12 +250,12 @@ const SocialFeed = () => {
                                         </div>
                                     </div>
 
-                                    <img src={look.image} className="w-full h-auto group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
+                                    <img src={resolveMediaURL(look.image)} className="w-full h-auto group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
 
                                     <div className="p-5">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2">
-                                                <img src={look.user?.avatar || "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-6 h-6 rounded-full group-hover:scale-110 transition-all border border-zinc-100"
+                                                <img src={look.user?.avatar ? resolveMediaURL(look.user.avatar) : "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-6 h-6 rounded-full group-hover:scale-110 transition-all border border-zinc-100"
                                                     alt="" />
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 leading-none">{look.user?.firstName} {look.user?.lastName}</p>

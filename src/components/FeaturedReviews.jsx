@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import api from '../api/instance';
 import { Star, CheckCircle2, ChevronLeft, ChevronRight, Play, Maximize2, MoreHorizontal, ArrowUpRight, X, ArrowRight, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 // MOCK DATA (High-End Editorial Tone)
 const MOCK_REVIEWS = [
@@ -211,12 +212,12 @@ const FeaturedReviews = () => {
                                     <video
                                         controls
                                         autoPlay
-                                        src={selectedReview.currentMedia.url}
+                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
                                         className="w-full h-full object-contain"
                                     />
                                 ) : (
                                     <img
-                                        src={selectedReview.currentMedia.url}
+                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
                                         alt="Review"
                                         className="w-full h-full object-contain"
                                     />
@@ -310,13 +311,18 @@ const FeaturedReviews = () => {
             <div className="max-w-[1440px] mx-auto px-6 md:px-24">
 
                 {/* HEADER */}
-                <div className="mb-12">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
-                        Community Verified
-                    </p>
-                    <h2 className="text-4xl md:text-5xl font-sans text-zinc-900">
-                        The Collection in the Wild
-                    </h2>
+                <div className="flex justify-between items-end mb-12">
+                    <div>
+                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
+                            Community Verified
+                        </p>
+                        <h2 className="text-4xl md:text-5xl font-sans text-zinc-900">
+                            The Collection in the Wild
+                        </h2>
+                    </div>
+                    <Link to="/reviews" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">
+                        View All Reviews
+                    </Link>
                 </div>
 
                 {/* SCROLL WRAPPER */}
@@ -350,9 +356,9 @@ const FeaturedReviews = () => {
                                         {hasMedia ? (
                                             <div className="w-full h-full relative">
                                                 {media[0].type === 'video' ? (
-                                                    <video src={media[0].url} muted loop autoPlay className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                    <video src={resolveMediaURL(media[0].url)} muted loop autoPlay className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                                                 ) : (
-                                                    <img src={media[0].url} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
+                                                    <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-700" />
                                                 )}
 
                                                 {/* Count Badge */}

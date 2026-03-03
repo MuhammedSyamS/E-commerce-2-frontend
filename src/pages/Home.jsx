@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus, ArrowUpRight, Heart, Award, Crown, Zap, ShieldCheck, Star } from 'lucide-react';
 import api from '../api/instance';
+import { resolveMediaURL } from '../utils/mediaUtils';
 import { useStore } from '../store/useStore';
 import { Helmet } from 'react-helmet-async';
 import ProductCard from '../components/ProductCard';
@@ -246,7 +247,7 @@ const Home = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {(communityLooks.length > 0 ? communityLooks : MOCK_LOOKS).filter(look => look && (look.user || look.firstName)).map((look) => (
                 <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
-                  <img src={look.image} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
+                  <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                     <p className="text-[8px] font-black text-white uppercase tracking-widest">
                       @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : `${look.firstName || 'User'}${look.lastName || ''}`}

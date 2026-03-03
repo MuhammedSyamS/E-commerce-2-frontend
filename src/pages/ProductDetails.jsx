@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import api from '../api/instance';
+import { resolveMediaURL } from '../utils/mediaUtils';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { Share2, Heart, ShoppingBag, ChevronRight, Star, Minus, Plus, Instagram, Facebook, Twitter, MessageCircle, MoreHorizontal, Send, Info, BadgePercent, Trash2, Zap, ArrowLeft, Camera, Video, Play, Maximize2, Download, ExternalLink, Link as LinkIcon, Home, X, Loader2, ChevronLeft, BellRing, Check, Sparkles, ShieldCheck, RotateCcw, Lock, Award } from 'lucide-react';
@@ -8,7 +10,6 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Helmet } from 'react-helmet-async';
 import Price from '../components/Price';
-import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
 import RecentlyViewed from '../components/RecentlyViewed';
 
@@ -826,7 +827,7 @@ const ProductDetails = () => {
                           <div className="flex flex-wrap gap-2 md:gap-3 ml-6 md:ml-12">
                             {(rev.images || []).slice(0, 4).map((img, idx) => (
                               <div key={idx} className="w-16 h-20 md:w-20 md:h-24 rounded-lg md:rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
-                                <img src={img} className="w-full h-full object-cover" alt="" />
+                                <img src={resolveMediaURL(img)} className="w-full h-full object-cover" alt="" />
                               </div>
                             ))}
                             {(rev.videos || []).length > 0 && (
@@ -857,9 +858,9 @@ const ProductDetails = () => {
                   <ChevronLeft size={32} />
                 </button>
                 {mediaItems[lightboxIndex]?.type === 'image' ? (
-                  <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                  <img src={resolveMediaURL(mediaItems[lightboxIndex]?.url)} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
                 ) : (
-                  <video src={mediaItems[lightboxIndex]?.url} controls className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" />
+                  <video src={resolveMediaURL(mediaItems[lightboxIndex]?.url)} controls className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" />
                 )}
                 <button
                   disabled={lightboxIndex === mediaItems.length - 1}
@@ -1041,8 +1042,7 @@ const ProductDetails = () => {
         </div>
       </div>
     </div>
-  </div >
-);
+  );
 };
 
 export default ProductDetails;

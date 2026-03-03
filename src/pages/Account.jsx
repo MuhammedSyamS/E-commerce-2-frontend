@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
+import { resolveMediaURL } from '../utils/mediaUtils';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '../api/instance';
 import { useToast } from '../context/ToastContext';
@@ -542,7 +543,7 @@ const Account = () => {
             ) : (
               myLooks.map(look => (
                 <div key={look._id} className="relative aspect-[3/4] rounded-3xl overflow-hidden border border-zinc-100 group shadow-sm hover:shadow-xl transition-all">
-                  <img src={look.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" loading="lazy" />
+                  <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" loading="lazy" />
 
                   {/* DELETE BUTTON */}
                   <button
