@@ -188,7 +188,7 @@ const CartDrawer = () => {
         </div>
 
 
-        <div className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-8">
+        <div className="flex-1 overflow-y-auto no-scrollbar p-4 md:p-5 space-y-8">
           {cartItems.length > 0 ? (
             <>
               {/* ITEM CARDS */}
@@ -209,9 +209,9 @@ const CartDrawer = () => {
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
-                        <div className="flex justify-between items-start">
-                          <p className="font-black text-[12px] md:text-[10px] uppercase tracking-widest text-zinc-800 leading-tight pr-4">{item.name || "Unknown Product"}</p>
-                          <Price amount={item.price} className="font-black text-[12px] md:text-[11px] shrink-0" />
+                        <div className="flex justify-between items-start gap-2">
+                          <p className="font-black text-[12px] md:text-[10px] uppercase tracking-wider text-zinc-800 leading-tight flex-1 line-clamp-2">{item.name || "Unknown Product"}</p>
+                          <Price amount={item.price} className="font-black text-[11px] md:text-[11px] shrink-0" />
                         </div>
                         {item.selectedVariant && (
                           <p className="text-[10px] md:text-[9px] text-zinc-400 font-bold uppercase mt-1">
@@ -223,10 +223,10 @@ const CartDrawer = () => {
                       </div>
                       <div className="flex justify-between items-end mt-2">
                         <div className="flex items-center gap-4 mt-3">
-                          <div className="flex items-center gap-4 bg-zinc-50 rounded-xl px-5 py-3 border border-zinc-100">
-                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Minus size={14} /></button>
-                            <span className="font-black text-sm w-4 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Plus size={14} /></button>
+                          <div className="flex items-center gap-3 bg-zinc-50 rounded-xl px-3 py-2 md:px-5 md:py-3 border border-zinc-100">
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Minus className="w-3 h-3 md:w-3.5 md:h-3.5" /></button>
+                            <span className="font-black text-xs md:text-sm w-4 text-center">{item.quantity}</span>
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Plus className="w-3 h-3 md:w-3.5 md:h-3.5" /></button>
                           </div>
                           {Number(item.product?.stock || 0) < 5 && (
                             <span className="text-[8px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
@@ -399,7 +399,7 @@ const CartDrawer = () => {
           )}
         </div>
 
-        {cartItems.length > 0 && <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
+        {cartItems.length > 0 && <div className="p-5 md:p-8 bg-white border-t border-zinc-100 space-y-6">
 
           {/* FREE SHIPPING PROGRESS BAR */}
           {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
@@ -463,9 +463,9 @@ const CartDrawer = () => {
               toggleCart(false);
               navigate('/checkout');
             }}
-            className="w-full bg-black text-white py-6 md:py-5 rounded-full font-black uppercase tracking-[0.3em] text-[11px] md:text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
+            className="w-full bg-black text-white py-5 md:py-5 rounded-full font-black uppercase tracking-[0.1em] md:tracking-[0.3em] text-[11px] md:text-[10px] flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group px-4"
           >
-            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>}
       </div>
