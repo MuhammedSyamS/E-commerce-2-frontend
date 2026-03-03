@@ -76,8 +76,6 @@ const ProductDetails = () => {
   };
 
   const resizeImage = (file) => {
-    const [ratingInput, setRatingInput] = useState(5);
-    const [comment, setComment] = useState("");
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -360,7 +358,11 @@ const ProductDetails = () => {
         if (r._id === reviewId) {
           const currentHelpful = r.helpful || [];
           const newHelpful = data.isHelpful ? [...currentHelpful, user._id] : currentHelpful.filter(id => id !== user._id);
-          return { ...r, helpful: newHelpful };
+          const updated = { ...r, helpful: newHelpful };
+          if (selectedReview?._id === reviewId) {
+            setSelectedReview(prev => ({ ...prev, helpful: newHelpful }));
+          }
+          return updated;
         }
         return r;
       });
@@ -368,17 +370,19 @@ const ProductDetails = () => {
     } catch (err) { addToast("Failed to vote", "error"); }
   };
 
-  const sortedReviews = (() => {
+  const sortedReviews = useMemo(() => {
     let reviews = [...(product.reviews || [])].filter(r => r.isApproved !== false);
-    switch (sortOption) {
-      case 'newest': return reviews.reverse();
-      case 'oldest': return reviews;
-      case 'highest': return reviews.sort((a, b) => b.rating - a.rating);
-      case 'lowest': return reviews.sort((a, b) => a.rating - b.rating);
-      case 'helpful': return reviews.sort((a, b) => (b.helpful?.length || 0) - (a.helpful?.length || 0));
-      default: return reviews.reverse();
-    }
-  })();
+    return reviews.sort((a, b) => {
+      switch (sortOption) {
+        case 'newest': return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'oldest': return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'highest': return b.rating - a.rating;
+        case 'lowest': return a.rating - b.rating;
+        case 'helpful': return (b.helpful?.length || 0) - (a.helpful?.length || 0);
+        default: return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+    });
+  }, [product.reviews, sortOption]);
 
   return (
     <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
@@ -388,9 +392,9 @@ const ProductDetails = () => {
       </Helmet>
 
       {selectedReview && (
-        <div className="fixed inset-0 z-[110] bg-black/95 md:bg-black/90 backdrop-blur-xl flex items-center justify-center p-0 md:p-8" onClick={() => setSelectedReview(null)}>
+        <div className="fixed inset-0 z-[110] bg-black/95 md:bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
           <button className="absolute top-6 right-6 text-white/70 hover:text-white transition-colors p-3 bg-white/10 rounded-full z-[120] md:z-50"><X size={20} md:size={24} /></button>
-          <div className="bg-white w-full max-w-6xl h-full md:h-[85vh] md:rounded-[2rem] overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white w-full max-w-4xl h-[70vh] md:h-[85vh] rounded-[2rem] overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl relative" onClick={(e) => e.stopPropagation()}>
             <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-[50vh] md:h-1/2 lg:h-full group">
               {selectedReview.media?.length > 1 && (
                 <>
@@ -734,12 +738,12 @@ const ProductDetails = () => {
 
             {/* REVIEWS SECTION */}
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 md:gap-20">
                 {/* REVIEW SUMMARY & FILTERS */}
                 <div className="lg:col-span-4 space-y-12">
                   <div className="space-y-6">
                     <div className="flex items-baseline gap-2 md:gap-4">
-                      <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
+                      <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.2rem, 5vw, 2.5rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
                       <div className="flex flex-col gap-1">
                         <div className="flex text-black">
                           {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
@@ -754,8 +758,8 @@ const ProductDetails = () => {
                         const count = ratingDistribution[star] || 0;
                         const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
                         return (
-                          <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                            <span className="font-black text-zinc-900 w-2" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{star}</span>
+                          <div key={star} className="flex items-center gap-3 md:gap-4 group cursor-pointer">
+                            <span className="font-black text-zinc-900 w-2" style={{ fontSize: 'clamp(10px, 2vw, 12px)' }}>{star}</span>
                             <div className="flex-1 h-1.5 md:h-2 bg-zinc-100 rounded-full overflow-hidden">
                               <motion.div
                                 initial={{ width: 0 }}
@@ -764,7 +768,7 @@ const ProductDetails = () => {
                                 className="h-full bg-zinc-900"
                               />
                             </div>
-                            <span className="font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{count}</span>
+                            <span className="font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6" style={{ fontSize: 'clamp(10px, 2vw, 12px)' }}>{count}</span>
                           </div>
                         );
                       })}
@@ -798,15 +802,15 @@ const ProductDetails = () => {
                   </div>
                   <div className="space-y-16">
                     {sortedReviews.map((rev, i) => (
-                      <div key={i} onClick={() => {
+                      <div key={rev._id || i} onClick={() => {
                         const videos = rev.videos || (rev.video ? [rev.video] : []);
                         const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
                         const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
                         setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
-                      }} className="space-y-6 group cursor-pointer animate-in fade-in duration-700">
+                      }} className="space-y-4 md:space-y-6 group cursor-pointer animate-in fade-in duration-700">
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
+                          <div className="flex items-center gap-3 md:gap-4">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-xs md:text-sm tracking-tight text-zinc-900 border border-zinc-200 shadow-sm">{rev.name?.charAt(0)}</div>
                             <div className="space-y-1">
                               <p className="font-bold text-sm tracking-tight text-zinc-900">{rev.name}</p>
                               <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
@@ -817,18 +821,20 @@ const ProductDetails = () => {
                             {user && rev.user === user._id && <button onClick={(e) => { e.stopPropagation(); handleDeleteReview(rev._id); }} className="text-zinc-300 hover:text-red-500 transition-colors p-1"><Trash2 size={16} /></button>}
                           </div>
                         </div>
-                        <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
-                        <div className="flex gap-3 ml-12">
-                          {(rev.images || []).slice(0, 4).map((img, idx) => (
-                            <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
-                              <img src={img} className="w-full h-full object-cover" alt="" />
-                            </div>
-                          ))}
-                          {(rev.videos || []).length > 0 && (
-                            <div className="w-20 h-24 rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
-                              <Play size={24} className="text-white fill-white" />
-                            </div>
-                          )}
+                        <div className="flex flex-col gap-3">
+                          <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-3 md:pl-6 ml-3 md:ml-6">"{rev.comment}"</p>
+                          <div className="flex flex-wrap gap-2 md:gap-3 ml-6 md:ml-12">
+                            {(rev.images || []).slice(0, 4).map((img, idx) => (
+                              <div key={idx} className="w-16 h-20 md:w-20 md:h-24 rounded-lg md:rounded-xl overflow-hidden shadow-sm border border-zinc-100 group-hover:border-black/20 transition-all hover:scale-105 active:scale-95">
+                                <img src={img} className="w-full h-full object-cover" alt="" />
+                              </div>
+                            ))}
+                            {(rev.videos || []).length > 0 && (
+                              <div className="w-16 h-20 md:w-20 md:h-24 rounded-lg md:rounded-xl bg-black/90 flex items-center justify-center shadow-lg group-hover:scale-105 transition-all">
+                                <Play size={20} md:size={24} className="text-white fill-white" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -850,7 +856,11 @@ const ProductDetails = () => {
                 >
                   <ChevronLeft size={32} />
                 </button>
-                <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                {mediaItems[lightboxIndex]?.type === 'image' ? (
+                  <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                ) : (
+                  <video src={mediaItems[lightboxIndex]?.url} controls className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" />
+                )}
                 <button
                   disabled={lightboxIndex === mediaItems.length - 1}
                   onClick={() => setLightboxIndex(prev => prev + 1)}
@@ -1031,8 +1041,8 @@ const ProductDetails = () => {
         </div>
       </div>
     </div>
-  );
+  </div >
+);
 };
 
 export default ProductDetails;
-
