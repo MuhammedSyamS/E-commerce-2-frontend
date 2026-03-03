@@ -282,14 +282,6 @@ const Navbar = () => {
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
 
-            <Link to="/wishlist" className="relative group">
-              <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white group-hover:text-zinc-400'}`} />
-              {wishlistCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-white text-black text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-black">
-                  {wishlistCount}
-                </span>
-              )}
-            </Link>
 
             {/* NOTIFICATIONS BELL */}
             {user && (
@@ -400,14 +392,6 @@ const Navbar = () => {
 
             {/* GLOBAL HUB REMOVED */}
 
-            <div className="relative cursor-pointer group" onClick={toggleCart}>
-              <ShoppingBag className="w-5 h-5 text-white transition group-hover:scale-110" />
-              {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-white text-black text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-black">
-                  {cartCount}
-                </span>
-              )}
-            </div>
           </div>
         </div>
 
@@ -433,7 +417,16 @@ const Navbar = () => {
                 {user && (
                   <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">My Orders</Link>
                 )}
-                <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    const footer = document.getElementById('site-footer');
+                    if (footer) footer.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="text-white text-[11px] font-black uppercase tracking-widest text-left"
+                >
+                  Track
+                </button>
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
@@ -455,12 +448,21 @@ const Navbar = () => {
               )}
 
               <div className="flex items-center gap-4">
-                <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full">
+                <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full relative">
                   <Heart size={14} className={wishlistCount > 0 ? 'fill-white' : ''} />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">
+                      {wishlistCount}
+                    </span>
+                  )}
                 </Link>
                 <div onClick={() => { setIsMenuOpen(false); toggleCart(); }} className="text-white p-2 bg-white/5 rounded-full relative">
                   <ShoppingBag size={14} />
-                  {cartCount > 0 && <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">{cartCount}</span>}
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">
+                      {cartCount}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
