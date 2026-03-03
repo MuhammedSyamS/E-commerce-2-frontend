@@ -176,13 +176,13 @@ const CartDrawer = () => {
     <div className="fixed inset-0 z-[300] flex justify-end">
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px]" onClick={() => toggleCart(false)} />
 
-      <div className="relative w-full max-w-[420px] bg-[#fcfcfc] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
+      <div className="relative w-full sm:max-w-[420px] bg-[#fcfcfc] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
 
         {/* Header */}
         <div className="p-6 flex items-center justify-between bg-white border-b border-zinc-100">
           <div className="flex items-center gap-3">
             <ShoppingBag size={20} className="text-zinc-400" />
-            <h2 className="font-black uppercase tracking-[0.2em] text-[11px] md:text-[10px]">Your Selection</h2>
+            <h2 className="font-black uppercase tracking-normal md:tracking-[0.2em] text-[11px] md:text-[10px]">Your Selection</h2>
           </div>
           <button onClick={() => toggleCart(false)} className="p-2 hover:bg-zinc-50 rounded-full transition"><X size={20} /></button>
         </div>
@@ -193,11 +193,11 @@ const CartDrawer = () => {
             <>
               {/* ITEM CARDS */}
               {/* SCARCITY ALERT */}
-              <div className="bg-red-50 border border-red-100 p-4 rounded-2xl mb-8 flex items-center gap-4 animate-pulse">
-                <div className="bg-red-500 text-white p-2 rounded-full"><Flame size={16} fill="currentColor" /></div>
+              <div className="bg-red-50 border border-red-100 p-3 md:p-4 rounded-2xl mb-8 flex items-center gap-2 md:gap-4 animate-pulse">
+                <div className="bg-red-500 text-white p-2 rounded-full"><Flame size={14} md:size={16} fill="currentColor" /></div>
                 <div>
-                  <p className="text-[11px] md:text-[10px] font-black uppercase tracking-tight text-red-900">High Demand Artifacts</p>
-                  <p className="text-[10px] md:text-[10px] font-bold text-red-600 uppercase tracking-widest">Items in bag are reserved for 10:00</p>
+                  <p className="text-[10px] md:text-[10px] font-black uppercase tracking-normal md:tracking-tight text-red-900">High Demand Artifacts</p>
+                  <p className="text-[9px] md:text-[10px] font-bold text-red-600 uppercase tracking-normal md:tracking-widest">Items in bag are reserved for 10:00</p>
                 </div>
               </div>
 
@@ -209,9 +209,9 @@ const CartDrawer = () => {
                     </div>
                     <div className="flex-1 flex flex-col justify-between py-1">
                       <div>
-                        <div className="flex justify-between items-start gap-2">
-                          <p className="font-black text-[12px] md:text-[10px] uppercase tracking-wider text-zinc-800 leading-tight flex-1 line-clamp-2">{item.name || "Unknown Product"}</p>
-                          <Price amount={item.price} className="font-black text-[11px] md:text-[11px] shrink-0" />
+                        <div className="flex justify-between items-start gap-1 md:gap-2">
+                          <p className="font-black text-[11px] md:text-[10px] uppercase tracking-normal md:tracking-wider text-zinc-800 leading-tight flex-1 line-clamp-2">{item.name || "Unknown Product"}</p>
+                          <Price amount={item.price} className="font-black text-[10px] md:text-[11px] shrink-0" />
                         </div>
                         {item.selectedVariant && (
                           <p className="text-[10px] md:text-[9px] text-zinc-400 font-bold uppercase mt-1">
@@ -221,33 +221,35 @@ const CartDrawer = () => {
                           </p>
                         )}
                       </div>
-                      <div className="flex justify-between items-end mt-2">
-                        <div className="flex items-center gap-4 mt-3">
-                          <div className="flex items-center gap-3 bg-zinc-50 rounded-xl px-3 py-2 md:px-5 md:py-3 border border-zinc-100">
-                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Minus className="w-3 h-3 md:w-3.5 md:h-3.5" /></button>
-                            <span className="font-black text-xs md:text-sm w-4 text-center">{item.quantity}</span>
-                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Plus className="w-3 h-3 md:w-3.5 md:h-3.5" /></button>
+                      <div className="flex flex-wrap items-center justify-between gap-2 mt-2">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex items-center gap-2 md:gap-3 bg-zinc-50 rounded-xl px-2 py-1.5 md:px-5 md:py-3 border border-zinc-100">
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Minus className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /></button>
+                            <span className="font-black text-[10px] md:text-sm w-3 md:w-4 text-center">{item.quantity}</span>
+                            <button onClick={() => updateQty(item.product?._id || item._id, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-1"><Plus className="w-2.5 h-2.5 md:w-3.5 md:h-3.5" /></button>
                           </div>
                           {Number(item.product?.stock || 0) < 5 && (
-                            <span className="text-[8px] font-black uppercase tracking-widest text-red-500 flex items-center gap-1">
-                              <Clock size={10} /> Limited Stock
+                            <span className="text-[7px] md:text-[8px] font-black uppercase tracking-normal md:tracking-widest text-red-500 flex items-center gap-1">
+                              <Clock size={8} md:size={10} /> Limited
                             </span>
                           )}
                         </div>
-                        <button
-                          onClick={() => handleSaveForLater(item._id)}
-                          className="p-2 text-zinc-300 hover:text-black transition-colors"
-                          title="Save for Later"
-                        >
-                          <Heart size={14} />
-                        </button>
-                        <button
-                          onClick={() => removeItem(item.product, item.selectedVariant, item._id)}
-                          className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
-                          title="Remove Item"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleSaveForLater(item._id)}
+                            className="p-1.5 text-zinc-300 hover:text-black transition-colors"
+                            title="Save for Later"
+                          >
+                            <Heart size={12} md:size={14} />
+                          </button>
+                          <button
+                            onClick={() => removeItem(item.product, item.selectedVariant, item._id)}
+                            className="p-1.5 text-zinc-300 hover:text-red-500 transition-colors"
+                            title="Remove Item"
+                          >
+                            <Trash2 size={12} md:size={14} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -259,7 +261,7 @@ const CartDrawer = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Ticket size={14} className="text-zinc-400" />
-                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Promotional Code</p>
+                    <p className="text-[9px] font-black uppercase tracking-normal md:tracking-widest text-zinc-400">Promotional Code</p>
                   </div>
                   {appliedCoupon && (
                     <button onClick={handleRemoveCoupon} className="text-[9px] text-red-500 font-bold uppercase tracking-wider hover:underline">Remove</button>
@@ -278,11 +280,11 @@ const CartDrawer = () => {
                       placeholder="ENTER CODE"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="flex-1 bg-[#f8f8f8] border border-transparent rounded-xl px-4 py-4 text-[11px] md:text-[10px] font-black uppercase tracking-widest outline-none focus:border-zinc-200 transition-all"
+                      className="flex-1 bg-[#f8f8f8] border border-transparent rounded-xl px-3 py-3 md:px-4 md:py-4 text-[10px] md:text-[10px] font-black uppercase tracking-normal md:tracking-widest outline-none focus:border-zinc-200 transition-all"
                     />
                     <button
                       onClick={handleApplyCoupon}
-                      className="bg-black text-white px-6 rounded-xl text-[10px] md:text-[9px] font-black uppercase tracking-widest active:scale-95 transition-transform"
+                      className="bg-black text-white px-4 md:px-6 rounded-xl text-[9px] md:text-[9px] font-black uppercase tracking-normal md:tracking-widest active:scale-95 transition-transform"
                     >
                       Apply
                     </button>
@@ -399,7 +401,7 @@ const CartDrawer = () => {
           )}
         </div>
 
-        {cartItems.length > 0 && <div className="p-5 md:p-8 bg-white border-t border-zinc-100 space-y-6">
+        {cartItems.length > 0 && <div className="p-4 md:p-8 bg-white border-t border-zinc-100 space-y-6">
 
           {/* FREE SHIPPING PROGRESS BAR */}
           {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
@@ -463,9 +465,9 @@ const CartDrawer = () => {
               toggleCart(false);
               navigate('/checkout');
             }}
-            className="w-full bg-black text-white py-5 md:py-5 rounded-full font-black uppercase tracking-[0.1em] md:tracking-[0.3em] text-[11px] md:text-[10px] flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group px-4"
+            className="w-full bg-black text-white py-4 md:py-5 rounded-full font-black uppercase tracking-normal md:tracking-[0.3em] text-[11px] md:text-[10px] flex items-center justify-center gap-2 md:gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group px-4"
           >
-            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
+            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight className="w-3.5 h-3.5 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
           </button>
         </div>}
       </div>
