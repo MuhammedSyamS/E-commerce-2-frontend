@@ -28,6 +28,7 @@ const Home = () => {
   const [products, setProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
+  const [communityLooks, setCommunityLooks] = useState([]);
   const [scrollY, setScrollY] = useState(0);
   const { user } = useStore();
 
@@ -62,6 +63,20 @@ const Home = () => {
       }
     };
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    const fetchLooks = async () => {
+      try {
+        const { data } = await api.get('/looks');
+        if (data && data.length > 0) {
+          setCommunityLooks(data.slice(0, 4));
+        }
+      } catch (err) {
+        console.error("Home Looks Fetch Error:", err);
+      }
+    };
+    fetchLooks();
   }, []);
 
 
@@ -229,11 +244,13 @@ const Home = () => {
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {MOCK_LOOKS.filter(look => look && look.user).map((look) => (
+              {(communityLooks.length > 0 ? communityLooks : MOCK_LOOKS).filter(look => look && (look.user || look.firstName)).map((look) => (
                 <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
                   <img src={look.image} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p className="text-[8px] font-black text-white uppercase tracking-widest">@{look.user?.firstName}{look.user?.lastName}</p>
+                    <p className="text-[8px] font-black text-white uppercase tracking-widest">
+                      @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : `${look.firstName || 'User'}${look.lastName || ''}`}
+                    </p>
                   </div>
                 </Link>
               ))}
