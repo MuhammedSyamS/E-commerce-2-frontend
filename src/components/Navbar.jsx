@@ -267,7 +267,7 @@ const Navbar = () => {
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
             <button
               onClick={() => {
-                const footer = document.getElementById('site-footer');
+                const footer = document.getElementById('footer-support');
                 if (footer) footer.scrollIntoView({ behavior: 'smooth' });
               }}
               className="text-white hover:text-zinc-400 transition whitespace-nowrap"
@@ -420,7 +420,7 @@ const Navbar = () => {
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
-                    const footer = document.getElementById('site-footer');
+                    const footer = document.getElementById('footer-track');
                     if (footer) footer.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className="text-white text-[11px] font-black uppercase tracking-widest text-left"
@@ -430,7 +430,7 @@ const Navbar = () => {
                 <button
                   onClick={() => {
                     setIsMenuOpen(false);
-                    const footer = document.getElementById('site-footer');
+                    const footer = document.getElementById('footer-support');
                     if (footer) footer.scrollIntoView({ behavior: 'smooth' });
                   }}
                   className="text-white text-[11px] font-black uppercase tracking-widest text-left"

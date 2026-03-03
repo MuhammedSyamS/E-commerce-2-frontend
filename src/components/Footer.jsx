@@ -83,7 +83,7 @@ const Footer = () => {
           </div>
 
           {/* SUPPORT LINKS */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+          <div id="footer-support" className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
             <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Support</h3>
             <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/contact" className="hover:text-white transition-colors text-orange-400">Contact Us</Link></li>
@@ -95,7 +95,7 @@ const Footer = () => {
           </div>
 
           {/* TRACK LINKS */}
-          <div className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
+          <div id="footer-track" className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
             <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
             <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
               <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Order Track</Link></li>
