@@ -286,9 +286,18 @@ const Shop = () => {
               </span>
             </div>
 
-            <h1 className="text-5xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.8] mb-6 md:mb-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
-              The<br />
-              <span className="text-zinc-300">Collection</span>
+            <h1 className="text-4xl md:text-8xl lg:text-9xl font-black uppercase tracking-tighter leading-[0.8] mb-6 md:mb-10 animate-in fade-in slide-in-from-bottom-12 duration-1000">
+              {keyword ? (
+                <>
+                  Search<br />
+                  <span className="text-zinc-300">Results</span>
+                </>
+              ) : (
+                <>
+                  The<br />
+                  <span className="text-zinc-300">Collection</span>
+                </>
+              )}
             </h1>
 
             <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-3 md:gap-6 animate-in fade-in slide-in-from-bottom-8 delay-300 duration-1000">
@@ -326,7 +335,7 @@ const Shop = () => {
                 placeholder="Seach Collection..."
                 value={keyword}
                 onChange={handleSearchChange}
-                className="bg-zinc-50/50 md:bg-transparent border-none py-2 px-3 md:px-1 text-[9px] md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
+                className="bg-zinc-50/50 md:bg-transparent border-none py-2 px-3 md:px-1 text-xs md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
               />
               <Search className="absolute right-3 md:relative md:right-0 text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
             </div>

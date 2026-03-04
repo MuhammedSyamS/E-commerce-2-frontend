@@ -183,7 +183,7 @@ const CartDrawer = () => {
       <div className="relative w-full sm:max-w-[420px] bg-[#f8f8f8] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
 
         {/* Header - Premium Dark Header for Contrast */}
-        <div className="p-3 md:p-4 flex items-center justify-between bg-black text-white border-b border-white/10 shadow-lg">
+        <div className="py-2.5 px-4 md:py-3 md:px-6 flex items-center justify-between bg-black text-white border-b border-white/10 shadow-lg shrink-0">
           <div className="flex items-center gap-3">
             <ShoppingBag size={16} className="text-amber-400 animate-pulse" />
             <h2 className="font-black uppercase tracking-[0.2em] text-[8px] md:text-[9px]">Your Selection</h2>
@@ -206,7 +206,7 @@ const CartDrawer = () => {
 
               <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item._id || item.product || Math.random()} className="bg-white p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/80 flex gap-4 group hover:border-black transition-all duration-300">
+                  <div key={item._id || item.product || Math.random()} className="bg-white p-3 md:p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/80 flex gap-4 group hover:border-black transition-all duration-300">
                     <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200 group-hover:scale-95 transition-transform duration-500">
                       <img src={item.image || "/placeholder.jpg"} className="w-full h-full object-cover" alt={item.name} />
                     </div>
@@ -401,7 +401,7 @@ const CartDrawer = () => {
         </div>
 
         {cartItems.length > 0 && (
-          <div className="p-3 md:p-4 bg-[#fdfdfd] border-t border-zinc-200/60 space-y-4 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+          <div className="p-3 md:p-5 bg-[#fdfdfd] border-t border-zinc-200/60 space-y-4 shadow-[0_-10px_40px_rgba(0,0,0,0.03)] shrink-0">
 
             {/* FREE SHIPPING PROGRESS BAR */}
             {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (

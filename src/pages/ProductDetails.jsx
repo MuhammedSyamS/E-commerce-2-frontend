@@ -325,33 +325,8 @@ const ProductDetails = () => {
     return dist;
   }, [product]);
 
-  if (loading) return (
-    <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans">
-      <div className="container-responsive">
-        <Skeleton className="h-4 w-48 mb-10 rounded-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-          <div className="lg:col-span-7">
-            <Skeleton className="aspect-square w-full rounded-[2.5rem]" />
-            <div className="grid grid-cols-4 gap-4 mt-6">
-              {[...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
-            </div>
-          </div>
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24 rounded-full" />
-              <Skeleton className="h-12 w-full rounded-2xl" />
-              <Skeleton className="h-8 w-32 rounded-full" />
-            </div>
-            <Skeleton className="h-16 w-full rounded-full mt-10" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  const isWishlisted = user?.wishlist?.some(item => (item._id || item).toString() === product?._id?.toString());
 
-  if (!product) return (<div className="h-screen flex items-center justify-center">Product Not Found</div>);
-
-  const isWishlisted = user?.wishlist?.some(item => (item._id || item).toString() === product?._id.toString());
   const getDeliveryDateRange = () => {
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + 5);
@@ -360,6 +335,7 @@ const ProductDetails = () => {
 
   const handleHelpfulVote = async (reviewId) => {
     if (!user) return addToast("Please login to vote", "error");
+    if (!product) return;
     try {
       const { data } = await api.put(`/products/${product._id}/reviews/${reviewId}/helpful`, {}, { headers: { Authorization: `Bearer ${user.token}` } });
       const updatedReviews = (product.reviews || []).map(r => {
@@ -375,7 +351,7 @@ const ProductDetails = () => {
   };
 
   const sortedReviews = (() => {
-    let reviews = [...(product.reviews || [])].filter(r => r.isApproved !== false);
+    let reviews = [...(product?.reviews || [])].filter(r => r.isApproved !== false);
     switch (sortOption) {
       case 'newest': return reviews.reverse();
       case 'oldest': return reviews;
@@ -388,686 +364,730 @@ const ProductDetails = () => {
 
   return (
     <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
-      <Helmet>
-        <title>{`${product.name} | SLOOK`}</title>
-        <meta name="description" content={product.description} />
-      </Helmet>
-
-      {selectedReview && (
-        <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
-          <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50"><X size={24} /></button>
-          <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
-              {selectedReview.media?.length > 1 && (
-                <>
-                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronLeft size={24} /></button>
-                  <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronRight size={24} /></button>
-                </>
-              )}
-              {selectedReview.currentMedia?.type === 'video' ? <video controls autoPlay src={selectedReview.currentMedia.url} className="w-full h-full object-contain bg-black" /> : <img src={selectedReview.currentMedia?.url || selectedReview.image} alt="Review" className="w-full h-full object-contain" />}
+      {/* 1. LOADING STATE */}
+      {loading ? (
+        <div className="container-responsive animate-in fade-in duration-700">
+          <Skeleton className="h-4 w-48 mb-10 rounded-full" />
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
+            <div className="lg:col-span-7">
+              <Skeleton className="aspect-square w-full rounded-[2.5rem]" />
+              <div className="grid grid-cols-4 gap-4 mt-6">
+                {[...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
+              </div>
             </div>
-            <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
-                <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
+            <div className="lg:col-span-5 space-y-8">
+              <div className="space-y-4">
+                <Skeleton className="h-4 w-24 rounded-full" />
+                <Skeleton className="h-12 w-full rounded-2xl" />
+                <Skeleton className="h-8 w-32 rounded-full" />
               </div>
-              <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
-              <div className="mt-6 pt-6 border-t border-zinc-100">
-                <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base md:text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
-              </div>
+              <Skeleton className="h-16 w-full rounded-full mt-10" />
             </div>
           </div>
         </div>
-      )}
+      ) : !product ? (
+        /* 2. PRODUCT NOT FOUND STATE */
+        <div className="container-responsive py-40 text-center flex flex-col items-center justify-center">
+          <div className="w-20 h-20 bg-zinc-50 rounded-full flex items-center justify-center mb-6">
+            <X size={40} className="text-zinc-200" />
+          </div>
+          <h2 className="text-3xl font-black uppercase tracking-tighter mb-4">Product Not Found</h2>
+          <p className="text-sm font-black uppercase tracking-widest text-zinc-400 mb-8 max-w-sm">The artifact you are looking for has been moved or is currently unavailable in our studio.</p>
+          <Link to="/shop" className="px-10 py-4 bg-zinc-900 text-white rounded-full font-black uppercase tracking-widest text-xs hover:bg-black transition-all">Explore Collection</Link>
+        </div>
+      ) : (
+        /* 3. SUCCESS STATE */
+        <>
+          <div className="container-responsive mb-10">
+            <Breadcrumbs items={[
+              { label: 'Shop', path: '/shop' },
+              { label: product.category, path: `/shop?category=${product.category}` },
+              { label: product.name, path: `/product/${product.slug}` }
+            ]} />
+          </div>
 
-      <NotifyMeModal isOpen={showWaitlistModal} onClose={() => setShowWaitlistModal(false)} product={product} variant={selectedVariant} />
+          <Helmet>
+            <title>{`${product.name} | SLOOK`}</title>
+            <meta name="description" content={product.description} />
+          </Helmet>
 
-      <div className="container-responsive py-12">
-        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
-
-          {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-7) */}
-          <div className="lg:col-span-7 flex gap-6">
-            {/* THUMBNAILS STRIP */}
-            <div className="hidden xl:flex flex-col gap-3 sticky top-32 h-fit w-16 shrink-0">
-              {mediaItems.map((item, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setActiveMediaIndex(i); setVariantForcedImage(null); }}
-                  className={`aspect-[3/4] rounded-lg overflow-hidden border transition-all duration-300 bg-zinc-50 ${activeMediaIndex === i && !variantForcedImage ? 'border-zinc-900 shadow-sm scale-105' : 'border-transparent opacity-50 hover:opacity-100'}`}
-                >
-                  {item.type === 'video' ? (
-                    <div className="w-full h-full flex items-center justify-center bg-zinc-100"><Play size={12} className="text-zinc-400" /></div>
-                  ) : (
-                    <img src={item.url} className="w-full h-full object-cover" alt="" />
+          {selectedReview && (
+            <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
+              <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50"><X size={24} /></button>
+              <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
+                  {selectedReview.media?.length > 1 && (
+                    <>
+                      <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronLeft size={24} /></button>
+                      <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronRight size={24} /></button>
+                    </>
                   )}
-                </button>
-              ))}
+                  {selectedReview.currentMedia?.type === 'video' ? <video controls autoPlay src={selectedReview.currentMedia.url} className="w-full h-full object-contain bg-black" /> : <img src={selectedReview.currentMedia?.url || selectedReview.image} alt="Review" className="w-full h-full object-contain" />}
+                </div>
+                <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
+                    <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
+                  </div>
+                  <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
+                  <div className="mt-6 pt-6 border-t border-zinc-100">
+                    <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base md:text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
+                  </div>
+                </div>
+              </div>
             </div>
+          )}
 
-            {/* MAIN HERO IMAGE */}
-            <div className="flex-1 space-y-10">
-              <div
-                className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-zinc-50 cursor-zoom-in group/main"
-                onMouseMove={(e) => {
-                  const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
-                  const x = ((e.pageX - left) / width) * 100;
-                  const y = ((e.pageY - top) / height) * 100;
-                  setMousePos({ x, y });
-                }}
-                onMouseEnter={() => setIsZooming(true)}
-                onMouseLeave={() => setIsZooming(false)}
-              >
-                <AnimatePresence mode="wait">
-                  <button
-                    onClick={handleWishlist}
-                    className={`absolute top-6 right-6 z-20 p-4 rounded-2xl transition-all shadow-xl backdrop-blur-md ${isWishlisted ? 'bg-zinc-900/80 text-white' : 'bg-white/50 text-zinc-900 hover:bg-white'}`}
+          <NotifyMeModal isOpen={showWaitlistModal} onClose={() => setShowWaitlistModal(false)} product={product} variant={selectedVariant} />
+
+          <div className="container-responsive py-12">
+            <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 relative">
+
+              {/* COLUMN 1: IMMERSIVE GALLERY (lg:col-span-7) */}
+              <div className="lg:col-span-7 flex gap-6">
+                {/* THUMBNAILS STRIP */}
+                <div className="hidden xl:flex flex-col gap-3 sticky top-32 h-fit w-16 shrink-0">
+                  {mediaItems.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={() => { setActiveMediaIndex(i); setVariantForcedImage(null); }}
+                      className={`aspect-[3/4] rounded-lg overflow-hidden border transition-all duration-300 bg-zinc-50 ${activeMediaIndex === i && !variantForcedImage ? 'border-zinc-900 shadow-sm scale-105' : 'border-transparent opacity-50 hover:opacity-100'}`}
+                    >
+                      {item.type === 'video' ? (
+                        <div className="w-full h-full flex items-center justify-center bg-zinc-100"><Play size={12} className="text-zinc-400" /></div>
+                      ) : (
+                        <img src={item.url} className="w-full h-full object-cover" alt="" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                {/* MAIN HERO IMAGE */}
+                <div className="flex-1 space-y-10">
+                  <div
+                    className="relative aspect-[4/5] w-full rounded-[2rem] overflow-hidden bg-zinc-50 cursor-zoom-in group/main"
+                    onMouseMove={(e) => {
+                      const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.pageX - left) / width) * 100;
+                      const y = ((e.pageY - top) / height) * 100;
+                      setMousePos({ x, y });
+                    }}
+                    onMouseEnter={() => setIsZooming(true)}
+                    onMouseLeave={() => setIsZooming(false)}
                   >
-                    <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
-                  </button>
-                  <motion.div
-                    key={variantForcedImage || activeMediaIndex}
-                    initial={{ opacity: 0, scale: 1.05 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ duration: 0.5, ease: "circOut" }}
-                    className="w-full h-full"
-                  >
-                    {mediaItems[activeMediaIndex]?.type === 'video' && !variantForcedImage ? (
-                      <video src={mediaItems[activeMediaIndex].url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
-                    ) : (
-                      <img
-                        src={variantForcedImage || mediaItems[activeMediaIndex]?.url}
-                        className={`w-full h-full object-cover transition-transform duration-200 ${isZooming ? 'scale-[2.5]' : 'scale-100'}`}
-                        style={isZooming ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` } : {}}
-                        alt={product.name}
-                      />
-                    )}
-                  </motion.div>
-                </AnimatePresence>
+                    <AnimatePresence mode="wait">
+                      <button
+                        onClick={handleWishlist}
+                        className={`absolute top-6 right-6 z-20 p-4 rounded-2xl transition-all shadow-xl backdrop-blur-md ${isWishlisted ? 'bg-zinc-900/80 text-white' : 'bg-white/50 text-zinc-900 hover:bg-white'}`}
+                      >
+                        <Heart size={20} fill={isWishlisted ? "currentColor" : "none"} />
+                      </button>
+                      <motion.div
+                        key={variantForcedImage || activeMediaIndex}
+                        initial={{ opacity: 0, scale: 1.05 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.5, ease: "circOut" }}
+                        className="w-full h-full"
+                      >
+                        {mediaItems[activeMediaIndex]?.type === 'video' && !variantForcedImage ? (
+                          <video src={mediaItems[activeMediaIndex].url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                        ) : (
+                          <img
+                            src={variantForcedImage || mediaItems[activeMediaIndex]?.url}
+                            className={`w-full h-full object-cover transition-transform duration-200 ${isZooming ? 'scale-[2.5]' : 'scale-100'}`}
+                            style={isZooming ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` } : {}}
+                            alt={product.name}
+                          />
+                        )}
+                      </motion.div>
+                    </AnimatePresence>
+                  </div>
+
+                </div>
               </div>
 
+              {/* COLUMN 2: INFORMATION HUB (lg:col-span-5) */}
+              <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
+                <div className="flex flex-col gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.category}</span>
+                    <span className="w-1 h-1 bg-zinc-200 rounded-full" />
+                    <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
+                  </div>
+                  <div role="heading" aria-level="1" className="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-tighter text-zinc-900">
+                    {product.name}
+                  </div>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={scrollToReviews}
+                    className="flex items-center gap-1 text-black hover:opacity-70 transition-opacity"
+                  >
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
+                    ))}
+                  </button>
+                  <button onClick={scrollToReviews} className="text-[8px] md:text-sm font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
+                    {product.numReviews} Verified Reviews
+                  </button>
+                </div>
+
+                {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
+                <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
+                  <div className="space-y-3">
+                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
+                    <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
+                      {(product.specs && product.specs.length > 0 ? product.specs : [
+                        { key: 'Craftsmanship', value: 'Bespoke' },
+                        { key: 'Edition', value: 'Limited Run' },
+                        { key: 'Ethics', value: 'Sustainable' },
+                        { key: 'Shipping', value: 'Global Priority' }
+                      ]).map((spec, i) => (
+                        <div key={i} className="flex justify-between items-center py-1 border-b border-zinc-50 last:border-0 md:border-0">
+                          <span className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest">{spec.key}</span>
+                          <span className="text-[10px] font-black text-zinc-900 uppercase tracking-tight">{spec.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="hidden lg:flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-lg md:text-3xl font-black text-zinc-900 tracking-tighter">
+                      <Price amount={currentPrice} />
+                    </span>
+                    {currentPrice < product.price * 1.2 && (
+                      <del className="text-zinc-300 text-lg font-bold">
+                        <Price amount={product.price * 1.4} />
+                      </del>
+                    )}
+                  </div>
+                  <p className="text-[8px] md:text-[10px] font-black text-green-600 uppercase tracking-mega">
+                    Free Delivery Across India
+                  </p>
+                </div>
+                {/* PREMIUM VARIANT UX: COLOR SWATCHES */}
+                {colors.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] font-black uppercase tracking-mega text-zinc-400">Color / {selectedColor}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-4">
+                      {colors.map((color, idx) => {
+                        const isSelected = selectedColor === color.name;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() => { setSelectedColor(color.name); updateUrlParams(color.name, selectedSize); }}
+                            className={`relative w-10 h-10 rounded-full border-2 transition-all duration-300 ${isSelected ? 'border-zinc-900 scale-110 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                          >
+                            <div className="w-full h-full rounded-full overflow-hidden border border-zinc-100 p-0.5">
+                              <img src={color.image} className="w-full h-full object-cover rounded-full" alt={color.name} />
+                            </div>
+                            {isSelected && <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full border-2 border-white"><Check size={8} /></div>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* PREMIUM VARIANT UX: SIZE PILLS */}
+                {allSizes.length > 0 && (
+                  <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[8px] font-black uppercase tracking-mega text-zinc-400">Select Size</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {allSizes.map((size, idx) => {
+                        const isSelected = selectedSize === size;
+                        const vMatch = product.variants.find(v => v.size?.toLowerCase() === size?.toLowerCase() && (selectedColor ? v.color?.toLowerCase() === selectedColor?.toLowerCase() : true));
+                        const isOOS = !vMatch || (Number(vMatch.stock || 0) <= 0);
+                        return (
+                          <button
+                            key={idx}
+                            disabled={isOOS}
+                            onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
+                            className={`py-2 px-4 rounded-xl border-2 font-black text-[9px] md:text-xs transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
+                          >
+                            {size}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <button
+                      onClick={() => setShowSizeConsultant(true)}
+                      className="w-full h-11 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-mega text-[8px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Sparkles size={16} /> AI Size Consultant
+                    </button>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-6 pt-8 border-t border-zinc-100">
+                  <div className="flex justify-between items-start">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-500">In Stock</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {!isOutOfStock ? (
+                  <div className="space-y-6">
+                    {/* QUANTITY & ACTIONS */}
+                    <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
+                      <span className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400">Quantity</span>
+                      <div className="flex items-center gap-6">
+                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-600 hover:text-black transition-colors"><Minus size={16} /></button>
+                        <span className="font-black text-sm w-6 text-center">{quantity}</span>
+                        <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-600 hover:text-black transition-colors"><Plus size={16} /></button>
+                      </div>
+                    </div>
+
+                    <div className="hidden lg:flex flex-col space-y-3">
+                      <button
+                        onClick={() => { addToCart({ ...product, price: currentPrice, selectedVariant, quantity }); addToast("Added to Bag", "success"); }}
+                        className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
+                      >
+                        <ShoppingBag size={20} /> Add to Bag
+                      </button>
+                      <button
+                        onClick={() => {
+                          const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                          navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                        }}
+                        className="w-full h-16 bg-white border-2 border-black text-black rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-black hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                      >
+                        <ShieldCheck size={20} /> Secure Checkout
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setShowWaitlistModal(true)}
+                    className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl lg:flex hidden"
+                  >
+                    <BellRing size={20} /> Waitlist Enrollment
+                  </button>
+                )}
+              </div>
+
+              {/* FLOATING MOBILE ACTION BAR — Restored and Enhanced */}
+              {!isOutOfStock ? (
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden animate-in slide-in-from-bottom-full duration-700">
+                  <div className="flex items-center gap-3 max-w-lg mx-auto">
+                    <div className="flex-1">
+                      <p className="!text-[7px] font-black uppercase tracking-widest text-zinc-400 mb-0">Premium Access</p>
+                      <Price amount={currentPrice} className="!text-sm font-black text-zinc-900 tracking-tighter" />
+                    </div>
+                    <div className="flex-[2.5] flex gap-2">
+                      <button
+                        onClick={() => { addToCart({ ...product, price: currentPrice, selectedVariant, quantity }); addToast("Added to Bag", "success"); }}
+                        className="flex-1 !h-10 bg-zinc-100 text-black !rounded-xl !text-[9px] font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
+                      >
+                        <ShoppingBag size={10} />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
+                          navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
+                        }}
+                        className="flex-[3] !h-10 bg-zinc-900 text-white !rounded-xl !text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1 active:scale-95 transition-all shadow-xl"
+                      >
+                        <Zap size={10} fill="currentColor" /> Secure Checkout
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden">
+                  <button
+                    onClick={() => setShowWaitlistModal(true)}
+                    className="w-full h-14 bg-amber-400 text-black rounded-2xl font-black uppercase tracking-widest text-sm md:text-xs flex items-center justify-center gap-2 shadow-lg"
+                  >
+                    <BellRing size={16} /> Join Waitlist
+                  </button>
+                </div>
+              )}
+
+              {/* TRUST ELEMENTS BAR (Directly Under Actions) */}
+              <div className="flex flex-col gap-8 pt-16 border-t border-zinc-100 mt-16">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 lg:gap-12">
+                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
+                    <ShieldCheck className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secure Checkout</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
+                    <RotateCcw className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">7 Days Return</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
+                    <Lock className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secured Payment</span>
+                  </div>
+                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
+                    <Award className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
+                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Authentic Product</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* COLUMN 2: INFORMATION HUB (lg:col-span-5) */}
-          <div className="flex flex-col lg:col-span-5 space-y-8 md:space-y-12">
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-4">
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.category}</span>
-                <span className="w-1 h-1 bg-zinc-200 rounded-full" />
-                <span className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400">{product.subcategory}</span>
-              </div>
-              <div role="heading" aria-level="1" className="text-xl md:text-3xl lg:text-4xl font-black uppercase tracking-tighter leading-tighter text-zinc-900">
-                {product.name}
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <button
-                onClick={scrollToReviews}
-                className="flex items-center gap-1 text-black hover:opacity-70 transition-opacity"
-              >
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />
-                ))}
-              </button>
-              <button onClick={scrollToReviews} className="text-[8px] md:text-sm font-black text-zinc-400 uppercase tracking-widest hover:text-black transition-colors">
-                {product.numReviews} Verified Reviews
-              </button>
-            </div>
 
-            {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
-            <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
-              <div className="space-y-3">
-                <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+
+          {/* PREMIUM TABS SECTION */}
+
+          {/* PREMIUM TABS SECTION */}
+          <div className="container-responsive">
+            <div ref={reviewsRef} className="mt-32 space-y-12">
+              <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
+                <button
+                  onClick={() => setActiveTab('story')}
+                  className={`px-4 py-3 md:px-10 md:py-6 !text-[10px] md:!text-sm font-bold uppercase tracking-widest relative shrink-0 transition-all ${activeTab === 'story' ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
+                >
+                  Product Story
+                  {activeTab === 'story' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
+                </button>
+                <button
+                  onClick={() => setActiveTab('reviews')}
+                  className={`px-4 py-3 md:px-10 md:py-6 !text-[10px] md:!text-sm font-bold uppercase tracking-widest relative shrink-0 transition-all ${activeTab === 'reviews' ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
+                >
+                  Verified Reviews ({product.numReviews})
+                  {activeTab === 'reviews' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
+                </button>
               </div>
-              <div className="space-y-3">
-                <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
-                  {(product.specs && product.specs.length > 0 ? product.specs : [
-                    { key: 'Craftsmanship', value: 'Bespoke' },
-                    { key: 'Edition', value: 'Limited Run' },
-                    { key: 'Ethics', value: 'Sustainable' },
-                    { key: 'Shipping', value: 'Global Priority' }
-                  ]).map((spec, i) => (
-                    <div key={i} className="flex justify-between items-center py-1 border-b border-zinc-50 last:border-0 md:border-0">
-                      <span className="text-[9px] md:text-[10px] font-black text-zinc-400 uppercase tracking-widest">{spec.key}</span>
-                      <span className="text-[10px] font-black text-zinc-900 uppercase tracking-tight">{spec.value}</span>
+
+              <div className="min-h-[400px]">
+                {activeTab === 'story' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
+                    <div className="max-w-4xl mx-auto py-12 md:py-20">
+                      <div className="space-y-12 text-center">
+                        <div className="space-y-4">
+                          <div className="flex justify-center items-center gap-4 mb-2">
+                            <div className="h-[1px] w-12 bg-zinc-900" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">The Slook Philosophy</span>
+                            <div className="h-[1px] w-12 bg-zinc-900" />
+                          </div>
+                          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none">The Art of <span className="text-zinc-400">Creation</span></h2>
+                        </div>
+
+                        <p className="text-zinc-600 text-lg md:text-xl leading-relaxed font-medium italic max-w-3xl mx-auto px-4">
+                          {product.richDescription || product.story || `Every ${product.name} in our collection is a testament to the pursuit of perfection. Meticulously crafted with a focus on form, function, and the subtle interplay of materials, this item embodies our philosophy of elevated minimalism.`}
+                        </p>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-zinc-100">
+                          {[
+                            { title: 'Technical Precision', desc: 'Refined for an unparalleled experience.' },
+                            { title: 'Material Excellence', desc: 'Sourced from the finest local mills.' },
+                            { title: 'Authentic Design', desc: 'Guaranteed quality from our core studio.' }
+                          ].map((feature, i) => (
+                            <div key={i} className="space-y-2">
+                              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900">{feature.title}</p>
+                              <p className="text-[10px] text-zinc-500 leading-relaxed uppercase font-bold tracking-tight">{feature.desc}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                )}
+
+                {activeTab === 'reviews' && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                      <div className="lg:col-span-4 space-y-12">
+                        <div className="space-y-6">
+                          <div className="flex items-baseline gap-2 md:gap-4">
+                            <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
+                            <div className="flex flex-col gap-1">
+                              <div className="flex text-black">
+                                {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
+                              </div>
+                              <p className="font-black uppercase tracking-widest text-zinc-400" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>Based on {product.numReviews} Reviews</p>
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            {[5, 4, 3, 2, 1].map((star) => {
+                              const count = ratingDistribution[star] || 0;
+                              const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
+                              return (
+                                <div key={star} className="flex items-center gap-4 group cursor-pointer">
+                                  <span className="font-black text-zinc-900 w-2" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{star}</span>
+                                  <div className="flex-1 h-1.5 md:h-2 bg-zinc-100 rounded-full overflow-hidden">
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1, ease: "circOut" }} className="h-full bg-zinc-900" />
+                                  </div>
+                                  <span className="font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{count}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="space-y-4 md:space-y-6 bg-zinc-50 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-zinc-100">
+                          <div className="text-sm font-black uppercase tracking-widest text-zinc-900">Share Your Experience</div>
+                          <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
+                          <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Experience details..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner"></textarea>
+                          <button onClick={handleReviewSubmit} disabled={submitting} className="w-full bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-black active:scale-95 transition-all py-4">{submitting ? "Processing..." : "Submit Review"}</button>
+                        </div>
+                      </div>
+
+                      <div className="lg:col-span-8 space-y-12">
+                        <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
+                          <div className="text-xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</div>
+                          <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-sm font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
+                            <option value="newest">Newest</option>
+                            <option value="highest">Best Rating</option>
+                            <option value="helpful">Helpful</option>
+                          </select>
+                        </div>
+                        <div className="space-y-16">
+                          {sortedReviews.map((rev, i) => (
+                            <div key={i} onClick={() => {
+                              const videos = rev.videos || (rev.video ? [rev.video] : []);
+                              const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                              const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+                              setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
+                            }} className="space-y-6 group cursor-pointer">
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm text-zinc-900 border border-zinc-200">{rev.name?.charAt(0)}</div>
+                                  <div className="space-y-1">
+                                    <p className="font-bold text-sm text-zinc-900">{rev.name}</p>
+                                    <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
+                                  </div>
+                                </div>
+                                <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
+                              <div className="flex gap-3 ml-12">
+                                {(rev.images || []).slice(0, 4).map((img, idx) => (
+                                  <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all">
+                                    <img src={img} className="w-full h-full object-cover" alt="" />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* LIGHTBOX MODAL */}
+          {showLightbox && (
+            <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
+              <button className="absolute top-8 right-8 text-white/50 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-[210]"><X size={32} /></button>
+              <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
+                <button
+                  disabled={lightboxIndex === 0}
+                  onClick={() => setLightboxIndex(prev => prev - 1)}
+                  className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                >
+                  <ChevronLeft size={32} />
+                </button>
+                <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                <button
+                  disabled={lightboxIndex === mediaItems.length - 1}
+                  onClick={() => setLightboxIndex(prev => prev + 1)}
+                  className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                >
+                  <ChevronRight size={32} />
+                </button>
+
+                <div className="absolute bottom-12 flex gap-3">
+                  {mediaItems.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setLightboxIndex(i)}
+                      className={`w-2 h-2 rounded-full transition-all ${lightboxIndex === i ? 'bg-white scale-150' : 'bg-white/30'}`}
+                    />
                   ))}
                 </div>
               </div>
             </div>
-
-            <div className="hidden lg:flex flex-col gap-2 bg-zinc-50 p-4 rounded-[1.2rem] border border-zinc-100">
-              <div className="flex items-baseline gap-3">
-                <span className="text-lg md:text-3xl font-black text-zinc-900 tracking-tighter">
-                  <Price amount={currentPrice} />
-                </span>
-                {currentPrice < product.price * 1.2 && (
-                  <del className="text-zinc-300 text-lg font-bold">
-                    <Price amount={product.price * 1.4} />
-                  </del>
-                )}
-              </div>
-              <p className="text-[8px] md:text-[10px] font-black text-green-600 uppercase tracking-mega">
-                Free Delivery Across India
-              </p>
-            </div>
-            {/* PREMIUM VARIANT UX: COLOR SWATCHES */}
-            {colors.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-[8px] font-black uppercase tracking-mega text-zinc-400">Color / {selectedColor}</span>
-                </div>
-                <div className="flex flex-wrap gap-4">
-                  {colors.map((color, idx) => {
-                    const isSelected = selectedColor === color.name;
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => { setSelectedColor(color.name); updateUrlParams(color.name, selectedSize); }}
-                        className={`relative w-10 h-10 rounded-full border-2 transition-all duration-300 ${isSelected ? 'border-zinc-900 scale-110 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                      >
-                        <div className="w-full h-full rounded-full overflow-hidden border border-zinc-100 p-0.5">
-                          <img src={color.image} className="w-full h-full object-cover rounded-full" alt={color.name} />
-                        </div>
-                        {isSelected && <div className="absolute -top-1 -right-1 bg-black text-white p-1 rounded-full border-2 border-white"><Check size={8} /></div>}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* PREMIUM VARIANT UX: SIZE PILLS */}
-            {allSizes.length > 0 && (
-              <div className="space-y-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-[8px] font-black uppercase tracking-mega text-zinc-400">Select Size</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {allSizes.map((size, idx) => {
-                    const isSelected = selectedSize === size;
-                    const vMatch = product.variants.find(v => v.size?.toLowerCase() === size?.toLowerCase() && (selectedColor ? v.color?.toLowerCase() === selectedColor?.toLowerCase() : true));
-                    const isOOS = !vMatch || (Number(vMatch.stock || 0) <= 0);
-                    return (
-                      <button
-                        key={idx}
-                        disabled={isOOS}
-                        onClick={() => { setSelectedSize(size); updateUrlParams(selectedColor, size); }}
-                        className={`py-2 px-4 rounded-xl border-2 font-black text-[9px] md:text-xs transition-all duration-300 ${isSelected ? 'bg-zinc-900 text-white border-zinc-900 shadow-md' : 'bg-white text-zinc-900 border-zinc-100 hover:border-zinc-900'} ${isOOS ? 'opacity-20 cursor-not-allowed' : 'active:scale-95'}`}
-                      >
-                        {size}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button
-                  onClick={() => setShowSizeConsultant(true)}
-                  className="w-full h-11 bg-zinc-900 text-white rounded-xl font-black uppercase tracking-mega text-[8px] shadow-lg hover:bg-black active:scale-95 transition-all flex items-center justify-center gap-2"
-                >
-                  <Sparkles size={16} /> AI Size Consultant
-                </button>
-              </div>
-            )}
-
-            <div className="flex flex-col gap-6 pt-8 border-t border-zinc-100">
-              <div className="flex justify-between items-start">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-500">In Stock</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {!isOutOfStock ? (
-              <div className="space-y-6">
-                {/* QUANTITY & ACTIONS */}
-                <div className="flex items-center justify-between bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                  <span className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400">Quantity</span>
-                  <div className="flex items-center gap-6">
-                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="text-zinc-600 hover:text-black transition-colors"><Minus size={16} /></button>
-                    <span className="font-black text-sm w-6 text-center">{quantity}</span>
-                    <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-600 hover:text-black transition-colors"><Plus size={16} /></button>
-                  </div>
-                </div>
-
-                <div className="hidden lg:flex flex-col space-y-3">
-                  <button
-                    onClick={() => { addToCart({ ...product, price: currentPrice, selectedVariant, quantity }); addToast("Added to Bag", "success"); }}
-                    className="w-full h-16 bg-black text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-3 shadow-xl"
-                  >
-                    <ShoppingBag size={20} /> Add to Bag
-                  </button>
-                  <button
-                    onClick={() => {
-                      const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
-                      navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
-                    }}
-                    className="w-full h-16 bg-white border-2 border-black text-black rounded-2xl font-black uppercase tracking-widest text-base md:text-xs hover:bg-black hover:text-white transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-                  >
-                    <ShieldCheck size={20} /> Secure Checkout
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => setShowWaitlistModal(true)}
-                className="w-full h-16 bg-zinc-900 text-white rounded-2xl font-black uppercase tracking-widest text-base md:text-xs flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl lg:flex hidden"
-              >
-                <BellRing size={20} /> Waitlist Enrollment
-              </button>
-            )}
-          </div>
-
-          {/* FLOATING MOBILE ACTION BAR — Restored and Enhanced */}
-          {!isOutOfStock ? (
-            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden animate-in slide-in-from-bottom-full duration-700">
-              <div className="flex items-center gap-3 max-w-lg mx-auto">
-                <div className="flex-1">
-                  <p className="!text-[7px] font-black uppercase tracking-widest text-zinc-400 mb-0">Premium Access</p>
-                  <Price amount={currentPrice} className="!text-sm font-black text-zinc-900 tracking-tighter" />
-                </div>
-                <div className="flex-[2.5] flex gap-2">
-                  <button
-                    onClick={() => { addToCart({ ...product, price: currentPrice, selectedVariant, quantity }); addToast("Added to Bag", "success"); }}
-                    className="flex-1 !h-10 bg-zinc-100 text-black !rounded-xl !text-[9px] font-black uppercase tracking-widest flex items-center justify-center active:scale-95 transition-all border border-zinc-200"
-                  >
-                    <ShoppingBag size={10} />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const checkoutItem = { _id: product._id, product: product, name: product.name, price: currentPrice, image: variantForcedImage || product.image, selectedVariant: selectedVariant, quantity: quantity };
-                      navigate('/checkout', { state: { checkoutSingleItem: checkoutItem } });
-                    }}
-                    className="flex-[3] !h-10 bg-zinc-900 text-white !rounded-xl !text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1 active:scale-95 transition-all shadow-xl"
-                  >
-                    <Zap size={10} fill="currentColor" /> Secure Checkout
-                  </button>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-2xl border-t border-zinc-100 p-4 z-[100] lg:hidden">
-              <button
-                onClick={() => setShowWaitlistModal(true)}
-                className="w-full h-14 bg-amber-400 text-black rounded-2xl font-black uppercase tracking-widest text-sm md:text-xs flex items-center justify-center gap-2 shadow-lg"
-              >
-                <BellRing size={16} /> Join Waitlist
-              </button>
-            </div>
           )}
 
-          {/* TRUST ELEMENTS BAR (Directly Under Actions) */}
-          <div className="flex flex-col gap-8 pt-16 border-t border-zinc-100 mt-16">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 lg:gap-12">
-              <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                <ShieldCheck className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secure Checkout</span>
+          <RecentlyViewed currentProductId={product._id} />
+
+          {/* RECOMMENDED PRODUCTS */}
+          {suggestions.length > 0 && (
+            <section className="container-responsive py-12 md:py-24 relative bg-zinc-50 border-t border-zinc-100 mt-24">
+              <div className="flex justify-between items-end mb-12 px-2">
+                <div>
+                  <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter">Recommended Artifacts</h2>
+                  <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Curated for your aesthetic</p>
+                </div>
+                <Link to="/shop" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors border-b border-zinc-200">View All</Link>
               </div>
-              <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                <RotateCcw className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">7 Days Return</span>
-              </div>
-              <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                <Lock className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secured Payment</span>
-              </div>
-              <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                <Award className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Authentic Product</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
+              <div className="relative flex items-center group/scroller">
+                <button
+                  onClick={() => scroll(recommendedRef, 'left')}
+                  className="absolute -left-2 md:-left-20 top-[30%] md:top-[35%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
+                </button>
+                <button
+                  onClick={() => scroll(recommendedRef, 'right')}
+                  className="absolute -right-2 md:-right-20 top-[30%] md:top-[35%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
+                </button>
 
-
-      {/* PREMIUM TABS SECTION */}
-
-      {/* PREMIUM TABS SECTION */}
-      <div className="container-responsive">
-        <div ref={reviewsRef} className="mt-32 space-y-12">
-          <div className="flex justify-center border-b border-zinc-100 overflow-x-auto no-scrollbar md:justify-start">
-            <button
-              onClick={() => setActiveTab('story')}
-              className={`px-4 py-3 md:px-10 md:py-6 !text-[10px] md:!text-sm font-bold uppercase tracking-widest relative shrink-0 transition-all ${activeTab === 'story' ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
-            >
-              Product Story
-              {activeTab === 'story' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
-            </button>
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`px-4 py-3 md:px-10 md:py-6 !text-[10px] md:!text-sm font-bold uppercase tracking-widest relative shrink-0 transition-all ${activeTab === 'reviews' ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
-            >
-              Verified Reviews ({product.numReviews})
-              {activeTab === 'reviews' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
-            </button>
-          </div>
-
-          <div className="min-h-[400px]">
-            {activeTab === 'story' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-1000">
-                <div className="max-w-4xl mx-auto py-12 md:py-20">
-                  <div className="space-y-12 text-center">
-                    <div className="space-y-4">
-                      <div className="flex justify-center items-center gap-4 mb-2">
-                        <div className="h-[1px] w-12 bg-zinc-900" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">The Slook Philosophy</span>
-                        <div className="h-[1px] w-12 bg-zinc-900" />
-                      </div>
-                      <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none">The Art of <span className="text-zinc-400">Creation</span></h2>
+                <div
+                  ref={recommendedRef}
+                  className="flex gap-3 md:gap-4 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10"
+                >
+                  {suggestions.map((item) => (
+                    <div key={item._id} className="w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0">
+                      <ProductCard product={item} />
                     </div>
-
-                    <p className="text-zinc-600 text-lg md:text-xl leading-relaxed font-medium italic max-w-3xl mx-auto px-4">
-                      {product.richDescription || product.story || `Every ${product.name} in our collection is a testament to the pursuit of perfection. Meticulously crafted with a focus on form, function, and the subtle interplay of materials, this item embodies our philosophy of elevated minimalism.`}
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-zinc-100">
-                      {[
-                        { title: 'Technical Precision', desc: 'Refined for an unparalleled experience.' },
-                        { title: 'Material Excellence', desc: 'Sourced from the finest local mills.' },
-                        { title: 'Authentic Design', desc: 'Guaranteed quality from our core studio.' }
-                      ].map((feature, i) => (
-                        <div key={i} className="space-y-2">
-                          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900">{feature.title}</p>
-                          <p className="text-[10px] text-zinc-500 leading-relaxed uppercase font-bold tracking-tight">{feature.desc}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-            )}
+            </section>
+          )}
 
-            {activeTab === 'reviews' && (
-              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-                  <div className="lg:col-span-4 space-y-12">
-                    <div className="space-y-6">
-                      <div className="flex items-baseline gap-2 md:gap-4">
-                        <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
-                        <div className="flex flex-col gap-1">
-                          <div className="flex text-black">
-                            {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
-                          </div>
-                          <p className="font-black uppercase tracking-widest text-zinc-400" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>Based on {product.numReviews} Reviews</p>
-                        </div>
-                      </div>
-                      <div className="space-y-3">
-                        {[5, 4, 3, 2, 1].map((star) => {
-                          const count = ratingDistribution[star] || 0;
-                          const percentage = product.numReviews > 0 ? (count / product.numReviews) * 100 : 0;
-                          return (
-                            <div key={star} className="flex items-center gap-4 group cursor-pointer">
-                              <span className="font-black text-zinc-900 w-2" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{star}</span>
-                              <div className="flex-1 h-1.5 md:h-2 bg-zinc-100 rounded-full overflow-hidden">
-                                <motion.div initial={{ width: 0 }} animate={{ width: `${percentage}%` }} transition={{ duration: 1, ease: "circOut" }} className="h-full bg-zinc-900" />
-                              </div>
-                              <span className="font-black text-zinc-300 group-hover:text-zinc-900 transition-colors w-6" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>{count}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
+          {/* AI SIZE CONSULTANT MODAL */}
+          <AnimatePresence>
+            {showSizeConsultant && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
+              >
+                <motion.div
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
+                  className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
+                >
+                  <div className="p-8 bg-zinc-900 text-white relative">
+                    <button onClick={() => setShowSizeConsultant(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
+                    <div className="flex items-center gap-4 mb-2">
+                      <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
+                      <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
                     </div>
-
-                    <div className="space-y-4 md:space-y-6 bg-zinc-50 p-4 md:p-8 rounded-2xl md:rounded-[2rem] border border-zinc-100">
-                      <div className="text-sm font-black uppercase tracking-widest text-zinc-900">Share Your Experience</div>
-                      <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
-                      <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Experience details..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner"></textarea>
-                      <button onClick={handleReviewSubmit} disabled={submitting} className="w-full bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-black active:scale-95 transition-all py-4">{submitting ? "Processing..." : "Submit Review"}</button>
-                    </div>
+                    <p className="text-zinc-400 text-sm md:text-xs font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
                   </div>
 
-                  <div className="lg:col-span-8 space-y-12">
-                    <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                      <div className="text-xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</div>
-                      <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-sm font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
-                        <option value="newest">Newest</option>
-                        <option value="highest">Best Rating</option>
-                        <option value="helpful">Helpful</option>
-                      </select>
-                    </div>
-                    <div className="space-y-16">
-                      {sortedReviews.map((rev, i) => (
-                        <div key={i} onClick={() => {
-                          const videos = rev.videos || (rev.video ? [rev.video] : []);
-                          const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                          const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
-                          setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
-                        }} className="space-y-6 group cursor-pointer">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-4">
-                              <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm text-zinc-900 border border-zinc-200">{rev.name?.charAt(0)}</div>
-                              <div className="space-y-1">
-                                <p className="font-bold text-sm text-zinc-900">{rev.name}</p>
-                                <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
-                              </div>
-                            </div>
-                            <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
+                  <div className="p-8 space-y-6">
+                    {!aiRecommendation ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 180"
+                              value={height}
+                              onChange={(e) => setHeight(e.target.value)}
+                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                            />
                           </div>
-                          <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
-                          <div className="flex gap-3 ml-12">
-                            {(rev.images || []).slice(0, 4).map((img, idx) => (
-                              <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all">
-                                <img src={img} className="w-full h-full object-cover" alt="" />
-                              </div>
+                          <div className="space-y-2">
+                            <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
+                            <input
+                              type="number"
+                              placeholder="e.g. 75"
+                              value={weight}
+                              onChange={(e) => setWeight(e.target.value)}
+                              className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-3">
+                          <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
+                          <div className="flex gap-2">
+                            {['Slim', 'Standard', 'Oversized'].map(fit => (
+                              <button
+                                key={fit}
+                                onClick={() => setFitPreference(fit)}
+                                className={`flex-1 py-3 rounded-xl text-sm md:text-xs font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+                              >
+                                {fit}
+                              </button>
                             ))}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
 
-      {/* LIGHTBOX MODAL */}
-      {showLightbox && (
-        <div className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center" onClick={() => setShowLightbox(false)}>
-          <button className="absolute top-8 right-8 text-white/50 hover:text-white p-3 bg-white/10 rounded-full transition-colors z-[210]"><X size={32} /></button>
-          <div className="relative w-full max-w-6xl h-full flex items-center justify-center p-12" onClick={e => e.stopPropagation()}>
-            <button
-              disabled={lightboxIndex === 0}
-              onClick={() => setLightboxIndex(prev => prev - 1)}
-              className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
-            >
-              <ChevronLeft size={32} />
-            </button>
-            <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
-            <button
-              disabled={lightboxIndex === mediaItems.length - 1}
-              onClick={() => setLightboxIndex(prev => prev + 1)}
-              className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
-            >
-              <ChevronRight size={32} />
-            </button>
+                        <button
+                          disabled={!height || !weight}
+                          onClick={() => {
+                            const h = parseInt(height);
+                            const w = parseInt(weight);
+                            let baseSize = 'M';
+                            if (h > 185 || w > 85) baseSize = 'XL';
+                            else if (h > 175 || w > 70) baseSize = 'L';
+                            else if (h < 165 || w < 55) baseSize = 'S';
 
-            <div className="absolute bottom-12 flex gap-3">
-              {mediaItems.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setLightboxIndex(i)}
-                  className={`w-2 h-2 rounded-full transition-all ${lightboxIndex === i ? 'bg-white scale-150' : 'bg-white/30'}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <RecentlyViewed currentProductId={product._id} />
-
-      {/* RECOMMENDED PRODUCTS */}
-      {suggestions.length > 0 && (
-        <section className="container-responsive py-12 md:py-24 relative bg-zinc-50 border-t border-zinc-100 mt-24">
-          <div className="flex justify-between items-end mb-12 px-2">
-            <div>
-              <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter">Recommended Artifacts</h2>
-              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mt-1">Curated for your aesthetic</p>
-            </div>
-            <Link to="/shop" className="text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors border-b border-zinc-200">View All</Link>
-          </div>
-
-          <div className="relative flex items-center group/scroller">
-            <button
-              onClick={() => scroll(recommendedRef, 'left')}
-              className="absolute -left-2 md:-left-20 top-[30%] md:top-[35%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"
-            >
-              <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
-            </button>
-            <button
-              onClick={() => scroll(recommendedRef, 'right')}
-              className="absolute -right-2 md:-right-20 top-[30%] md:top-[35%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"
-            >
-              <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
-            </button>
-
-            <div
-              ref={recommendedRef}
-              className="flex gap-3 md:gap-4 w-full overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10"
-            >
-              {suggestions.map((item) => (
-                <div key={item._id} className="w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0">
-                  <ProductCard product={item} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* AI SIZE CONSULTANT MODAL */}
-      <AnimatePresence>
-        {showSizeConsultant && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[300] flex items-center justify-center p-6 bg-black/80 backdrop-blur-sm"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className="bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl"
-            >
-              <div className="p-8 bg-zinc-900 text-white relative">
-                <button onClick={() => setShowSizeConsultant(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
-                <div className="flex items-center gap-4 mb-2">
-                  <div className="p-3 bg-amber-400 rounded-full text-black"><Award size={24} /></div>
-                  <h2 className="text-xl font-black uppercase tracking-tighter italic">AI Size <span className="text-amber-400">Consultant</span></h2>
-                </div>
-                <p className="text-zinc-400 text-sm md:text-xs font-black uppercase tracking-[0.3em]">Neural Fit Analysis Engine</p>
-              </div>
-
-              <div className="p-8 space-y-6">
-                {!aiRecommendation ? (
-                  <>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Height (cm)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 180"
-                          value={height}
-                          onChange={(e) => setHeight(e.target.value)}
-                          className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Weight (kg)</label>
-                        <input
-                          type="number"
-                          placeholder="e.g. 75"
-                          value={weight}
-                          onChange={(e) => setWeight(e.target.value)}
-                          className="w-full bg-zinc-50 border border-zinc-100 rounded-2xl px-5 py-4 text-sm font-bold outline-none focus:border-black transition-all"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <label className="text-sm md:text-xs font-black uppercase tracking-widest text-zinc-400 ml-1">Fit Preference</label>
-                      <div className="flex gap-2">
-                        {['Slim', 'Standard', 'Oversized'].map(fit => (
+                            setAiRecommendation({
+                              size: baseSize,
+                              confidence: 94,
+                              reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
+                            });
+                          }}
+                          className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-xs shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
+                        >
+                          Analyze Profile
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
+                        <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
+                          {aiRecommendation.size}
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
+                          <p className="text-sm md:text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
+                        </div>
+                        <div className="flex gap-3">
                           <button
-                            key={fit}
-                            onClick={() => setFitPreference(fit)}
-                            className={`flex-1 py-3 rounded-xl text-sm md:text-xs font-black uppercase tracking-widest border transition-all ${fitPreference === fit ? 'bg-black text-white border-black shadow-lg shadow-black/10' : 'bg-white text-zinc-400 border-zinc-100 hover:border-zinc-300'}`}
+                            onClick={() => {
+                              setAiRecommendation(null);
+                              setHeight('');
+                              setWeight('');
+                            }}
+                            className="flex-1 py-4 border border-zinc-100 rounded-2xl text-sm md:text-xs font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
                           >
-                            {fit}
+                            Reset
                           </button>
-                        ))}
+                          <button
+                            onClick={() => {
+                              setSelectedSize(aiRecommendation.size);
+                              setShowSizeConsultant(false);
+                              setAiRecommendation(null);
+                              setSelectedColor(selectedColor); // Trigger re-render
+                            }}
+                            className="flex-[2] py-4 bg-black text-white rounded-2xl text-sm md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
+                          >
+                            Apply {aiRecommendation.size}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-
-                    <button
-                      disabled={!height || !weight}
-                      onClick={() => {
-                        const h = parseInt(height);
-                        const w = parseInt(weight);
-                        let baseSize = 'M';
-                        if (h > 185 || w > 85) baseSize = 'XL';
-                        else if (h > 175 || w > 70) baseSize = 'L';
-                        else if (h < 165 || w < 55) baseSize = 'S';
-
-                        setAiRecommendation({
-                          size: baseSize,
-                          confidence: 94,
-                          reason: `Based on your ${fitPreference.toLowerCase()} preference and BMI profile.`
-                        });
-                      }}
-                      className="w-full bg-zinc-900 text-white py-5 rounded-2xl font-black uppercase tracking-[0.2em] text-sm md:text-xs shadow-xl hover:bg-black active:scale-95 transition-all disabled:opacity-20"
-                    >
-                      Analyze Profile
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center space-y-4 py-4 animate-in zoom-in duration-500">
-                    <div className="w-20 h-20 bg-zinc-900 text-white rounded-2xl flex items-center justify-center text-3xl font-black mx-auto shadow-lg">
-                      {aiRecommendation.size}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-black uppercase tracking-tight">Recommended Size</h4>
-                      <p className="text-sm md:text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">{aiRecommendation.reason}</p>
-                    </div>
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => {
-                          setAiRecommendation(null);
-                          setHeight('');
-                          setWeight('');
-                        }}
-                        className="flex-1 py-4 border border-zinc-100 rounded-2xl text-sm md:text-xs font-black uppercase tracking-widest hover:bg-zinc-50 transition-all text-zinc-400"
-                      >
-                        Reset
-                      </button>
-                      <button
-                        onClick={() => {
-                          setSelectedSize(aiRecommendation.size);
-                          setShowSizeConsultant(false);
-                          setAiRecommendation(null);
-                          setSelectedColor(selectedColor); // Trigger re-render
-                        }}
-                        className="flex-[2] py-4 bg-black text-white rounded-2xl text-sm md:text-xs font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-xl"
-                      >
-                        Apply {aiRecommendation.size}
-                      </button>
-                    </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
     </div>
   );
 };
