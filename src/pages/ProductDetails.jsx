@@ -386,34 +386,6 @@ const ProductDetails = () => {
     }
   })();
 
-  if (loading) return (
-    <div className="bg-white min-h-screen pt-40 md:pt-48 pb-20 font-sans">
-      <div className="container-responsive">
-        <Skeleton className="h-4 w-48 mb-10 rounded-full" />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-20">
-          <div className="lg:col-span-7">
-            <Skeleton className="aspect-square w-full rounded-[2.5rem]" />
-            <div className="grid grid-cols-4 gap-4 mt-6">
-              {[...Array(4)].map((_, i) => <Skeleton key={i} className="aspect-square rounded-2xl" />)}
-            </div>
-          </div>
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24 rounded-full" />
-              <Skeleton className="h-12 w-full rounded-2xl" />
-              <Skeleton className="h-8 w-32 rounded-full" />
-            </div>
-            <Skeleton className="h-16 w-full rounded-full mt-10" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (!product) return (
-    <div className="h-screen flex items-center justify-center">Product Not Found</div>
-  );
-
   return (
     <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 font-sans text-[#1a1a1a] selection:bg-black selection:text-white">
       <Helmet>

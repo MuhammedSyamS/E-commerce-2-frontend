@@ -183,12 +183,12 @@ const CartDrawer = () => {
       <div className="relative w-full sm:max-w-[420px] bg-[#f8f8f8] h-full shadow-2xl flex flex-col animate-in slide-in-from-right duration-500">
 
         {/* Header - Premium Dark Header for Contrast */}
-        <div className="p-6 flex items-center justify-between bg-black text-white border-b border-white/10 shadow-lg">
+        <div className="p-3 md:p-4 flex items-center justify-between bg-black text-white border-b border-white/10 shadow-lg">
           <div className="flex items-center gap-3">
-            <ShoppingBag size={18} className="text-amber-400 animate-pulse" />
+            <ShoppingBag size={16} className="text-amber-400 animate-pulse" />
             <h2 className="font-black uppercase tracking-[0.2em] text-[8px] md:text-[9px]">Your Selection</h2>
           </div>
-          <button onClick={() => toggleCart(false)} className="p-2 hover:bg-white/10 rounded-full transition"><X size={20} /></button>
+          <button onClick={() => toggleCart(false)} className="p-1.5 hover:bg-white/10 rounded-full transition"><X size={18} /></button>
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar p-4 md:p-5 space-y-8 bg-zinc-50/50">
@@ -196,11 +196,11 @@ const CartDrawer = () => {
             <>
               {/* ITEM CARDS */}
               {/* SCARCITY ALERT */}
-              <div className="bg-red-50 border border-red-100 p-3 md:p-4 rounded-2xl mb-8 flex items-center gap-2 md:gap-4 animate-pulse">
-                <div className="bg-red-500 text-white p-2 rounded-full"><Flame size={14} md:size={16} fill="currentColor" /></div>
+              <div className="bg-red-50 border border-red-100 p-2 md:p-2.5 rounded-2xl mb-6 flex items-center gap-3 animate-pulse">
+                <div className="bg-red-500 text-white p-1.5 rounded-full"><Flame size={12} fill="currentColor" /></div>
                 <div>
-                  <p className="text-[10px] md:text-[10px] font-black uppercase tracking-normal md:tracking-tight text-red-900">High Demand Artifacts</p>
-                  <p className="text-[9px] md:text-[10px] font-bold text-red-600 uppercase tracking-normal md:tracking-widest">Items in bag are reserved for 10:00</p>
+                  <p className="text-[9px] font-black uppercase tracking-tight text-red-900 leading-none mb-0.5">High Demand Artifacts</p>
+                  <p className="text-[8px] md:text-[9px] font-bold text-red-600 uppercase tracking-widest leading-none">Items in bag are reserved for 10:00</p>
                 </div>
               </div>
 
@@ -401,7 +401,7 @@ const CartDrawer = () => {
         </div>
 
         {cartItems.length > 0 && (
-          <div className="p-4 md:p-8 bg-[#fdfdfd] border-t border-zinc-200/60 space-y-6 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
+          <div className="p-3 md:p-4 bg-[#fdfdfd] border-t border-zinc-200/60 space-y-4 shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
 
             {/* FREE SHIPPING PROGRESS BAR */}
             {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
@@ -425,14 +425,14 @@ const CartDrawer = () => {
 
             {/* LOYALTY EARNINGS */}
             {user && (
-              <div className="bg-amber-50/50 border border-amber-100/50 p-3 rounded-xl flex items-center justify-between">
+              <div className="bg-amber-50/50 border border-amber-100/50 p-2 rounded-xl flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
-                  <span className="text-[10px] md:text-[9px] font-bold uppercase text-amber-900 tracking-wide">
+                  <div className="bg-amber-400 text-white p-0.5 rounded-full"><Ticket size={10} fill="currentColor" /></div>
+                  <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
                     Earn {Math.floor(total / 100)} Coins
                   </span>
                 </div>
-                <span className="text-[9px] font-bold text-amber-900">
+                <span className="text-[8px] md:text-[9px] font-bold text-amber-900">
                   Balance: {user.loyaltyPoints || 0}
                 </span>
               </div>
@@ -465,7 +465,7 @@ const CartDrawer = () => {
                 toggleCart(false);
                 navigate('/checkout');
               }}
-              className="w-full bg-black text-white py-4 md:py-5 rounded-xl font-black uppercase tracking-[0.2em] text-[11px] md:text-[10px] flex items-center justify-center gap-2 md:gap-3 active:scale-[0.98] hover:bg-zinc-900 transition-all shadow-xl shadow-black/10 group px-4"
+              className="w-full bg-black text-white py-3 md:py-4 rounded-xl font-black uppercase tracking-[0.2em] text-[10px] md:text-[10px] flex items-center justify-center gap-2 md:gap-3 active:scale-[0.98] hover:bg-zinc-900 transition-all shadow-xl shadow-black/10 group px-4"
             >
               <span>Secure <span className="text-amber-400 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight className="w-3.5 h-3.5 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
