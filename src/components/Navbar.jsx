@@ -278,76 +278,94 @@ const Navbar = () => {
 
           {/* 3. RIGHT SECTION (ICONS) */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
-            <button onClick={toggleSearch} className="relative group">
+            <button onClick={toggleSearch} className="relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
 
+            {/* WISHLIST (Desktop Only) */}
+            <Link to="/wishlist" className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
+              <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+              {wishlistCount > 0 && (
+                <span className="absolute top-1 right-1 bg-white text-black text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black ring-2 ring-black">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
+            {/* CART (Desktop Only) */}
+            <button onClick={toggleCart} className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
+              <ShoppingBag className={`w-5 h-5 text-white transition hover:text-zinc-400 ${cartCount > 0 ? 'fill-white' : ''}`} />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-1 bg-white text-black text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black ring-2 ring-black">
+                  {cartCount}
+                </span>
+              )}
+            </button>
 
             {/* NOTIFICATIONS BELL */}
-            {user && (
-              <div className="relative group">
-                <button
-                  onClick={() => {
-                    if (window.innerWidth < 768) {
-                      navigate('/account/notifications');
-                    } else {
-                      setShowNotif(!showNotif);
-                    }
-                  }}
-                  className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
-                >
-                  <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
-                  {unreadCount > 0 && (
-                    <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
+            <div className="relative group">
+              <button
+                onClick={() => {
+                  if (!user) { navigate('/login'); return; }
+                  if (window.innerWidth < 768) {
+                    navigate('/account/notifications');
+                  } else {
+                    setShowNotif(!showNotif);
+                  }
+                }}
+                className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
+              >
+                <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
+                    {unreadCount}
+                  </span>
+                )}
+              </button>
 
-                {/* NOTIFICATION DROPDOWN */}
-                {showNotif && (
-                  <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
-                    <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
-                      <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
-                        <h3 className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
-                        <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
-                      </div>
-                      <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
-                        {!Array.isArray(notifications) || notifications.length === 0 ? (
-                          <div className="p-8 text-center flex flex-col items-center gap-2">
-                            <Bell size={24} className="text-zinc-200" />
-                            <p className="text-sm md:text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
-                          </div>
-                        ) : (
-                          notifications.map(n => (
-                            <div
-                              key={n._id}
-                              onClick={() => handleNotificationClick(n)}
-                              className={`p-4 border-b border-zinc-50 hover:bg-white/80 transition cursor-pointer relative group/item ${n.isRead ? 'opacity-60 bg-transparent' : 'bg-white/60'}`}
-                            >
-                              {!n.isRead && <div className="absolute right-4 top-4 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
-                              <div className="flex gap-4">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.type === 'promo' ? 'bg-amber-100 text-amber-600' : (n.type === 'order' ? 'bg-zinc-100 text-black' : 'bg-blue-50 text-blue-600')}`}>
-                                  {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-[10px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
-                                  <p className="text-[9px] text-zinc-600 leading-relaxed">{n.message}</p>
-                                  <p className="text-sm md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
-                                </div>
+              {/* NOTIFICATION DROPDOWN */}
+              {showNotif && (
+                <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
+                  <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
+                    <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
+                      <h3 className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
+                      <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
+                    </div>
+                    <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
+                      {!Array.isArray(notifications) || notifications.length === 0 ? (
+                        <div className="p-8 text-center flex flex-col items-center gap-2">
+                          <Bell size={24} className="text-zinc-200" />
+                          <p className="text-sm md:text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
+                        </div>
+                      ) : (
+                        notifications.map(n => (
+                          <div
+                            key={n._id}
+                            onClick={() => handleNotificationClick(n)}
+                            className={`p-4 border-b border-zinc-50 hover:bg-white/80 transition cursor-pointer relative group/item ${n.isRead ? 'opacity-60 bg-transparent' : 'bg-white/60'}`}
+                          >
+                            {!n.isRead && <div className="absolute right-4 top-4 w-1.5 h-1.5 bg-blue-500 rounded-full"></div>}
+                            <div className="flex gap-4">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${n.type === 'promo' ? 'bg-amber-100 text-amber-600' : (n.type === 'order' ? 'bg-zinc-100 text-black' : 'bg-blue-50 text-blue-600')}`}>
+                                {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-[10px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
+                                <p className="text-[9px] text-zinc-600 leading-relaxed">{n.message}</p>
+                                <p className="text-sm md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                               </div>
                             </div>
-                          ))
-                        )}
-                      </div>
-                      <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
-                        <Link to="/account/notifications" className="text-sm md:text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
-                      </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
+                      <Link to="/account/notifications" className="text-sm md:text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
                     </div>
                   </div>
-                )}
-              </div>
-            )}
+                </div>
+              )}
+            </div>
 
             {/* ADMIN / STAFF PANEL LINK */}
             {(() => {
@@ -456,8 +474,23 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+                <button
+                  onClick={() => {
+                    setIsMenuOpen(false);
+                    if (!user) { navigate('/login'); return; }
+                    navigate('/account/notifications');
+                  }}
+                  className="text-white p-2 bg-white/5 rounded-full relative"
+                >
+                  <Bell size={14} />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
                 <div onClick={() => { setIsMenuOpen(false); toggleCart(); }} className="text-white p-2 bg-white/5 rounded-full relative">
-                  <ShoppingBag size={14} />
+                  <ShoppingBag size={14} className={cartCount > 0 ? 'fill-white' : ''} />
                   {cartCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">
                       {cartCount}

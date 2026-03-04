@@ -55,18 +55,16 @@ const SocialFeed = () => {
     const [activeLook, setActiveLook] = useState(null);
 
     const handleAddFullLook = (look) => {
+        if (!look.products?.length) return;
+
         look.products.forEach(prod => {
             addToCart({
-                _id: prod._id, // This should ideally be a real ID, but slug-based lookup might be safer if IDs aren't available
-                name: prod.name,
-                price: prod.price,
-                image: prod.image,
+                ...prod,
                 quantity: 1,
-                selectedVariant: null // Optional: add default variant if needed
+                selectedVariant: null
             });
         });
-        success("Full Look Added to Cart! ✨");
-        toggleCart(true); // Open cart to show progress
+        success("Full Look Added to Bag! ✨");
     };
 
     const handleToggleLike = async (lookId) => {

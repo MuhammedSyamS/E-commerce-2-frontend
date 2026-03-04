@@ -7,7 +7,7 @@ import api from '../api/instance';
 import Price from './Price';
 
 const QuickView = ({ product, isOpen, onClose }) => {
-    const { user, setUser, toggleCart } = useStore();
+    const { user, setUser, toggleCart, addToCart } = useStore();
     const { success, error } = useToast();
     const navigate = useNavigate();
     const [selectedSize, setSelectedSize] = useState(null);
@@ -28,31 +28,22 @@ const QuickView = ({ product, isOpen, onClose }) => {
     if (!isOpen || !product) return null;
 
     const handleAddToCart = async () => {
-        if (!user) {
-            error("Please login to shop");
-            return navigate('/login');
-        }
-
         setLoading(true);
         try {
             const variant = product.variants?.find(v => v.size === selectedSize && v.color === selectedColor);
 
-            const { data } = await api.post('/cart/add', {
-                productId: product._id,
-                name: product.name,
+            await addToCart({
+                ...product,
                 price: variant?.price || product.price,
                 image: variant?.image || product.image,
-                selectedVariant: variant ? { size: selectedSize, color: selectedColor } : null
-            }, {
-                headers: { Authorization: `Bearer ${user.token}` }
+                selectedVariant: variant ? { size: selectedSize, color: selectedColor } : null,
+                quantity: 1
             });
 
-            setUser({ ...user, cart: data });
             success(`Added ${product.name} to bag`);
-            toggleCart(true);
             onClose();
         } catch (err) {
-            error(err.response?.data?.message || "Failed to add to bag");
+            error("Failed to add to bag");
         } finally {
             setLoading(false);
         }

@@ -91,10 +91,13 @@ export const useStore = create(
       addToCart: async (product) => {
         const state = get();
         const currentCart = state.user ? (state.user.cart || []) : state.cart;
+        const productId = product._id;
 
         // 1. Optimistic Update
+        // Check both `item.product` (backend format) and `item._id` (optimistic format)
         const existingItem = currentCart.find((item) => {
-          const sameId = item._id === product._id;
+          const itemProductId = (item.product?._id || item.product || item._id || '').toString();
+          const sameId = itemProductId === productId;
           const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
           return sameId && sameVariant;
         });
@@ -102,27 +105,29 @@ export const useStore = create(
         let updatedCart;
         if (existingItem) {
           updatedCart = currentCart.map((item) => {
-            const sameId = item._id === product._id;
+            const itemProductId = (item.product?._id || item.product || item._id || '').toString();
+            const sameId = itemProductId === productId;
             const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
             if (sameId && sameVariant) {
-              return { ...item, quantity: item.quantity + (product.quantity || 1) };
+              return { ...item, quantity: (item.quantity || 1) + (product.quantity || 1) };
             }
             return item;
           });
         } else {
-          updatedCart = [...currentCart, { ...product, quantity: product.quantity || 1 }];
+          // Store with `product` field to match backend format
+          updatedCart = [...currentCart, { ...product, product: productId, quantity: product.quantity || 1 }];
         }
 
         if (state.user) {
-          set({ user: { ...state.user, cart: updatedCart } });
+          set({ user: { ...state.user, cart: updatedCart }, isCartOpen: true });
         } else {
-          set({ cart: updatedCart });
+          set({ cart: updatedCart, isCartOpen: true });
         }
 
         // 2. Backend Sync
         if (state.user?.token) {
           try {
-            await api.post('/cart/add', {
+            const { data } = await api.post('/cart/add', {
               productId: product._id,
               name: product.name,
               price: product.price,
@@ -130,6 +135,8 @@ export const useStore = create(
               quantity: product.quantity || 1,
               selectedVariant: product.selectedVariant
             }, { headers: { Authorization: `Bearer ${state.user.token}` } });
+            // Sync with backend response to get correct _id fields
+            set({ user: { ...get().user, cart: data } });
           } catch (err) {
             console.error("Cart sync failed:", err);
           }

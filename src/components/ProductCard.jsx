@@ -8,7 +8,7 @@ import Price from './Price';
 import QuickView from './QuickView';
 
 const ProductCard = ({ product, onAddToCart }) => {
-  const { user, setUser, toggleCart, flashSale } = useStore();
+  const { user, setUser, toggleCart, flashSale, addToCart } = useStore();
   const navigate = useNavigate();
   const { success, error, info } = useToast();
   const [loading, setLoading] = useState(false);
@@ -61,11 +61,6 @@ const ProductCard = ({ product, onAddToCart }) => {
       return;
     }
 
-    if (!user) {
-      error("Please login to shop");
-      return navigate('/login');
-    }
-
     setCartLoading(true);
     try {
       const variantData = hasVariants ? {
@@ -73,23 +68,18 @@ const ProductCard = ({ product, onAddToCart }) => {
         color: selectedColor || product.variants[0].color
       } : null;
 
-      const { data } = await api.post('/cart/add', {
-        productId: product._id,
-        name: product.name,
+      await addToCart({
+        ...product,
         price: isFlashSale ? discountPrice : product.price,
-        image: product.image,
-        selectedVariant: variantData
-      }, {
-        headers: { Authorization: `Bearer ${user.token}` }
+        selectedVariant: variantData,
+        quantity: 1
       });
 
-      setUser({ ...user, cart: data });
       success(`Added ${product.name} to bag`);
-      toggleCart(true);
       setShowQuickAdd(false);
       if (onAddToCart) onAddToCart();
     } catch (err) {
-      error(err.response?.data?.message || "Failed to add to bag");
+      error("Failed to add to bag");
     } finally {
       setCartLoading(false);
     }
