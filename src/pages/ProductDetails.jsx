@@ -931,7 +931,46 @@ const ProductDetails = () => {
                           <div className="text-sm font-black uppercase tracking-widest text-zinc-900">Share Your Experience</div>
                           <div className="flex gap-1.5">{[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={24} className={`${ratingInput >= n ? 'fill-zinc-900 text-zinc-900' : 'text-zinc-200'} cursor-pointer transition-all hover:scale-110 active:scale-90`} />)}</div>
                           <textarea value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Experience details..." className="w-full bg-white border border-zinc-200 rounded-xl p-5 text-sm h-32 outline-none focus:border-zinc-900 transition-all resize-none shadow-inner"></textarea>
-                          <button onClick={handleReviewSubmit} disabled={submitting} className="w-full bg-zinc-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-black active:scale-95 transition-all py-4">{submitting ? "Processing..." : "Submit Review"}</button>
+
+                          {/* MEDIA UPLOAD PREVIEWS */}
+                          {(reviewImages.length > 0 || reviewVideos.length > 0) && (
+                            <div className="flex flex-wrap gap-3">
+                              {reviewImages.map((img, idx) => (
+                                <div key={`img-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-200 shadow-sm">
+                                  <img src={img} className="w-full h-full object-cover" alt="Preview" />
+                                  <button onClick={() => setReviewImages(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors">
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                              {reviewVideos.map((vid, idx) => (
+                                <div key={`vid-${idx}`} className="relative w-16 h-16 rounded-lg overflow-hidden border border-zinc-200 bg-black shadow-sm">
+                                  <video src={vid} className="w-full h-full object-cover opacity-60" />
+                                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                    <Play size={12} fill="white" className="text-white" />
+                                  </div>
+                                  <button onClick={() => setReviewVideos(prev => prev.filter((_, i) => i !== idx))} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors pointer-events-auto z-10">
+                                    <X size={10} />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="flex gap-3">
+                            <label className="flex-1 flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-600 rounded-xl font-bold uppercase tracking-widest text-xs py-3.5 cursor-pointer hover:bg-zinc-50 hover:border-zinc-300 transition-all hover:-translate-y-0.5 shadow-sm">
+                              {uploading ? <Loader2 size={16} className="animate-spin text-zinc-400" /> : <Camera size={16} />}
+                              <span>{uploading ? 'Processing...' : 'Add Photos'}</span>
+                              <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploading} />
+                            </label>
+                            <label className="flex-1 flex items-center justify-center gap-2 bg-white border border-zinc-200 text-zinc-600 rounded-xl font-bold uppercase tracking-widest text-xs py-3.5 cursor-pointer hover:bg-zinc-50 hover:border-zinc-300 transition-all hover:-translate-y-0.5 shadow-sm">
+                              {uploading ? <Loader2 size={16} className="animate-spin text-zinc-400" /> : <Video size={16} />}
+                              <span>{uploading ? 'Processing...' : 'Add Videos'}</span>
+                              <input type="file" multiple accept="video/*" className="hidden" onChange={handleVideoUpload} disabled={uploading} />
+                            </label>
+                          </div>
+
+                          <button onClick={handleReviewSubmit} disabled={submitting || uploading} className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl font-black uppercase tracking-widest shadow-xl hover:shadow-2xl active:scale-95 transition-all py-4 flex justify-center items-center gap-2">{submitting || uploading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {submitting || uploading ? "Processing..." : "Submit Review"}</button>
                         </div>
                       </div>
 
