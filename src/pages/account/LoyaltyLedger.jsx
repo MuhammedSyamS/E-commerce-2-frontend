@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Coins, TrendingUp, TrendingDown,
-    Calendar, Gift, RotateCcw, UserPlus, Sparkles
+    Calendar, Gift, RotateCcw, UserPlus, Sparkles,
+    Clock, ShoppingBag, AlertTriangle
 } from 'lucide-react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
@@ -20,42 +21,151 @@ const LoyaltyLedger = () => {
     const navigate = useNavigate();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
+    // Use local state directly from the self-healing API response
+    const [freshPoints, setFreshPoints] = useState(null);
+    const [freshTotalSpent, setFreshTotalSpent] = useState(null);
+    const [freshTier, setFreshTier] = useState(null);
 
     useEffect(() => {
-        const fetchHistory = async () => {
+        const fetchData = async () => {
+            if (!user) { navigate('/login'); return; }
             try {
-                const { data } = await api.get('/users/loyalty-history', {
-                    headers: { Authorization: `Bearer ${user.token}` }
-                });
-                setTransactions(data);
+                const config = { headers: { Authorization: `Bearer ${user.token}` } };
+
+                // Fire all calls in parallel
+                const [historyRes, profileRes, ordersRes] = await Promise.all([
+                    api.get('/users/loyalty-history', config),
+                    api.get('/users/profile', config),
+                    api.get('/orders/myorders', config).catch(() => ({ data: [] }))
+                ]);
+
+                // History: new shape { transactions, loyaltyPoints, totalSpent } or plain array
+                const histData = historyRes.data;
+                const txList = histData.transactions ?? histData;
+                const apiPoints = histData.loyaltyPoints ?? null;
+
+                setTransactions(Array.isArray(txList) ? txList : []);
+                if (apiPoints !== null) setFreshPoints(apiPoints);
+
+                // Calculate totalSpent from actual orders (handles COD isPaid=false)
+                const orders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+                const calculatedSpent = orders
+                    .filter(o => !['Cancelled', 'Returned', 'Refunded'].includes(o.orderStatus))
+                    .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+
+                // Use calculated > profile > api fallback
+                const profileSpent = profileRes.data.totalSpent ?? 0;
+                const finalSpent = calculatedSpent > 0 ? calculatedSpent : profileSpent;
+                setFreshTotalSpent(finalSpent);
+
+                // Tier calculation (Client-side source of truth for UI)
+                const profileTier = profileRes.data.membershipTier ?? 'Bronze';
+                let calculatedTier = 'Bronze';
+                if (finalSpent >= 50000) calculatedTier = 'Platinum';
+                else if (finalSpent >= 20000) calculatedTier = 'Gold';
+                else if (finalSpent >= 5000) calculatedTier = 'Silver';
+
+                // Use the highest tier between what the server thinks and what we calculated
+                const finalTier = [profileTier, calculatedTier].includes('Platinum') ? 'Platinum' :
+                    ([profileTier, calculatedTier].includes('Gold') ? 'Gold' :
+                        ([profileTier, calculatedTier].includes('Silver') ? 'Silver' : 'Bronze'));
+
+                setFreshTier(finalTier);
+
+                // Sync store in background
+                refreshUser();
             } catch (err) {
-                console.error('Failed to fetch loyalty history', err);
+                console.error('Failed to fetch loyalty data', err);
             } finally {
                 setLoading(false);
             }
         };
-        if (user) { fetchHistory(); refreshUser(); }
-        else navigate('/login');
+        fetchData();
     }, []);  // eslint-disable-line
 
-    const points = user?.loyaltyPoints || 0;
-    const tierName = user?.tier || 'Bronze';
-    const nextTier = TIERS.find(t => t.threshold > points);
+    // Calculate coin balance directly from the transaction list (source of truth on screen)
+    // earn/bonus/referral/refund = credits, spend/expire = debits
+    const calculatedPoints = transactions.reduce((sum, tx) => {
+        if (['earn', 'bonus', 'referral', 'refund'].includes(tx.type)) return sum + (tx.amount || 0);
+        if (['spend', 'expire'].includes(tx.type)) return sum - (tx.amount || 0);
+        return sum;
+    }, 0);
+    const points = Math.max(0, freshPoints !== null ? freshPoints : calculatedPoints);
+    const totalSpent = freshTotalSpent ?? user?.totalSpent ?? 0;
+    const tierName = freshTier ?? user?.membershipTier ?? 'Bronze';
+    const nextTier = TIERS.find(t => t.threshold > totalSpent);
     const nextThreshold = nextTier?.threshold || 50000;
     // Determine the previous tier's threshold to calculate progress within current bracket
-    const currentTierObj = [...TIERS].reverse().find(t => points >= t.threshold) || TIERS[0];
+    const currentTierObj = [...TIERS].reverse().find(t => totalSpent >= t.threshold) || TIERS[0];
     const prevThreshold = currentTierObj.threshold;
     const bracket = nextThreshold - prevThreshold;
-    const progressPct = bracket > 0 ? Math.min(100, ((points - prevThreshold) / bracket) * 100) : 100;
+    const progressPct = bracket > 0 ? Math.min(100, ((totalSpent - prevThreshold) / bracket) * 100) : 100;
 
-    const getIcon = (type) => {
-        switch (type) {
-            case 'earn': return <TrendingUp className="text-green-500" size={14} />;
-            case 'spend': return <TrendingDown className="text-red-500" size={14} />;
-            case 'bonus': return <Gift className="text-purple-500" size={14} />;
-            case 'refund': return <RotateCcw className="text-blue-500" size={14} />;
-            case 'referral': return <UserPlus className="text-amber-500" size={14} />;
-            default: return <Coins size={14} />;
+    const getTransactionMeta = (tx) => {
+        switch (tx.type) {
+            case 'earn':
+                return {
+                    icon: <ShoppingBag size={14} />,
+                    bg: 'bg-green-50',
+                    text: 'text-green-600',
+                    badge: 'bg-green-100 text-green-700',
+                    label: 'Order Reward',
+                    amountColor: 'text-green-600'
+                };
+            case 'spend':
+                return {
+                    icon: <TrendingDown size={14} />,
+                    bg: 'bg-red-50',
+                    text: 'text-red-500',
+                    badge: 'bg-red-100 text-red-700',
+                    label: 'Coins Used',
+                    amountColor: 'text-red-500'
+                };
+            case 'bonus':
+                return {
+                    icon: <Gift size={14} />,
+                    bg: 'bg-purple-50',
+                    text: 'text-purple-500',
+                    badge: 'bg-purple-100 text-purple-700',
+                    label: 'Bonus',
+                    amountColor: 'text-purple-600'
+                };
+            case 'refund':
+                return {
+                    icon: <RotateCcw size={14} />,
+                    bg: 'bg-blue-50',
+                    text: 'text-blue-500',
+                    badge: 'bg-blue-100 text-blue-700',
+                    label: 'Product Return',
+                    amountColor: 'text-blue-600'
+                };
+            case 'referral':
+                return {
+                    icon: <UserPlus size={14} />,
+                    bg: 'bg-amber-50',
+                    text: 'text-amber-600',
+                    badge: 'bg-amber-100 text-amber-800',
+                    label: 'Referral Bonus',
+                    amountColor: 'text-amber-600'
+                };
+            case 'expire':
+                return {
+                    icon: <AlertTriangle size={14} />,
+                    bg: 'bg-zinc-100',
+                    text: 'text-zinc-500',
+                    badge: 'bg-zinc-200 text-zinc-600',
+                    label: 'Expired',
+                    amountColor: 'text-zinc-500'
+                };
+            default:
+                return {
+                    icon: <Coins size={14} />,
+                    bg: 'bg-zinc-50',
+                    text: 'text-zinc-500',
+                    badge: 'bg-zinc-100 text-zinc-500',
+                    label: 'Transaction',
+                    amountColor: 'text-zinc-600'
+                };
         }
     };
 
@@ -111,7 +221,7 @@ const LoyaltyLedger = () => {
                         <div className="space-y-2">
                             <div className="flex justify-between text-[9px] font-bold uppercase tracking-widest text-zinc-400">
                                 <span>{nextTier ? `Progress to ${nextTier.name}` : 'Max Tier Reached'}</span>
-                                <span>{progressPct.toFixed(0)}%</span>
+                                <span>₹{totalSpent.toLocaleString()} spent</span>
                             </div>
                             <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                                 <div
@@ -121,7 +231,7 @@ const LoyaltyLedger = () => {
                             </div>
                             {nextTier && (
                                 <p className="text-[9px] text-zinc-500 font-medium">
-                                    {(nextThreshold - points).toLocaleString()} more coins to reach {nextTier.name}
+                                    ₹{(nextThreshold - totalSpent).toLocaleString()} more to spend to reach {nextTier.name}
                                 </p>
                             )}
                         </div>
@@ -162,31 +272,38 @@ const LoyaltyLedger = () => {
                             <Link to="/shop" className="text-[9px] font-black uppercase text-black underline">Start Shopping to Earn</Link>
                         </div>
                     ) : (
-                        transactions.map((tx) => (
-                            <div key={tx._id} className="bg-white border border-zinc-100 hover:border-zinc-300 p-4 sm:p-5 rounded-2xl transition-all flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-3 min-w-0">
-                                    <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${tx.type === 'spend' ? 'bg-red-50 text-red-500' :
-                                        tx.type === 'earn' ? 'bg-green-50 text-green-500' :
-                                            'bg-zinc-50 text-zinc-500'
-                                        }`}>
-                                        {getIcon(tx.type)}
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[10px] sm:text-xs font-bold truncate">{tx.description}</p>
-                                        <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest flex items-center gap-1 mt-0.5">
-                                            <Calendar size={8} />
-                                            {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                        </p>
+                        transactions.map((tx) => {
+                            const meta = getTransactionMeta(tx);
+                            const isDebit = tx.type === 'spend' || tx.type === 'expire';
+                            return (
+                                <div key={tx._id} className="bg-white border border-zinc-100 hover:border-zinc-300 p-4 sm:p-5 rounded-2xl transition-all">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${meta.bg} ${meta.text}`}>
+                                                {meta.icon}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <div className="flex flex-wrap items-center gap-1.5 mb-0.5">
+                                                    <p className="text-[10px] sm:text-xs font-black uppercase tracking-tight text-zinc-900">{meta.label}</p>
+                                                    <span className={`text-[7px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full ${meta.badge}`}>{tx.type}</span>
+                                                </div>
+                                                <p className="text-[9px] text-zinc-500 leading-relaxed truncate max-w-[200px] sm:max-w-xs">{tx.description}</p>
+                                                <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest flex items-center gap-1 mt-1">
+                                                    <Calendar size={8} />
+                                                    {new Date(tx.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className={`text-right shrink-0 ${meta.amountColor}`}>
+                                            <p className="text-sm sm:text-base font-black tabular-nums">
+                                                {isDebit ? '-' : '+'}{tx.amount ?? 0}
+                                            </p>
+                                            <p className="text-[8px] font-black uppercase tracking-widest opacity-50">Coins</p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className={`text-right shrink-0 ${tx.type === 'spend' ? 'text-red-500' : 'text-green-500'}`}>
-                                    <p className="text-sm sm:text-base font-black tabular-nums">
-                                        {tx.type === 'spend' ? '-' : '+'}{tx.amount ?? 0}
-                                    </p>
-                                    <p className="text-[8px] font-black uppercase tracking-widest opacity-40">Coins</p>
-                                </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 

@@ -116,6 +116,7 @@ const ProductDetails = () => {
       try {
         const resizedImage = await resizeImage(file);
         setReviewImages(prev => [...prev, resizedImage]);
+        addToast("Photo attached", "success");
       } catch (err) { addToast("Failed to process image", "error"); }
     }
     setUploading(false);
@@ -129,12 +130,14 @@ const ProductDetails = () => {
     for (const file of files) {
       if (!validateFile(file, 'video')) continue;
       const reader = new FileReader();
-      await new Promise((resolve) => {
-        reader.onloadend = () => { setReviewVideos(prev => [...prev, reader.result]); resolve(); };
+      const base64 = await new Promise((resolve) => {
+        reader.onloadend = () => resolve(reader.result);
         reader.readAsDataURL(file);
       });
+      setReviewVideos(prev => [...prev, base64]);
     }
     setUploading(false);
+    addToast("Video attached successfully", "success");
   };
 
   const scroll = (ref, direction) => {
@@ -414,121 +417,139 @@ const ProductDetails = () => {
           </Helmet>
 
           {selectedReviewIdx !== null && (
-            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}>
-              <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
-                <X size={24} className="md:w-8 md:h-8" />
+            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-end md:items-center justify-center animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}>
+              <button className="absolute top-4 right-4 text-white/60 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
+                <X size={20} />
               </button>
 
-              {/* OUTER NAV: PREV REVIEW */}
+              {/* OUTER NAV: PREV/NEXT REVIEW - Desktop only */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length);
-                  setSelectedMediaIdx(0);
-                }}
-                className="hidden md:flex absolute left-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }}
+                className="hidden md:flex absolute left-6 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
               >
-                <ChevronLeft size={32} />
+                <ChevronLeft size={24} />
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }}
+                className="hidden md:flex absolute right-6 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+              >
+                <ChevronRight size={24} />
               </button>
 
-              <div className="relative w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+              {/* MODAL CARD */}
+              <div
+                className="relative w-full md:max-w-3xl bg-white rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row"
+                style={{ maxHeight: '88vh' }}
+                onClick={(e) => e.stopPropagation()}
+              >
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
                   const images = activeReviewItem?.images || (activeReviewItem?.reviewImage ? [activeReviewItem.reviewImage] : []);
                   const allMedia = [
                     ...videos.map(v => ({ type: 'video', url: v })),
-                    ...images.map(i => ({ type: 'image', url: i }))
+                    ...images.map(img => ({ type: 'image', url: img }))
                   ];
                   const currentMedia = allMedia[selectedMediaIdx] || null;
 
                   return (
                     <>
-                      {/* MEDIA SIDE - Only show if media exists */}
+                      {/* MEDIA SECTION */}
                       {currentMedia && (
-                        <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="relative w-full md:w-[45%] bg-black flex-shrink-0 flex items-center justify-center overflow-hidden h-[35vh] md:h-auto min-h-[220px] md:max-h-none">
                           {allMedia.length > 1 && (
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
-                              <ChevronLeft size={20} />
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }}
+                              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 text-white z-20"
+                            >
+                              <ChevronLeft size={16} />
                             </button>
                           )}
 
                           {currentMedia.type === 'video' ? (
-                            <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
+                            <video
+                              key={currentMedia.url}
+                              src={currentMedia.url}
+                              controls
+                              autoPlay
+                              playsInline
+                              className="absolute inset-0 w-full h-full object-contain"
+                            />
                           ) : (
-                            <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                            <img
+                              key={currentMedia.url}
+                              src={currentMedia.url}
+                              alt="Review"
+                              className="absolute inset-0 w-full h-full object-contain"
+                              onError={(e) => { e.target.src = ''; e.target.alt = 'Image unavailable'; }}
+                            />
                           )}
 
                           {allMedia.length > 1 && (
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
-                              <ChevronRight size={20} />
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }}
+                              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 text-white z-20"
+                            >
+                              <ChevronRight size={16} />
                             </button>
                           )}
 
                           {allMedia.length > 1 && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
                               {allMedia.map((_, i) => (
-                                <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                <button key={i} onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx(i); }} className={`h-1 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1 bg-white/50'}`} />
                               ))}
                             </div>
                           )}
                         </div>
                       )}
 
-                      {/* TEXT SIDE */}
-                      <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative`}>
-                        <div className="flex gap-1 mb-4">
+                      {/* TEXT INFO SECTION */}
+                      <div className={`flex flex-col overflow-y-auto p-5 md:p-7 ${currentMedia ? 'md:w-[55%]' : 'w-full'} max-h-[50vh] md:max-h-none`}>
+                        <div className="flex gap-0.5 mb-3">
                           {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={14} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
+                            <Star key={i} size={11} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
                           ))}
                         </div>
-
-                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
-                          {activeReviewItem.title || "Review"}
-                        </h3>
-                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
+                        {activeReviewItem.title && (
+                          <h3 className="text-sm md:text-base font-black uppercase tracking-tight mb-2">{activeReviewItem.title}</h3>
+                        )}
+                        <p className="text-zinc-600 italic leading-relaxed text-sm flex-grow mb-4">
                           "{activeReviewItem.comment}"
                         </p>
-
-                        <div className="border-t border-zinc-100 pt-6 mt-auto">
-                          <div className="flex justify-between items-end mb-4">
+                        <div className="border-t border-zinc-100 pt-4 mt-auto space-y-3">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-xs font-black text-zinc-900">
+                              {activeReviewItem.name?.charAt(0)}
+                            </div>
                             <div>
-                              <p className="text-sm font-black uppercase tracking-widest text-black">
-                                {activeReviewItem.name || "Verified Buyer"}
-                              </p>
-                              <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">
-                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}
-                              </p>
+                              <p className="text-xs font-black uppercase tracking-widest text-black">{activeReviewItem.name || "Verified Buyer"}</p>
+                              <p className="text-[9px] text-zinc-400 font-bold uppercase">{new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}</p>
                             </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({activeReviewItem.helpful?.length || 0})</span></button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }}
+                            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}
+                          >
+                            <Heart size={12} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "white" : "none"} />
+                            Helpful ({activeReviewItem.helpful?.length || 0})
+                          </button>
                         </div>
+                      </div>
+
+                      {/* MOBILE REVIEW NAV */}
+                      <div className="md:hidden flex border-t border-zinc-100">
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors flex items-center justify-center gap-1">
+                          <ChevronLeft size={14} /> Prev
+                        </button>
+                        <div className="w-px bg-zinc-100" />
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }} className="flex-1 py-3 text-[10px] font-black uppercase tracking-widest text-zinc-500 hover:text-black transition-colors flex items-center justify-center gap-1">
+                          Next <ChevronRight size={14} />
+                        </button>
                       </div>
                     </>
                   );
                 })()}
-              </div>
-
-              {/* OUTER NAV: NEXT REVIEW */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length);
-                  setSelectedMediaIdx(0);
-                }}
-                className="hidden md:flex absolute right-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
-              >
-                <ChevronRight size={32} />
-              </button>
-
-              {/* MOBILE OUTER NAV */}
-              <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
-                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
-                  <ChevronLeft size={20} />
-                </button>
-                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
-                  <ChevronRight size={20} />
-                </button>
               </div>
             </div>
           )}

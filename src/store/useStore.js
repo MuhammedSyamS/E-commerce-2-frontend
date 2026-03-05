@@ -93,12 +93,17 @@ export const useStore = create(
         const currentCart = state.user ? (state.user.cart || []) : state.cart;
         const productId = product._id;
 
-        // 1. Optimistic Update
-        // Check both `item.product` (backend format) and `item._id` (optimistic format)
+        const isSameVariant = (v1, v2) => {
+          if (!v1 && !v2) return true;
+          if (!v1 || !v2) return false;
+          return String(v1.size || '').toLowerCase() === String(v2.size || '').toLowerCase() &&
+            String(v1.color || '').toLowerCase() === String(v2.color || '').toLowerCase();
+        };
+
         const existingItem = currentCart.find((item) => {
           const itemProductId = (item.product?._id || item.product || item._id || '').toString();
-          const sameId = itemProductId === productId;
-          const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
+          const sameId = itemProductId === (productId || '').toString();
+          const sameVariant = isSameVariant(item.selectedVariant, product.selectedVariant);
           return sameId && sameVariant;
         });
 
@@ -107,7 +112,7 @@ export const useStore = create(
           updatedCart = currentCart.map((item) => {
             const itemProductId = (item.product?._id || item.product || item._id || '').toString();
             const sameId = itemProductId === productId;
-            const sameVariant = JSON.stringify(item.selectedVariant) === JSON.stringify(product.selectedVariant);
+            const sameVariant = isSameVariant(item.selectedVariant, product.selectedVariant);
             if (sameId && sameVariant) {
               return { ...item, quantity: (item.quantity || 1) + (product.quantity || 1) };
             }
@@ -226,7 +231,62 @@ export const useStore = create(
     }),
     {
       name: 'slook-storage',
-      storage: createJSONStorage(() => localStorage)
+      storage: createJSONStorage(() => localStorage),
+      // Only persist the bare minimum - full user data (populated wishlists,
+      // notifications, cart arrays) is too large for localStorage (5MB limit).
+      // Essential session data is persisted; everything else is re-fetched from
+      // the server on next load via refreshUser().
+      partialize: (state) => ({
+        // Guest cart (not tied to user account)
+        cart: (state.cart || []).map(item => ({
+          _id: item._id,
+          product: item.product?._id || item.product,
+          name: item.name,
+          price: item.price,
+          image: item.image,
+          quantity: item.quantity,
+          selectedVariant: item.selectedVariant
+        })),
+        // Guest wishlist (just IDs, not full product objects)
+        wishlist: (state.wishlist || []).map(item => item._id || item),
+        // Applied coupon
+        coupon: state.coupon,
+        // Currency preference
+        currency: state.currency,
+        // Slim user: only auth token + basic non-array identity fields
+        user: state.user ? {
+          _id: state.user._id,
+          firstName: state.user.firstName,
+          lastName: state.user.lastName,
+          email: state.user.email,
+          phone: state.user.phone,
+          token: state.user.token,
+          isAdmin: state.user.isAdmin,
+          role: state.user.role,
+          permissions: state.user.permissions,
+          avatar: state.user.avatar,
+          loyaltyPoints: state.user.loyaltyPoints,
+          membershipTier: state.user.membershipTier,
+          totalSpent: state.user.totalSpent,
+          referralCode: state.user.referralCode,
+          // Persist cart items but without full product population
+          cart: (state.user.cart || []).map(item => ({
+            _id: item._id,
+            product: item.product?._id || item.product,
+            name: item.name,
+            price: item.price,
+            image: item.image,
+            quantity: item.quantity,
+            selectedVariant: item.selectedVariant
+          })),
+        } : null,
+      }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.error('Failed to rehydrate store, clearing corrupt storage:', error);
+          try { localStorage.removeItem('slook-storage'); } catch { }
+        }
+      }
     }
   )
 );

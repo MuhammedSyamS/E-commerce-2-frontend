@@ -36,7 +36,7 @@ import {
 } from 'lucide-react';
 
 const Account = () => {
-  const { user, logout } = useStore();
+  const { user, logout, refreshUser } = useStore();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { success, error: toastError } = useToast();
@@ -63,10 +63,16 @@ const Account = () => {
       }
     };
 
-    if (user) {
+    if (user && user._id) {
       fetchMyLooks();
     }
-  }, [user]);
+  }, [user?._id]); // Only run when user ID changes, not the whole user object
+
+  useEffect(() => {
+    if (user?.token) {
+      refreshUser();
+    }
+  }, []); // Run once on mount to ensure fresh data
 
   // UPLOAD MODAL STATE
   const [uploadStep, setUploadStep] = useState(1);
@@ -138,11 +144,11 @@ const Account = () => {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <div className="bg-zinc-950 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-xl border border-white/10">
                 <Crown size={14} className="text-amber-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest italic">{user?.tier || 'Silver'} Elite</span>
+                <span className="text-[10px] font-black uppercase tracking-widest italic">{user?.membershipTier || 'Bronze'} Elite</span>
               </div>
               <div className="bg-white text-zinc-950 px-6 py-2 rounded-full flex items-center gap-2 shadow-lg border border-zinc-100">
                 <Trophy size={14} className="text-amber-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest">{user?.loyaltyPoints || 0} Coins</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{user?.loyaltyPoints ?? 0} Coins</span>
               </div>
             </div>
           </div>

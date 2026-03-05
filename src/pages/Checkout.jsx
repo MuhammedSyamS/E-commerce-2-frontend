@@ -7,7 +7,7 @@ import api from '../api/instance';
 import Price from '../components/Price';
 
 const Checkout = () => {
-  const { user, setUser, coupon } = useStore();
+  const { user, setUser, coupon, refreshUser } = useStore();
   const navigate = useNavigate();
   const location = useLocation();
   const { addToast } = useToast();
@@ -99,12 +99,13 @@ const Checkout = () => {
       }
     };
     fetchSettings();
+    if (user?.token) refreshUser();
 
     if (cartItems.length === 0 && !isSubmitting) {
       navigate('/shop');
     }
     window.scrollTo(0, 0);
-  }, [cartItems.length, navigate, isSubmitting]);
+  }, [cartItems.length, navigate, isSubmitting, user?.token]);
 
   const paymentRef = useRef(null);
   const actionButtonRef = useRef(null);
@@ -212,12 +213,8 @@ const Checkout = () => {
 
               // Clear Cart & Redirect
               await api.delete('/cart/clear', config);
-              // Update User from response (if provided)
-              if (orderRes.data.user) {
-                setUser({ ...orderRes.data.user, token: user.token });
-              } else {
-                setUser({ ...user, cart: [] });
-              }
+              // Refresh user to get updated loyaltyPoints, totalSpent, etc.
+              await refreshUser();
               navigate('/order-success', { state: { orderId: orderRes.data.order?._id || orderRes.data._id }, replace: true });
             } catch (mockErr) {
               console.error("PAYMENT: Mock Error:", mockErr);
@@ -281,11 +278,8 @@ const Checkout = () => {
 
               // Clear Cart
               await api.delete('/cart/clear', config);
-              if (orderRes.data.user) {
-                setUser({ ...orderRes.data.user, token: user.token });
-              } else {
-                setUser({ ...user, cart: [] });
-              }
+              // Refresh user to get updated loyaltyPoints, totalSpent, coins etc.
+              await refreshUser();
               navigate('/order-success', { state: { orderId: orderRes.data.order?._id || orderRes.data._id }, replace: true });
 
             } catch (vErr) {
@@ -331,11 +325,8 @@ const Checkout = () => {
           headers: { Authorization: `Bearer ${user.token}` }
         });
 
-        if (data.user) {
-          setUser({ ...data.user, token: user.token });
-        } else {
-          setUser({ ...user, cart: [] });
-        }
+        // Refresh user to get updated loyaltyPoints, totalSpent, membershipTier
+        await refreshUser();
         navigate('/order-success', { state: { orderId: data.order?._id || data._id }, replace: true });
       }
 

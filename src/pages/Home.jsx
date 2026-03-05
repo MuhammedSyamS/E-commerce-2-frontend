@@ -26,7 +26,6 @@ const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState('all');
-  const [products, setProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [communityLooks, setCommunityLooks] = useState([]);
@@ -54,16 +53,31 @@ const Home = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // --- OPTIMIZED DATA FETCHING ---
+  const [homeData, setHomeData] = useState({ trending: [], newArrivals: [], bestSellers: [] });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchHomeData = async () => {
       try {
-        const res = await api.get('/products');
-        setProducts(Array.isArray(res.data) ? res.data : []);
+        console.log("HOME: Fetching products...");
+        setLoading(true);
+        const { data } = await api.get('/products/home');
+        console.log("HOME: Data received:", data);
+        if (data) {
+          setHomeData(data);
+        } else {
+          console.warn("HOME: Received empty data from API");
+        }
       } catch (err) {
-        console.error("Home Data Fetch Error:", err);
+        console.error("HOME: Data Fetch Error:", err);
+        setError("Failed to fetch products. Please refresh.");
+      } finally {
+        setLoading(false);
       }
     };
-    fetchProducts();
+    fetchHomeData();
   }, []);
 
   useEffect(() => {
@@ -79,7 +93,6 @@ const Home = () => {
     };
     fetchLooks();
   }, []);
-
 
   useEffect(() => {
     const fetchRecentlyViewed = async () => {
@@ -124,21 +137,10 @@ const Home = () => {
     }
   };
 
-  // --- FILTERING LOGIC ---
-  const bestSellers = products.filter(p =>
-    p.isBestSeller || (Array.isArray(p.tags) && (p.tags.includes('Best Seller') || p.tags.includes('best seller')))
-  );
-
-  const newArrivals = products.filter(p =>
-    p.isNewArrival || (Array.isArray(p.tags) && (p.tags.includes('New Arrival') || p.tags.includes('New')))
-  );
-
-  const mostViewedProducts = [...products].sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 20);
-
   const productSections = [
-    { id: 'most-viewed', title: 'Trending Now', subtitle: 'Most Explored Artifacts', items: mostViewedProducts, link: '/shop?sort=mostViewed', ref: trendingRef, bg: 'bg-zinc-50' },
-    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'The Most Iconic Pieces', items: bestSellers, link: '/shop?best=true', ref: bestSellersSectionRef, bg: 'bg-white' },
-    { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Studio Drops', items: newArrivals, link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' }
+    { id: 'most-viewed', title: 'Trending Now', subtitle: 'Most Explored Artifacts', items: homeData.trending, link: '/shop?sort=mostViewed', ref: trendingRef, bg: 'bg-zinc-50' },
+    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'The Most Iconic Pieces', items: homeData.bestSellers, link: '/shop?best=true', ref: bestSellersSectionRef, bg: 'bg-white' },
+    { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Studio Drops', items: homeData.newArrivals, link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' }
   ];
 
   return (
@@ -198,17 +200,27 @@ const Home = () => {
                 </div>
 
                 <div className="relative flex items-center group/scroller">
-                  {products.length > 0 && activeView === 'all' && (
+                  {section.items.length > 0 && activeView === 'all' && (
                     <>
                       <button onClick={() => scroll(section.ref, 'left')} className="absolute -left-2 md:-left-20 top-[30%] md:top-[40%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"><ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} /></button>
                       <button onClick={() => scroll(section.ref, 'right')} className="absolute -right-2 md:-right-20 top-[30%] md:top-[40%] -translate-y-1/2 z-50 text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95"><ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} /></button>
                     </>
                   )}
+                  {error && idx === 0 && (
+                    <div className="w-full py-12 text-center text-red-500 bg-red-50 rounded-2xl border border-red-100 flex flex-col items-center gap-4">
+                      <p className="font-bold uppercase tracking-widest text-xs">{error}</p>
+                      <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
+                    </div>
+                  )}
                   <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
-                    {products.length > 0 ? (
+                    {section.items.length > 0 ? (
                       section.items.filter(p => p && p._id).map((product) => (
                         <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0' : 'w-full'}`}><ProductCard product={product} /></div>
                       ))
+                    ) : !loading && !error ? (
+                      <div className="w-full py-12 text-center border-2 border-dashed border-zinc-100 rounded-3xl col-span-full">
+                        <p className="text-zinc-400 font-bold uppercase tracking-[0.2em] text-[10px]">No Artifacts Curated Yet</p>
+                      </div>
                     ) : (
                       [...Array(4)].map((_, i) => (
                         <div key={i} className="min-w-[21%] flex-shrink-0 space-y-4">

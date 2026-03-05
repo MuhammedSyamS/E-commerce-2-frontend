@@ -8,7 +8,7 @@ import api from '../api/instance';
 import Price from './Price';
 
 const CartDrawer = () => {
-  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon, cart: guestCart, setCart: setGuestCart } = useStore();
+  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon, cart: guestCart, setCart: setGuestCart, refreshUser } = useStore();
   const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -44,6 +44,7 @@ const CartDrawer = () => {
   // Fetch Suggestions
   useEffect(() => {
     if (isCartOpen) {
+      if (user?.token) refreshUser();
       const fetchSuggestions = async () => {
         try {
           const { data } = await api.get('/products');
@@ -56,7 +57,7 @@ const CartDrawer = () => {
       };
       fetchSuggestions();
     }
-  }, [isCartOpen]);
+  }, [isCartOpen, user?.token]);
 
   // --- CART ACTIONS ---
   const getItemId = (item) => (item.product?._id || item.product || item._id || '').toString();
@@ -206,7 +207,7 @@ const CartDrawer = () => {
 
               <div className="space-y-4">
                 {cartItems.map((item) => (
-                  <div key={item._id || item.product || Math.random()} className="bg-white p-3 md:p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/80 flex gap-4 group hover:border-black transition-all duration-300">
+                  <div key={item._id || `${getItemId(item)}-${item.selectedVariant?.size}-${item.selectedVariant?.color}`} className="bg-white p-3 md:p-4 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-zinc-100/80 flex gap-4 group hover:border-black transition-all duration-300">
                     <div className="w-20 h-24 rounded-xl overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200 group-hover:scale-95 transition-transform duration-500">
                       <img src={item.image || "/placeholder.jpg"} className="w-full h-full object-cover" alt={item.name} />
                     </div>

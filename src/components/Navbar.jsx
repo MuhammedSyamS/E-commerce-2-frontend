@@ -11,7 +11,7 @@ import Price from './Price'; // Assuming Price component exists or needs to be h
 import { io } from 'socket.io-client';
 
 const Navbar = () => {
-  const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates } = useStore();
+  const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates, cart } = useStore();
 
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
@@ -196,7 +196,10 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const cartCount = (user?.cart && Array.isArray(user.cart)) ? user.cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
+  const guestCartCount = (cart && Array.isArray(cart)) ? cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
+  const userCartCount = (user?.cart && Array.isArray(user.cart)) ? user.cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
+  const cartCount = user ? userCartCount : guestCartCount;
+
   const wishlistCount = user?.wishlist?.length || 0;
 
   return (
