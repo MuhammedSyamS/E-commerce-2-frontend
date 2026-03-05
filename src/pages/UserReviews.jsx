@@ -11,7 +11,8 @@ const UserReviews = () => {
     const { addToast } = useToast();
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedReview, setSelectedReview] = useState(null);
+    const [selectedReviewIdx, setSelectedReviewIdx] = useState(null);
+    const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
 
     useEffect(() => {
         if (!user?.token) {
@@ -51,61 +52,138 @@ const UserReviews = () => {
     return (
         <div className="min-h-screen bg-zinc-50 pt-44 md:pt-52 pb-20">
             {/* LIGHTBOX MODAL (White Theme) */}
-            {/* GLOBAL LIGHTBOX (Gallery Mode) */}
-            {selectedReview && (
+            {selectedReviewIdx !== null && (
                 <div
-                    className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-4"
-                    onClick={() => setSelectedReview(null)}
+                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300"
+                    onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
                 >
-                    <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
-                        <X size={24} />
+                    <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
+                        <X size={24} className="md:w-8 md:h-8" />
                     </button>
 
-                    <div className="relative w-full max-w-5xl flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                    {/* OUTER NAV: PREV REVIEW */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReviewIdx((prev) => (prev - 1 + reviews.length) % reviews.length);
+                            setSelectedMediaIdx(0);
+                        }}
+                        className="hidden md:flex absolute left-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                    >
+                        <ChevronLeft size={32} />
+                    </button>
 
-                        {/* PREV BUTTON */}
-                        {selectedReview.images?.length > 1 && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newIndex = (selectedReview.index - 1 + selectedReview.images.length) % selectedReview.images.length;
-                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
-                                }}
-                                className="absolute left-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
-                            >
-                                <ChevronLeft size={24} />
-                            </button>
-                        )}
+                    {/* MODAL CONTENT */}
+                    <div
+                        className="relative w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {(() => {
+                            const activeReviewItem = reviews[selectedReviewIdx];
+                            // Handle both single reviewImage and array of images for backward compatibility
+                            const allImages = activeReviewItem?.review?.images && activeReviewItem?.review?.images?.length > 0
+                                ? activeReviewItem.review.images
+                                : (activeReviewItem?.review?.reviewImage ? [activeReviewItem.review.reviewImage] : []);
+                            const currentImage = allImages[selectedMediaIdx] || null;
 
-                        <img
-                            src={selectedReview.image}
-                            alt="Full View"
-                            className="w-auto h-auto max-w-[90vw] max-h-[80vh] object-contain rounded-xl shadow-2xl animate-in fade-in zoom-in duration-300 select-none"
-                        />
+                            return (
+                                <>
+                                    {/* MEDIA SIDE */}
+                                    <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {currentImage ? (
+                                            <>
+                                                {/* INNER NAV: PREV MEDIA */}
+                                                {allImages.length > 1 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedMediaIdx((prev) => (prev - 1 + allImages.length) % allImages.length);
+                                                        }}
+                                                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                    >
+                                                        <ChevronLeft size={20} />
+                                                    </button>
+                                                )}
 
-                        {/* NEXT BUTTON */}
-                        {selectedReview.images?.length > 1 && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newIndex = (selectedReview.index + 1) % selectedReview.images.length;
-                                    setSelectedReview({ ...selectedReview, index: newIndex, image: selectedReview.images[newIndex] });
-                                }}
-                                className="absolute right-4 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
-                            >
-                                <ChevronRight size={24} />
-                            </button>
-                        )}
+                                                <img src={currentImage} alt="Review Media" className="w-full h-full object-contain bg-black" />
+
+                                                {/* INNER NAV: NEXT MEDIA */}
+                                                {allImages.length > 1 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedMediaIdx((prev) => (prev + 1) % allImages.length);
+                                                        }}
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                    >
+                                                        <ChevronRight size={20} />
+                                                    </button>
+                                                )}
+
+                                                {/* MEDIA DOTS */}
+                                                {allImages.length > 1 && (
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                                                        {allImages.map((_, i) => (
+                                                            <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No Media Attached</div>
+                                        )}
+                                    </div>
+
+                                    {/* TEXT SIDE */}
+                                    <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative">
+                                        <div className="flex gap-1 mb-4">
+                                            {[...Array(activeReviewItem.review.rating || 5)].map((_, i) => (
+                                                <Star key={i} size={14} fill="black" className="text-black" />
+                                            ))}
+                                        </div>
+
+                                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
+                                            {activeReviewItem.productName}
+                                        </h3>
+                                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
+                                            "{activeReviewItem.review.comment}"
+                                        </p>
+
+                                        <div className="border-t border-zinc-100 pt-6 mt-auto">
+                                            <p className="text-sm font-black uppercase tracking-widest text-black">
+                                                {user?.firstName + " " + user?.lastName || "Me"}
+                                            </p>
+                                            <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">
+                                                {new Date(activeReviewItem.review.createdAt || Date.now()).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
 
-                    <p className="text-white/80 text-lg md:text-xl font-medium italic text-center max-w-2xl leading-relaxed mt-8">
-                        "{selectedReview.comment}"
-                    </p>
-                    {selectedReview.images?.length > 1 && (
-                        <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mt-4">
-                            Image {selectedReview.index + 1} of {selectedReview.images.length}
-                        </p>
-                    )}
+                    {/* OUTER NAV: NEXT REVIEW */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReviewIdx((prev) => (prev + 1) % reviews.length);
+                            setSelectedMediaIdx(0);
+                        }}
+                        className="hidden md:flex absolute right-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                    >
+                        <ChevronRight size={32} />
+                    </button>
+
+                    {/* MOBILE OUTER NAV */}
+                    <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + reviews.length) % reviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                            <ChevronLeft size={20} />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % reviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                            <ChevronRight size={20} />
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -133,8 +211,8 @@ const UserReviews = () => {
                     </div>
                 ) : (
                     <div className="grid gap-6">
-                        {reviews.map((item, idx) => (
-                            <div key={idx} className="bg-white p-8 rounded-3xl border border-zinc-100 shadow-sm relative group hover:shadow-md transition-all">
+                        {reviews.map((item, reviewIdx) => (
+                            <div key={reviewIdx} className="bg-white p-8 rounded-3xl border border-zinc-100 shadow-sm relative group hover:shadow-md transition-all">
 
                                 <div className="flex justify-between items-start mb-6">
                                     <div className="flex gap-6">
@@ -171,17 +249,15 @@ const UserReviews = () => {
                                         {(() => {
                                             const allImages = item.review.images && item.review.images.length > 0 ? item.review.images : (item.review.reviewImage ? [item.review.reviewImage] : []);
 
-                                            return allImages.map((img, idx) => (
+                                            return allImages.map((img, mediaIdx) => (
                                                 <img
-                                                    key={idx}
+                                                    key={mediaIdx}
                                                     src={img}
                                                     alt="User Upload"
-                                                    onClick={() => setSelectedReview({
-                                                        image: img,
-                                                        images: allImages,
-                                                        index: idx,
-                                                        comment: item.review.comment
-                                                    })}
+                                                    onClick={() => {
+                                                        setSelectedReviewIdx(reviewIdx);
+                                                        setSelectedMediaIdx(mediaIdx);
+                                                    }}
                                                     className="w-16 h-16 rounded-lg object-cover border border-zinc-200 cursor-zoom-in hover:opacity-80 transition-opacity"
                                                 />
                                             ));

@@ -9,7 +9,8 @@ const Reviews = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all'); // all, 5, 4, 3, 2, 1
 
-    const [selectedReview, setSelectedReview] = useState(null);
+    const [selectedReviewIdx, setSelectedReviewIdx] = useState(null);
+    const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -44,76 +45,143 @@ const Reviews = () => {
             </Helmet>
 
             {/* LIGHTBOX MODAL */}
-            {selectedReview && (
+            {selectedReviewIdx !== null && (
                 <div
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-300"
-                    onClick={() => setSelectedReview(null)}
+                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300"
+                    onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
                 >
-                    <button className="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
+                    <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
 
-                    <div className="relative w-full max-w-5xl flex items-center justify-center p-4" onClick={(e) => e.stopPropagation()}>
+                    {/* OUTER NAV: PREV REVIEW */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReviewIdx((prev) => (prev - 1 + filteredReviews.length) % filteredReviews.length);
+                            setSelectedMediaIdx(0);
+                        }}
+                        className="hidden md:flex absolute left-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                    </button>
 
-                        {/* PREV BTN */}
-                        {selectedReview.media?.length > 1 && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length;
-                                    setSelectedReview({
-                                        ...selectedReview,
-                                        index: newIndex,
-                                        currentMedia: selectedReview.media[newIndex]
-                                    });
-                                }}
-                                className="absolute left-0 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                            </button>
-                        )}
+                    {/* MODAL CONTENT */}
+                    <div
+                        className="relative w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {(() => {
+                            const activeReviewItem = filteredReviews[selectedReviewIdx];
+                            const videos = activeReviewItem?.review?.videos || (activeReviewItem?.review?.video ? [activeReviewItem.review.video] : []);
+                            const images = activeReviewItem?.review?.images || [];
+                            const allMedia = [
+                                ...videos.map(v => ({ type: 'video', url: v })),
+                                ...images.map(i => ({ type: 'image', url: i }))
+                            ];
+                            const currentMedia = allMedia[selectedMediaIdx] || null;
 
-                        {selectedReview.currentMedia?.type === 'video' ? (
-                            <div className="relative w-full max-w-4xl bg-black rounded-xl overflow-hidden shadow-2xl border border-zinc-800">
-                                <video
-                                    src={selectedReview.currentMedia.url}
-                                    controls
-                                    autoPlay
-                                    className="w-full h-auto max-h-[80vh] mx-auto"
-                                />
-                            </div>
-                        ) : (
-                            <img
-                                src={selectedReview.currentMedia?.url}
-                                alt="Full View"
-                                className="w-auto h-auto max-w-[90vw] max-h-[80vh] object-contain rounded-xl shadow-2xl select-none"
-                            />
-                        )}
+                            return (
+                                <>
+                                    {/* MEDIA SIDE */}
+                                    <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                        {currentMedia ? (
+                                            <>
+                                                {/* INNER NAV: PREV MEDIA */}
+                                                {allMedia.length > 1 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length);
+                                                        }}
+                                                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                                    </button>
+                                                )}
 
-                        {/* NEXT BTN */}
-                        {selectedReview.media?.length > 1 && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newIndex = (selectedReview.index + 1) % selectedReview.media.length;
-                                    setSelectedReview({
-                                        ...selectedReview,
-                                        index: newIndex,
-                                        currentMedia: selectedReview.media[newIndex]
-                                    });
-                                }}
-                                className="absolute right-0 p-3 rounded-full bg-black/50 text-white hover:bg-white hover:text-black transition-all z-20"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </button>
-                        )}
+                                                {currentMedia.type === 'video' ? (
+                                                    <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
+                                                ) : (
+                                                    <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                                                )}
 
+                                                {/* INNER NAV: NEXT MEDIA */}
+                                                {allMedia.length > 1 && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length);
+                                                        }}
+                                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                    </button>
+                                                )}
+
+                                                {/* MEDIA DOTS */}
+                                                {allMedia.length > 1 && (
+                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                                                        {allMedia.map((_, i) => (
+                                                            <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No Media Attached</div>
+                                        )}
+                                    </div>
+
+                                    {/* TEXT SIDE */}
+                                    <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative">
+                                        <div className="flex gap-1 mb-4">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={14} fill={i < activeReviewItem.review.rating ? "black" : "none"} className={i < activeReviewItem.review.rating ? "text-black" : "text-zinc-200"} />
+                                            ))}
+                                        </div>
+
+                                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
+                                            {activeReviewItem.review.title || "Review"}
+                                        </h3>
+                                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
+                                            "{activeReviewItem.review.comment}"
+                                        </p>
+
+                                        <div className="border-t border-zinc-100 pt-6 mt-auto">
+                                            <p className="text-sm font-black uppercase tracking-widest text-black">
+                                                {activeReviewItem.review.name || "Verified Buyer"}
+                                            </p>
+                                            <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">
+                                                {new Date(activeReviewItem.review.date || Date.now()).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
-                    <div className="max-w-2xl text-center mt-6">
-                        <p className="text-white/90 text-lg font-medium italic leading-relaxed">
-                            "{selectedReview.comment}"
-                        </p>
-                        <p className="text-white/50 text-xs font-bold uppercase tracking-widest mt-2">{selectedReview.name}</p>
+
+                    {/* OUTER NAV: NEXT REVIEW */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length);
+                            setSelectedMediaIdx(0);
+                        }}
+                        className="hidden md:flex absolute right-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </button>
+
+                    {/* MOBILE OUTER NAV */}
+                    <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + filteredReviews.length) % filteredReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
                     </div>
                 </div>
             )}
@@ -169,8 +237,8 @@ const Reviews = () => {
 
                 {/* REVIEWS GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredReviews.map((item, idx) => (
-                        <div key={idx} className="bg-zinc-50 rounded-2xl p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
+                    {filteredReviews.map((item, reviewIdx) => (
+                        <div key={reviewIdx} className="bg-zinc-50 rounded-2xl p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
 
                             {/* USER INFO */}
                             <div className="flex justify-between items-start mb-6">
@@ -194,9 +262,10 @@ const Reviews = () => {
                             </div>
 
                             {/* COMMENT */}
-                            <div className="mb-6 flex-grow">
-                                <h3 className="font-bold text-sm mb-2 line-clamp-1">{item.review.title || "Great Product"}</h3>
-                                <p className="text-zinc-600 italic leading-relaxed text-sm">"{item.review.comment}"</p>
+                            <div className="mb-6 flex-grow cursor-pointer group/text" onClick={() => { setSelectedReviewIdx(reviewIdx); setSelectedMediaIdx(0); }}>
+                                <h3 className="font-bold text-sm mb-2 line-clamp-1 group-hover/text:underline">{item.review.title || "Great Product"}</h3>
+                                <p className="text-zinc-600 italic leading-relaxed text-sm line-clamp-3">"{item.review.comment}"</p>
+                                <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors">Read More</span>
                             </div>
 
                             {/* PRODUCT LINK */}
@@ -227,13 +296,11 @@ const Reviews = () => {
                                     return allMedia.map((media, idx) => (
                                         <div
                                             key={idx}
-                                            onClick={() => setSelectedReview({
-                                                media: allMedia,
-                                                currentMedia: media,
-                                                index: idx,
-                                                comment: item.review.comment,
-                                                name: item.review.name
-                                            })}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedReviewIdx(reviewIdx);
+                                                setSelectedMediaIdx(idx);
+                                            }}
                                             className={`relative w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
                                         >
                                             {media.type === 'video' ? (
