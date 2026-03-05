@@ -11,6 +11,7 @@ const Reviews = () => {
 
     const [selectedReviewIdx, setSelectedReviewIdx] = useState(null);
     const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+    const [expandedText, setExpandedText] = useState({});
 
     useEffect(() => {
         const fetchReviews = async () => {
@@ -83,58 +84,54 @@ const Reviews = () => {
 
                             return (
                                 <>
-                                    {/* MEDIA SIDE */}
-                                    <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                                        {currentMedia ? (
-                                            <>
-                                                {/* INNER NAV: PREV MEDIA */}
-                                                {allMedia.length > 1 && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length);
-                                                        }}
-                                                        className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                                                    </button>
-                                                )}
+                                    {/* MEDIA SIDE - Only show if media exists */}
+                                    {currentMedia && (
+                                        <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                                            {/* INNER NAV: PREV MEDIA */}
+                                            {allMedia.length > 1 && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length);
+                                                    }}
+                                                    className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                                </button>
+                                            )}
 
-                                                {currentMedia.type === 'video' ? (
-                                                    <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
-                                                ) : (
-                                                    <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
-                                                )}
+                                            {currentMedia.type === 'video' ? (
+                                                <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
+                                            ) : (
+                                                <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                                            )}
 
-                                                {/* INNER NAV: NEXT MEDIA */}
-                                                {allMedia.length > 1 && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length);
-                                                        }}
-                                                        className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
-                                                    >
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                                                    </button>
-                                                )}
+                                            {/* INNER NAV: NEXT MEDIA */}
+                                            {allMedia.length > 1 && (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length);
+                                                    }}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                                </button>
+                                            )}
 
-                                                {/* MEDIA DOTS */}
-                                                {allMedia.length > 1 && (
-                                                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                                                        {allMedia.map((_, i) => (
-                                                            <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
-                                                        ))}
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div className="text-zinc-400 font-bold uppercase tracking-widest text-xs">No Media Attached</div>
-                                        )}
-                                    </div>
+                                            {/* MEDIA DOTS */}
+                                            {allMedia.length > 1 && (
+                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                                                    {allMedia.map((_, i) => (
+                                                        <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
 
                                     {/* TEXT SIDE */}
-                                    <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative">
+                                    <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative`}>
                                         <div className="flex gap-1 mb-4">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} size={14} fill={i < activeReviewItem.review.rating ? "black" : "none"} className={i < activeReviewItem.review.rating ? "text-black" : "text-zinc-200"} />
@@ -262,10 +259,22 @@ const Reviews = () => {
                             </div>
 
                             {/* COMMENT */}
-                            <div className="mb-6 flex-grow cursor-pointer group/text" onClick={() => { setSelectedReviewIdx(reviewIdx); setSelectedMediaIdx(0); }}>
-                                <h3 className="font-bold text-sm mb-2 line-clamp-1 group-hover/text:underline">{item.review.title || "Great Product"}</h3>
-                                <p className="text-zinc-600 italic leading-relaxed text-sm line-clamp-3">"{item.review.comment}"</p>
-                                <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors">Read More</span>
+                            <div
+                                className="mb-6 flex-grow cursor-pointer group/text"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    setExpandedText(prev => ({ ...prev, [reviewIdx]: !prev[reviewIdx] }));
+                                }}
+                            >
+                                <h3 className="font-bold text-sm mb-2">{item.review.title || "Great Product"}</h3>
+                                <p className={`text-zinc-600 italic leading-relaxed text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-3'}`}>
+                                    "{item.review.comment}"
+                                </p>
+                                {item.review.comment && item.review.comment.length > 100 && (
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors">
+                                        {expandedText[reviewIdx] ? 'Show Less' : 'Read More'}
+                                    </span>
+                                )}
                             </div>
 
                             {/* PRODUCT LINK */}

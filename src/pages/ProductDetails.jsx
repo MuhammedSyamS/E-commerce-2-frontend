@@ -31,8 +31,10 @@ const ProductDetails = () => {
   const [ratingInput, setRatingInput] = useState(5);
   const [comment, setComment] = useState("");
   const [reviewImages, setReviewImages] = useState([]);
-  const [submitting, setSubmitting] = useState(false);
-  const [selectedReview, setSelectedReview] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // REVIEW MODAL STATE
+  const [selectedReviewIdx, setSelectedReviewIdx] = useState(null);
+  const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+  const [expandedReviewTexts, setExpandedReviewTexts] = useState({});
   const [sortOption, setSortOption] = useState('newest');
   const [siteSettings, setSiteSettings] = useState(null);
   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
@@ -411,29 +413,122 @@ const ProductDetails = () => {
             <meta name="description" content={product.description} />
           </Helmet>
 
-          {selectedReview && (
-            <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 md:p-8" onClick={() => setSelectedReview(null)}>
-              <button className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50"><X size={24} /></button>
-              <div className="bg-white w-full max-w-6xl h-[85vh] rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div className="lg:col-span-2 bg-black relative flex items-center justify-center h-1/2 lg:h-full group">
-                  {selectedReview.media?.length > 1 && (
+          {selectedReviewIdx !== null && (
+            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}>
+              <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
+                <X size={24} className="md:w-8 md:h-8" />
+              </button>
+
+              {/* OUTER NAV: PREV REVIEW */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length);
+                  setSelectedMediaIdx(0);
+                }}
+                className="hidden md:flex absolute left-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+              >
+                <ChevronLeft size={32} />
+              </button>
+
+              <div className="relative w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+                {(() => {
+                  const activeReviewItem = sortedReviews[selectedReviewIdx];
+                  const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
+                  const images = activeReviewItem?.images || (activeReviewItem?.reviewImage ? [activeReviewItem.reviewImage] : []);
+                  const allMedia = [
+                    ...videos.map(v => ({ type: 'video', url: v })),
+                    ...images.map(i => ({ type: 'image', url: i }))
+                  ];
+                  const currentMedia = allMedia[selectedMediaIdx] || null;
+
+                  return (
                     <>
-                      <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index - 1 + selectedReview.media.length) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute left-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronLeft size={24} /></button>
-                      <button onClick={(e) => { e.stopPropagation(); const newIndex = (selectedReview.index + 1) % selectedReview.media.length; setSelectedReview({ ...selectedReview, index: newIndex, currentMedia: selectedReview.media[newIndex] }); }} className="absolute right-4 p-3 rounded-full bg-white/10 text-white hover:bg-white hover:text-black z-20 transition-all"><ChevronRight size={24} /></button>
+                      {/* MEDIA SIDE - Only show if media exists */}
+                      {currentMedia && (
+                        <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          {allMedia.length > 1 && (
+                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
+                              <ChevronLeft size={20} />
+                            </button>
+                          )}
+
+                          {currentMedia.type === 'video' ? (
+                            <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
+                          ) : (
+                            <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                          )}
+
+                          {allMedia.length > 1 && (
+                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
+                              <ChevronRight size={20} />
+                            </button>
+                          )}
+
+                          {allMedia.length > 1 && (
+                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                              {allMedia.map((_, i) => (
+                                <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* TEXT SIDE */}
+                      <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative`}>
+                        <div className="flex gap-1 mb-4">
+                          {[...Array(5)].map((_, i) => (
+                            <Star key={i} size={14} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
+                          ))}
+                        </div>
+
+                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
+                          {activeReviewItem.title || "Review"}
+                        </h3>
+                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
+                          "{activeReviewItem.comment}"
+                        </p>
+
+                        <div className="border-t border-zinc-100 pt-6 mt-auto">
+                          <div className="flex justify-between items-end mb-4">
+                            <div>
+                              <p className="text-sm font-black uppercase tracking-widest text-black">
+                                {activeReviewItem.name || "Verified Buyer"}
+                              </p>
+                              <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">
+                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({activeReviewItem.helpful?.length || 0})</span></button>
+                        </div>
+                      </div>
                     </>
-                  )}
-                  {selectedReview.currentMedia?.type === 'video' ? <video controls autoPlay src={selectedReview.currentMedia.url} className="w-full h-full object-contain bg-black" /> : <img src={selectedReview.currentMedia?.url || selectedReview.image} alt="Review" className="w-full h-full object-contain" />}
-                </div>
-                <div className="lg:col-span-1 bg-white p-6 lg:p-10 overflow-y-auto flex flex-col h-1/2 lg:h-full">
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm tracking-tight">{selectedReview.name?.charAt(0)}</div>
-                    <div><p className="text-sm font-bold uppercase tracking-tight text-zinc-900">{selectedReview.name}</p></div>
-                  </div>
-                  <p className="text-sm text-zinc-600 leading-relaxed mb-6">"{selectedReview.comment}"</p>
-                  <div className="mt-6 pt-6 border-t border-zinc-100">
-                    <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(selectedReview._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-base md:text-xs font-bold uppercase transition-all ${(user && selectedReview.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && selectedReview.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({selectedReview.helpful?.length || 0})</span></button>
-                  </div>
-                </div>
+                  );
+                })()}
+              </div>
+
+              {/* OUTER NAV: NEXT REVIEW */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length);
+                  setSelectedMediaIdx(0);
+                }}
+                className="hidden md:flex absolute right-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+              >
+                <ChevronRight size={32} />
+              </button>
+
+              {/* MOBILE OUTER NAV */}
+              <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
+                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                  <ChevronLeft size={20} />
+                </button>
+                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                  <ChevronRight size={20} />
+                </button>
               </div>
             </div>
           )}
@@ -851,12 +946,7 @@ const ProductDetails = () => {
                         </div>
                         <div className="space-y-16">
                           {sortedReviews.map((rev, i) => (
-                            <div key={i} onClick={() => {
-                              const videos = rev.videos || (rev.video ? [rev.video] : []);
-                              const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                              const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
-                              setSelectedReview({ ...rev, media: allMedia, currentMedia: allMedia[0] || { type: 'image', url: rev.image }, index: 0 });
-                            }} className="space-y-6 group cursor-pointer">
+                            <div key={i} className="space-y-6 group">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-4">
                                   <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm text-zinc-900 border border-zinc-200">{rev.name?.charAt(0)}</div>
@@ -867,13 +957,52 @@ const ProductDetails = () => {
                                 </div>
                                 <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
                               </div>
-                              <p className="text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6">"{rev.comment}"</p>
+                              <div
+                                className="cursor-pointer group/text"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedReviewTexts(prev => ({ ...prev, [i]: !prev[i] }));
+                                }}
+                              >
+                                {rev.title && <h3 className="font-bold text-sm mb-2 text-zinc-900 border-l-2 border-zinc-100 pl-6 ml-6">{rev.title}</h3>}
+                                <p className={`text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6 ${expandedReviewTexts[i] ? '' : 'line-clamp-3'}`}>"{rev.comment}"</p>
+                                {rev.comment && rev.comment.length > 100 && (
+                                  <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors border-l-2 border-zinc-100 pl-6 ml-6">
+                                    {expandedReviewTexts[i] ? 'Show Less' : 'Read More'}
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex gap-3 ml-12">
-                                {(rev.images || []).slice(0, 4).map((img, idx) => (
-                                  <div key={idx} className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all">
-                                    <img src={img} className="w-full h-full object-cover" alt="" />
-                                  </div>
-                                ))}
+                                {(() => {
+                                  const videos = rev.videos || (rev.video ? [rev.video] : []);
+                                  const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                                  const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+
+                                  return allMedia.slice(0, 4).map((media, idx) => (
+                                    <div
+                                      key={idx}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedReviewIdx(i);
+                                        setSelectedMediaIdx(idx);
+                                      }}
+                                      className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all cursor-pointer relative"
+                                    >
+                                      {media.type === 'video' ? (
+                                        <>
+                                          <video src={media.url} className="w-full h-full object-cover opacity-60 bg-black" />
+                                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                            <div className="w-6 h-6 bg-white/30 backdrop-blur rounded-full flex items-center justify-center">
+                                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                            </div>
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <img src={media.url} className="w-full h-full object-cover" alt="" />
+                                      )}
+                                    </div>
+                                  ));
+                                })()}
                               </div>
                             </div>
                           ))}
