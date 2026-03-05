@@ -49,7 +49,7 @@ const AdminHealth = () => {
         <div className="p-8 animate-in fade-in duration-700">
             <div className="flex justify-between items-center mb-12">
                 <div>
-                    <h1 className="text-4xl font-black uppercase tracking-tighter italic transform -skew-x-3">
+                    <h1 className="text-2xl font-black uppercase tracking-tighter italic transform -skew-x-3">
                         System <span className="text-zinc-300">Health</span>
                     </h1>
                     <p className="text-xs font-bold uppercase tracking-widest text-zinc-400 mt-2">MNC Command Center v1.0</p>

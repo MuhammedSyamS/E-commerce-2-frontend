@@ -261,7 +261,7 @@ const AdminMarketing = () => {
             {/* ... Header */}
             <div className="mb-10">
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Growth Engine</p>
-                <h1 className="text-4xl font-black uppercase italic tracking-tighter">Offers & <span className="text-zinc-300">Outreach</span></h1>
+                <h1 className="text-2xl font-black uppercase italic tracking-tighter">Offers & <span className="text-zinc-300">Outreach</span></h1>
             </div>
 
             <div className="flex gap-6 mb-8 border-b border-zinc-100 pb-1">

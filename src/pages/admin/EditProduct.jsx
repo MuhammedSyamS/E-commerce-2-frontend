@@ -139,7 +139,9 @@ const EditProduct = () => {
             <button onClick={() => navigate('/admin/products')} className="p-2 bg-white rounded-full shadow hover:bg-zinc-100 transition">
               <ArrowLeft size={20} />
             </button>
-            <h1 className="text-3xl font-black uppercase tracking-tighter italic">Edit <span className="text-zinc-400">Inventory</span></h1>
+            <h1 className="text-xl font-black uppercase tracking-tight">
+              Edit <span className="text-zinc-400">Inventory</span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-4">

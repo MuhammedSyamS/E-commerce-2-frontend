@@ -244,7 +244,7 @@ export default function AdminAnalytics() {
                             <span className="text-[9px] font-black text-green-400 uppercase tracking-[3px]">Live Analytics</span>
                         </div>
                         <h1 style={{ background: 'linear-gradient(135deg,#fff 30%,#a1a1aa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-                            className="text-4xl font-black italic tracking-tighter leading-none">
+                            className="text-2xl font-black italic tracking-tighter leading-none">
                             ANALYTICS
                         </h1>
                         <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[2px] mt-1">Complete Business Intelligence</p>

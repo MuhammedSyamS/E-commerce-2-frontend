@@ -160,7 +160,7 @@ export default function AdminEnquiries() {
                             <span className="text-[9px] font-black text-violet-400 uppercase tracking-[3px]">Customer Messages</span>
                         </div>
                         <h1 style={{ background: 'linear-gradient(135deg,#fff 30%,#a1a1aa)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-                            className="text-4xl font-black italic tracking-tighter leading-none">ENQUIRIES</h1>
+                            className="text-2xl font-black italic tracking-tighter">Customer <span className="text-zinc-300">Enquiries</span></h1>
                         <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[2px] mt-1">All customer contact form submissions</p>
                     </div>
                     <button onClick={fetchAll} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '10px 18px' }}

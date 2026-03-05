@@ -151,7 +151,7 @@ const Reviews = () => {
                         </div>
                     </div>
 
-                    <div className="flex gap-2 bg-zinc-50 p-1.5 rounded-xl">
+                    <div className="flex gap-2 bg-zinc-50 p-1.5 rounded-xl overflow-x-auto custom-scrollbar w-full md:w-auto">
                         {['all', 5, 4, 3, 2, 1].map(f => (
                             <button
                                 key={f}

@@ -104,8 +104,8 @@ const Invoice = () => {
                                     )}
                                 </td>
                                 <td className="py-4 text-right font-mono text-sm">{item.qty}</td>
-                                <td className="py-4 text-right font-mono text-sm">₹{item.price.toLocaleString()}</td>
-                                <td className="py-4 text-right font-mono font-bold text-sm">₹{(item.price * item.qty).toLocaleString()}</td>
+                                <td className="py-4 text-right font-mono text-sm">₹{(item.price || 0).toLocaleString()}</td>
+                                <td className="py-4 text-right font-mono font-bold text-sm">₹{((item.price || 0) * (item.qty || 0)).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -117,21 +117,21 @@ const Invoice = () => {
                 <div className="w-64 space-y-2">
                     <div className="flex justify-between text-sm">
                         <span className="text-zinc-500">Subtotal</span>
-                        <span className="font-mono">₹{order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0).toLocaleString()}</span>
+                        <span className="font-mono">₹{order.orderItems.reduce((acc, item) => acc + (item.price || 0) * (item.qty || 0), 0).toLocaleString()}</span>
                     </div>
                     {order.discountAmount > 0 && (
                         <div className="flex justify-between text-sm text-green-600">
                             <span>Discount</span>
-                            <span className="font-mono">-₹{order.discountAmount.toLocaleString()}</span>
+                            <span className="font-mono">-₹{(order.discountAmount || 0).toLocaleString()}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-sm">
                         <span className="text-zinc-500">Shipping</span>
-                        <span className="font-mono">₹{order.shippingPrice.toLocaleString()}</span>
+                        <span className="font-mono">₹{(order.shippingPrice || 0).toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-xl font-black border-t border-zinc-900 pt-2 mt-2">
                         <span>Total</span>
-                        <span>₹{order.totalPrice.toLocaleString()}</span>
+                        <span>₹{(order.totalPrice || 0).toLocaleString()}</span>
                     </div>
                 </div>
             </div>

@@ -60,7 +60,7 @@ const AdminReports = () => {
             <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Business Intelligence</p>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">Performance <span className="text-zinc-300">Report</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Performance <span className="text-zinc-300">Report</span></h1>
                 </div>
 
                 <div className="flex gap-2">

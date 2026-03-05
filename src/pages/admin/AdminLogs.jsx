@@ -35,7 +35,7 @@ const AdminLogs = () => {
         <div>
             <div className="mb-12">
                 <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Security & Audit</p>
-                <h1 className="text-4xl font-black uppercase italic tracking-tighter">Activity <span className="text-zinc-300">Logs</span></h1>
+                <h1 className="text-2xl font-black uppercase italic tracking-tighter">Activity <span className="text-zinc-300">Logs</span></h1>
             </div>
 
             <div className="bg-white border border-zinc-100 rounded-3xl overflow-hidden shadow-sm">

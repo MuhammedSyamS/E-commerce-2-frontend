@@ -208,8 +208,8 @@ const AdminLayout = () => {
             </div>
 
             {/* MAIN CONTENT AREA */}
-            <div className={`flex-1 overflow-y-auto pt-[140px] transition-all duration-300 h-screen ${isDesktopSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
-                <div className="p-6 md:p-12 max-w-7xl mx-auto">
+            <div className={`flex-1 overflow-y-auto pt-[100px] transition-all duration-300 h-screen ${isDesktopSidebarOpen ? 'md:ml-64' : 'md:ml-0'}`}>
+                <div className="p-4 md:p-4 max-w-7xl mx-auto">
                     <Outlet />
                 </div>
             </div>

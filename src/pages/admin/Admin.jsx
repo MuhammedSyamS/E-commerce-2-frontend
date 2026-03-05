@@ -71,14 +71,13 @@ const Admin = () => {
 
         {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 gap-6">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter transform -skew-x-6">
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-black uppercase tracking-tight flex items-center gap-4">
               Studio <span className="text-zinc-400">Inventory</span>
-              <button onClick={handleRefresh} className="ml-4 p-2 bg-zinc-100 rounded-full text-zinc-400 hover:text-black hover:rotate-180 transition-all inline-block align-middle transform skew-x-6" title="Refresh Inventory">
+              <button onClick={handleRefresh} className="p-2 bg-zinc-100 rounded-full text-zinc-400 hover:text-black hover:rotate-180 transition-all inline-block align-middle" title="Refresh Inventory">
                 <RefreshCw size={18} />
               </button>
             </h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mt-2">SLOOK Studio Administrative Portal</p>
           </div>
 
           <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
@@ -93,7 +92,7 @@ const Admin = () => {
             </div>
             <Link
               to="/admin/products/add"
-              className="bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all w-full md:w-auto"
+              className="bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-800 transition-all shadow-lg"
             >
               <Plus size={14} /> Add New Piece
             </Link>

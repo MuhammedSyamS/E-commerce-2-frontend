@@ -83,7 +83,7 @@ const AdminLooks = () => {
             {/* HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
-                    <h2 className="text-3xl font-black uppercase tracking-tighter">Community Styles</h2>
+                    <h2 className="text-2xl font-black uppercase italic">Lookbook <span className="text-zinc-300">Management</span></h2>
                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2 px-1 border-l-2 border-amber-500">
                         Curation & Content Moderation
                     </p>

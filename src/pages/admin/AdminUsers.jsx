@@ -175,7 +175,7 @@ const AdminUsers = () => {
             <div className="flex justify-between items-end mb-12">
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Team & Customers</p>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">User <span className="text-zinc-300">Management</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">User <span className="text-zinc-300">Management</span></h1>
                 </div>
                 <div className="relative">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={16} />

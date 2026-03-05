@@ -110,7 +110,7 @@ const AdminBulkEditor = () => {
                     <button onClick={() => navigate('/admin/products')} className="flex items-center gap-2 text-zinc-400 hover:text-black transition mb-4 text-[10px] font-black uppercase tracking-widest">
                         <ArrowLeft size={14} /> Back to Products
                     </button>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">Bulk <span className="text-zinc-300">Inventory</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Bulk <span className="text-zinc-300">Inventory</span></h1>
                     <p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-2 flex items-center gap-2">
                         <Edit3 size={14} className="text-purple-500" /> Fast Price & Stock Updates
                     </p>

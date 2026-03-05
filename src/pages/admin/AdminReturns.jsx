@@ -345,15 +345,11 @@ const AdminReturns = () => {
                 </div>
             )}
 
-            <div className="flex justify-between items-center mb-8">
-                <div>
-                    <h1 className="text-2xl font-black uppercase tracking-tighter flex items-center gap-2">
-                        <RefreshCw size={24} /> Returns Management
-                    </h1>
-                    <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-1">
-                        Handle Returns & Exchanges
-                    </p>
-                </div>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
+                    <RefreshCw size={18} className="text-zinc-400" />
+                    Return <span className="text-zinc-400">and Exchange</span>
+                </h1>
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
                     <input
@@ -367,7 +363,7 @@ const AdminReturns = () => {
             </div>
 
             {/* TABS */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
                 {tabs.map(tab => (
                     <button
                         key={tab}

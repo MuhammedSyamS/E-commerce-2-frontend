@@ -233,7 +233,7 @@ const AdminSettings = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
                 <div>
-                    <h1 className="text-3xl font-black italic tracking-tighter uppercase mb-2">Platform <span className="text-zinc-300">Settings</span></h1>
+                    <h1 className="text-2xl font-black italic tracking-tighter uppercase mb-2">Platform <span className="text-zinc-300">Settings</span></h1>
                     <p className="text-xs font-bold uppercase tracking-widest text-zinc-400">Manage your store configuration</p>
                 </div>
                 <button onClick={handleSave} className="bg-black text-white px-8 py-3 rounded-full font-bold uppercase text-xs tracking-widest flex items-center gap-2 hover:bg-zinc-800 transition shadow-lg">

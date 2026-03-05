@@ -102,7 +102,7 @@ const AdminReviews = () => {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Community</p>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">Review <span className="text-zinc-300">Moderation</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Review <span className="text-zinc-300">Moderation</span></h1>
                 </div>
 
                 <div className="relative">

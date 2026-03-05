@@ -124,7 +124,7 @@ const AdminSupport = () => {
             <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-4">
                 <div>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mb-2">Customer Care</p>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">Support <span className="text-zinc-300">Desk</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Support <span className="text-zinc-300">Tickets</span></h1>
                 </div>
 
                 {/* TABS */}

@@ -110,15 +110,15 @@ const SocialFeed = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-center justify-center p-4 md:p-10 bg-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-10 bg-black/90 backdrop-blur-md"
         >
-            <button onClick={onClose} className="absolute top-6 right-6 text-white hover:rotate-90 transition-transform duration-300">
-                <X size={32} />
+            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] bg-black/40 md:bg-transparent p-2 md:p-0 rounded-full">
+                <X size={24} className="md:w-8 md:h-8" />
             </button>
 
-            <div className="bg-white w-full max-w-6xl h-full max-h-[85vh] rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl">
+            <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-3xl md:rounded-[2.5rem] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative custom-scrollbar">
                 {/* IMAGE SIDE */}
-                <div className="relative flex-1 bg-zinc-100 overflow-hidden group">
+                <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-100 overflow-hidden group flex-shrink-0">
                     <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover" alt="" />
                     {look.products.map(prod => (
                         <div
@@ -142,7 +142,7 @@ const SocialFeed = () => {
                 </div>
 
                 {/* DETAILS SIDE */}
-                <div className="w-full md:w-[400px] flex flex-col p-8 bg-white">
+                <div className="w-full md:w-[400px] flex flex-col p-6 md:p-8 bg-white flex-shrink-0">
                     <div className="flex items-center gap-3 mb-8 pb-8 border-b border-zinc-50">
                         <img src={look.user?.avatar ? resolveMediaURL(look.user.avatar) : "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-12 h-12 rounded-full border-2 border-zinc-50" alt="" />
                         <div>

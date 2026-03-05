@@ -85,7 +85,7 @@ const AdminPayments = () => {
             {/* HEAD */}
             <div className="flex justify-between items-end mb-10">
                 <div>
-                    <h1 className="text-4xl font-black uppercase italic tracking-tighter">Financial <span className="text-zinc-400">Overview</span></h1>
+                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Transaction <span className="text-zinc-300">History</span></h1>
                     <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Revenue & Transaction Monitoring</p>
                 </div>
 
