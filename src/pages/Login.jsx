@@ -73,14 +73,14 @@ const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-44 md:pt-52 pb-20">
       <div className="w-full max-w-md">
-        <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-center mb-2">Welcome <span className="text-red-500">Back</span></h1>
-        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account</p>
+        <h1 className="text-lg md:text-3xl font-black uppercase tracking-tighter text-center mb-2">Welcome <span className="text-red-500">Back</span></h1>
+        <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-[0.3em] text-center mb-8">Login to your studio account <span className="opacity-10 text-[6px]">v1.3</span></p>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <input
             type="email"
             placeholder="Email"
-            className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+            className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -89,7 +89,7 @@ const Login = () => {
             <input
               type="password"
               placeholder="Password"
-              className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+              className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -98,7 +98,7 @@ const Login = () => {
             <div className="text-right mt-2">
               <Link
                 to="/forgot-password"
-                className="text-[10px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition"
+                className="text-[9px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition"
               >
                 Forgot Password?
               </Link>

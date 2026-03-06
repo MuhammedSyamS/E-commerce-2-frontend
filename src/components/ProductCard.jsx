@@ -107,7 +107,7 @@ const ProductCard = ({ product, onAddToCart }) => {
       className="relative w-full md:max-w-[260px] group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onClick={() => { if (window.innerWidth < 1024) setHovered(!hovered); }}
+      onTouchStart={() => setHovered(true)}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">
@@ -168,7 +168,7 @@ const ProductCard = ({ product, onAddToCart }) => {
           
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/${product.slug || product._id}`); }}
-            className="p-1.5 rounded-full bg-white/90 shadow hover:bg-white active:scale-90 transition-all opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100"
+            className={`p-1.5 rounded-full bg-white/90 shadow hover:bg-white active:scale-90 transition-all duration-300 ${window.innerWidth < 1024 ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} scale-100`}
           >
             <Eye size={14} className="text-black" />
           </button>
@@ -209,10 +209,10 @@ const ProductCard = ({ product, onAddToCart }) => {
           <div
             className="absolute bottom-0 left-0 w-full z-20 bg-black text-white"
             style={{
-              opacity: (hovered || inCart || (window.innerWidth < 1024 && hovered)) ? 1 : 0,
+              opacity: (hovered || inCart) ? 1 : 0,
               pointerEvents: (hovered || inCart) ? 'auto' : 'none',
               transform: (hovered || inCart) ? 'translateY(0)' : 'translateY(10px)',
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
             }}
           >
             {inCart ? (

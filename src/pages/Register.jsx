@@ -152,14 +152,14 @@ const Register = () => {
                 <input
                   type="text"
                   placeholder="First Name"
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                   required
                 />
                 <input
                   type="text"
                   placeholder="Last Name"
-                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                   required
                 />
@@ -167,28 +167,28 @@ const Register = () => {
               <input
                 type="email"
                 placeholder="Email"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
               <input
                 type="tel"
                 placeholder="Phone Number"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
               />
               <input
                 type="password"
                 placeholder="Password"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-xs md:text-[10px] tracking-widest"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
               />
               <input
                 type="text"
                 placeholder="Referral Code (Optional)"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 uppercase font-bold text-xs md:text-[10px] tracking-widest"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 uppercase font-bold text-[9px] md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, referralCode: e.target.value })}
               />
               <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-sm md:text-sm hover:bg-gray-800 transition active:scale-95">
