@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Heart, Loader2, Star, Zap, Plus, Minus, X, ShoppingBag } from 'lucide-react';
+import { Heart, Loader2, Star, Zap, Plus, Minus, X, ShoppingBag, Eye } from 'lucide-react';
 import api from '../api/instance';
 import Price from './Price';
 
@@ -104,9 +104,10 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   return (
     <div
-      className="relative w-full md:max-w-[260px]"
+      className="relative w-full md:max-w-[260px] group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => { if (window.innerWidth < 1024) setHovered(!hovered); }}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">
@@ -164,6 +165,13 @@ const ProductCard = ({ product, onAddToCart }) => {
             {loading ? <Loader2 size={14} className="animate-spin text-zinc-400" />
               : <Heart size={14} fill={isFav ? "black" : "none"} className="text-black" />}
           </button>
+          
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/product/${product.slug || product._id}`); }}
+            className="p-1.5 rounded-full bg-white/90 shadow hover:bg-white active:scale-90 transition-all opacity-0 group-hover:opacity-100 transition-opacity duration-300 scale-90 group-hover:scale-100"
+          >
+            <Eye size={14} className="text-black" />
+          </button>
         </div>
 
 
@@ -201,9 +209,10 @@ const ProductCard = ({ product, onAddToCart }) => {
           <div
             className="absolute bottom-0 left-0 w-full z-20 bg-black text-white"
             style={{
-              opacity: (hovered || inCart) ? 1 : 0,
+              opacity: (hovered || inCart || (window.innerWidth < 1024 && hovered)) ? 1 : 0,
               pointerEvents: (hovered || inCart) ? 'auto' : 'none',
-              transition: 'opacity 0.25s ease'
+              transform: (hovered || inCart) ? 'translateY(0)' : 'translateY(10px)',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           >
             {inCart ? (

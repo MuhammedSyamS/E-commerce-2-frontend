@@ -13,31 +13,11 @@ const AdminLooks = () => {
     const [filter, setFilter] = useState('all');
     const [editingLook, setEditingLook] = useState(null);
 
-    const MOCK_LOOKS = [
-        {
-            _id: 'mock-1',
-            image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800",
-            caption: "The 2026 Collection - Modern Essentials",
-            user: { firstName: "Julian", lastName: "S.", email: "julian@example.com" },
-            likes: [],
-            status: 'pending',
-            createdAt: new Date().toISOString()
-        },
-        {
-            _id: 'mock-2',
-            image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800",
-            caption: "Urban Living - Curated Design",
-            user: { firstName: "Elena", lastName: "R.", email: "elena@example.com" },
-            likes: [],
-            status: 'approved',
-            createdAt: new Date().toISOString()
-        }
-    ];
 
     const fetchLooks = async () => {
         try {
             const { data } = await api.get('/looks/admin');
-            setLooks(data && data.length > 0 ? data : MOCK_LOOKS);
+            setLooks(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error("Fetch Looks Error:", err);
             addToast("Failed to fetch community looks", "error");

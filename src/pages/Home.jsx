@@ -14,12 +14,6 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
 
-const MOCK_LOOKS = [
-  { _id: 'l1', image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Julian", lastName: "S." } },
-  { _id: 'l2', image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Elena", lastName: "R." } },
-  { _id: 'l3', image: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Marcus", lastName: "T." } },
-  { _id: 'l4', image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=800", user: { firstName: "Sarah", lastName: "J." } }
-];
 
 
 const Home = () => {
@@ -257,12 +251,12 @@ const Home = () => {
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {(communityLooks.length > 0 ? communityLooks : MOCK_LOOKS).filter(look => look && (look.user || look.firstName)).map((look) => (
+              {communityLooks.filter(look => look && look.user).map((look) => (
                 <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
                   <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                     <p className="text-[8px] font-black text-white uppercase tracking-widest">
-                      @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : `${look.firstName || 'User'}${look.lastName || ''}`}
+                      @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : 'User'}
                     </p>
                   </div>
                 </Link>

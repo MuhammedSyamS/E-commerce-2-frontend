@@ -4,6 +4,7 @@ let baseUrl = import.meta.env.VITE_API_URL || '/api';
 if (baseUrl && !baseUrl.endsWith('/api') && baseUrl !== '/api') {
     baseUrl = baseUrl.replace(/\/$/, '') + '/api';
 }
+console.log("API Base URL:", baseUrl);
 
 const instance = axios.create({
     baseURL: baseUrl,

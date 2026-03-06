@@ -8,43 +8,7 @@ import { resolveMediaURL } from '../utils/mediaUtils';
 import Price from '../components/Price';
 import { useToast } from '../context/ToastContext';
 
-const MOCK_LOOKS = [
-    {
-        _id: 'mock-1',
-        image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800",
-        caption: "The 2026 Collection - Modern Essentials",
-        user: { firstName: "Julian", lastName: "S.", avatar: "https://i.pravatar.cc/150?u=julian" },
-        likes: [],
-        products: [
-            { _id: 'p1', name: "Obsidian Signet", price: 8900, image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=400", x: 45, y: 30, slug: 'obsidian-ring' },
-            { _id: 'p2', name: "Sterling Chain", price: 12500, image: "https://images.pexels.com/photos/9953654/pexels-photo-9953654.jpeg?auto=compress&cs=tinysrgb&w=400", x: 60, y: 50, slug: 'sterling-silver-chain' }
-        ]
-    },
-    {
-        _id: 'mock-2',
-        image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800",
-        caption: "Urban Living - Curated Design",
-        user: { firstName: "Elena", lastName: "R.", avatar: "https://i.pravatar.cc/150?u=elena" },
-        likes: [],
-        products: []
-    },
-    {
-        _id: 'mock-3',
-        image: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=800",
-        caption: "Premium Quality - Built to Last",
-        user: { firstName: "Marcus", lastName: "T.", avatar: "https://i.pravatar.cc/150?u=marcus" },
-        likes: [],
-        products: []
-    },
-    {
-        _id: 'mock-4',
-        image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=800",
-        caption: "Minimalist Workspace Vibes",
-        user: { firstName: "Sarah", lastName: "J.", avatar: "https://i.pravatar.cc/150?u=sarah" },
-        likes: [],
-        products: []
-    }
-];
+const MOCK_LOOKS = [];
 
 const SocialFeed = () => {
     const navigate = useNavigate();
@@ -94,10 +58,12 @@ const SocialFeed = () => {
                     ...l,
                     user: l.user || { firstName: "SLOOK", lastName: "Member" }
                 }));
-                setLooks(mappedData.length > 0 ? mappedData : MOCK_LOOKS);
+                // setLooks(mappedData.length > 0 ? mappedData : MOCK_LOOKS);
+                setLooks(mappedData);
             } catch (err) {
                 console.error('Error fetching looks:', err);
-                setLooks(MOCK_LOOKS);
+                // setLooks(MOCK_LOOKS);
+                setLooks([]);
             } finally {
                 setLoading(false);
             }

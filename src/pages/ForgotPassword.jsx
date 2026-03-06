@@ -67,7 +67,7 @@ const ForgotPassword = () => {
           <ArrowLeft size={14} /> {step === 1 ? 'Back to Login' : 'Back to Email'}
         </button>
 
-        <h1 className="text-3xl font-black uppercase tracking-tighter mb-8 leading-none">
+        <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter mb-8 leading-none">
           Reset <span className="text-red-500">Password</span>
         </h1>
 

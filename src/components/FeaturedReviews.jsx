@@ -4,79 +4,6 @@ import { Star, CheckCircle2, ChevronLeft, ChevronRight, Play, Maximize2, MoreHor
 import { Link } from 'react-router-dom';
 import { resolveMediaURL } from '../utils/mediaUtils';
 
-// MOCK DATA (High-End Editorial Tone)
-const MOCK_REVIEWS = [
-    {
-        productName: "Obsidian Signet Ring",
-        productSlug: "obsidian-ring",
-        review: {
-            rating: 5,
-            title: "Absolute Perfection",
-            comment: "The weight and finish are unparalleled. It feels like an heirloom piece from day one.",
-            name: "Sarah J.",
-            role: "Creative Director",
-            images: ["https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"],
-            date: "Sep 28, 2024",
-            isVerifiedPurchase: true
-        }
-    },
-    {
-        productName: "Sterling Chain",
-        productSlug: "sterling-silver-chain",
-        review: {
-            rating: 5,
-            title: "Daily Staple",
-            comment: "I haven't taken it off since it arrived. The craftsmanship withstands daily wear beautifully.",
-            name: "Alex V.",
-            role: "Architect",
-            images: ["https://images.pexels.com/photos/9953654/pexels-photo-9953654.jpeg?auto=compress&cs=tinysrgb&w=800"],
-            date: "Oct 12, 2024",
-            isVerifiedPurchase: true
-        }
-    },
-    {
-        productName: "Minimalist Cuff",
-        productSlug: "minimalist-cuff",
-        review: {
-            rating: 4,
-            title: "Subtle Luxury",
-            comment: "Understated and elegant. The matte finish is exactly what I was looking for.",
-            name: "David L.",
-            role: "Analyst",
-            images: ["https://images.pexels.com/photos/1036622/pexels-photo-1036622.jpeg?auto=compress&cs=tinysrgb&w=800"],
-            date: "Nov 03, 2024",
-            isVerifiedPurchase: true
-        }
-    },
-    {
-        productName: "Onyx Pendant",
-        productSlug: "onyx-pendant",
-        review: {
-            rating: 5,
-            title: "Statement Piece",
-            comment: "Matches everything. The box packaging was also a delightful unboxing experience.",
-            name: "Priya R.",
-            role: "Owner",
-            images: ["https://images.pexels.com/photos/1183266/pexels-photo-1183266.jpeg?auto=compress&cs=tinysrgb&w=800"],
-            date: "Aug 15, 2024",
-            isVerifiedPurchase: true
-        }
-    },
-    {
-        productName: "Gold Band",
-        productSlug: "gold-band",
-        review: {
-            rating: 5,
-            title: "Worth the Wait",
-            comment: "Took a bit to ship, but the quality is undeniable. Solid gold feel.",
-            name: "Marcus T.",
-            role: "Editor",
-            images: ["https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"],
-            date: "Dec 01, 2024",
-            isVerifiedPurchase: true
-        }
-    }
-];
 
 const FeaturedReviews = () => {
     const [reviews, setReviews] = useState([]);
@@ -89,9 +16,9 @@ const FeaturedReviews = () => {
         const fetchReviews = async () => {
             try {
                 const { data } = await api.get('/products/reviews/featured');
-                setReviews(data && data.length > 0 ? data : MOCK_REVIEWS);
+                setReviews(Array.isArray(data) ? data : []);
             } catch (err) {
-                setReviews(MOCK_REVIEWS);
+                setReviews([]);
             } finally {
                 setLoading(false);
             }

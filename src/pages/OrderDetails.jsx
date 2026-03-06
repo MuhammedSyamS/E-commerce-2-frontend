@@ -281,7 +281,7 @@ const OrderDetails = () => {
                     {/* Animated Progress Line */}
                     <div className="absolute top-[19px] left-0 w-full h-[2px] bg-zinc-100 z-0"></div>
                     <div
-                      className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2000ms] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
+                      className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2s] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
                       style={{ width: `${(currentLevel / (milestones.length - 1)) * 100}%` }}
                     ></div>
 
