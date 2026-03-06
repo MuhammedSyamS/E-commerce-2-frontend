@@ -199,7 +199,7 @@ const AdminLayout = () => {
                     </nav>
                 </div>
 
-                <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
+                <a href="mailto:support@slook.in" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
                     <HelpCircle size={18} className="flex-shrink-0" /> Help & Support
                 </a>
                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition whitespace-nowrap">
@@ -349,7 +349,7 @@ const AdminLayout = () => {
 
                     {/* LOGOUT */}
                     <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0 space-y-2">
-                        <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
+                        <a href="mailto:support@slook.in" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
                             <HelpCircle size={18} /> Help & Support
                         </a>
                         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition w-full">

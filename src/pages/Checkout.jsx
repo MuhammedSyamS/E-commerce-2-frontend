@@ -25,7 +25,7 @@ const Checkout = () => {
   const [giftNote, setGiftNote] = useState('');
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
 
-  const loyaltyDiscount = useLoyaltyPoints ? Math.min(calculateSubtotal(), user?.loyaltyPoints || 0) : 0;
+
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -64,6 +64,7 @@ const Checkout = () => {
   };
 
   const subtotal = calculateSubtotal();
+  const loyaltyDiscount = useLoyaltyPoints ? Math.min(subtotal, user?.loyaltyPoints || 0) : 0;
   const discountAmount = couponApplied ? couponApplied.discountAmount : (coupon ? coupon.discount : 0);
 
   const taxPrice = (subtotal * (siteSettings.taxRate / 100));
@@ -612,7 +613,7 @@ const Checkout = () => {
 
               <div className="space-y-3 border-t border-dashed border-zinc-200 pt-6">
                 {/* LOYALTY POINTS REDEMPTION */}
-                {user?.loyaltyPoints > 0 && (
+                {user?.loyaltyPoints >= 100 && (
                   <div className={`p-4 rounded-2xl border transition-all cursor-pointer mb-4 ${useLoyaltyPoints ? 'bg-amber-50 border-amber-200' : 'bg-white border-zinc-100'}`} onClick={() => setUseLoyaltyPoints(!useLoyaltyPoints)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">

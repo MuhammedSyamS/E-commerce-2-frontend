@@ -158,6 +158,11 @@ const Account = () => {
           <p className="text-zinc-500 text-[10px] md:text-sm font-bold uppercase tracking-widest">
             Welcome back, <span className="text-black font-black">{displayName}</span>
           </p>
+          {user?.phone && (
+            <p className="text-zinc-400 text-[9px] md:text-xs font-bold uppercase tracking-[0.2em] mt-2">
+              {user.phone}
+            </p>
+          )}
         </div>
 
         {/* Grid Layout - Responsive: 1 col mobile, 2 col tablet, 3 col desktop */}

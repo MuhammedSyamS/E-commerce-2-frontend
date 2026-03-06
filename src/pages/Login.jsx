@@ -47,20 +47,24 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await api.post('/users/login', {
+      const { data } = await api.post('/users/login', {
         email: email.toLowerCase().trim(),
         password
       });
 
-      if (res.data && res.data.token) {
-        setUser(res.data);
-        syncGuestWishlist(); // Sync any guest items
-        addToast("WELCOME BACK!", "success");
-        if (isStaff(res.data)) navigate('/admin');
-        else navigate('/account');
+      setUser(data);
+      syncGuestWishlist(); // Sync any guest items
+      addToast(`WELCOME BACK, ${data.firstName.toUpperCase()}`, "success");
+      
+      if (data.role === 'admin' || data.role === 'manager') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/account');
       }
     } catch (err) {
-      addToast(err.response?.data?.message || "Invalid email or password", "error");
+      const msg = err.response?.data?.message || "AUTHENTICATION FAILED. PLEASE TRY AGAIN.";
+      addToast(msg.toUpperCase(), "error");
+      console.error("Login Error:", err.response?.data);
     } finally {
       setLoading(false);
     }

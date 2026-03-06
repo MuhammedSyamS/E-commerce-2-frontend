@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
-import { Ticket, Zap, Plus, Minus, Trash2, Mail, Send, Users, Clock, ShoppingCart } from 'lucide-react';
+import { Ticket, Zap, Plus, Minus, Trash2, Mail, Send, Users, Clock, ShoppingCart, Pencil } from 'lucide-react';
 
 const AdminMarketing = () => {
     const { user } = useStore();
@@ -13,6 +13,10 @@ const AdminMarketing = () => {
     const [products, setProducts] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [showAdvanced, setShowAdvanced] = useState(false);
+    const [editingCouponId, setEditingCouponId] = useState(null);
+    const [editingFlashSaleId, setEditingFlashSaleId] = useState(null);
+    const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [foundUsers, setFoundUsers] = useState([]);
 
     const [newCoupon, setNewCoupon] = useState({
         code: '',
@@ -24,7 +28,8 @@ const AdminMarketing = () => {
         eligibleProducts: [],
         eligibleCategories: [],
         usageLimit: '',
-        perUserLimit: ''
+        perUserLimit: '',
+        specificUsers: []
     });
 
     const [newFlashSale, setNewFlashSale] = useState({
@@ -126,6 +131,20 @@ const AdminMarketing = () => {
         }
     };
 
+    const searchUsers = async (query) => {
+        setUserSearchQuery(query);
+        if (query.length < 2) {
+            setFoundUsers([]);
+            return;
+        }
+        try {
+            const { data } = await api.get(`/users?search=${query}&pageSize=5`);
+            setFoundUsers(data.users || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const sendNudge = async (userId) => {
         try {
             await api.post(`/users/admin/nudge/${userId}`);
@@ -162,7 +181,12 @@ const AdminMarketing = () => {
     const createCoupon = async (e) => {
         e.preventDefault();
         try {
-            await api.post('/marketing/coupons', newCoupon);
+            // Flatten specificUsers to just IDs for the backend
+            const couponData = {
+                ...newCoupon,
+                specificUsers: newCoupon.specificUsers.map(u => u._id || u)
+            };
+            await api.post('/marketing/coupons', couponData);
             addToast("Coupon Created Successfully", "success");
             fetchCoupons();
             setNewCoupon({
@@ -175,11 +199,52 @@ const AdminMarketing = () => {
                 eligibleProducts: [],
                 eligibleCategories: [],
                 usageLimit: '',
-                perUserLimit: ''
+                perUserLimit: '',
+                specificUsers: []
             });
         } catch (err) {
             addToast("Failed to create coupon", "error");
         }
+    };
+
+    const startEditCoupon = (coupon) => {
+        setEditingCouponId(coupon._id);
+        setNewCoupon({
+            code: coupon.code,
+            discountType: coupon.discountType,
+            discountAmount: coupon.discountAmount,
+            minPurchase: coupon.minPurchase,
+            expiryDate: coupon.expiryDate ? new Date(coupon.expiryDate).toISOString().split('T')[0] : '',
+            isFirstOrderOnly: coupon.isFirstOrderOnly || false,
+            eligibleProducts: coupon.eligibleProducts || [],
+            eligibleCategories: coupon.eligibleCategories || [],
+            usageLimit: coupon.usageLimit || '',
+            perUserLimit: coupon.perUserLimit || '',
+            specificUsers: coupon.specificUsers || []
+        });
+        setShowAdvanced((coupon.eligibleProducts?.length > 0 || coupon.eligibleCategories?.length > 0 || coupon.specificUsers?.length > 0));
+    };
+
+    const updateCoupon = async (e) => {
+        e.preventDefault();
+        try {
+            // Flatten specificUsers to just IDs for the backend
+            const couponData = {
+                ...newCoupon,
+                specificUsers: newCoupon.specificUsers.map(u => u._id || u)
+            };
+            await api.put(`/marketing/coupons/${editingCouponId}`, couponData);
+            addToast("Coupon Updated Successfully", "success");
+            fetchCoupons();
+            cancelEditCoupon();
+        } catch (err) {
+            addToast("Failed to update coupon", "error");
+        }
+    };
+
+    const cancelEditCoupon = () => {
+        setEditingCouponId(null);
+        setNewCoupon({ code: '', discountType: 'percentage', discountAmount: '', minPurchase: '', expiryDate: '', isFirstOrderOnly: false, eligibleProducts: [], eligibleCategories: [], usageLimit: '', perUserLimit: '', specificUsers: [] });
     };
 
     const toggleCouponStatus = async (id) => {
@@ -224,6 +289,36 @@ const AdminMarketing = () => {
         } catch (err) {
             addToast("Failed to launch flash sale", "error");
         }
+    };
+
+    const startEditFlashSale = (sale) => {
+        setEditingFlashSaleId(sale._id);
+        const formatDT = (d) => d ? new Date(d).toISOString().slice(0, 16) : '';
+        setNewFlashSale({
+            name: sale.name,
+            discountPercentage: sale.discountPercentage,
+            startTime: formatDT(sale.startTime),
+            endTime: formatDT(sale.endTime),
+            products: sale.products?.map(p => p._id || p) || []
+        });
+        setShowAdvanced(sale.products?.length > 0);
+    };
+
+    const updateFlashSale = async (e) => {
+        e.preventDefault();
+        try {
+            await api.put(`/marketing/flash-sales/${editingFlashSaleId}`, newFlashSale);
+            addToast("Flash Sale Updated", "success");
+            fetchFlashSales();
+            cancelEditFlashSale();
+        } catch (err) {
+            addToast("Failed to update flash sale", "error");
+        }
+    };
+
+    const cancelEditFlashSale = () => {
+        setEditingFlashSaleId(null);
+        setNewFlashSale({ name: '', discountPercentage: '', startTime: '', endTime: '', products: [] });
     };
 
     const toggleFlashSaleStatus = async (id) => {
@@ -324,6 +419,9 @@ const AdminMarketing = () => {
                                             >
                                                 <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${coupon.isActive ? 'right-1' : 'left-1'}`}></div>
                                             </button>
+                                            <button onClick={() => startEditCoupon(coupon)} className="p-2 hover:bg-blue-50 hover:text-blue-500 rounded-lg transition-colors" title="Edit">
+                                                <Pencil size={16} />
+                                            </button>
                                             <button onClick={() => deleteCoupon(coupon._id)} className="p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors">
                                                 <Trash2 size={16} />
                                             </button>
@@ -335,8 +433,11 @@ const AdminMarketing = () => {
                     </div>
                     {/* ... existing coupon form */}
                     <div className="bg-zinc-50 p-8 rounded-3xl h-fit">
-                        <h3 className="font-black text-lg uppercase italic mb-6">Create Coupon</h3>
-                        <form onSubmit={createCoupon} className="space-y-4">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="font-black text-lg uppercase italic">{editingCouponId ? 'Edit Coupon' : 'Create Coupon'}</h3>
+                            {editingCouponId && <button onClick={cancelEditCoupon} className="text-[9px] font-black uppercase text-red-500 hover:text-red-700 transition">Cancel</button>}
+                        </div>
+                        <form onSubmit={editingCouponId ? updateCoupon : createCoupon} className="space-y-4">
                             {/* ... inputs */}
                             <div>
                                 <label className="text-[9px] font-black uppercase text-zinc-400">Code</label>
@@ -443,6 +544,76 @@ const AdminMarketing = () => {
                                                 ))}
                                         </div>
                                     </div>
+                                    {/* USER SELECTOR */}
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black uppercase text-zinc-400 block">Allowed Users Only (Whitelist - Optional)</label>
+                                        <div className="flex items-center gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Search users to allow..."
+                                                className="flex-1 bg-white p-2 rounded-lg text-xs font-bold border border-zinc-100 placeholder:text-zinc-300 outline-none focus:border-zinc-400 transition-colors"
+                                                value={userSearchQuery}
+                                                onChange={e => searchUsers(e.target.value)}
+                                            />
+                                            {userSearchQuery && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setUserSearchQuery(''); setFoundUsers([]); }}
+                                                    className="p-2 hover:bg-zinc-200 rounded-lg transition-colors"
+                                                >
+                                                    <Plus size={14} className="rotate-45" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Found Users Dropdown-like List */}
+                                        {foundUsers.length > 0 && (
+                                            <div className="bg-white border border-zinc-100 rounded-xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                {foundUsers.map(u => (
+                                                    <div
+                                                        key={u._id}
+                                                        onClick={() => {
+                                                            if (!newCoupon.specificUsers.find(item => (item._id || item) === u._id)) {
+                                                                // Store full object for UI display
+                                                                setNewCoupon(prev => ({ ...prev, specificUsers: [...prev.specificUsers, u] }));
+                                                            }
+                                                            setUserSearchQuery('');
+                                                            setFoundUsers([]);
+                                                        }}
+                                                        className="p-3 hover:bg-zinc-50 cursor-pointer flex items-center justify-between border-b border-zinc-50 last:border-0"
+                                                    >
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase">{u.firstName} {u.lastName}</p>
+                                                            <p className="text-[9px] text-zinc-400 font-bold">{u.email}</p>
+                                                        </div>
+                                                        <Plus size={14} className="text-zinc-300" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        {/* Selected Users Pills */}
+                                        {newCoupon.specificUsers.length > 0 && (
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {newCoupon.specificUsers.map(userItem => {
+                                                    const userId = userItem._id || userItem;
+                                                    const displayName = userItem.firstName ? `${userItem.firstName} ${userItem.lastName}` : userId.slice(-6);
+                                                    return (
+                                                        <div key={userId} className="bg-zinc-900 text-white pl-3 pr-1 py-1 rounded-full text-[9px] font-bold uppercase flex items-center gap-2">
+                                                            <span>{displayName}</span>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setNewCoupon(prev => ({ ...prev, specificUsers: prev.specificUsers.filter(item => (item._id || item) !== userId) }))}
+                                                                className="h-4 w-4 bg-white/20 hover:bg-white/40 rounded-full flex items-center justify-center transition-colors"
+                                                            >
+                                                                <Plus size={10} className="rotate-45" />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
@@ -460,7 +631,7 @@ const AdminMarketing = () => {
                             </div>
 
                             <button type="submit" className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform">
-                                Create Coupon
+                                {editingCouponId ? 'Update Coupon' : 'Create Coupon'}
                             </button>
                         </form>
                     </div >
@@ -501,6 +672,9 @@ const AdminMarketing = () => {
                                         >
                                             <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${sale.isActive ? 'right-1' : 'left-1'}`}></div>
                                         </button>
+                                        <button onClick={() => startEditFlashSale(sale)} className="p-2 hover:bg-blue-50 hover:text-blue-500 rounded-lg transition-colors" title="Edit">
+                                            <Pencil size={16} />
+                                        </button>
                                         <button onClick={() => deleteFlashSale(sale._id)} className="p-2 hover:bg-red-50 hover:text-red-500 rounded-lg transition-colors">
                                             <Trash2 size={16} />
                                         </button>
@@ -512,8 +686,11 @@ const AdminMarketing = () => {
 
                     {/* CREATE FORM */}
                     <div className="bg-zinc-50 p-8 rounded-3xl h-fit">
-                        <h3 className="font-black text-lg uppercase italic mb-6">Launch Flash Sale</h3>
-                        <form onSubmit={createFlashSale} className="space-y-4">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="font-black text-lg uppercase italic">{editingFlashSaleId ? 'Edit Flash Sale' : 'Launch Flash Sale'}</h3>
+                            {editingFlashSaleId && <button onClick={cancelEditFlashSale} className="text-[9px] font-black uppercase text-red-500 hover:text-red-700 transition">Cancel</button>}
+                        </div>
+                        <form onSubmit={editingFlashSaleId ? updateFlashSale : createFlashSale} className="space-y-4">
                             <div>
                                 <label className="text-[9px] font-black uppercase text-zinc-400">Sale Name</label>
                                 <input required type="text" placeholder="e.g. 48H FLASH SALE" className="w-full bg-white p-3 rounded-xl text-sm font-bold uppercase outline-none focus:ring-2 ring-black/10"
@@ -579,7 +756,7 @@ const AdminMarketing = () => {
                                 </div>
                             )}
                             <button type="submit" className="w-full bg-black text-white py-4 rounded-xl font-black uppercase tracking-widest text-[10px] hover:scale-[1.02] transition-transform">
-                                Start Sale
+                                {editingFlashSaleId ? 'Update Sale' : 'Start Sale'}
                             </button>
                         </form>
                     </div>

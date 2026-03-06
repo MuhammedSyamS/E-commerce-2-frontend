@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/instance';
-import { MessageSquare, Star, Trash2, Eye, EyeOff, MessageCircle, X, Search, Quote, Shield } from 'lucide-react'; // Added Search, Quote, Shield
+import { useStore } from '../../store/useStore';
+import { useToast } from '../../context/ToastContext';
+import { MessageSquare, Star, Trash2, Eye, EyeOff, MessageCircle, X, Search, Quote, Shield, Pencil } from 'lucide-react';
 
 const AdminReviews = () => {
     const { user } = useStore();
@@ -178,6 +180,17 @@ const AdminReviews = () => {
                                             >
                                                 <MessageCircle size={16} />
                                             </button>
+
+                                            {/* Edit Response Button */}
+                                            {item.review.adminResponse && (
+                                                <button
+                                                    onClick={() => { setReplyingTo(item.review._id); setReplyText(item.review.adminResponse); }}
+                                                    className="p-2 bg-blue-50 text-blue-500 rounded-lg hover:bg-blue-500 hover:text-white transition"
+                                                    title="Edit Response"
+                                                >
+                                                    <Pencil size={16} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
 

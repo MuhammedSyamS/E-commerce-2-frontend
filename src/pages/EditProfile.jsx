@@ -11,7 +11,8 @@ const EditProfile = () => {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
-    email: ''
+    email: '',
+    phone: ''
   });
 
   const [loading, setLoading] = useState(false);
@@ -23,7 +24,8 @@ const EditProfile = () => {
         ...prev,
         firstName: user.firstName || '',
         lastName: user.lastName || '',
-        email: user.email || '' // Read Only
+        email: user.email || '', // Read Only
+        phone: user.phone || ''
       }));
     }
   }, [user]);
@@ -39,6 +41,7 @@ const EditProfile = () => {
       const updateData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
+        phone: formData.phone,
       };
 
       const { data } = await api.put('/users/profile', updateData);
@@ -100,6 +103,19 @@ const EditProfile = () => {
                   placeholder="Last Name"
                 />
               </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-zinc-500 mb-2">Phone Number</label>
+            <div className="relative">
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                className="w-full bg-zinc-50 border border-transparent focus:border-black rounded-xl py-3 px-4 outline-none font-bold text-sm transition"
+                placeholder="Phone Number"
+              />
             </div>
           </div>
 

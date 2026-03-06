@@ -6,7 +6,7 @@ import { GoogleLogin as GoogleAuthButton } from '@react-oauth/google';
 import { useToast } from '../context/ToastContext';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
@@ -169,6 +169,13 @@ const Register = () => {
                 placeholder="Email"
                 className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-sm md:text-[10px] tracking-widest"
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
               />
               <input

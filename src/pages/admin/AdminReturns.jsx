@@ -1,556 +1,403 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../api/instance';
+import { 
+    RefreshCw, Search, Eye, Truck, Check, X, 
+    AlertCircle, Camera, User, ShoppingBag, 
+    ArrowRight, ChevronLeft, ChevronRight, 
+    FileText, ShieldCheck, ShieldAlert, History,
+    ChevronDown, Package, CheckCircle2, XCircle
+} from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStore } from '../../store/useStore';
-import { RefreshCw, Search, Filter, Eye, Truck, Check, X, AlertCircle, Calendar, ShieldAlert } from 'lucide-react';
-import AlertModal from '../../components/ui/AlertModal';
 
 const AdminReturns = () => {
-    const { user } = useStore();
+    const { addToast } = useToast();
     const [returns, setReturns] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('All');
+    const [page, setPage] = useState(1);
+    const [pages, setPages] = useState(1);
+    const [total, setTotal] = useState(0);
     const [searchTerm, setSearchTerm] = useState('');
-
-    const [viewMedia, setViewMedia] = useState(null);
-    const [schedulePickupModal, setSchedulePickupModal] = useState({ show: false, returnId: null, courier: 'BLUE DART', trackingId: '', date: new Date().toISOString().split('T')[0] });
-    const [confirmAction, setConfirmAction] = useState({ show: false, id: null, action: '', extraData: {} });
+    const [activeTab, setActiveTab] = useState('all');
+    const [expandedRows, setExpandedRows] = useState(new Set());
     const [processingId, setProcessingId] = useState(null);
+    const [viewMedia, setViewMedia] = useState(null);
 
-    const [alertState, setAlertState] = useState({ show: false, title: '', message: '', type: 'info' });
-    const showAlert = (title, message, type = 'info') => {
-        setAlertState({ show: true, title, message, type });
-    };
-
-    const fetchReturns = async () => {
+    const fetchReturns = useCallback(async (p = page, search = searchTerm, status = activeTab) => {
+        setLoading(true);
         try {
-            const { data } = await api.get('/returns/admin');
-            setReturns(data);
+            const { data } = await api.get(`/returns/admin`, {
+                params: {
+                    page: p,
+                    pageSize: 15,
+                    keyword: search,
+                    status: status === 'all' ? undefined : status
+                }
+            });
+            setReturns(data.returns || []);
+            setPages(data.pages || 1);
+            setTotal(data.total || 0);
+            setPage(data.page || 1);
+        } catch (err) {
+            addToast("Failed to fetch returns data", "error");
+        } finally {
             setLoading(false);
-        } catch (error) {
-            console.error(error);
-            setLoading(false);
-            showAlert('Error', 'Failed to fetch returns data', 'error');
         }
-    };
+    }, [addToast, activeTab, searchTerm, page]);
 
     useEffect(() => {
-        fetchReturns();
-    }, [user.token]);
+        fetchReturns(1);
+    }, [fetchReturns]);
 
-    // PERFORMANCE OPTIMIZATION: Memoize filtered data
-    const filteredReturns = useMemo(() => {
-        let result = returns;
-        if (activeTab !== 'All') {
-            result = result.filter(r => r.status === activeTab);
-        }
-        if (searchTerm) {
-            const lowSearch = searchTerm.toLowerCase();
-            result = result.filter(r =>
-                r.order?._id.toLowerCase().includes(lowSearch) ||
-                r.user?.email.toLowerCase().includes(lowSearch) ||
-                (r.returnId && r.returnId.toLowerCase().includes(lowSearch))
-            );
-        }
-        return result;
-    }, [activeTab, searchTerm, returns]);
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchReturns(1, searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchTerm]);
 
-    // PRE-CALCULATE TAB COUNTS (Eliminate filter inside render)
-    const tabCounts = useMemo(() => {
-        const counts = { All: returns.length };
-        returns.forEach(r => {
-            counts[r.status] = (counts[r.status] || 0) + 1;
-        });
-        return counts;
-    }, [returns]);
-
-    const [rejectModal, setRejectModal] = useState({ show: false, returnId: null, reason: '' });
-
-    const handleAction = async (id, action, extraData = {}) => {
-        if (action === 'Reject') {
-            setRejectModal({ show: true, returnId: id, reason: '' });
-            return;
-        }
-
-        if (action === 'Schedule Pickup') {
-            const retItem = returns.find(r => r._id === id);
-            const prefix = retItem?.type === 'Exchange' ? 'EXC-' : 'RTN-';
-            setSchedulePickupModal({
-                show: true,
-                returnId: id,
-                courier: 'BLUE DART',
-                trackingId: (prefix + id).toUpperCase(), // Differentiated FULL ID
-                date: new Date().toISOString().split('T')[0]
-            });
-            return;
-        }
-
-        // MNC-GRADE: Replace window.confirm with Action Card
-        setConfirmAction({ show: true, id, action, extraData });
-    };
-
-    const triggerConfirmedAction = async () => {
-        const { id, action, extraData } = confirmAction;
-        setConfirmAction({ show: false, id: null, action: '', extraData: {} });
-        await executeAction(id, action, extraData);
-    };
-
-    const submitPickup = async () => {
-        if (!schedulePickupModal.courier || !schedulePickupModal.trackingId) {
-            showAlert('Missing Info', 'Please provide courier and tracking details.', 'warning');
-            return;
-        }
-
-        await executeAction(schedulePickupModal.returnId, 'Schedule Pickup', {
-            pickupDetails: {
-                courier: schedulePickupModal.courier,
-                trackingId: schedulePickupModal.trackingId,
-                scheduledDate: schedulePickupModal.date,
-                method: 'Pickup'
-            }
-        });
-        setSchedulePickupModal({ ...schedulePickupModal, show: false });
-    };
-
-    const confirmReject = async () => {
-        if (!rejectModal.returnId || !rejectModal.reason) return;
-        setRejectModal({ ...rejectModal, show: false });
-        await executeAction(rejectModal.returnId, 'Reject', { adminComment: rejectModal.reason });
-    };
-
-    const executeAction = async (id, action, extraData = {}) => {
+    const handleAction = async (id, status, extraData = {}) => {
+        setProcessingId(id);
         try {
-            setProcessingId(id);
-            if (status) {
-                await api.put(`/returns/${id}/status`, { status, ...extraData });
-            } else if (action === 'Resolve') {
-                await api.put(`/returns/${id}/resolve`, {});
-            }
-
-            fetchReturns();
-            showAlert('Success', `${action} processed`, 'success');
-        } catch (error) {
-            const msg = error.response?.data?.message || 'Action failed';
-            showAlert('Action Failed', msg, 'error');
+            await api.put(`/returns/${id}/status`, { status, ...extraData });
+            addToast(`Updated: ${status}`, "success");
+            setReturns(prev => prev.map(r => r._id === id ? { ...r, status, ...extraData } : r));
+        } catch (err) {
+            addToast(err.response?.data?.message || "Action failed", "error");
         } finally {
             setProcessingId(null);
         }
     };
 
-    const tabs = ['All', 'Requested', 'Approved', 'Pickup Scheduled', 'QC Pending', 'QC Passed', 'QC Failed', 'Refund Completed', 'Replacement Sent', 'Rejected'];
-
-    const getMediaUrl = (path) => {
-        if (!path) return '';
-        if (path.startsWith('http') || path.startsWith('data:')) return path;
-        return `${path}`;
+    const resolveReturn = async (id, type) => {
+        setProcessingId(id);
+        try {
+            await api.put(`/returns/${id}/resolve`, {});
+            addToast(`Success: ${type === 'Return' ? 'Refunded' : 'Exchanged'}`, "success");
+            fetchReturns();
+        } catch (err) {
+            addToast(err.response?.data?.message || "Resolution failed", "error");
+        } finally {
+            setProcessingId(null);
+        }
     };
 
+    const toggleRow = (id) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(id)) newExpanded.delete(id);
+        else newExpanded.add(id);
+        setExpandedRows(newExpanded);
+    };
+
+    const StatusBadge = ({ status }) => {
+        const styles = {
+            'Requested': 'bg-amber-50 text-amber-600 border-amber-100',
+            'Approved': 'bg-blue-50 text-blue-600 border-blue-100',
+            'Pickup Scheduled': 'bg-indigo-50 text-indigo-600 border-indigo-100',
+            'Picked Up': 'bg-sky-50 text-sky-600 border-sky-100',
+            'QC Pending': 'bg-purple-50 text-purple-600 border-purple-100',
+            'QC Passed': 'bg-emerald-50 text-emerald-600 border-emerald-100',
+            'QC Failed': 'bg-rose-50 text-rose-600 border-rose-100',
+            'Refund Completed': 'bg-zinc-900 text-white border-zinc-900',
+            'Replacement Sent': 'bg-zinc-900 text-white border-zinc-900',
+            'Rejected': 'bg-zinc-100 text-zinc-400 border-zinc-200',
+        };
+        return (
+            <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-wider border ${styles[status] || styles['Requested']}`}>
+                {status}
+            </span>
+        );
+    };
+
+    const tabs = ['all', 'Requested', 'Approved', 'QC Pending', 'QC Passed', 'Refund Completed', 'Replacement Sent', 'Rejected'];
+
     return (
-        <div className="p-8 pt-24 min-h-screen max-w-[1600px] mx-auto relative bg-zinc-50/50">
-            <AnimatePresence>
-                {alertState.show && (
-                    <AlertModal
-                        isOpen={alertState.show}
-                        onClose={() => setAlertState({ ...alertState, show: false })}
-                        title={alertState.title}
-                        message={alertState.message}
-                        type={alertState.type}
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* CONFIRM ACTION CARD (MNC STYLE) */}
-            <AnimatePresence>
-                {confirmAction.show && (
-                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl border border-zinc-100 text-center"
-                        >
-                            <div className="w-16 h-16 bg-zinc-900 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-zinc-200">
-                                <ShieldAlert size={32} className="text-white" />
-                            </div>
-                            <h3 className="text-xl font-black uppercase tracking-tighter mb-2 italic">Confirm Action</h3>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed mb-8">
-                                Are you sure you want to <span className="text-black">{confirmAction.action}</span> for this request? This action will be logged.
-                            </p>
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => setConfirmAction({ show: false, id: null, action: '', extraData: {} })}
-                                    className="py-3 bg-zinc-50 text-zinc-400 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={triggerConfirmedAction}
-                                    className="py-3 bg-black text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-lg"
-                                >
-                                    Execute
-                                </button>
-                            </div>
-                        </motion.div>
+        <div className="p-8 bg-[#fbfbfb] min-h-screen relative font-sans">
+            {/* Header */}
+            <header className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+                <div>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center shadow-xl shadow-zinc-200">
+                            <RefreshCw className="text-white" size={20} />
+                        </div>
+                        <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">
+                            Reverse <span className="text-zinc-300">Desk</span>
+                        </h1>
                     </div>
-                )}
-            </AnimatePresence>
-
-            {/* PICKUP SCHEDULING MODAL */}
-            {schedulePickupModal.show && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center mb-1">
-                            <h3 className="text-xl font-black uppercase tracking-tighter text-blue-600">Schedule Logistics</h3>
-                            <button onClick={() => setSchedulePickupModal({ ...schedulePickupModal, show: false })} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
-                        </div>
-                        <div className="mb-4 bg-zinc-50 p-2 rounded-lg border border-zinc-100">
-                            <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400 block mb-0.5">System Reference ID</span>
-                            <span className="text-[10px] font-mono font-bold text-zinc-600 break-all">{schedulePickupModal.returnId}</span>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Courier Partner</label>
-                                <select
-                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500"
-                                    value={schedulePickupModal.courier}
-                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, courier: e.target.value })}
-                                >
-                                    <option value="BLUE DART">BLUE DART</option>
-                                    <option value="DELHIVERY">DELHIVERY</option>
-                                    <option value="XPRESSBEES">XPRESSBEES</option>
-                                    <option value="ECOM EXPRESS">ECOM EXPRESS</option>
-                                    <option value="FEDEX">FEDEX</option>
-                                </select>
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Return Tracking No (RTN TRK)</label>
-                                <input
-                                    type="text"
-                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-mono font-bold uppercase focus:outline-none focus:border-blue-500"
-                                    value={schedulePickupModal.trackingId}
-                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, trackingId: e.target.value.toUpperCase() })}
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1 block">Scheduled Date</label>
-                                <input
-                                    type="date"
-                                    className="w-full p-3 border border-zinc-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500"
-                                    value={schedulePickupModal.date}
-                                    onChange={(e) => setSchedulePickupModal({ ...schedulePickupModal, date: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex justify-end gap-2 mt-8">
-                            <button
-                                onClick={() => setSchedulePickupModal({ ...schedulePickupModal, show: false })}
-                                className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={submitPickup}
-                                className="px-6 py-2 bg-blue-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-blue-700 transition-all shadow-lg shadow-blue-100 flex items-center gap-2"
-                            >
-                                <Truck size={14} /> Confirm Logistics
-                            </button>
-                        </div>
-                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Claim Reconciliation & Logistics</p>
                 </div>
-            )}
 
-            {/* REJECTION MODAL */}
-            {rejectModal.show && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="text-xl font-black uppercase tracking-tighter text-red-600">Reject Return Request</h3>
-                            <button onClick={() => setRejectModal({ show: false, returnId: null, reason: '' })} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
-                        </div>
-
-                        <p className="text-sm text-zinc-500 mb-4">
-                            Please provide a reason for rejection. This will be sent to the customer via email.
-                        </p>
-
-                        <textarea
-                            className="w-full h-32 p-3 border border-zinc-200 rounded-lg text-sm focus:outline-none focus:border-red-500 transition-colors resize-none mb-4"
-                            placeholder="Enter rejection reason (e.g., mismatched item, policy violation)..."
-                            value={rejectModal.reason}
-                            onChange={(e) => setRejectModal({ ...rejectModal, reason: e.target.value })}
+                <div className="flex flex-wrap gap-3 items-center">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-black transition-colors" size={14} />
+                        <input
+                            placeholder="Find Claim ID, Order, Client..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="bg-white border border-zinc-200 pl-11 pr-6 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest w-72 focus:ring-4 ring-zinc-50 focus:border-black outline-none transition-all shadow-sm"
                         />
-
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setRejectModal({ show: false, returnId: null, reason: '' })}
-                                className="px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmReject}
-                                disabled={!rejectModal.reason.trim()}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                Confirm Rejection
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
-
-            {/* MEDIA VIEWER MODAL */}
-            {viewMedia && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm" onClick={() => setViewMedia(null)}>
-                    <div className="bg-white rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-black uppercase tracking-tighter">Return Proofs</h3>
-                            <button onClick={() => setViewMedia(null)} className="p-2 hover:bg-zinc-100 rounded-full transition-colors"><X size={20} /></button>
-                        </div>
-
-                        {(!viewMedia.images || viewMedia.images.length === 0) ? (
-                            <div className="text-center py-12 text-zinc-400">No media uploaded</div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {viewMedia.images.map((url, idx) => {
-                                    const isVideo = url.match(/\.(mp4|mov|avi|webm|mkv)$/i) || url.startsWith('data:video/');
-                                    const fullUrl = getMediaUrl(url);
-                                    return (
-                                        <div key={idx} className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 shadow-md">
-                                            {isVideo ? (
-                                                <video
-                                                    src={fullUrl}
-                                                    controls
-                                                    playsInline
-                                                    className="w-full h-64 object-contain bg-black"
-                                                />
-                                            ) : (
-                                                <img src={fullUrl} alt="proof" className="w-full h-64 object-contain bg-black" />
-                                            )}
-                                            <div className="p-2 bg-white text-[10px] font-mono text-center border-t border-zinc-200 truncate">
-                                                {url.split(/[/\\]/).pop()}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
-                        <div className="mt-6 flex justify-end">
-                            <button onClick={() => setViewMedia(null)} className="px-6 py-2 bg-black text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 transition-colors">Close Viewer</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-lg font-black uppercase tracking-tight flex items-center gap-3">
-                    <RefreshCw size={18} className="text-zinc-400" />
-                    Return <span className="text-zinc-400">and Exchange</span>
-                </h1>
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
-                    <input
-                        type="text"
-                        placeholder="Search Order ID / Email"
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="pl-10 pr-4 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:border-black transition-colors w-64 uppercase placeholder:normal-case"
-                    />
-                </div>
-            </div>
-
-            {/* TABS */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2 custom-scrollbar">
-                {tabs.map(tab => (
-                    <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${activeTab === tab ? 'bg-black text-white shadow-lg scale-105' : 'bg-white text-zinc-500 hover:bg-zinc-100 hover:text-black'
-                            }`}
+                    <button 
+                        onClick={() => { fetchReturns(); addToast("Syncing Database...", "info"); }}
+                        className="p-3.5 bg-white border border-zinc-200 rounded-2xl text-zinc-400 hover:text-black hover:border-black transition-all shadow-sm active:scale-95"
                     >
-                        {tab} <span className="opacity-50 ml-1">({tabCounts[tab] || 0})</span>
+                        <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                     </button>
-                ))}
-            </div>
+                </div>
+            </header>
 
-            {/* TABLE */}
-            <div className="bg-white rounded-2xl shadow-sm border border-zinc-100 overflow-x-auto">
-                <table className="w-full text-left min-w-[1000px]">
-                    <thead className="bg-zinc-50 border-b border-zinc-100">
-                        <tr>
-                            {['Sl No', 'Order / Date', 'Customer', 'Product', 'Proof', 'Type / Reason', 'Status', 'Logistics', 'Actions'].map(h => (
-                                <th key={h} className="px-6 py-4 text-[9px] font-black uppercase tracking-widest text-zinc-400">{h}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-50">
-                        {loading ? (
-                            <tr><td colSpan="9" className="text-center py-8">Loading Returns...</td></tr>
-                        ) : filteredReturns.length === 0 ? (
-                            <tr><td colSpan="9" className="text-center py-8 text-zinc-400">No returns found</td></tr>
-                        ) : (
-                            filteredReturns.map((ret, index) => (
-                                <tr key={ret._id} className="hover:bg-zinc-50/50 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-xs text-zinc-500">#{index + 1}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-1 group/id cursor-pointer" onClick={() => { navigator.clipboard.writeText(ret.order?._id); showAlert('Copied', 'Order ID copied to clipboard', 'success'); }}>
-                                                <span className="font-black text-[10px] text-zinc-900 uppercase tracking-tighter">ORD: {ret.order?._id}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1 group/id cursor-pointer" onClick={() => { navigator.clipboard.writeText(ret._id); showAlert('Copied', `${ret.type} ID copied to clipboard`, 'success'); }}>
-                                                <span className="font-bold text-[9px] text-zinc-400 uppercase tracking-tight">{ret.type.slice(0, 3).toUpperCase()}: {ret._id}</span>
-                                            </div>
-                                            <div className="text-[9px] font-bold text-zinc-400 mt-1 uppercase tracking-widest">{new Date(ret.createdAt).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="font-bold text-xs">{ret.user?.firstName}</div>
-                                        <div className="text-[10px] text-zinc-400">{ret.user?.email}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded border border-zinc-100 bg-zinc-50 flex items-center justify-center overflow-hidden">
-                                                {ret.orderItem.image ? (
-                                                    <img src={ret.orderItem.image} alt="" className="w-full h-full object-cover" />
-                                                ) : <Package size={16} className="text-zinc-300" />}
-                                            </div>
-                                            <div>
-                                                <div className="font-bold text-[10px] uppercase line-clamp-1 w-32">{ret.orderItem.name}</div>
-                                                <div className="text-[9px] text-zinc-400">Qty: {ret.orderItem.qty}</div>
-                                            </div>
-                                        </div>
-                                    </td>
+            {/* Main Content */}
+            <div className="max-w-[1500px] mx-auto">
+                <div className="flex gap-1.5 p-1 bg-zinc-900/5 rounded-2xl border border-white mb-8 overflow-x-auto no-scrollbar max-w-max">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => { setActiveTab(tab); setPage(1); }}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                activeTab === tab ? 'bg-black text-white shadow-lg' : 'text-zinc-500 hover:bg-white hover:text-black'
+                            }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </div>
 
-                                    {/* PROOF COLUMN */}
-                                    <td className="px-6 py-4">
-                                        {ret.images && ret.images.length > 0 ? (
-                                            <button
-                                                onClick={() => setViewMedia(ret)}
-                                                className="flex items-center gap-2 px-3 py-1.5 bg-zinc-100 hover:bg-black hover:text-white transition-colors rounded-lg group/btn"
-                                            >
-                                                <Eye size={14} />
-                                                <span className="text-[9px] font-black uppercase tracking-wide">
-                                                    View ({ret.images.length})
-                                                </span>
-                                            </button>
-                                        ) : (
-                                            <span className="text-[9px] font-bold text-red-400 uppercase tracking-widest">No Proof</span>
-                                        )}
-                                    </td>
-
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
-                                            {ret.type}
-                                        </span>
-                                        {ret.type === 'Exchange' && ret.requestedVariant && (
-                                            <div className="mt-1 flex flex-col">
-                                                <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Requested:</span>
-                                                <span className="text-[10px] font-black uppercase text-purple-600">{ret.requestedVariant.size} {ret.requestedVariant.color && `/ ${ret.requestedVariant.color}`}</span>
-                                            </div>
-                                        )}
-                                        <div className="mt-1 text-[10px] font-medium text-zinc-600">{ret.reason}</div>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="px-2 py-1 bg-zinc-100 rounded text-[9px] font-bold uppercase tracking-wide">
-                                            {ret.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {ret.pickupDetails?.courier ? (
-                                            <div className="text-[10px]">
-                                                <div className="font-bold text-zinc-600">{ret.pickupDetails.courier}</div>
-                                                <div className="text-zinc-400">{ret.pickupDetails.trackingId}</div>
-                                            </div>
-                                        ) : <span className="text-[10px] text-zinc-300">-</span>}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex flex-col gap-1 w-32">
-                                            {/* DYNAMIC ACTIONS */}
-                                            {ret.status === 'Requested' && (
-                                                <div className="flex gap-1">
-                                                    <button
-                                                        onClick={() => handleAction(ret._id, 'Approve')}
-                                                        disabled={processingId === ret._id}
-                                                        className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                    >
-                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Approve'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAction(ret._id, 'Reject')}
-                                                        disabled={processingId === ret._id}
-                                                        className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                    >
-                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Reject'}
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {ret.status === 'Approved' && (
-                                                <button
-                                                    onClick={() => handleAction(ret._id, 'Schedule Pickup')}
-                                                    disabled={processingId === ret._id}
-                                                    className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded disabled:opacity-50 flex items-center justify-center gap-2"
-                                                >
-                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : <><Truck size={10} /> Schedule Pickup</>}
-                                                </button>
-                                            )}
-                                            {ret.status === 'Pickup Scheduled' && (
-                                                <button
-                                                    onClick={() => handleAction(ret._id, 'Mark Picked Up')}
-                                                    disabled={processingId === ret._id}
-                                                    className="py-1 bg-blue-50 text-blue-600 text-[9px] font-bold uppercase hover:bg-blue-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                >
-                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Confirm Pickup'}
-                                                </button>
-                                            )}
-                                            {(ret.status === 'Picked Up' || ret.status === 'In Transit') && (
-                                                <button
-                                                    onClick={() => handleAction(ret._id, 'Mark Received')}
-                                                    disabled={processingId === ret._id}
-                                                    className="py-1 bg-purple-50 text-purple-600 text-[9px] font-bold uppercase hover:bg-purple-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                >
-                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Receive & QC'}
-                                                </button>
-                                            )}
-                                            {(ret.status === 'Received' || ret.status === 'QC Pending') && (
-                                                <div className="flex gap-1">
-                                                    <button
-                                                        onClick={() => handleAction(ret._id, 'Pass QC')}
-                                                        disabled={processingId === ret._id}
-                                                        className="flex-1 py-1 bg-green-50 text-green-600 text-[9px] font-bold uppercase hover:bg-green-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                    >
-                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Pass QC'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleAction(ret._id, 'Fail QC')}
-                                                        disabled={processingId === ret._id}
-                                                        className="flex-1 py-1 bg-red-50 text-red-600 text-[9px] font-bold uppercase hover:bg-red-100 rounded disabled:opacity-50 flex items-center justify-center gap-1"
-                                                    >
-                                                        {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : 'Fail QC'}
-                                                    </button>
-                                                </div>
-                                            )}
-                                            {ret.status === 'QC Passed' && (
-                                                <button
-                                                    onClick={() => handleAction(ret._id, 'Resolve')}
-                                                    disabled={processingId === ret._id}
-                                                    className="py-1 bg-green-600 text-white text-[9px] font-bold uppercase hover:bg-green-700 rounded shadow-lg shadow-green-200 disabled:opacity-50 flex items-center justify-center gap-1"
-                                                >
-                                                    {processingId === ret._id ? <RefreshCw size={10} className="animate-spin" /> : `Resolve (${ret.type === 'Return' ? 'Refund' : 'Replace'})`}
-                                                </button>
-                                            )}
-                                        </div>
-                                    </td>
+                <div className="bg-white border border-zinc-100 rounded-[2.5rem] shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-50/50 border-b border-zinc-100">
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-16 text-center"></th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Unit Info</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Claim Logic</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Status Ops</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Direct Action</th>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-50">
+                                <AnimatePresence mode="popLayout">
+                                    {loading ? (
+                                        [...Array(5)].map((_, i) => (
+                                            <tr key={`skeleton-r-${i}`}>
+                                                <td colSpan="5" className="p-8">
+                                                    <div className="h-14 bg-zinc-50 animate-pulse rounded-2xl w-full" />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : returns.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="5" className="p-32 text-center">
+                                                <div className="flex flex-col items-center gap-4">
+                                                    <div className="w-16 h-16 bg-zinc-50 rounded-3xl flex items-center justify-center text-zinc-200">
+                                                        <RefreshCw size={32} />
+                                                    </div>
+                                                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400">Zero active claims found</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : returns.map((r) => (
+                                        <React.Fragment key={r._id}>
+                                            <motion.tr 
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className={`transition-colors group ${expandedRows.has(r._id) ? 'bg-zinc-50 shadow-inner' : 'hover:bg-zinc-50/50'}`}
+                                            >
+                                                <td className="p-6 text-center">
+                                                    <button 
+                                                        onClick={() => toggleRow(r._id)}
+                                                        className={`p-2 rounded-xl border border-zinc-100 bg-white shadow-sm transition-all ${expandedRows.has(r._id) ? 'rotate-180 bg-black text-white border-black' : 'text-zinc-400 hover:text-black hover:border-black'}`}
+                                                    >
+                                                        <ChevronDown size={14} />
+                                                    </button>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-10 h-10 bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/50">
+                                                            <img src={r.orderItem?.image} alt="" className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-black text-xs uppercase tracking-tight">#{r._id.slice(-8)}</div>
+                                                            <div className="text-[9px] text-zinc-400 font-bold uppercase mt-1 tracking-widest">{r.type}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="font-bold text-[11px] text-zinc-900 group-hover:text-black transition-colors">"{r.reason}"</div>
+                                                    <div className="text-[9px] text-zinc-400 font-bold uppercase mt-1 italic">ORD-{r.order?._id.slice(-8)} • {r.user?.email}</div>
+                                                </td>
+                                                <td className="p-6">
+                                                    <StatusBadge status={r.status} />
+                                                </td>
+                                                <td className="p-6 text-right">
+                                                    <div className="flex justify-end gap-2 group-hover:opacity-100 opacity-60 transition-opacity">
+                                                        {/* Dynamic Direct Actions */}
+                                                        {r.status === 'Requested' && (
+                                                            <>
+                                                                <button onClick={() => handleAction(r._id, 'Approve')} className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Approve Request">
+                                                                    <Check size={14} />
+                                                                </button>
+                                                                <button onClick={() => handleAction(r._id, 'Rejected')} className="p-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Reject Request">
+                                                                    <X size={14} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {r.status === 'QC Pending' && (
+                                                            <>
+                                                                <button onClick={() => handleAction(r._id, 'QC Passed')} className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Pass QC">
+                                                                    <CheckCircle2 size={14} />
+                                                                </button>
+                                                                <button onClick={() => handleAction(r._id, 'QC Failed')} className="p-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Fail QC">
+                                                                    <XCircle size={14} />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                        {r.status === 'QC Passed' && (
+                                                            <button onClick={() => resolveReturn(r._id, r.type)} className="flex items-center gap-2 px-4 py-2.5 bg-black text-white rounded-xl text-[9px] font-black uppercase tracking-widest hover:scale-105 transition-all shadow-lg" title="Final Resolution">
+                                                                Resolve <ArrowRight size={12} />
+                                                            </button>
+                                                        )}
+                                                        <button onClick={() => setViewMedia(r.images)} className="p-2.5 bg-white border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm" title="Proof Evidence">
+                                                            <Camera size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </motion.tr>
+
+                                            {/* Sub-row Expansion */}
+                                            <AnimatePresence>
+                                                {expandedRows.has(r._id) && (
+                                                    <motion.tr 
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="bg-zinc-50/50"
+                                                    >
+                                                        <td colSpan="5" className="p-0 overflow-hidden">
+                                                            <div className="p-10 grid grid-cols-1 lg:grid-cols-3 gap-10">
+                                                                {/* Column 1: Item & Details */}
+                                                                <div className="space-y-6">
+                                                                    <div>
+                                                                        <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                                                                            <Package size={12} /> SKU Integrity
+                                                                        </h4>
+                                                                        <div className="p-4 bg-white border border-zinc-100 rounded-[2rem] shadow-sm">
+                                                                            <p className="text-xs font-black uppercase italic leading-tight">{r.orderItem?.name}</p>
+                                                                            <p className="text-[9px] text-zinc-400 font-bold uppercase mt-2">
+                                                                                REF: {r.orderItem?.itemId} • QTY: {r.orderItem?.qty}
+                                                                            </p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                                                                            <History size={12} /> Claim Comment
+                                                                        </h4>
+                                                                        <p className="text-xs text-zinc-600 font-medium bg-white p-4 rounded-[2rem] border border-zinc-100 leading-relaxed italic">
+                                                                            "{r.comment || 'No additional commentary provided by client.'}"
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Column 2: Evidence */}
+                                                                <div className="space-y-6">
+                                                                    <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
+                                                                        <Camera size={12} /> Proof Evidence
+                                                                    </h4>
+                                                                    {r.images?.length > 0 ? (
+                                                                        <div className="grid grid-cols-3 gap-3">
+                                                                            {r.images.map((img, i) => (
+                                                                                <div key={i} onClick={() => setViewMedia(r.images)} className="aspect-square bg-white rounded-2xl overflow-hidden border border-zinc-100 hover:scale-110 transition-transform cursor-zoom-in">
+                                                                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    ) : (
+                                                                        <div className="p-8 border-2 border-dashed border-zinc-200 rounded-[2rem] text-center">
+                                                                            <AlertCircle size={20} className="mx-auto text-zinc-200 mb-2" />
+                                                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-300">No Visual Assets</p>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Column 3: Identity & Logistics */}
+                                                                <div className="space-y-6">
+                                                                    <div className="p-6 bg-zinc-900 text-white rounded-[2.5rem] shadow-xl shadow-zinc-200">
+                                                                        <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-500 mb-4 flex items-center gap-2">
+                                                                            <User size={12} /> Client Profile
+                                                                        </h4>
+                                                                        <p className="text-xs font-black mb-1">{r.user?.firstName} {r.user?.lastName}</p>
+                                                                        <p className="text-[10px] text-zinc-400 font-medium truncate">{r.user?.email}</p>
+                                                                        <div className="mt-6 pt-6 border-t border-white/10">
+                                                                            <p className="text-[8px] font-black uppercase tracking-widest text-zinc-500 mb-2">Internal Ref</p>
+                                                                            <p className="text-[10px] font-mono text-zinc-300">BATCH-CL-RTN-{r._id.slice(-6).toUpperCase()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </motion.tr>
+                                                )}
+                                            </AnimatePresence>
+                                        </React.Fragment>
+                                    ))}
+                                </AnimatePresence>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="p-8 bg-zinc-50/50 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                            Reverse Log: <span className="text-zinc-900">{total} CLAIMS</span> • Page {page} / {pages}
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1 || loading}
+                                className="flex items-center gap-2 px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-zinc-50 transition-all shadow-sm"
+                            >
+                                <ChevronLeft size={14} /> Prev
+                            </button>
+                            <button 
+                                onClick={() => setPage(p => Math.min(pages, p + 1))}
+                                disabled={page === pages || loading}
+                                className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:scale-[1.05] active:scale-95 transition-all shadow-lg shadow-black/10"
+                            >
+                                Next <ChevronRight size={14} />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {/* Lightbox Media Viewer */}
+            <AnimatePresence>
+                {viewMedia && (
+                    <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setViewMedia(null)}
+                        className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-8"
+                    >
+                        <button className="absolute top-8 right-8 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all">
+                            <X size={24} />
+                        </button>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl w-full" onClick={e => e.stopPropagation()}>
+                            {viewMedia.map((img, i) => (
+                                <motion.div 
+                                    key={i}
+                                    initial={{ scale: 0.9, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    className="aspect-square bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 group"
+                                >
+                                    <img src={img} alt="" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

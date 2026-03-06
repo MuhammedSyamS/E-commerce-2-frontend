@@ -2,270 +2,261 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Eye, Heart, Loader2, Star, Zap, Plus, X, ShoppingBag } from 'lucide-react';
+import { Heart, Loader2, Star, Zap, Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import api from '../api/instance';
 import Price from './Price';
-import QuickView from './QuickView';
+
 
 const ProductCard = ({ product, onAddToCart }) => {
-  const { user, cart: guestCart, setUser, flashSale, addToCart, setCart } = useStore();
-  const cart = user ? (user.cart || []) : (guestCart || []);
+  const { user, setUser, addToCart, flashSale } = useStore();
   const navigate = useNavigate();
   const { success, error, info } = useToast();
+
   const [loading, setLoading] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
-  const [showQuickView, setShowQuickView] = useState(false);
-  const [selectedSize, setSelectedSize] = useState(null);
-  const [selectedColor, setSelectedColor] = useState(null);
 
-  // --- FLASH SALE LOGIC ---
-  const isFlashSale = flashSale && flashSale.products && flashSale.products.some(p => (p._id || p) === product._id);
-  const discountPrice = isFlashSale
+  const [selectedSize, setSelectedSize] = useState(null);
+
+  // Hover state — React controlled (100% reliable vs CSS group-hover)
+  const [hovered, setHovered] = useState(false);
+
+  // Qty state — local, instant, no store lookup
+  const [qty, setQty] = useState(0);
+  const inCart = qty > 0;
+
+  // Determine if product is available — check variant.stock (exact schema field) or countInStock
+  const hasVariants = product.variants?.length > 0;
+  const totalVariantStock = hasVariants
+    ? product.variants.reduce((sum, v) => sum + Number(v.stock || 0), 0)
+    : 0;
+  const isOutOfStock = hasVariants
+    ? totalVariantStock <= 0
+    : Number(product.countInStock ?? 0) <= 0;
+
+  // Flash sale
+  const isFlashSale = flashSale?.products?.some(p => (p._id || p) === product._id);
+  const salePrice = isFlashSale
     ? Math.round(product.price * (1 - flashSale.discountPercentage / 100))
     : null;
+  const finalPrice = isFlashSale ? salePrice : product.price;
 
-  // --- WISHLIST CHECK ---
+  // Wishlist
   const wishlist = Array.isArray(user?.wishlist) ? user.wishlist : [];
-  const isFav = wishlist.some(item => (item?._id || item)?.toString() === product?._id?.toString());
+  const isFav = wishlist.some(i => (i?._id || i)?.toString() === product?._id?.toString());
 
-  // --- TOGGLE WISHLIST ---
   const handleWishlist = async (e) => {
-    e.preventDefault();
-    if (!user) {
-      error("Please login to save favorites");
-      return navigate('/login');
-    }
+    e.preventDefault(); e.stopPropagation();
+    if (!user) { error("Please login to save favorites"); return navigate('/login'); }
     setLoading(true);
     try {
       const { data } = await api.post('/wishlist', { productId: product._id }, {
         headers: { Authorization: `Bearer ${user.token}` }
       });
       setUser({ ...user, wishlist: data });
-      const isNowFav = data.some(item => (item?._id || item)?.toString() === product._id?.toString());
-      isNowFav ? success("Saved to Wishlist") : info("Removed from Wishlist");
-    } catch (err) {
-      error("Failed to update wishlist");
-    } finally {
-      setLoading(false);
-    }
+      data.some(i => (i?._id || i)?.toString() === product._id?.toString())
+        ? success("Saved to Wishlist") : info("Removed from Wishlist");
+    } catch { error("Failed to update wishlist"); }
+    finally { setLoading(false); }
   };
 
-  // --- ADD TO CART ---
-  const handleAddToCart = async (e) => {
-    if (e) e.preventDefault();
+  const handleAdd = async (e) => {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (inCart) return;
 
-    const hasVariants = product.variants && product.variants.length > 0;
-    if (hasVariants && (!selectedSize || !selectedColor) && !showQuickAdd) {
-      setShowQuickAdd(true);
-      return;
-    }
+    if (hasVariants && !selectedSize && !showQuickAdd) { setShowQuickAdd(true); return; }
+    if (!user) { error("Please login to shop"); return navigate('/login'); }
 
     setCartLoading(true);
     try {
-      const variantData = hasVariants ? {
-        size: selectedSize || product.variants[0].size,
-        color: selectedColor || product.variants[0].color
-      } : null;
+      const variantData = hasVariants
+        ? { size: selectedSize || product.variants[0].size, color: product.variants.find(v => v.size === (selectedSize || product.variants[0].size))?.color || product.variants[0].color }
+        : null;
 
-      await addToCart({
-        ...product,
-        price: isFlashSale ? discountPrice : product.price,
-        selectedVariant: variantData,
-        quantity: 1
-      });
+      const { data } = await api.post('/cart/add', {
+        productId: product._id,
+        name: product.name,
+        price: finalPrice,
+        image: product.image,
+        selectedVariant: variantData
+      }, { headers: { Authorization: `Bearer ${user.token}` } });
 
-      success(`Added ${product.name} to bag`);
+      setUser({ ...user, cart: data });
+      setQty(1);
       setShowQuickAdd(false);
+      success(`Added to bag`);
       if (onAddToCart) onAddToCart();
-    } catch (err) {
-      error("Failed to add to bag");
-    } finally {
-      setCartLoading(false);
-    }
+    } catch (err) { error(err?.response?.data?.message || "Failed to add to bag"); }
+    finally { setCartLoading(false); }
   };
 
-  // --- QUANTITY LOGIC ---
-  const cartItem = cart?.find(item => {
-    const itemProductId = (item.product?._id || item.product || item._id || '').toString();
-    return itemProductId === product?._id?.toString();
-  });
+  const increment = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    setQty(q => q + 1);
+  };
 
-  const updateQuantity = async (delta) => {
-    if (!cartItem) return;
-    const newQty = Math.max(0, (cartItem.quantity || 1) + delta);
-
-    let updatedCart;
-    if (newQty === 0) {
-      updatedCart = cart.filter(item => (item._id || item.product?._id || item.product || '').toString() !== (cartItem._id || cartItem.product?._id || cartItem.product || '').toString());
-    } else {
-      updatedCart = cart.map(item => {
-        if ((item._id || item.product?._id || item.product || '').toString() === (cartItem._id || cartItem.product?._id || cartItem.product || '').toString()) {
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      });
-    }
-
-    setCart(updatedCart);
-
-    if (user?.token && cartItem._id) {
-      try {
-        await api.post('/cart/update', { cartItemId: cartItem._id, quantity: newQty }, { headers: { Authorization: `Bearer ${user.token}` } });
-      } catch (err) {
-        console.error("Failed to sync quantity update:", err);
-      }
-    }
+  const decrement = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    setQty(q => Math.max(0, q - 1));
   };
 
   if (!product?._id) return null;
 
   return (
-    <div className="group/card relative w-full transition-all duration-500 md:hover:-translate-y-2 text-center">
-      {/* IMAGE & OVERLAYS CONTAINER */}
-      <div className="relative w-full aspect-[4/5] bg-zinc-50 border border-zinc-100 mb-3 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+    <div
+      className="relative w-full md:max-w-[260px]"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* IMAGE CONTAINER */}
+      <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">
 
-        {/* SHARED ZOOM CONTAINER */}
-        <div className="absolute inset-0">
-          <Link to={`/product/${product.slug || product._id}`}>
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-110"
-              loading="lazy"
-            />
-          </Link>
-        </div>
+        {/* Lift + shadow on hover via inline style */}
+        <div
+          className="absolute inset-0 z-0 rounded-2xl transition-all duration-500"
+          style={{ boxShadow: hovered ? '0 16px 40px rgba(0,0,0,0.15)' : 'none' }}
+        />
 
-        {/* TOP OVERLAYS */}
-        <div className="absolute top-0 left-0 z-20">
-          {isFlashSale && (
-            <div className="bg-red-600 text-white px-3 py-1.5 rounded-tl-2xl">
-              <p className="text-[8px] font-black uppercase tracking-widest flex items-center gap-1">
-                <Zap size={10} fill="currentColor" /> Flash Sale
-              </p>
-            </div>
-          )}
-          {product.isNewArrival && !isFlashSale && (
-            <div className="bg-black text-white px-3 py-1.5 rounded-tl-2xl">
-              <p className="text-[8px] font-black uppercase tracking-widest">New Arrival</p>
-            </div>
-          )}
-          {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
-            <div className="bg-zinc-800 text-white px-3 py-1.5 rounded-tl-2xl">
-              <p className="text-[8px] font-black uppercase tracking-widest text-[#FFD700]">Elite Choice</p>
-            </div>
-          )}
-        </div>
+        {/* Image */}
+        <Link to={`/product/${product.slug || product._id}`} onClick={e => showQuickAdd && e.preventDefault()}>
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover transition-transform duration-700"
+            style={{ transform: hovered ? 'scale(1.08)' : 'scale(1)' }}
+            loading="lazy"
+          />
+        </Link>
 
-        {product.countInStock > 0 && product.countInStock < 5 && (
-          <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-20 animate-pulse rounded-tr-2xl">
-            <p className="text-[8px] font-black uppercase tracking-widest">Limited Stock</p>
+        {/* Badges */}
+        {isFlashSale && (
+          <div className="absolute top-0 left-0 bg-red-600 text-white px-3 py-1.5 z-10">
+            <p className="text-[8px] font-black uppercase tracking-widest flex items-center gap-1"><Zap size={10} fill="currentColor" /> Flash Sale</p>
           </div>
         )}
-
-        {product.countInStock === 0 && (
+        {product.isNewArrival && !isFlashSale && (
+          <div className="absolute top-0 left-0 bg-black text-white px-3 py-1.5 z-10">
+            <p className="text-[8px] font-black uppercase tracking-widest">New Arrival</p>
+          </div>
+        )}
+        {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
+          <div className="absolute top-0 left-0 bg-zinc-800 text-white px-3 py-1.5 z-10">
+            <p className="text-[8px] font-black uppercase tracking-widest">Elite Choice</p>
+          </div>
+        )}
+        {!isOutOfStock && (product.countInStock < 5 || product.variants?.some(v => Number(v.stock ?? 0) > 0 && Number(v.stock ?? 0) < 5)) && (
+          <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-10">
+            <p className="text-[8px] font-black uppercase tracking-widest">Low Stock</p>
+          </div>
+        )}
+        {isOutOfStock && (
           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
             <span className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">Out of Stock</span>
           </div>
         )}
 
-        {/* TOP RIGHT ICONS */}
-        <div className="absolute top-3 right-3 z-30 flex flex-col gap-2">
-          <button onClick={handleWishlist} className="p-2 rounded-full bg-white/90 shadow-sm hover:bg-white active:scale-90 transition-all border border-zinc-100">
-            {loading ? <Loader2 size={14} className="animate-spin text-zinc-500" /> : <Heart size={14} fill={isFav ? "black" : "none"} className="text-black" />}
-          </button>
-          <button onClick={(e) => { e.preventDefault(); setShowQuickView(true); }} className="md:opacity-0 group-hover/card:opacity-100 p-2 rounded-full bg-white text-black shadow-sm hover:bg-black hover:text-white active:scale-90 transition-all duration-300 border border-zinc-100">
-            <Eye size={14} />
+        {/* Heart icon */}
+        <div className="absolute top-2 right-2 z-30 flex flex-col gap-2">
+          <button
+            onClick={handleWishlist} disabled={loading}
+            className="p-1.5 rounded-full bg-white/90 shadow hover:bg-white active:scale-90 transition-all"
+          >
+            {loading ? <Loader2 size={14} className="animate-spin text-zinc-400" />
+              : <Heart size={14} fill={isFav ? "black" : "none"} className="text-black" />}
           </button>
         </div>
 
-        <QuickView isOpen={showQuickView} onClose={() => setShowQuickView(false)} product={product} />
 
-        {/* DESKTOP HOVER: ADD TO BAG / QUANTITY */}
-        {product.countInStock > 0 && !showQuickAdd && (
-          <div className="hidden md:flex absolute inset-x-0 bottom-0 z-40 translate-y-full opacity-0 group-hover/card:translate-y-0 group-hover/card:opacity-100 transition-all duration-500">
-            <div className="w-full bg-black text-white overflow-hidden shadow-2xl">
-              {cartItem ? (
-                <div className="flex items-center w-full">
-                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQuantity(-1); }} className="flex-1 py-4 hover:bg-zinc-800 transition-colors flex justify-center border-r border-white/10"><X size={14} /></button>
-                  <div className="px-4 py-4 text-[10px] font-black min-w-[3rem] text-center">{cartItem.quantity}</div>
-                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQuantity(1); }} className="flex-1 py-4 hover:bg-zinc-800 transition-colors flex justify-center"><Plus size={14} /></button>
-                </div>
-              ) : (
-                <button
-                  onClick={handleAddToCart}
-                  disabled={cartLoading}
-                  className="w-full py-5 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 hover:bg-zinc-900 flex items-center justify-center gap-2"
-                >
-                  {cartLoading ? <Loader2 size={12} className="animate-spin" /> : 'Add to Bag'}
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
-        {/* MOBILE QUICK ADD TRIGGER */}
-        {product.countInStock > 0 && !showQuickAdd && (
-          <button onClick={handleAddToCart} className="md:hidden absolute bottom-3 right-3 bg-black text-white w-10 h-10 rounded-full flex items-center justify-center shadow-xl z-20 active:scale-95 transition-all">
-            <ShoppingBag size={16} />
-          </button>
-        )}
-
-        {/* QUICK SIZE SELECTOR OVERLAY */}
+        {/* Quick Size Selector */}
         {showQuickAdd && (
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-50 p-6 flex flex-col justify-end animate-in fade-in duration-300">
-            <button onClick={(e) => { e.stopPropagation(); setShowQuickAdd(false); }} className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"><X size={20} /></button>
-            <div className="space-y-6">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 text-center">Select Size</p>
-              <div className="flex flex-wrap gap-2 justify-center">
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-40 p-4 flex flex-col justify-end">
+            <button onClick={e => { e.stopPropagation(); setShowQuickAdd(false); }} className="absolute top-2 right-2 text-white/50 hover:text-white">
+              <X size={18} />
+            </button>
+            <div className="space-y-3">
+              <p className="text-[9px] font-black uppercase tracking-[0.3em] text-white/50">Select Size</p>
+              <div className="flex flex-wrap gap-1.5">
                 {[...new Set(product.variants.map(v => v.size))].map(size => (
-                  <button key={size} onClick={() => setSelectedSize(size)} className={`min-w-10 h-10 px-3 rounded-lg text-xs font-black border transition-all ${selectedSize === size ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/20 hover:border-white/40'}`}>{size}</button>
+                  <button key={size} onClick={() => setSelectedSize(size)}
+                    className={`min-w-8 h-8 px-2 rounded-lg text-[10px] font-black border transition-all ${selectedSize === size ? 'bg-white text-black border-white' : 'bg-transparent text-white/60 border-white/20'}`}>
+                    {size}
+                  </button>
                 ))}
               </div>
-              <button onClick={handleAddToCart} disabled={cartLoading || !selectedSize} className="w-full bg-white text-black py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-zinc-100 active:scale-95 transition-all disabled:opacity-20 flex items-center justify-center gap-2">
-                {cartLoading ? <Loader2 size={14} className="animate-spin" /> : 'Confirm Selection'}
+              <button onClick={handleAdd} disabled={cartLoading || !selectedSize}
+                className="w-full bg-white text-black py-3 rounded-xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 flex items-center justify-center gap-2">
+                {cartLoading ? <Loader2 size={12} className="animate-spin" /> : 'Confirm'}
               </button>
             </div>
           </div>
         )}
+
+        {/* ====== ADD TO BAG / QUANTITY BAR ======
+            - Uses inline opacity (NOT translate) to show/hide — never clipped by overflow-hidden
+            - hovered is React state (not CSS group-hover) — works inside scroll containers
+            - Renders for EVERY product regardless of stock (stock check disabled for diagnosis)
+        */}
+        {!showQuickAdd && (
+          <div
+            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white"
+            style={{
+              opacity: (hovered || inCart) ? 1 : 0,
+              pointerEvents: (hovered || inCart) ? 'auto' : 'none',
+              transition: 'opacity 0.25s ease'
+            }}
+          >
+            {inCart ? (
+              <div className="flex items-stretch w-full">
+                <button
+                  onClick={decrement}
+                  className="flex-1 h-11 flex items-center justify-center hover:bg-zinc-800 border-r border-white/10"
+                >
+                  {qty === 1 ? <X size={11} /> : <Minus size={11} />}
+                </button>
+                <div className="flex-1 flex items-center justify-center text-[11px] font-black bg-zinc-900">
+                  {qty}
+                </div>
+                <button
+                  onClick={increment}
+                  className="flex-1 h-11 flex items-center justify-center hover:bg-zinc-800 border-l border-white/10"
+                >
+                  <Plus size={11} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleAdd}
+                disabled={cartLoading || isOutOfStock}
+                className="w-full h-11 text-[9px] font-black uppercase tracking-[0.15em] hover:bg-zinc-900 disabled:opacity-50"
+              >
+                {isOutOfStock ? 'Out of Stock' : cartLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : 'Add to Bag'}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* PRODUCT INFO PANEL */}
-      <div className="px-1 mt-3">
-        <h3 className="text-[11px] md:text-[13px] font-black uppercase tracking-tight mb-1 truncate leading-tight transition-colors group-hover/card:text-zinc-600">{product.name}</h3>
-        <div className="flex items-center justify-center gap-2 mb-2">
+      {/* ====== PRODUCT INFO ====== */}
+      <div className="px-1 text-center mt-3">
+        <h3 className="text-[11px] md:text-[12px] font-black uppercase tracking-tight mb-0.5 truncate">{product.name}</h3>
+        <div className="flex items-center justify-center gap-2">
           {isFlashSale ? (
             <>
-              <Price amount={discountPrice} className="text-[12px] md:text-[15px] font-black text-red-600" />
-              <Price amount={product.price} className="text-[10px] md:text-[11px] text-zinc-400 line-through" />
+              <Price amount={salePrice} className="text-[11px] md:text-[12px] font-black text-red-600" />
+              <Price amount={product.price} className="text-[9px] text-zinc-400 line-through" />
             </>
           ) : (
-            <Price amount={product.price} className="text-[12px] md:text-[15px] font-black" />
+            <Price amount={product.price} className="text-[11px] md:text-[12px] font-black" />
           )}
         </div>
-
-        {/* MOBILE BOTTOM CONTROLS */}
-        <div className="md:hidden mt-3">
-          {cartItem ? (
-            <div className="flex items-center justify-between bg-zinc-100 rounded-full overflow-hidden h-11 px-2 border border-zinc-200">
-              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQuantity(-1); }} className="p-2 hover:bg-zinc-200 rounded-full transition-colors"><X size={12} /></button>
-              <span className="text-[11px] font-black tracking-widest">{cartItem.quantity}</span>
-              <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); updateQuantity(1); }} className="p-2 hover:bg-zinc-200 rounded-full transition-colors"><Plus size={12} /></button>
-            </div>
-          ) : (
-            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleAddToCart(e); }} className="w-full bg-black text-white py-4 rounded-full text-[10px] font-black uppercase tracking-widest shadow-md active:scale-95 transition-all">Add To Bag</button>
-          )}
-        </div>
-
-        {/* RATING SECTION */}
-        <div className="flex items-center justify-center gap-1 mt-4 opacity-30 group-hover/card:opacity-100 transition-opacity">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} size={10} fill={i < Math.round(product.rating || 0) ? "black" : "transparent"} className={i < Math.round(product.rating || 0) ? "text-black" : "text-zinc-300"} />
-            ))}
-          </div>
-          <span className="text-[9px] font-black text-zinc-400">({product.numReviews || 0})</span>
+        <div className="flex items-center justify-center gap-1 mt-1.5">
+          {[...Array(5)].map((_, i) => (
+            <Star key={i} size={9}
+              fill={i < Math.round(product.rating || 0) ? "black" : "transparent"}
+              className={i < Math.round(product.rating || 0) ? "text-black" : "text-zinc-300"} />
+          ))}
+          <span className="text-[8px] font-bold text-zinc-400 ml-0.5">({product.numReviews || 0})</span>
         </div>
       </div>
     </div>

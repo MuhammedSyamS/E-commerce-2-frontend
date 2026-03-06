@@ -87,6 +87,7 @@ const Orders = () => {
                           case 'Cancelled': colorClass = 'bg-red-50 text-red-500'; break;
                           case 'Returned': colorClass = 'bg-orange-50 text-orange-500'; break;
                           case 'Return Requested': colorClass = 'bg-orange-50 text-orange-400'; break;
+                          case 'Exchanged': colorClass = 'bg-indigo-100 text-indigo-600'; break; // NEW
                           default: colorClass = 'bg-zinc-100 text-zinc-600';
                         }
 

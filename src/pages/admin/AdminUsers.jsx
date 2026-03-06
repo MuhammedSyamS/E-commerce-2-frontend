@@ -146,7 +146,8 @@ const AdminUsers = () => {
             (u.firstName || "").toLowerCase().includes(search) ||
             (u.lastName || "").toLowerCase().includes(search) ||
             fullName.includes(search) ||
-            (u.email || "").toLowerCase().includes(search)
+            (u.email || "").toLowerCase().includes(search) ||
+            (u.phone || "").toLowerCase().includes(search)
         );
     });
 
@@ -211,6 +212,7 @@ const AdminUsers = () => {
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold uppercase">{u.firstName} {u.lastName}</div>
+                                                <div className="text-[9px] text-zinc-900 font-black mt-1 uppercase tracking-tighter">{u.phone || 'No Number'}</div>
                                                 <div className="text-[9px] text-zinc-400 font-bold uppercase tracking-wide">{u.email}</div>
                                             </div>
                                         </div>

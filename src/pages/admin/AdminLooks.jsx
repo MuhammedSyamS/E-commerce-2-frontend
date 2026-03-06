@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
-import { Check, X, Trash2, Camera, User, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Check, X, Trash2, Camera, User, Clock, CheckCircle2, XCircle, Pencil } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -10,7 +10,8 @@ const AdminLooks = () => {
     const { addToast } = useToast();
     const [looks, setLooks] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState('all'); // all, pending, approved, rejected
+    const [filter, setFilter] = useState('all');
+    const [editingLook, setEditingLook] = useState(null);
 
     const MOCK_LOOKS = [
         {
@@ -70,6 +71,18 @@ const AdminLooks = () => {
         }
     };
 
+    const handleEdit = async () => {
+        if (!editingLook) return;
+        try {
+            await api.put(`/looks/${editingLook._id}`, { caption: editingLook.caption });
+            addToast("Look updated", "success");
+            setLooks(prev => prev.map(l => l._id === editingLook._id ? { ...l, caption: editingLook.caption } : l));
+            setEditingLook(null);
+        } catch (err) {
+            addToast("Update failed", "error");
+        }
+    };
+
     const filteredLooks = looks.filter(l => filter === 'all' || l.status === filter);
 
     if (loading) return (
@@ -80,6 +93,24 @@ const AdminLooks = () => {
 
     return (
         <div className="space-y-8">
+            {/* EDIT MODAL */}
+            {editingLook && (
+                <div className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+                        <h3 className="text-lg font-black uppercase italic mb-6">Edit Caption</h3>
+                        <textarea
+                            className="w-full bg-zinc-50 border border-zinc-200 rounded-2xl p-4 text-sm font-medium outline-none focus:border-black transition resize-none h-32"
+                            value={editingLook.caption}
+                            onChange={(e) => setEditingLook({ ...editingLook, caption: e.target.value })}
+                        />
+                        <div className="flex gap-3 mt-6">
+                            <button onClick={() => setEditingLook(null)} className="flex-1 py-3 bg-zinc-100 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-zinc-200 transition">Cancel</button>
+                            <button onClick={handleEdit} className="flex-1 py-3 bg-black text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-zinc-800 transition">Save</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* HEADER */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <div>
@@ -160,11 +191,11 @@ const AdminLooks = () => {
                                     </div>
 
                                     {/* ACTIONS */}
-                                    <div className="grid grid-cols-2 gap-3 pt-2">
+                                    <div className="grid grid-cols-3 gap-2 pt-2">
                                         {look.status === 'pending' || look.status === 'rejected' ? (
                                             <button
                                                 onClick={() => handleStatusUpdate(look._id, 'approved')}
-                                                className="flex items-center justify-center gap-2 py-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
+                                                className="flex items-center justify-center gap-1.5 py-3 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
                                             >
                                                 <Check size={14} /> Approve
                                             </button>
@@ -173,15 +204,22 @@ const AdminLooks = () => {
                                         {look.status === 'pending' || look.status === 'approved' ? (
                                             <button
                                                 onClick={() => handleStatusUpdate(look._id, 'rejected')}
-                                                className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
+                                                className="flex items-center justify-center gap-1.5 py-3 bg-red-50 text-red-600 rounded-xl hover:bg-red-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
                                             >
                                                 <X size={14} /> Reject
                                             </button>
                                         ) : null}
 
                                         <button
+                                            onClick={() => setEditingLook({ _id: look._id, caption: look.caption })}
+                                            className="flex items-center justify-center gap-1.5 py-3 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
+                                        >
+                                            <Pencil size={14} /> Edit
+                                        </button>
+
+                                        <button
                                             onClick={() => handleDelete(look._id)}
-                                            className="col-span-2 flex items-center justify-center gap-2 py-3 bg-zinc-50 text-zinc-400 rounded-xl hover:bg-zinc-900 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
+                                            className="col-span-3 flex items-center justify-center gap-2 py-3 bg-zinc-50 text-zinc-400 rounded-xl hover:bg-zinc-900 hover:text-white transition-all text-[9px] font-black uppercase tracking-widest"
                                         >
                                             <Trash2 size={14} /> Delete Look
                                         </button>

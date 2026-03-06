@@ -1,315 +1,337 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import api from '../../api/instance';
-import { useStore } from '../../store/useStore';
-import { Search, IndianRupee, CreditCard, RotateCcw, CheckCircle, ArrowDownUp, RefreshCw, Clock } from 'lucide-react';
+import { 
+    Search, IndianRupee, CreditCard, RotateCcw, CheckCircle, 
+    ArrowDownUp, RefreshCw, Clock, Download, 
+    ChevronLeft, ChevronRight, ExternalLink, ShieldCheck, 
+    Calendar, TrendingUp, AlertTriangle, ChevronDown, ChevronUp
+} from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const AdminPayments = () => {
-    const { user } = useStore();
     const { addToast } = useToast();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [filter, setFilter] = useState('all'); // all, pending, paid, refunded
+    const [filter, setFilter] = useState('all');
+    const [page, setPage] = useState(1);
+    const [pages, setPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [expandedRows, setExpandedRows] = useState(new Set());
 
-    useEffect(() => {
-        fetchPayments();
-    }, []);
+    const [stats, setStats] = useState({
+        grossRevenue: 0,
+        netRevenue: 0,
+        pending: 0,
+        refunded: 0,
+        failed: 0,
+        transactions: 0
+    });
 
-    const fetchPayments = async () => {
+    const fetchPayments = useCallback(async (p = page, search = searchTerm, status = filter) => {
         setLoading(true);
         try {
-            // Using existing getAllOrders logic, we will filter client-side for now
-            // API returns { orders: [], page, ... } now
-            const { data } = await api.get('/orders/admin/all?pageSize=1000'); // Fetch all for stats
+            const { data } = await api.get(`/orders/admin/all`, {
+                params: {
+                    page: p,
+                    pageSize: 15,
+                    keyword: search,
+                    status: status === 'all' ? undefined : status,
+                    isPaid: status === 'paid' ? 'true' : (status === 'pending' ? 'false' : undefined)
+                }
+            });
             setOrders(data.orders || []);
+            setPages(data.pages || 1);
+            setTotal(data.total || 0);
+            setPage(data.page || 1);
         } catch (err) {
-            addToast("Failed to fetch payments", "error");
+            addToast("Failed to fetch ledger", "error");
         } finally {
             setLoading(false);
         }
-    };
+    }, [addToast, filter, searchTerm, page]);
 
-    // --- CONFIRMATION MODAL STATE ---
-    const [confirmModal, setConfirmModal] = useState({ show: false, id: null, action: null });
+    const fetchStats = useCallback(async () => {
+        try {
+            const { data } = await api.get('/orders/admin/stats');
+            setStats({
+                grossRevenue: data.totalRevenue || 0,
+                netRevenue: data.netRevenue || (data.totalRevenue - (data.refundedAmount || 0)),
+                pending: data.pendingRevenue || 0,
+                refunded: data.refundedAmount || 0,
+                failed: data.failedAmount || 0,
+                transactions: data.totalOrders || 0
+            });
+        } catch (err) {
+            console.error("Stats Error", err);
+        }
+    }, []);
 
-    const initiateAction = (id, action) => {
-        setConfirmModal({ show: true, id, action });
-    };
+    useEffect(() => {
+        fetchStats();
+        fetchPayments(1);
+    }, [fetchStats, fetchPayments]);
 
-    const handleConfirmAction = async () => {
-        const { id, action } = confirmModal;
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            fetchPayments(1, searchTerm);
+        }, 500);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    const handleAction = async (id, action) => {
         try {
             if (action === 'delete') {
                 await api.delete(`/orders/${id}`);
-                setOrders(orders.filter(o => o._id !== id));
-                addToast("Transaction deleted successfully", "success");
+                addToast("Entry purged", "success");
             } else {
                 const endpoint = action === 'pay' ? 'pay' : 'refund';
-                const { data } = await api.put(`/orders/${id}/${endpoint}`, {});
-                // Update local state
-                setOrders(orders.map(o => o._id === id ? data : o));
-                addToast(`Transaction ${action === 'pay' ? 'Verified' : 'Refunded'} Successfully`, "success");
+                await api.put(`/orders/${id}/${endpoint}`, {});
+                addToast(`Capital ${action === 'pay' ? 'Verified' : 'Refunded'}`, "success");
             }
+            fetchPayments();
+            fetchStats();
         } catch (err) {
-            addToast(`Failed to ${action} transaction`, "error");
-        } finally {
-            setConfirmModal({ show: false, id: null, action: null });
+            addToast(`Action failed: ${action}`, "error");
         }
     };
 
-    // Calculate Stats
-    // Calculate Stats
-    const stats = {
-        grossRevenue: orders.reduce((acc, o) => acc + (o.isPaid ? o.totalPrice : 0), 0),
-        netRevenue: orders.reduce((acc, o) => acc + (o.isPaid && o.orderStatus !== 'Returned' && o.orderStatus !== 'Refunded' ? o.totalPrice : 0), 0),
-        pending: orders.reduce((acc, o) => acc + (!o.isPaid && o.orderStatus !== 'Cancelled' ? o.totalPrice : 0), 0),
-        refunded: orders.reduce((acc, o) => acc + ((o.orderStatus === 'Returned' || o.orderStatus === 'Refunded') ? o.totalPrice : 0), 0),
-        failed: orders.reduce((acc, o) => acc + (o.orderStatus === 'Failed' || (o.orderStatus === 'Cancelled' && o.paymentMethod !== 'COD') ? o.totalPrice : 0), 0),
-        transactions: orders.filter(o => o.isPaid).length
+    const toggleRow = (id) => {
+        const newExpanded = new Set(expandedRows);
+        if (newExpanded.has(id)) newExpanded.delete(id);
+        else newExpanded.add(id);
+        setExpandedRows(newExpanded);
     };
 
-    // Filter Logic
-    const filteredOrders = orders.filter(o =>
-        (o._id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            o.user?.email.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filter === 'all' ||
-            (filter === 'paid' && o.isPaid) ||
-            (filter === 'pending' && !o.isPaid) ||
-            (filter === 'refunded' && (o.orderStatus === 'Returned' || o.orderStatus === 'Refunded')) ||
-            (filter === 'cancelled' && (o.orderStatus === 'Cancelled' || o.orderStatus === 'Failed')))
-    );
+    const StatusBadge = ({ status, isPaid }) => {
+        if (status === 'Returned' || status === 'Refunded') {
+            return <div className="flex items-center gap-1.5 text-rose-500 font-black text-[9px] uppercase italic tracking-widest"><RotateCcw size={10} /> Refunded</div>;
+        }
+        if (isPaid) {
+            return <div className="flex items-center gap-1.5 text-emerald-500 font-black text-[9px] uppercase italic tracking-widest"><CheckCircle size={10} /> Verified</div>;
+        }
+        return <div className="flex items-center gap-1.5 text-amber-500 font-black text-[9px] uppercase italic tracking-widest"><Clock size={10} /> Pending Inflow</div>;
+    };
 
     return (
-        <div className="p-8 min-h-screen">
-            {/* HEAD */}
-            <div className="flex justify-between items-end mb-10">
+        <div className="p-8 bg-[#fbfbfb] min-h-screen relative font-sans">
+            {/* Header */}
+            <header className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
                 <div>
-                    <h1 className="text-2xl font-black uppercase italic tracking-tighter">Transaction <span className="text-zinc-300">History</span></h1>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Revenue & Transaction Monitoring</p>
+                    <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center shadow-xl shadow-zinc-200">
+                            <IndianRupee className="text-white" size={20} />
+                        </div>
+                        <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">
+                            Treasury <span className="text-zinc-300">Control</span>
+                        </h1>
+                    </div>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Enterprise Capital Reconciliation</p>
                 </div>
 
-                <div className="flex gap-4">
-                    <button onClick={fetchPayments} className="p-3 bg-white rounded-full shadow-sm hover:bg-zinc-100 text-zinc-400 hover:text-black transition">
-                        <RefreshCw size={18} />
-                    </button>
-                    <div className="relative">
+                <div className="flex flex-wrap gap-3 items-center">
+                    <div className="relative group">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400 group-focus-within:text-black transition-colors" size={14} />
                         <input
-                            placeholder="Search Trans ID / Email..."
+                            placeholder="Find Trans-ID, Alias, Email..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-white border border-zinc-200 pl-10 pr-4 py-3 rounded-full text-xs font-bold uppercase tracking-widest w-64 focus:border-black outline-none"
+                            className="bg-white border border-zinc-200 pl-11 pr-6 py-3.5 rounded-2xl text-[11px] font-bold uppercase tracking-widest w-72 focus:ring-4 ring-zinc-50 focus:border-black outline-none transition-all shadow-sm"
                         />
-                        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-zinc-400" size={14} />
                     </div>
-                </div>
-            </div>
-
-            {/* STATS CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                {/* 1. Net Revenue */}
-                <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition text-green-600">
-                        <IndianRupee size={100} />
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Net Revenue</div>
-                    <div className="text-3xl font-black tracking-tighter text-zinc-900">₹{stats.netRevenue.toLocaleString()}</div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-300 mt-2">After Refunds</div>
-                </div>
-
-                {/* 2. Pending */}
-                <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition text-yellow-600">
-                        <ArrowDownUp size={100} />
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Pending / COD</div>
-                    <div className="text-3xl font-black tracking-tighter text-yellow-600">₹{stats.pending.toLocaleString()}</div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-yellow-400 mt-2">Expected Inflow</div>
-                </div>
-
-                {/* 3. Refunded (Loss) */}
-                <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition text-red-600">
-                        <RotateCcw size={100} />
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Refunded / Returns</div>
-                    <div className="text-3xl font-black tracking-tighter text-red-500">₹{stats.refunded.toLocaleString()}</div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-red-300 mt-2">Processed Refunds</div>
-                </div>
-
-                {/* 4. Failed / Loss */}
-                <div className="bg-white p-6 rounded-3xl border border-zinc-100 shadow-sm relative overflow-hidden group hover:shadow-lg transition">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition text-zinc-600">
-                        <CreditCard size={100} />
-                    </div>
-                    <div className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-2">Failed / Cancelled</div>
-                    <div className="text-3xl font-black tracking-tighter text-zinc-500">₹{stats.failed.toLocaleString()}</div>
-                    <div className="text-[9px] font-bold uppercase tracking-widest text-zinc-300 mt-2">Lost Opportunity</div>
-                </div>
-            </div>
-
-            {/* FILTERS */}
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                {['all', 'paid', 'pending', 'refunded', 'cancelled'].map(f => (
-                    <button
-                        key={f}
-                        onClick={() => setFilter(f)}
-                        className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition whitespace-nowrap ${filter === f ? 'bg-black text-white' : 'bg-white text-zinc-400 hover:bg-zinc-50'
-                            }`}
+                    <button 
+                        onClick={() => { fetchPayments(); fetchStats(); addToast("Syncing Ledger...", "info"); }}
+                        className="p-3.5 bg-white border border-zinc-200 rounded-2xl text-zinc-400 hover:text-black hover:border-black transition-all shadow-sm active:scale-95"
                     >
-                        {f}
+                        <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                     </button>
+                    <button className="flex items-center gap-2 px-6 py-3.5 bg-black text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] transition-all">
+                        <Download size={14} /> Audit Report
+                    </button>
+                </div>
+            </header>
+
+            {/* KPI Engine */}
+            <div className="max-w-[1500px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-4 mb-10">
+                {[
+                    { label: 'Settled Capital', val: stats.netRevenue, icon: TrendingUp, color: 'zinc' },
+                    { label: 'Pending Inflow', val: stats.pending, icon: Clock, color: 'amber' },
+                    { label: 'Reverse Capital', val: stats.refunded, icon: RotateCcw, color: 'rose' },
+                    { label: 'Trans Volume', val: stats.transactions, icon: CreditCard, color: 'zinc', isCount: true }
+                ].map((kpi, idx) => (
+                    <motion.div 
+                        key={idx}
+                        className="bg-white p-6 rounded-[2rem] border border-zinc-100 shadow-sm relative overflow-hidden group"
+                    >
+                        <div className="relative z-10">
+                            <p className="text-[8px] font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">{kpi.label}</p>
+                            <div className="text-2xl font-black mt-1">
+                                {kpi.isCount ? '' : '₹'}{kpi.val.toLocaleString()}
+                            </div>
+                        </div>
+                        <kpi.icon size={40} className="absolute top-6 right-6 text-zinc-50 group-hover:text-zinc-100 transition-colors" strokeWidth={2.5} />
+                    </motion.div>
                 ))}
             </div>
 
-            {/* TRANSACTIONS TABLE */}
-            <div className="bg-white border border-zinc-100 rounded-3xl overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                    <thead className="bg-zinc-50 border-b border-zinc-100">
-                        <tr>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Transaction ID</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">User</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Amount</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Method</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Status</th>
-                            <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-zinc-50">
-                        {loading ? (
-                            <tr><td colSpan="6" className="p-12 text-center text-xs font-bold uppercase text-zinc-400">Loading Transactions...</td></tr>
-                        ) : filteredOrders.map(o => (
-                            <tr key={o._id} className="hover:bg-zinc-50/50 transition-colors">
-                                <td className="p-6">
-                                    <div className="font-bold text-xs uppercase font-mono">#{o._id.slice(-8)}</div>
-                                    <div className="text-[9px] text-zinc-300 font-bold uppercase mt-1">{new Date(o.createdAt).toLocaleDateString()}</div>
-                                </td>
-                                <td className="p-6">
-                                    <div className="font-bold text-xs">{o.user?.firstName} {o.user?.lastName}</div>
-                                    <div className="text-[9px] text-zinc-400">{o.user?.email}</div>
-                                </td>
-                                <td className="p-6 p-font-mono font-bold text-sm">
-                                    ₹{o.totalPrice.toLocaleString()}
-                                </td>
-                                <td className="p-6">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider bg-zinc-100 text-zinc-500 px-2 py-1 rounded">
-                                        {o.paymentMethod}
-                                    </span>
-                                </td>
-                                <td className="p-6">
-                                    {o.orderStatus === 'Returned' ? (
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-red-100 text-red-600 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                            <RotateCcw size={10} /> Refunded
-                                        </span>
-                                    ) : o.isPaid ? (
-                                        <div className="flex flex-col items-start gap-1">
-                                            <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-600 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                                <CheckCircle size={10} /> Paid
-                                            </span>
-                                            {o.paidAt && <span className="text-[9px] text-zinc-300 font-bold uppercase tracking-wider pl-1">{new Date(o.paidAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                                        </div>
-                                    ) : (
-                                        <span className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-[9px] font-black uppercase tracking-widest">
-                                            <Clock size={10} /> Pending
-                                        </span>
-                                    )}
-                                </td>
-                                <td className="p-6 text-right space-x-2">
-                                    <div className="flex justify-end gap-2">
-                                        {/* VIEW */}
-                                        <button
-                                            onClick={() => window.open(`/order/${o._id}`, '_blank')}
-                                            className="p-2 bg-zinc-50 rounded-lg hover:bg-black hover:text-white transition text-zinc-400"
-                                            title="View Order"
-                                        >
-                                            <Search size={14} />
-                                        </button>
+            {/* Table Section */}
+            <div className="max-w-[1500px] mx-auto">
+                <div className="flex gap-1.5 p-1 bg-zinc-900/5 rounded-2xl border border-white mb-8 overflow-x-auto no-scrollbar max-w-max">
+                    {['all', 'paid', 'pending', 'refunded'].map(f => (
+                        <button
+                            key={f}
+                            onClick={() => { setFilter(f); setPage(1); }}
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                                filter === f ? 'bg-black text-white shadow-lg' : 'text-zinc-500 hover:bg-white hover:text-black'
+                            }`}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
 
-                                        {/* RECEIPT (Shows Invoice) */}
-                                        {o.isPaid && (
-                                            <button
-                                                onClick={() => window.open(`/invoice/${o._id}`, '_blank')}
-                                                className="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-600 hover:text-white transition"
-                                                title="View Receipt"
+                <div className="bg-white border border-zinc-100 rounded-[2.5rem] shadow-sm overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-50/50 border-b border-zinc-100">
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 w-16 text-center"></th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Ledger Entry</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Entity</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Valuation</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400">Settle Status</th>
+                                    <th className="p-6 text-[10px] font-black uppercase tracking-widest text-zinc-400 text-right">Direct Act</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-50">
+                                <AnimatePresence mode="popLayout">
+                                    {loading ? (
+                                        [...Array(5)].map((_, i) => (
+                                            <tr key={`skeleton-p-${i}`}>
+                                                <td colSpan="6" className="p-8">
+                                                    <div className="h-14 bg-zinc-50 animate-pulse rounded-2xl w-full" />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : orders.map((o) => (
+                                        <React.Fragment key={o._id}>
+                                            <motion.tr 
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                className={`transition-colors group ${expandedRows.has(o._id) ? 'bg-zinc-50/80 shadow-inner' : 'hover:bg-zinc-50/50'}`}
                                             >
-                                                <CreditCard size={14} />
-                                            </button>
-                                        )}
+                                                <td className="p-6 text-center">
+                                                    <button 
+                                                        onClick={() => toggleRow(o._id)}
+                                                        className={`p-2 rounded-xl border border-zinc-100 bg-white shadow-sm transition-all ${expandedRows.has(o._id) ? 'rotate-180 bg-black text-white border-black' : 'text-zinc-400 hover:text-black hover:border-black'}`}
+                                                    >
+                                                        <ChevronDown size={14} />
+                                                    </button>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="font-black text-xs uppercase tracking-tight">#{o._id.slice(-10)}</div>
+                                                    <div className="text-[9px] text-zinc-400 font-bold uppercase mt-1 tracking-widest italic">{o.paymentMethod}</div>
+                                                </td>
+                                                <td className="p-6">
+                                                    <div className="font-bold text-xs">{o.user?.firstName || 'Guest-Client'}</div>
+                                                    <div className="text-[10px] text-zinc-400 mt-0.5 lowercase">{o.user?.email || 'N/A'}</div>
+                                                </td>
+                                                <td className="p-6 font-black text-xs text-zinc-900">₹{o.totalPrice.toLocaleString()}</td>
+                                                <td className="p-6">
+                                                    <StatusBadge status={o.orderStatus} isPaid={o.isPaid} />
+                                                </td>
+                                                <td className="p-6 text-right">
+                                                    <div className="flex justify-end gap-2 group-hover:opacity-100 opacity-60 transition-opacity">
+                                                        {!o.isPaid && o.orderStatus !== 'Cancelled' && (
+                                                            <button onClick={() => handleAction(o._id, 'pay')} className="p-2.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-600 hover:text-white transition-all shadow-sm" title="Verify Capital">
+                                                                <CheckCircle size={14} />
+                                                            </button>
+                                                        )}
+                                                        {o.isPaid && o.orderStatus !== 'Refunded' && (
+                                                            <button onClick={() => handleAction(o._id, 'refund')} className="p-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Process Refund">
+                                                                <RotateCcw size={14} />
+                                                            </button>
+                                                        )}
+                                                        <button 
+                                                            onClick={() => window.open(`/order/${o._id}`, '_blank')}
+                                                            className="p-2.5 bg-white border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm"
+                                                            title="Audit Trans"
+                                                        >
+                                                            <ExternalLink size={14} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </motion.tr>
 
-                                        {/* VERIFY / REFUND */}
-                                        {!o.isPaid && o.orderStatus !== 'Cancelled' && (
-                                            <button
-                                                onClick={() => initiateAction(o._id, 'pay')}
-                                                className="p-2 bg-black text-white rounded-lg hover:bg-green-600 transition"
-                                                title="Verify Payment"
-                                            >
-                                                <CheckCircle size={14} />
-                                            </button>
-                                        )}
-                                        {o.isPaid && o.orderStatus !== 'Returned' && (
-                                            <button
-                                                onClick={() => initiateAction(o._id, 'refund')}
-                                                className="p-2 bg-zinc-50 text-zinc-400 rounded-lg hover:bg-red-50 hover:text-red-500 transition border border-transparent hover:border-red-100"
-                                                title="Refund"
-                                            >
-                                                <RotateCcw size={14} />
-                                            </button>
-                                        )}
+                                            {/* Sub-row Expansion */}
+                                            <AnimatePresence>
+                                                {expandedRows.has(o._id) && (
+                                                    <motion.tr 
+                                                        initial={{ opacity: 0, height: 0 }}
+                                                        animate={{ opacity: 1, height: 'auto' }}
+                                                        exit={{ opacity: 0, height: 0 }}
+                                                        className="bg-zinc-50/30 shadow-inner"
+                                                    >
+                                                        <td colSpan="6" className="p-10">
+                                                            <div className="flex flex-col md:flex-row gap-12 items-start justify-between">
+                                                                <div className="flex-1">
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Internal Audit Data</p>
+                                                                    <div className="grid grid-cols-2 gap-8">
+                                                                        <div>
+                                                                            <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest mb-1">Gateway Ref</p>
+                                                                            <p className="text-[10px] font-mono font-black">{o.paymentResult?.id || 'NO-GATEWAY-ID'}</p>
+                                                                        </div>
+                                                                        <div>
+                                                                            <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest mb-1">Timestamp</p>
+                                                                            <p className="text-[10px] font-black uppercase">{new Date(o.createdAt).toLocaleString()}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="w-px h-12 bg-zinc-200 hidden md:block" />
+                                                                <div className="flex-1">
+                                                                    <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Capital Allocation</p>
+                                                                    <div className="flex items-baseline gap-2">
+                                                                        <span className="text-2xl font-black">₹{o.totalPrice.toLocaleString()}</span>
+                                                                        <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Settle-Ready</span>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                    </motion.tr>
+                                                )}
+                                            </AnimatePresence>
+                                        </React.Fragment>
+                                    ))}
+                                </AnimatePresence>
+                            </tbody>
+                        </table>
+                    </div>
 
-                                        {/* DELETE (Only for Cancelled/Failed) */}
-                                        {(o.orderStatus === 'Cancelled' || o.orderStatus === 'Failed') && (
-                                            <button
-                                                onClick={() => initiateAction(o._id, 'delete')}
-                                                className="p-2 bg-red-50 text-red-500 rounded-lg hover:bg-red-600 hover:text-white transition"
-                                                title="Delete Record"
-                                            >
-                                                <RotateCcw size={14} className="rotate-45" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* CONFIRMATION MODAL */}
-            {confirmModal.show && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white p-8 rounded-[2rem] max-w-sm w-full shadow-2xl animate-in zoom-in-95">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 mx-auto ${confirmModal.action === 'pay' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
-                            {confirmModal.action === 'pay' ? <CheckCircle size={24} /> : <RotateCcw size={24} />}
+                    {/* Pagination */}
+                    <div className="p-8 bg-zinc-50/50 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                            Ledger Summary: <span className="text-zinc-900">{total} TRANS</span> • Page {page} / {pages}
                         </div>
-                        <h3 className="text-xl font-black uppercase tracking-tighter mb-2 italic text-center">
-                            {confirmModal.action === 'pay' ? 'Verify Payment?' : confirmModal.action === 'delete' ? 'Delete Record?' : 'Refund Order?'}
-                        </h3>
-                        <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
-                            {confirmModal.action === 'pay'
-                                ? "Confirm this payment has been received?"
-                                : confirmModal.action === 'delete'
-                                    ? "This action cannot be undone."
-                                    : "This will process a refund for this order."}
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                            <button
-                                onClick={() => setConfirmModal({ show: false, id: null, action: null })}
-                                className="py-4 rounded-xl font-black uppercase text-[10px] tracking-widest border border-zinc-200 hover:bg-zinc-50 transition"
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                disabled={page === 1 || loading}
+                                className="flex items-center gap-2 px-6 py-3 bg-white border border-zinc-200 rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:bg-zinc-50 transition-all shadow-sm"
                             >
-                                Cancel
+                                <ChevronLeft size={14} /> Prev
                             </button>
-                            <button
-                                onClick={handleConfirmAction}
-                                className={`py-4 rounded-xl font-black text-white uppercase text-[10px] tracking-widest shadow-lg transition ${confirmModal.action === 'pay'
-                                    ? 'bg-black hover:bg-zinc-800 shadow-zinc-200'
-                                    : 'bg-red-500 hover:bg-red-600 shadow-red-200'}`}
+                            <button 
+                                onClick={() => setPage(p => Math.min(pages, p + 1))}
+                                disabled={page === pages || loading}
+                                className="flex items-center gap-2 px-6 py-3 bg-black text-white rounded-2xl text-[10px] font-black uppercase tracking-widest disabled:opacity-30 hover:scale-[1.05] active:scale-95 transition-all shadow-lg shadow-black/10"
                             >
-                                {confirmModal.action === 'pay' ? 'Yes, Verify' : confirmModal.action === 'delete' ? 'Yes, Delete' : 'Confirm'}
+                                Next <ChevronRight size={14} />
                             </button>
                         </div>
                     </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 };
