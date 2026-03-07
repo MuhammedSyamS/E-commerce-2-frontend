@@ -39,7 +39,7 @@ const Reviews = () => {
     if (loading) return <div className="min-h-screen flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Reviews...</div>;
 
     return (
-        <div className="bg-white min-h-screen pt-44 md:pt-52 px-6 pb-20 text-[#1a1a1a]">
+        <div className="bg-white min-h-screen pt-28 md:pt-44 lg:pt-52 px-6 pb-20 text-[#1a1a1a]">
             <Helmet>
                 <title>Customer Reviews | SLOOK</title>
                 <meta name="description" content="Read what our customers are saying about SLOOK." />
@@ -187,41 +187,41 @@ const Reviews = () => {
             <div className="max-w-5xl mx-auto">
                 {/* HEADER */}
                 <div className="mb-16 text-center">
-                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter mb-4">
+                    <h1 className="text-2xl md:text-6xl font-black uppercase italic tracking-tighter mb-2 md:mb-4">
                         Community <span className="text-zinc-300">Voices</span>
                     </h1>
-                    <p className="max-w-xl mx-auto text-zinc-500 font-medium italic text-lg">
+                    <p className="max-w-xl mx-auto text-zinc-500 font-medium italic text-sm md:text-lg px-2">
                         Real stories from verified customers about their experiences with our collection.
                     </p>
                 </div>
 
                 {/* STATS & FILTERS */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-8 mb-12 border-b border-zinc-100 pb-8">
-                    <div className="flex items-end gap-6">
+                <div className="flex flex-col md:flex-row justify-between items-end gap-6 md:gap-8 mb-8 md:mb-12 border-b border-zinc-100 pb-6 md:pb-8">
+                    <div className="flex items-end gap-3 md:gap-6">
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Total Reviews</p>
-                            <p className="text-4xl font-black italic">{reviews.length}</p>
+                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-0.5 md:mb-1">Reviews</p>
+                            <p className="text-2xl md:text-4xl font-black italic">{reviews.length}</p>
                         </div>
-                        <div className="w-px h-10 bg-zinc-100"></div>
+                        <div className="w-px h-6 md:h-10 bg-zinc-100"></div>
                         <div>
-                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-1">Average Rating</p>
-                            <div className="flex items-center gap-2">
-                                <p className="text-4xl font-black italic">{averageRating}</p>
+                            <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-0.5 md:mb-1">Rating</p>
+                            <div className="flex items-center gap-1 md:gap-2">
+                                <p className="text-2xl md:text-4xl font-black italic">{averageRating}</p>
                                 <div className="flex text-black">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} fill="currentColor" className={i < Math.round(averageRating) ? "text-black" : "text-zinc-200"} />
+                                        <Star key={i} size={10} className={`md:size-[14px] ${i < Math.round(averageRating) ? "text-black fill-current" : "text-zinc-200"}`} />
                                     ))}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex gap-2 bg-zinc-50 p-1.5 rounded-xl overflow-x-auto custom-scrollbar w-full md:w-auto">
+                    <div className="flex gap-1.5 bg-zinc-50 p-1 rounded-xl overflow-x-auto no-scrollbar w-full md:w-auto">
                         {['all', 5, 4, 3, 2, 1].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all ${filter === f
+                                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${filter === f
                                     ? 'bg-black text-white shadow-md'
                                     : 'text-zinc-400 hover:bg-zinc-200 hover:text-black'
                                     }`}
@@ -235,20 +235,20 @@ const Reviews = () => {
                 {/* REVIEWS GRID */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {filteredReviews.map((item, reviewIdx) => (
-                        <div key={reviewIdx} className="bg-zinc-50 rounded-2xl p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
+                        <div key={reviewIdx} className="bg-zinc-50 rounded-2xl p-4 md:p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
 
                             {/* USER INFO */}
                             <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center font-bold text-[10px] uppercase shadow-sm">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center font-bold text-[9px] md:text-[10px] uppercase shadow-sm">
                                         {(item.review.name || "A").charAt(0)}
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-1.5">
-                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900">{item.review.name || "Guest"}</p>
-                                            <CheckCircle2 size={12} className="text-blue-600 fill-blue-50" />
+                                        <div className="flex items-center gap-1">
+                                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900">{item.review.name || "Guest"}</p>
+                                            <CheckCircle2 size={10} className="text-blue-600 fill-blue-50 md:size-[12px]" />
                                         </div>
-                                        <p className="text-[9px] text-zinc-400 font-bold uppercase">{item.review.date ? new Date(item.review.date).toLocaleDateString() : 'Verified Buyer'}</p>
+                                        <p className="text-[8px] md:text-[9px] text-zinc-400 font-bold uppercase">{item.review.date ? new Date(item.review.date).toLocaleDateString() : 'Verified Buyer'}</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-0.5">
@@ -266,8 +266,8 @@ const Reviews = () => {
                                     setExpandedText(prev => ({ ...prev, [reviewIdx]: !prev[reviewIdx] }));
                                 }}
                             >
-                                <h3 className="font-bold text-sm mb-2">{item.review.title || "Great Product"}</h3>
-                                <p className={`text-zinc-600 italic leading-relaxed text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-3'}`}>
+                                <h3 className="font-bold text-xs md:text-sm mb-2">{item.review.title || "Great Product"}</h3>
+                                <p className={`text-zinc-600 italic leading-relaxed text-[13px] md:text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-3'}`}>
                                     "{item.review.comment}"
                                 </p>
                                 {item.review.comment && item.review.comment.length > 100 && (
@@ -310,7 +310,7 @@ const Reviews = () => {
                                                 setSelectedReviewIdx(reviewIdx);
                                                 setSelectedMediaIdx(idx);
                                             }}
-                                            className={`relative w-12 h-12 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
+                                            className={`relative w-10 h-10 md:w-12 md:h-12 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
                                         >
                                             {media.type === 'video' ? (
                                                 <>

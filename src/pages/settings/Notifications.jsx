@@ -92,16 +92,16 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pt-32 lg:pt-40 pb-20 font-sans">
+    <div className="min-h-screen bg-[#fafafa] pt-16 md:pt-32 lg:pt-40 pb-20 font-sans">
       <div className="container mx-auto px-6 max-w-4xl">
 
         {/* HEADER SECTION */}
-        <div className="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col md:flex-row justify-between md:items-end gap-6 mb-10 md:mb-16 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div>
-            <button onClick={() => navigate('/account')} className="group flex items-center gap-2 text-zinc-400 font-medium text-xs hover:text-black mb-6 transition-colors tracking-wide">
-              <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> BACK TO DASHBOARD
+            <button onClick={() => navigate('/account')} className="group flex items-center gap-2 text-zinc-400 font-medium text-[10px] md:text-xs hover:text-black mb-4 md:mb-6 transition-colors tracking-wide">
+              <ArrowLeft size={12} className="group-hover:-translate-x-1 transition-transform md:size-[14px]" /> BACK TO DASHBOARD
             </button>
-            <h1 className="text-2xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-2">
+            <h1 className="text-xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-1">
               Inbox
             </h1>
             <p className="text-xs md:text-sm text-zinc-500 font-medium tracking-tight">
@@ -109,24 +109,24 @@ const Notifications = () => {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
             {unreadCount > 0 && (
               <button
                 onClick={markAllAsRead}
-                className="bg-white border border-zinc-200 text-zinc-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider hover:bg-zinc-50 hover:border-zinc-300 transition-all rounded-lg flex items-center gap-2 shadow-sm"
+                className="bg-white border border-zinc-200 text-zinc-600 px-4 py-2 md:px-5 md:py-2.5 text-[9px] md:text-xs font-bold uppercase tracking-wider hover:bg-zinc-50 hover:border-zinc-300 transition-all rounded-lg flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto"
               >
-                <CheckCheck size={14} /> Mark all read
+                <CheckCheck size={12} className="md:size-[14px]" /> Mark all read
               </button>
             )}
             <button
               onClick={subscribeToPush}
               disabled={isSubscribed}
-              className={`px-6 py-2.5 text-xs font-bold uppercase tracking-wider transition-all shadow-lg flex items-center gap-2 rounded-lg ${isSubscribed
+              className={`px-5 py-2 md:px-6 md:py-2.5 text-[9px] md:text-xs font-bold uppercase tracking-wider transition-all shadow-lg flex items-center justify-center gap-2 rounded-lg w-full sm:w-auto ${isSubscribed
                 ? 'bg-green-100 text-green-700 shadow-none cursor-default'
                 : 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-zinc-200'
                 }`}
             >
-              {isSubscribed ? <><CheckCheck size={14} /> Enabled</> : <><Bell size={14} /> Enable Push</>}
+              {isSubscribed ? <><CheckCheck size={12} className="md:size-[14px]" /> Alerts Active</> : <><Bell size={12} className="md:size-[14px]" /> Allow Alerts</>}
             </button>
           </div>
         </div>
@@ -169,7 +169,7 @@ const Notifications = () => {
                     else if (notif.type === 'order') navigate('/my-orders');
                   }}
                   className={`
-                          relative group p-6 rounded-xl transition-all duration-300 cursor-pointer border
+                          relative group p-3.5 md:p-6 rounded-xl transition-all duration-300 cursor-pointer border
                           ${!notif.isRead
                       ? 'bg-white border-zinc-200 shadow-lg shadow-zinc-100/50 hover:shadow-xl hover:shadow-zinc-200/50 hover:-translate-y-0.5'
                       : 'bg-white/60 border-transparent hover:bg-white hover:border-zinc-100'
@@ -178,34 +178,34 @@ const Notifications = () => {
                 >
                   {/* Unread Dot */}
                   {!notif.isRead && (
-                    <div className="absolute top-6 right-6 w-2 h-2 bg-blue-600 rounded-full shadow-sm ring-4 ring-blue-50"></div>
+                    <div className="absolute top-4 right-4 md:top-6 md:right-6 w-1.5 h-1.5 md:w-2 md:h-2 bg-blue-600 rounded-full shadow-sm ring-4 ring-blue-50"></div>
                   )}
 
-                  <div className="flex gap-6 items-start">
+                  <div className="flex gap-4 md:gap-6 items-start">
 
                     {/* Left: Image or Icon */}
                     <div className="shrink-0">
                       {notif.data?.image ? (
-                        <div className="w-16 h-16 rounded-lg overflow-hidden border border-zinc-100 shadow-sm group-hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden border border-zinc-100 shadow-sm group-hover:shadow-md transition-shadow">
                           <img src={notif.data.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         </div>
                       ) : (
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${notif.type === 'order' ? 'bg-blue-50 border-blue-100 text-blue-600' :
+                        <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border ${notif.type === 'order' ? 'bg-blue-50 border-blue-100 text-blue-600' :
                           notif.type === 'promo' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
                             'bg-zinc-50 border-zinc-100 text-zinc-500'
                           }`}>
-                          {notif.type === 'order' ? <Package size={20} /> : notif.type === 'promo' ? <Tag size={20} /> : <Info size={20} />}
+                          {notif.type === 'order' ? <Package size={16} className="md:size-[20px]" /> : notif.type === 'promo' ? <Tag size={16} className="md:size-[20px]" /> : <Info size={16} className="md:size-[20px]" />}
                         </div>
                       )}
                     </div>
 
                     {/* Middle: Text Content */}
                     <div className="flex-1 min-w-0 pt-0.5">
-                      <div className="flex justify-between items-baseline mb-1 pr-6">
-                        <h4 className={`text-sm md:text-base font-semibold truncate ${!notif.isRead ? 'text-zinc-900' : 'text-zinc-600'}`}>
+                      <div className="flex flex-col md:flex-row md:justify-between items-start md:items-baseline mb-1 pr-4 md:pr-6">
+                        <h4 className={`text-[13px] md:text-base font-bold truncate ${!notif.isRead ? 'text-zinc-900' : 'text-zinc-600'}`}>
                           {notif.title}
                         </h4>
-                        <span className="text-xs text-zinc-400 whitespace-nowrap ml-4">
+                        <span className="text-[9px] md:text-xs text-zinc-400 whitespace-nowrap md:ml-4">
                           {new Date(notif.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
