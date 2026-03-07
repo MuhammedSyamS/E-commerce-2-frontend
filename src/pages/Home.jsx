@@ -252,8 +252,15 @@ const Home = () => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
               {communityLooks.filter(look => look && look.user).map((look) => (
-                <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100">
-                  <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" alt="" />
+                <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100 bg-zinc-50">
+                  <img 
+                    src={resolveMediaURL(look.image)} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
+                    alt="" 
+                    onError={(e) => {
+                      e.target.src = "https://images.pexels.com/photos/3748221/pexels-photo-3748221.jpeg?auto=compress&cs=tinysrgb&w=800";
+                    }}
+                  />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
                     <p className="text-[8px] font-black text-white uppercase tracking-widest">
                       @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : 'User'}

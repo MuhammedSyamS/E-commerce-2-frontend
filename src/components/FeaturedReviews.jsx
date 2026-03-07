@@ -39,11 +39,12 @@ const FeaturedReviews = () => {
     // Helper to extract media from review object consistently
     const getMediaFromReview = (item) => {
         const r = item.review || item;
-        const rawVideos = r.videos || (r.video ? [r.video] : []);
-        const rawImages = r.images || (r.reviewImage ? [r.reviewImage] : []);
+        const images = Array.isArray(r.images) ? r.images : (r.reviewImage ? [r.reviewImage] : []);
+        const videos = Array.isArray(r.videos) ? r.videos : (r.video ? [r.video] : []);
+
         return [
-            ...ensureArray(rawVideos).map(url => ({ type: 'video', url })),
-            ...ensureArray(rawImages).map(url => ({ type: 'image', url }))
+            ...videos.map(url => ({ type: 'video', url })),
+            ...images.map(url => ({ type: 'image', url }))
         ];
     };
 
@@ -56,6 +57,7 @@ const FeaturedReviews = () => {
             ...r,
             productName: item.productName || "Product",
             productSlug: item.productSlug || "#",
+            productImage: item.productImage || null,
             media,
             currentMedia: media[0] || null,
             mediaIndex: 0,
@@ -223,9 +225,18 @@ const FeaturedReviews = () => {
 
                             <div className="mt-auto pt-8 border-t border-zinc-100">
                                 <Link to={`/product/${selectedReview.productSlug}`} className="group flex items-center justify-between p-4 rounded-xl border border-zinc-200 hover:border-black transition-colors">
-                                    <div>
-                                        <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1">Purchased Product</p>
-                                        <p className="font-bold text-sm">{selectedReview.productName}</p>
+                                    <div className="flex items-center gap-4">
+                                        {selectedReview.productImage && (
+                                            <img 
+                                                src={resolveMediaURL(selectedReview.productImage)} 
+                                                className="w-10 h-10 object-cover rounded-lg" 
+                                                alt="" 
+                                            />
+                                        )}
+                                        <div>
+                                            <p className="text-[10px] uppercase tracking-widest text-zinc-400 mb-1">Purchased Product</p>
+                                            <p className="font-bold text-sm">{selectedReview.productName}</p>
+                                        </div>
                                     </div>
                                     <ArrowRight className="text-zinc-300 group-hover:text-black transition-colors" />
                                 </Link>

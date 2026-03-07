@@ -1,9 +1,16 @@
 import axios from 'axios';
 
-let baseUrl = import.meta.env.VITE_API_URL || '/api';
-if (baseUrl && !baseUrl.endsWith('/api') && baseUrl !== '/api') {
-    baseUrl = baseUrl.replace(/\/$/, '') + '/api';
+let rawBaseUrl = import.meta.env.VITE_API_URL || '';
+// Remove trailing slash if present
+rawBaseUrl = rawBaseUrl.replace(/\/$/, '');
+
+let baseUrl = rawBaseUrl || '/api';
+
+// If rawBaseUrl was provided but doesn't end with /api, append it
+if (rawBaseUrl && !rawBaseUrl.endsWith('/api')) {
+    baseUrl = `${rawBaseUrl}/api`;
 }
+
 console.log("API Base URL:", baseUrl);
 
 const instance = axios.create({
