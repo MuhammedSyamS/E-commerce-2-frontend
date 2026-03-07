@@ -121,18 +121,18 @@ const FeaturedReviews = () => {
                     {/* REVIEW NAVIGATION ARROWS (Global) */}
                     <button
                         onClick={prevReview}
-                        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 bg-white/10 p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 hidden md:block"
+                        className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md p-2 md:p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 flex items-center justify-center"
                     >
-                        <ChevronLeft size={32} />
+                        <ChevronLeft size={24} className="md:w-8 md:h-8" />
                     </button>
                     <button
                         onClick={nextReview}
-                        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 bg-white/10 p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 hidden md:block"
+                        className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md p-2 md:p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 flex items-center justify-center"
                     >
-                        <ChevronRight size={32} />
+                        <ChevronRight size={24} className="md:w-8 md:h-8" />
                     </button>
 
-                    <div className="bg-white w-full max-w-7xl h-full md:h-[85vh] md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto md:mx-4" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white w-[92%] md:w-full max-w-7xl h-[80vh] md:h-[85vh] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto md:mx-4" onClick={e => e.stopPropagation()}>
                         
                         {/* Close Button (Mobile Floating) */}
                         <button 
@@ -216,8 +216,8 @@ const FeaturedReviews = () => {
                                         <Star key={i} size={14} fill="black" className="text-black" />
                                     ))}
                                 </div>
-                                <h3 className="text-xl md:text-3xl font-sans mb-6 text-zinc-950 leading-tight italic">"{selectedReview.title || "Product Review"}"</h3>
-                                <p className="text-zinc-600 leading-[1.8] text-sm md:text-lg font-medium opacity-80">
+                                <h3 className="text-xl md:text-3xl font-sans mb-6 text-zinc-950 leading-tight italic font-bold">"{selectedReview.title || "Product Review"}"</h3>
+                                <p className="text-zinc-950 leading-[1.6] text-sm md:text-lg font-bold">
                                     {selectedReview.comment}
                                 </p>
 
