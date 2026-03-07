@@ -235,12 +235,12 @@ const Reviews = () => {
                 </div>
 
                 {/* REVIEWS GRID */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                     {filteredReviews.map((item, reviewIdx) => (
-                        <div key={reviewIdx} className="bg-zinc-50 rounded-2xl p-4 md:p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
+                        <div key={reviewIdx} className="bg-zinc-50 rounded-2xl p-3.5 md:p-6 flex flex-col h-full border border-transparent hover:border-zinc-200 transition-all group">
 
                             {/* USER INFO */}
-                            <div className="flex justify-between items-start mb-6">
+                            <div className="flex justify-between items-start mb-4 md:mb-6">
                                 <div className="flex items-center gap-2 md:gap-3">
                                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white border border-zinc-100 flex items-center justify-center font-bold text-[9px] md:text-[10px] uppercase shadow-sm">
                                         {(item.review.name || "A").charAt(0)}
@@ -262,7 +262,7 @@ const Reviews = () => {
 
                             {/* COMMENT */}
                             <div
-                                className="mb-6 flex-grow cursor-pointer group/text"
+                                className="mb-4 md:mb-6 flex-grow cursor-pointer group/text"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setExpandedText(prev => ({ ...prev, [reviewIdx]: !prev[reviewIdx] }));
@@ -281,23 +281,8 @@ const Reviews = () => {
                                 )}
                             </div>
 
-                            {/* PRODUCT LINK */}
-                            <div className="pt-4 border-t border-zinc-200/50 mt-auto">
-                                <Link to={`/product/${item.productSlug}`} className="group/link flex items-center justify-between w-full p-2 rounded-lg hover:bg-white transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-zinc-200 overflow-hidden">
-                                            <img src={item.productImage} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 group-hover/link:text-black transition-colors truncate max-w-[120px]">
-                                            {item.productName}
-                                        </span>
-                                    </div>
-                                    <ArrowUpRight size={14} className="text-zinc-300 group-hover/link:text-black transition-colors" />
-                                </Link>
-                            </div>
-
-                            {/* MEDIA (IMAGES & VIDEO) */}
-                            <div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
+                            {/* MEDIA (IMAGES & VIDEO) - MOVED ABOVE PRODUCT LINK */}
+                            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
                                 {(() => {
                                     const videos = item.review.videos || (item.review.video ? [item.review.video] : []);
                                     const images = item.review.images || [];
@@ -314,7 +299,7 @@ const Reviews = () => {
                                                 setSelectedReviewIdx(reviewIdx);
                                                 setSelectedMediaIdx(idx);
                                             }}
-                                            className={`relative w-10 h-10 md:w-12 md:h-12 rounded-lg flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
+                                            className={`relative w-12 h-12 md:w-14 md:h-14 rounded-xl flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
                                         >
                                             {media.type === 'video' ? (
                                                 <>
@@ -331,6 +316,21 @@ const Reviews = () => {
                                         </div>
                                     ));
                                 })()}
+                            </div>
+
+                            {/* PRODUCT LINK */}
+                            <div className="pt-3 md:pt-4 border-t border-zinc-200/50">
+                                <Link to={`/product/${item.productSlug}`} className="group/link flex items-center justify-between w-full p-2 rounded-lg hover:bg-white transition-colors">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded bg-zinc-200 overflow-hidden shrink-0">
+                                            <img src={item.productImage} alt="" className="w-full h-full object-cover" />
+                                        </div>
+                                        <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 group-hover/link:text-black transition-colors truncate max-w-[120px]">
+                                            {item.productName}
+                                        </span>
+                                    </div>
+                                    <ArrowUpRight size={14} className="text-zinc-300 group-hover/link:text-black transition-colors" />
+                                </Link>
                             </div>
                         </div>
                     ))}
