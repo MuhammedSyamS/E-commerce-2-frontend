@@ -18,7 +18,7 @@ const Toast = ({ message, type, onClose }) => {
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-            className="pointer-events-auto bg-black/90 backdrop-blur-md text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[300px] border border-white/10"
+            className="pointer-events-auto bg-black/90 backdrop-blur-md text-white px-4 py-3 md:px-6 md:py-4 rounded-xl shadow-2xl flex items-center gap-3 md:gap-4 min-w-[260px] md:min-w-[300px] border border-white/10"
         >
             <div className={`p-2 rounded-full bg-white/10`}>
                 {icons[type] || icons.info}

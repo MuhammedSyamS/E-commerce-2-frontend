@@ -332,7 +332,7 @@ const Navbar = () => {
                 <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
                   <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
                     <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
-                      <h3 className="text-sm md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
+                      <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
                       <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
                     </div>
                     <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
@@ -356,7 +356,7 @@ const Navbar = () => {
                               <div className="flex-1">
                                 <p className="text-[10px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
                                 <p className="text-[9px] text-zinc-600 leading-relaxed">{n.message}</p>
-                                <p className="text-sm md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
+                                <p className="text-[8px] md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                               </div>
                             </div>
                           </div>
@@ -364,7 +364,7 @@ const Navbar = () => {
                       )}
                     </div>
                     <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
-                      <Link to="/account/notifications" className="text-sm md:text-[9px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
+                      <Link to="/account/notifications" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
                     </div>
                   </div>
                 </div>

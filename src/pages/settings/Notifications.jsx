@@ -126,7 +126,7 @@ const Notifications = () => {
                 : 'bg-zinc-900 text-white hover:bg-zinc-800 shadow-zinc-200'
                 }`}
             >
-              {isSubscribed ? <><CheckCheck size={12} className="md:size-[14px]" /> Alerts Active</> : <><Bell size={12} className="md:size-[14px]" /> Allow Alerts</>}
+              {isSubscribed ? <><CheckCheck size={12} className="md:size-[14px]" /> Alerts Active</> : <><Bell size={12} className="md:size-[14px]" /> ENABLE NOTIFICATIONS</>}
             </button>
           </div>
         </div>
