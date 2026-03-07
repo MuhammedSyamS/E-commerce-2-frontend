@@ -39,7 +39,7 @@ const Reviews = () => {
     if (loading) return <div className="min-h-screen flex items-center justify-center text-[10px] font-bold uppercase tracking-widest text-zinc-400">Loading Reviews...</div>;
 
     return (
-        <div className="bg-white min-h-screen pt-28 md:pt-44 lg:pt-52 px-6 pb-20 text-[#1a1a1a]">
+        <div className="bg-white min-h-screen pt-16 md:pt-32 lg:pt-40 px-6 pb-20 text-[#1a1a1a] selection:bg-black selection:text-white">
             <Helmet>
                 <title>Customer Reviews | SLOOK</title>
                 <meta name="description" content="Read what our customers are saying about SLOOK." />
@@ -138,11 +138,13 @@ const Reviews = () => {
                                             ))}
                                         </div>
 
-                                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
-                                            {activeReviewItem.review.title || "Review"}
-                                        </h3>
-                                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
-                                            "{activeReviewItem.review.comment}"
+                                        {activeReviewItem.review.title && (
+                                            <h3 className="text-2xl font-black uppercase tracking-tight mb-4 text-zinc-900">
+                                                {activeReviewItem.review.title}
+                                            </h3>
+                                        )}
+                                        <p className="text-zinc-900 font-bold leading-relaxed text-base flex-grow mb-8 md:text-lg">
+                                            {activeReviewItem.review.comment}
                                         </p>
 
                                         <div className="border-t border-zinc-100 pt-6 mt-auto">
@@ -186,11 +188,11 @@ const Reviews = () => {
 
             <div className="max-w-5xl mx-auto">
                 {/* HEADER */}
-                <div className="mb-16 text-center">
-                    <h1 className="text-2xl md:text-6xl font-black uppercase italic tracking-tighter mb-2 md:mb-4">
+                <div className="mb-10 md:mb-16 text-center">
+                    <h1 className="text-2xl md:text-6xl font-black uppercase tracking-tighter mb-2 md:mb-4">
                         Community <span className="text-zinc-300">Voices</span>
                     </h1>
-                    <p className="max-w-xl mx-auto text-zinc-500 font-medium italic text-sm md:text-lg px-2">
+                    <p className="max-w-xl mx-auto text-zinc-500 font-medium text-sm md:text-lg px-2">
                         Real stories from verified customers about their experiences with our collection.
                     </p>
                 </div>
@@ -200,13 +202,13 @@ const Reviews = () => {
                     <div className="flex items-end gap-3 md:gap-6">
                         <div>
                             <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-0.5 md:mb-1">Reviews</p>
-                            <p className="text-2xl md:text-4xl font-black italic">{reviews.length}</p>
+                            <p className="text-2xl md:text-4xl font-black">{reviews.length}</p>
                         </div>
                         <div className="w-px h-6 md:h-10 bg-zinc-100"></div>
                         <div>
                             <p className="text-[8px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-0.5 md:mb-1">Rating</p>
                             <div className="flex items-center gap-1 md:gap-2">
-                                <p className="text-2xl md:text-4xl font-black italic">{averageRating}</p>
+                                <p className="text-2xl md:text-4xl font-black">{averageRating}</p>
                                 <div className="flex text-black">
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} size={10} className={`md:size-[14px] ${i < Math.round(averageRating) ? "text-black fill-current" : "text-zinc-200"}`} />
@@ -266,9 +268,11 @@ const Reviews = () => {
                                     setExpandedText(prev => ({ ...prev, [reviewIdx]: !prev[reviewIdx] }));
                                 }}
                             >
-                                <h3 className="font-bold text-xs md:text-sm mb-2">{item.review.title || "Great Product"}</h3>
-                                <p className={`text-zinc-600 italic leading-relaxed text-[13px] md:text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-3'}`}>
-                                    "{item.review.comment}"
+                                {item.review.title && (
+                                    <h3 className="font-black text-[10px] md:text-xs uppercase tracking-mega mb-2 text-zinc-900">{item.review.title}</h3>
+                                )}
+                                <p className={`text-zinc-900 font-bold leading-relaxed text-[13px] md:text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-4'}`}>
+                                    {item.review.comment}
                                 </p>
                                 {item.review.comment && item.review.comment.length > 100 && (
                                     <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors">
