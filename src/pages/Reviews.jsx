@@ -262,7 +262,7 @@ const Reviews = () => {
 
                             {/* COMMENT */}
                             <div
-                                className="mb-4 md:mb-6 flex-grow cursor-pointer group/text"
+                                className="mb-4 md:mb-6 cursor-pointer group/text"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setExpandedText(prev => ({ ...prev, [reviewIdx]: !prev[reviewIdx] }));
@@ -271,18 +271,18 @@ const Reviews = () => {
                                 {item.review.title && (
                                     <h3 className="font-black text-[10px] md:text-xs uppercase tracking-mega mb-2 text-zinc-900">{item.review.title}</h3>
                                 )}
-                                <p className={`text-zinc-900 font-bold leading-relaxed text-[13px] md:text-sm ${expandedText[reviewIdx] ? '' : 'line-clamp-4'}`}>
-                                    {item.review.comment}
+                                <p className={`text-zinc-900 font-bold leading-relaxed text-[13px] md:text-sm border-l-2 border-zinc-100 pl-4 ${expandedText[reviewIdx] ? '' : 'line-clamp-4'}`}>
+                                    "{item.review.comment}"
                                 </p>
                                 {item.review.comment && item.review.comment.length > 100 && (
-                                    <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors">
+                                    <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors border-l-2 border-zinc-100 pl-4">
                                         {expandedText[reviewIdx] ? 'Show Less' : 'Read More'}
                                     </span>
                                 )}
                             </div>
 
                             {/* MEDIA (IMAGES & VIDEO) - MOVED ABOVE PRODUCT LINK */}
-                            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar">
+                            <div className="flex gap-2 mb-4 overflow-x-auto no-scrollbar py-1">
                                 {(() => {
                                     const videos = item.review.videos || (item.review.video ? [item.review.video] : []);
                                     const images = item.review.images || [];
@@ -299,19 +299,19 @@ const Reviews = () => {
                                                 setSelectedReviewIdx(reviewIdx);
                                                 setSelectedMediaIdx(idx);
                                             }}
-                                            className={`relative w-12 h-12 md:w-14 md:h-14 rounded-xl flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-200 ${media.type === 'video' ? 'bg-black' : ''}`}
+                                            className={`relative w-20 h-28 md:w-24 md:h-32 rounded-xl flex-shrink-0 overflow-hidden cursor-pointer hover:scale-105 transition-transform border border-zinc-100 shadow-sm ${media.type === 'video' ? 'bg-black' : ''}`}
                                         >
                                             {media.type === 'video' ? (
                                                 <>
-                                                    <video src={media.url} className="w-full h-full object-cover opacity-60" />
+                                                    <video src={resolveMediaURL(media.url)} className="w-full h-full object-cover opacity-60" />
                                                     <div className="absolute inset-0 flex items-center justify-center">
-                                                        <div className="w-4 h-4 bg-white/20 backdrop-blur rounded-full flex items-center justify-center">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="8" height="8" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                                        <div className="w-8 h-8 bg-white/20 backdrop-blur rounded-full flex items-center justify-center border border-white/30">
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                                                         </div>
                                                     </div>
                                                 </>
                                             ) : (
-                                                <img src={media.url} alt="" className="w-full h-full object-cover" />
+                                                <img src={resolveMediaURL(media.url)} alt="" className="w-full h-full object-cover" />
                                             )}
                                         </div>
                                     ));
@@ -319,17 +319,18 @@ const Reviews = () => {
                             </div>
 
                             {/* PRODUCT LINK */}
-                            <div className="pt-3 md:pt-4 border-t border-zinc-200/50">
-                                <Link to={`/product/${item.productSlug}`} className="group/link flex items-center justify-between w-full p-2 rounded-lg hover:bg-white transition-colors">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded bg-zinc-200 overflow-hidden shrink-0">
-                                            <img src={item.productImage} alt="" className="w-full h-full object-cover" />
-                                        </div>
-                                        <span className="text-[9px] font-bold uppercase tracking-wider text-zinc-500 group-hover/link:text-black transition-colors truncate max-w-[120px]">
-                                            {item.productName}
-                                        </span>
+                            <div className="pt-3 md:pt-4 border-t border-zinc-100">
+                                <Link to={`/product/${item.productSlug}`} className="group/link flex items-center gap-3 w-full p-2 bg-zinc-50 rounded-xl hover:bg-zinc-100 transition-colors border border-zinc-100">
+                                    <div className="w-10 h-10 rounded-lg bg-white overflow-hidden shrink-0 border border-zinc-200">
+                                        <img src={resolveMediaURL(item.productImage)} alt="" className="w-full h-full object-cover" />
                                     </div>
-                                    <ArrowUpRight size={14} className="text-zinc-300 group-hover/link:text-black transition-colors" />
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Reviewing</p>
+                                        <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 group-hover/link:text-black transition-colors truncate">
+                                            {item.productName}
+                                        </p>
+                                    </div>
+                                    <ArrowUpRight size={14} className="text-zinc-300 group-hover/link:text-black transition-colors mr-2" />
                                 </Link>
                             </div>
                         </div>

@@ -12,6 +12,7 @@ import api from '../api/instance';
 import NotifyMeModal from '../components/NotifyMeModal';
 import RecentlyViewed from '../components/RecentlyViewed';
 import ProductCard from '../components/ProductCard';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const ProductDetails = () => {
   const { slug } = useParams();
@@ -261,10 +262,10 @@ const ProductDetails = () => {
 
   const mediaItems = useMemo(() => {
     const items = [
-      ...(product?.image ? [{ type: 'image', url: product.image }] : []),
-      ...(product?.images || []).map(url => ({ type: 'image', url })),
-      ...(product?.videos || []).map(url => ({ type: 'video', url })),
-      ...(product?.video ? [{ type: 'video', url: product.video }] : [])
+      ...(product?.image ? [{ type: 'image', url: resolveMediaURL(product.image) }] : []),
+      ...(product?.images || []).map(url => ({ type: 'image', url: resolveMediaURL(url) })),
+      ...(product?.videos || []).map(url => ({ type: 'video', url: resolveMediaURL(url) })),
+      ...(product?.video ? [{ type: 'video', url: resolveMediaURL(product.video) }] : [])
     ];
     return items;
   }, [product]);
@@ -454,9 +455,9 @@ const ProductDetails = () => {
                           )}
 
                           {currentMedia.type === 'video' ? (
-                            <video src={currentMedia.url} controls autoPlay className="w-full h-full object-contain bg-black" />
+                            <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain bg-black" />
                           ) : (
-                            <img src={currentMedia.url} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                            <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain bg-black" />
                           )}
 
                           {allMedia.length > 1 && (
@@ -586,10 +587,10 @@ const ProductDetails = () => {
                         className="w-full h-full"
                       >
                         {mediaItems[activeMediaIndex]?.type === 'video' && !variantForcedImage ? (
-                          <video src={mediaItems[activeMediaIndex].url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                          <video src={resolveMediaURL(mediaItems[activeMediaIndex].url)} className="w-full h-full object-cover" autoPlay muted loop playsInline />
                         ) : (
                           <img
-                            src={variantForcedImage || mediaItems[activeMediaIndex]?.url}
+                            src={resolveMediaURL(variantForcedImage || mediaItems[activeMediaIndex]?.url)}
                             className={`w-full h-full object-cover transition-transform duration-200 ${isZooming ? 'scale-[1.5]' : 'scale-100'}`}
                             style={isZooming ? { transformOrigin: `${mousePos.x}% ${mousePos.y}%` } : {}}
                             alt={product.name}
@@ -1029,7 +1030,7 @@ const ProductDetails = () => {
                                     >
                                       {media.type === 'video' ? (
                                         <>
-                                          <video src={media.url} className="w-full h-full object-cover opacity-60 bg-black" />
+                                          <video src={resolveMediaURL(media.url)} className="w-full h-full object-cover opacity-60 bg-black" />
                                           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                             <div className="w-6 h-6 bg-white/30 backdrop-blur rounded-full flex items-center justify-center">
                                               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
@@ -1037,7 +1038,7 @@ const ProductDetails = () => {
                                           </div>
                                         </>
                                       ) : (
-                                        <img src={media.url} className="w-full h-full object-cover" alt="" />
+                                        <img src={resolveMediaURL(media.url)} className="w-full h-full object-cover" alt="" />
                                       )}
                                     </div>
                                   ));
@@ -1066,7 +1067,7 @@ const ProductDetails = () => {
                 >
                   <ChevronLeft size={32} />
                 </button>
-                <img src={mediaItems[lightboxIndex]?.url} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
+                <img src={resolveMediaURL(mediaItems[lightboxIndex]?.url)} className="w-full h-full object-contain animate-in fade-in zoom-in-95 duration-500 select-none" alt="" />
                 <button
                   disabled={lightboxIndex === mediaItems.length - 1}
                   onClick={() => setLightboxIndex(prev => prev + 1)}

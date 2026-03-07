@@ -5,7 +5,7 @@ import {
     AlertCircle, Camera, User, ShoppingBag, 
     ArrowRight, ChevronLeft, ChevronRight, 
     FileText, ShieldCheck, ShieldAlert, History,
-    ChevronDown, Package, CheckCircle2, XCircle
+    ChevronDown, Package, CheckCircle2, XCircle, Play
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -257,7 +257,17 @@ const AdminReturns = () => {
                                                                 Resolve <ArrowRight size={12} />
                                                             </button>
                                                         )}
-                                                        <button onClick={() => setViewMedia(r.images)} className="p-2.5 bg-white border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm" title="Proof Evidence">
+                                                        <button 
+                                                            onClick={() => {
+                                                                const allMedia = [
+                                                                    ...(r.videos || []).map(v => ({ type: 'video', url: v })),
+                                                                    ...(r.images || []).map(i => ({ type: 'image', url: i }))
+                                                                ];
+                                                                setViewMedia(allMedia);
+                                                            }} 
+                                                            className="p-2.5 bg-white border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm" 
+                                                            title="Proof Evidence"
+                                                        >
                                                             <Camera size={14} />
                                                         </button>
                                                     </div>
@@ -303,10 +313,20 @@ const AdminReturns = () => {
                                                                     <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                                                                         <Camera size={12} /> Proof Evidence
                                                                     </h4>
-                                                                    {r.images?.length > 0 ? (
+                                                                    {((r.images && r.images.length > 0) || (r.videos && r.videos.length > 0)) ? (
                                                                         <div className="grid grid-cols-3 gap-3">
-                                                                            {r.images.map((img, i) => (
-                                                                                <div key={i} onClick={() => setViewMedia(r.images)} className="aspect-square bg-white rounded-2xl overflow-hidden border border-zinc-100 hover:scale-110 transition-transform cursor-zoom-in">
+                                                                            {/* Videos first */}
+                                                                            {r.videos?.map((vid, i) => (
+                                                                                <div key={`v-${i}`} onClick={() => setViewMedia([{type: 'video', url: vid}])} className="aspect-square bg-black rounded-2xl overflow-hidden border border-zinc-100 hover:scale-105 transition-transform cursor-zoom-in relative">
+                                                                                    <video src={resolveMediaURL(vid)} className="w-full h-full object-cover opacity-60" />
+                                                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                                        <Play size={16} fill="white" className="text-white" />
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                            {/* Images */}
+                                                                            {r.images?.map((img, i) => (
+                                                                                <div key={`i-${i}`} onClick={() => setViewMedia([{type: 'image', url: img}])} className="aspect-square bg-white rounded-2xl overflow-hidden border border-zinc-100 hover:scale-105 transition-transform cursor-zoom-in">
                                                                                     <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-cover" />
                                                                                 </div>
                                                                             ))}
@@ -384,17 +404,27 @@ const AdminReturns = () => {
                             <X size={24} />
                         </button>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl w-full" onClick={e => e.stopPropagation()}>
-                            {viewMedia.map((img, i) => (
+                            {viewMedia.map((media, i) => {
+                                // Backward compatibility check: if media is just a string, assume image
+                                const type = typeof media === 'string' ? 'image' : media.type;
+                                const url = typeof media === 'string' ? media : media.url;
+                                
+                                return (
                                     <motion.div 
-                                    key={i}
-                                    initial={{ scale: 0.9, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: i * 0.1 }}
-                                    className="aspect-square bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 group"
-                                >
-                                    <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
-                                </motion.div>
-                            ))}
+                                        key={i}
+                                        initial={{ scale: 0.9, opacity: 0 }}
+                                        animate={{ scale: 1, opacity: 1 }}
+                                        transition={{ delay: i * 0.1 }}
+                                        className="aspect-square bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 group relative"
+                                    >
+                                        {type === 'video' ? (
+                                            <video src={resolveMediaURL(url)} controls className="w-full h-full object-contain" />
+                                        ) : (
+                                            <img src={resolveMediaURL(url)} alt="" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
                         </div>
                     </motion.div>
                 )}

@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { Heart, Loader2, Star, Zap, Plus, Minus, X, ShoppingBag, Eye } from 'lucide-react';
 import api from '../api/instance';
+import { resolveMediaURL } from '../utils/mediaUtils';
 import Price from './Price';
 
 
@@ -77,7 +78,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         productId: product._id,
         name: product.name,
         price: finalPrice,
-        image: product.image,
+        image: resolveMediaURL(product.image),
         selectedVariant: variantData
       }, { headers: { Authorization: `Bearer ${user.token}` } });
 
@@ -121,7 +122,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         {/* Image */}
         <Link to={`/product/${product.slug || product._id}`} onClick={e => showQuickAdd && e.preventDefault()}>
           <img
-            src={product.image}
+            src={resolveMediaURL(product.image)}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700"
             style={{ transform: hovered ? 'scale(1.08)' : 'scale(1)' }}
