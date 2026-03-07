@@ -4,11 +4,14 @@ import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import api from '../api/instance';
 import { GoogleLogin as GoogleAuthButton } from '@react-oauth/google';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const navigate = useNavigate();
   const { setUser, user, syncGuestWishlist } = useStore();
@@ -17,6 +20,13 @@ const Login = () => {
   const isStaff = (u) => u && (u.isAdmin || ['manager', 'client_support_executive', 'digital_marketing_executive'].includes(u.role));
 
   useEffect(() => {
+    // Check for saved email
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      setEmail(savedEmail);
+      setRememberMe(true);
+    }
+
     if (user) {
       if (isStaff(user)) navigate('/admin');
       else navigate('/account');
@@ -49,13 +59,20 @@ const Login = () => {
     try {
       const { data } = await api.post('/users/login', {
         email: email.toLowerCase().trim(),
-        password
+        password: password.trim()
       });
 
       setUser(data);
       syncGuestWishlist(); // Sync any guest items
       addToast(`WELCOME BACK, ${data.firstName.toUpperCase()}`, "success");
       
+      // Handle Remember Me
+      if (rememberMe) {
+        localStorage.setItem('rememberedEmail', email.toLowerCase().trim());
+      } else {
+        localStorage.removeItem('rememberedEmail');
+      }
+
       if (data.role === 'admin' || data.role === 'manager') {
         navigate('/admin/dashboard');
       } else {
@@ -83,22 +100,44 @@ const Login = () => {
             className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck="false"
             required
           />
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Password"
-              className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
+              className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest pr-10"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck="false"
               required
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-0 top-3 text-gray-400 hover:text-black transition-colors"
+            >
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
 
-            <div className="text-right mt-2">
+            <div className="flex items-center justify-between mt-4">
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  className="w-3 h-3 border-zinc-300 rounded focus:ring-black accent-black"
+                />
+                <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest group-hover:text-black transition-colors">Remember Me</span>
+              </label>
               <Link
                 to="/forgot-password"
-                className="text-[9px] md:text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition"
+                className="text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-black transition"
               >
                 Forgot Password?
               </Link>

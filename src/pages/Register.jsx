@@ -4,12 +4,14 @@ import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { GoogleLogin as GoogleAuthButton } from '@react-oauth/google';
 import { useToast } from '../context/ToastContext';
+import { Eye, EyeOff } from 'lucide-react';
 
 const Register = () => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', email: '', password: '', phone: '' });
   const [showOtp, setShowOtp] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState({ type: '', msg: '' });
 
   const [timer, setTimer] = useState(60);
@@ -65,7 +67,7 @@ const Register = () => {
     setLoading(true);
     setStatus({ type: '', msg: '' });
     try {
-      await api.post('/users/send-otp', { email: formData.email });
+      await api.post('/users/send-otp', { email: formData.email.toLowerCase().trim() });
       setShowOtp(true);
       setTimer(60);
       setCanResend(false);
@@ -85,6 +87,8 @@ const Register = () => {
     try {
       const { data } = await api.post('/users/register', {
         ...formData,
+        email: formData.email.toLowerCase().trim(),
+        password: formData.password.trim(),
         code: otp.join('')
       });
 
@@ -169,6 +173,9 @@ const Register = () => {
                 placeholder="Email"
                 className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
                 required
               />
               <input
@@ -178,13 +185,25 @@ const Register = () => {
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 required
               />
-              <input
-                type="password"
-                placeholder="Password"
-                className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest"
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className="w-full border-b border-gray-300 py-3 outline-none focus:border-black placeholder-gray-500 font-bold uppercase text-[9px] md:text-[10px] tracking-widest pr-10"
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-3 text-gray-400 hover:text-black transition-colors"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
               <input
                 type="text"
                 placeholder="Referral Code (Optional)"

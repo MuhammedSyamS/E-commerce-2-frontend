@@ -3,6 +3,7 @@ import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { Package, Truck, CheckCircle2, XCircle, RefreshCw, ChevronRight, Clock, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const MyReturns = () => {
     const { user } = useStore();
@@ -94,7 +95,7 @@ const MyReturns = () => {
                                     <div className="flex flex-col md:flex-row gap-4 md:gap-8">
                                         {/* IMAGE */}
                                         <div className="w-14 h-20 md:w-24 md:h-32 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-200">
-                                            <img src={ret.orderItem.image} alt="" className="w-full h-full object-cover mix-blend-multiply" />
+                                            <img src={resolveMediaURL(ret.orderItem.image)} alt="" className="w-full h-full object-cover mix-blend-multiply" />
                                         </div>
 
                                         {/* DETAILS */}

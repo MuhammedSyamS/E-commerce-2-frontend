@@ -10,6 +10,7 @@ import {
   Loader2, ChevronRight, Star, AlertTriangle, RotateCcw,
   Calendar, CheckCircle, Copy, Clock, ShieldCheck, Box
 } from 'lucide-react';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const OrderDetails = () => {
   const { id } = useParams();
@@ -427,7 +428,7 @@ const OrderDetails = () => {
                     <td className="py-6 px-8">
                       <div className="flex items-center gap-6">
                         <div className="w-16 h-20 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          <img src={resolveMediaURL(item.image)} alt={item.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
                           <Link
@@ -516,7 +517,7 @@ const OrderDetails = () => {
               <div key={i} className="p-6 flex flex-col gap-4">
                 <div className="flex gap-4">
                   <div className="w-16 h-20 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    <img src={resolveMediaURL(item.image)} alt={item.name} className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1">
                     <h3 className="font-bold !text-[10px] md:!text-sm uppercase leading-tight mb-1">{item.name}</h3>

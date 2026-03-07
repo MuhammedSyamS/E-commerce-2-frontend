@@ -5,6 +5,7 @@ import api from '../api/instance'; // Use configured instance
 import { useToast } from '../context/ToastContext';
 import { useStore } from '../store/useStore';
 import { useNavigate } from 'react-router-dom';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const ReturnPortal = () => {
     const [orderId, setOrderId] = useState('');
@@ -258,7 +259,7 @@ const ReturnPortal = () => {
                                                         onChange={() => !isExpired && toggleItemSelection(item._id)}
                                                     />
                                                 </div>
-                                                <img src={item.image} alt="" className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg md:rounded-xl bg-zinc-200" />
+                                                <img src={resolveMediaURL(item.image)} alt="" className="w-12 h-12 md:w-16 md:h-16 object-cover rounded-lg md:rounded-xl bg-zinc-200" />
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
                                                         <p className="font-bold text-[9px] md:text-xs uppercase truncate">{item.name}</p>

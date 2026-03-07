@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { Check, X, Trash2, Camera, User, Clock, CheckCircle2, XCircle, Pencil } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AdminLooks = () => {
     const { user } = useStore();
@@ -136,7 +137,7 @@ const AdminLooks = () => {
                             >
                                 {/* IMAGE */}
                                 <div className="aspect-[4/5] relative overflow-hidden">
-                                    <img src={look.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
+                                    <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                                     <div className="absolute top-4 right-4 flex gap-2">
                                         <div className={`px-4 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest backdrop-blur-md shadow-lg ${look.status === 'approved' ? 'bg-emerald-500/90 text-white' :
                                             look.status === 'rejected' ? 'bg-red-500/90 text-white' :
@@ -151,7 +152,7 @@ const AdminLooks = () => {
                                 <div className="p-6 space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center overflow-hidden border border-zinc-200">
-                                            {look.user?.avatar ? <img src={look.user.avatar} className="w-full h-full object-cover" alt="" /> : <User size={18} className="text-zinc-400" />}
+                                            {look.user?.avatar ? <img src={resolveMediaURL(look.user.avatar)} className="w-full h-full object-cover" alt="" /> : <User size={18} className="text-zinc-400" />}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-[10px] font-black uppercase tracking-tight truncate">

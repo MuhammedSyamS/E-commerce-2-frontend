@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AdminReturns = () => {
     const { addToast } = useToast();
@@ -213,7 +214,7 @@ const AdminReturns = () => {
                                                 <td className="p-6">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-10 h-10 bg-zinc-100 rounded-xl overflow-hidden border border-zinc-200/50">
-                                                            <img src={r.orderItem?.image} alt="" className="w-full h-full object-cover" />
+                                                            <img src={resolveMediaURL(r.orderItem?.image)} alt="" className="w-full h-full object-cover" />
                                                         </div>
                                                         <div>
                                                             <div className="font-black text-xs uppercase tracking-tight">#{r._id.slice(-8)}</div>
@@ -306,7 +307,7 @@ const AdminReturns = () => {
                                                                         <div className="grid grid-cols-3 gap-3">
                                                                             {r.images.map((img, i) => (
                                                                                 <div key={i} onClick={() => setViewMedia(r.images)} className="aspect-square bg-white rounded-2xl overflow-hidden border border-zinc-100 hover:scale-110 transition-transform cursor-zoom-in">
-                                                                                    <img src={img} alt="" className="w-full h-full object-cover" />
+                                                                                    <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-cover" />
                                                                                 </div>
                                                                             ))}
                                                                         </div>
@@ -384,14 +385,14 @@ const AdminReturns = () => {
                         </button>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl w-full" onClick={e => e.stopPropagation()}>
                             {viewMedia.map((img, i) => (
-                                <motion.div 
+                                    <motion.div 
                                     key={i}
                                     initial={{ scale: 0.9, opacity: 0 }}
                                     animate={{ scale: 1, opacity: 1 }}
                                     transition={{ delay: i * 0.1 }}
                                     className="aspect-square bg-zinc-900 rounded-3xl overflow-hidden border border-white/10 group"
                                 >
-                                    <img src={img} alt="" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
+                                    <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-700" />
                                 </motion.div>
                             ))}
                         </div>

@@ -4,6 +4,7 @@ import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Star, ChevronLeft, ChevronRight, Trash2, Calendar, Quote, X } from 'lucide-react';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const UserReviews = () => {
     const { user } = useStore();
@@ -105,7 +106,7 @@ const UserReviews = () => {
                                                     </button>
                                                 )}
 
-                                                <img src={currentImage} alt="Review Media" className="w-full h-full object-contain bg-black" />
+                                                <img src={resolveMediaURL(currentImage)} alt="Review Media" className="w-full h-full object-contain bg-black" />
 
                                                 {/* INNER NAV: NEXT MEDIA */}
                                                 {allImages.length > 1 && (
@@ -216,7 +217,7 @@ const UserReviews = () => {
 
                                 <div className="flex justify-between items-start mb-6">
                                     <div className="flex gap-6">
-                                        <img src={item.productImage} alt={item.productName} className="w-20 h-20 object-cover rounded-2xl bg-zinc-100" />
+                                        <img src={resolveMediaURL(item.productImage)} alt={item.productName} className="w-20 h-20 object-cover rounded-2xl bg-zinc-100" />
                                         <div>
                                             <Link to={`/product/${item.productSlug}`} className="font-bold text-lg hover:underline">{item.productName}</Link>
                                             <div className="flex items-center gap-1 mt-1 mb-2">
@@ -252,7 +253,7 @@ const UserReviews = () => {
                                             return allImages.map((img, mediaIdx) => (
                                                 <img
                                                     key={mediaIdx}
-                                                    src={img}
+                                                    src={resolveMediaURL(img)}
                                                     alt="User Upload"
                                                     onClick={() => {
                                                         setSelectedReviewIdx(reviewIdx);

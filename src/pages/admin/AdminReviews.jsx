@@ -3,6 +3,7 @@ import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
 import { MessageSquare, Star, Trash2, Eye, EyeOff, MessageCircle, X, Search, Quote, Shield, Pencil } from 'lucide-react';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AdminReviews = () => {
     const { user } = useStore();
@@ -134,7 +135,7 @@ const AdminReviews = () => {
 
                                 {/* Product Info */}
                                 <div className="flex items-center gap-4 w-full md:w-1/4 min-w-[200px] border-b md:border-b-0 md:border-r border-zinc-100 pb-4 md:pb-0 md:pr-4">
-                                    <img src={item.productImage} alt={item.productName} className="w-16 h-16 rounded-xl object-cover bg-zinc-50" />
+                                    <img src={resolveMediaURL(item.productImage)} alt={item.productName} className="w-16 h-16 rounded-xl object-cover bg-zinc-50" />
                                     <div>
                                         <h4 className="font-bold text-sm leading-tight mb-1">{item.productName}</h4>
                                         <div className="flex">
@@ -233,15 +234,15 @@ const AdminReviews = () => {
                                         {/* Videos */}
                                         {(item.review.videos || (item.review.video ? [item.review.video] : [])).map((vid, i) => (
                                             <div key={`v-${i}`} className="w-24 h-16 bg-black rounded-lg overflow-hidden">
-                                                <video src={vid} controls className="w-full h-full object-cover" />
+                                                <video src={resolveMediaURL(vid)} controls className="w-full h-full object-cover" />
                                             </div>
                                         ))}
                                         {/* Images */}
                                         {item.review.images && item.review.images.map((img, i) => (
                                             <img
                                                 key={`i-${i}`}
-                                                src={img}
-                                                onClick={() => setSelectedImage(img)}
+                                                src={resolveMediaURL(img)}
+                                                onClick={() => setSelectedImage(resolveMediaURL(img))}
                                                 className="w-16 h-16 rounded-lg object-cover border border-zinc-100 cursor-zoom-in hover:scale-110 transition-transform"
                                                 alt="review"
                                             />

@@ -103,7 +103,7 @@ const FeaturedReviews = () => {
     if (loading) return null;
 
     return (
-        <section className="bg-zinc-50 py-24 border-t border-zinc-200">
+        <section className="bg-zinc-50 py-12 md:py-24 border-t border-zinc-200">
 
             {/* IMMERSIVE MODAL (With Navigation) */}
             {selectedReview && (
@@ -238,7 +238,7 @@ const FeaturedReviews = () => {
             <div className="max-w-[1440px] mx-auto px-6 md:px-24">
 
                 {/* HEADER */}
-                <div className="flex justify-between items-end mb-12">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 md:mb-12">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
                             Community Verified
@@ -276,10 +276,10 @@ const FeaturedReviews = () => {
                                 <div
                                     key={idx}
                                     onClick={() => openModal(item, idx)}
-                                    className="min-w-[300px] md:min-w-[400px] bg-white border border-zinc-200 snap-start flex flex-col group hover:shadow-xl transition-shadow duration-500 cursor-pointer"
+                                    className="min-w-[280px] md:min-w-[400px] bg-white border border-zinc-200 snap-start flex flex-col group hover:shadow-xl transition-shadow duration-500 cursor-pointer"
                                 >
                                     {/* MEDIA AREA (Top 60%) */}
-                                    <div className="h-[300px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
+                                    <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
                                         {hasMedia ? (
                                             <div className="w-full h-full relative">
                                                 {media[0].type === 'video' ? (
@@ -310,8 +310,8 @@ const FeaturedReviews = () => {
                                             </div>
                                         ) : (
                                             // Fallback Pattern for Text-Only
-                                            <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-8">
-                                                <p className="font-sans text-3xl text-zinc-300 text-center leading-tight">
+                                            <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-6 md:p-8">
+                                                <p className="font-sans text-2xl md:text-3xl text-zinc-300 text-center leading-tight">
                                                     "{r.comment?.substring(0, 50)}..."
                                                 </p>
                                             </div>
@@ -319,14 +319,14 @@ const FeaturedReviews = () => {
                                     </div>
 
                                     {/* CONTENT AREA (Bottom 40%) */}
-                                    <div className="p-8 flex flex-col flex-1 relative bg-white">
+                                    <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-white">
                                         <div className="flex gap-0.5 mb-4">
                                             {[...Array(5)].map((_, i) => (
                                                 <Star key={i} size={12} fill="black" className="text-black" />
                                             ))}
                                         </div>
 
-                                        <h3 className="font-sans text-xl mb-4 line-clamp-3 leading-relaxed">
+                                        <h3 className="font-sans text-lg md:text-xl mb-4 line-clamp-3 leading-relaxed">
                                             "{r.comment}"
                                         </h3>
 

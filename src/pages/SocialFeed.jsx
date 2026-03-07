@@ -94,7 +94,7 @@ const SocialFeed = () => {
                         >
                             <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 bg-white text-black p-3 rounded-2xl shadow-2xl opacity-0 group-hover/tag:opacity-100 transition-opacity pointer-events-none min-w-[180px]">
                                 <div className="flex gap-3 items-center">
-                                    <img src={prod.image} className="w-10 h-12 object-cover rounded-lg" alt="" />
+                                    <img src={resolveMediaURL(prod.image)} className="w-10 h-12 object-cover rounded-lg" alt="" />
                                     <div>
                                         <p className="text-[10px] font-black uppercase tracking-tighter truncate">{prod.name}</p>
                                         <Price amount={prod.price} className="text-[11px] font-bold text-zinc-500" />
@@ -130,7 +130,7 @@ const SocialFeed = () => {
                                     onClick={() => { navigate(`/product/${prod.slug}`); onClose(); }}
                                     className="flex items-center gap-4 p-4 rounded-3xl bg-zinc-50 border border-zinc-100 cursor-pointer hover:border-black transition-all group"
                                 >
-                                    <img src={prod.image} className="w-16 h-20 object-cover rounded-2xl" alt="" />
+                                    <img src={resolveMediaURL(prod.image)} className="w-16 h-20 object-cover rounded-2xl" alt="" />
                                     <div className="flex-1">
                                         <p className="text-xs font-black uppercase tracking-tight mb-1">{prod.name}</p>
                                         <Price amount={prod.price} className="text-sm font-bold text-zinc-500" />

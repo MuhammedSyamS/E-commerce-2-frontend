@@ -48,7 +48,7 @@ const ForgotPassword = () => {
       await api.post(`${API_URL}/reset-password`, {
         email: email.toLowerCase().trim(),
         code: code.trim(),
-        newPassword
+        newPassword: newPassword.trim()
       });
       addToast("PASSWORD UPDATED SUCCESSFULLY", "success");
       navigate('/login');
@@ -78,6 +78,9 @@ const ForgotPassword = () => {
                 type="email" placeholder="ENTER REGISTERED EMAIL" required
                 className="w-full bg-transparent outline-none text-[10px] font-bold uppercase tracking-widest"
                 value={email} onChange={(e) => setEmail(e.target.value)}
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
               />
             </div>
           ) : (
@@ -94,6 +97,9 @@ const ForgotPassword = () => {
                   type="password" placeholder="NEW PASSWORD" required
                   className="w-full bg-transparent outline-none text-[10px] font-bold uppercase tracking-widest"
                   value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
                 />
               </div>
 
