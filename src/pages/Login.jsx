@@ -35,6 +35,7 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      console.log("Google Credential Received:", credentialResponse);
       const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
       });
@@ -47,9 +48,14 @@ const Login = () => {
         else navigate('/account');
       }
     } catch (err) {
-      console.error(err);
+      console.error("Google Server Login Error:", err.response?.data || err);
       addToast("Google Login Failed", "error");
     }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error("Google Library Error Output:", error);
+    addToast("Login Failed: Please check console for details", "error");
   };
 
   const handleSubmit = async (e) => {
@@ -157,7 +163,7 @@ const Login = () => {
         <div className="flex justify-center">
           <GoogleAuthButton
             onSuccess={handleGoogleSuccess}
-            onError={() => addToast("Login Failed", "error")}
+            onError={handleGoogleError}
             type="standard"
             theme="filled_black"
             size="large"

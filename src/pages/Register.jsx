@@ -23,6 +23,7 @@ const Register = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
+      console.log("Google Signup Success:", credentialResponse);
       const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
       });
@@ -34,9 +35,14 @@ const Register = () => {
         else navigate('/account');
       }
     } catch (err) {
-      console.error(err);
+      console.error("Google Signup Backend Error:", err.response?.data || err);
       addToast("Google Login Failed", "error");
     }
+  };
+
+  const handleGoogleError = (error) => {
+    console.error("Google Login Library Error:", error);
+    addToast("Login Failed", "error");
   };
 
   // --- AUTO-VANISH STATUS MESSAGE ---
@@ -135,7 +141,7 @@ const Register = () => {
           <div className="mb-8 flex justify-center flex-col items-center gap-4">
             <GoogleAuthButton
               onSuccess={handleGoogleSuccess}
-              onError={() => addToast("Login Failed", "error")}
+              onError={handleGoogleError}
               type="standard"
               theme="filled_black"
               size="large"
