@@ -3,6 +3,7 @@ import api from '../api/instance';
 import { Star, MessageSquare, Filter, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const Reviews = () => {
     const [reviews, setReviews] = useState([]);
