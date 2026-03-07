@@ -106,11 +106,11 @@ const Orders = () => {
 
                         return (
                           <div className="flex items-center gap-3">
-                            <span className={`px-2 md:px-4 py-1 rounded-full !text-[7px] md:!text-9px] font-black uppercase tracking-widest ${colorClass}`}>
+                            <span className={`px-2 md:px-4 py-1 rounded-full text-[9px] md:text-xs font-black uppercase tracking-widest ${colorClass}`}>
                               {status}
                             </span>
                             {currentDate && (
-                              <span className="!text-[7px] md:!text-[9px] font-bold text-zinc-400 uppercase tracking-widest">
+                              <span className="text-[9px] md:text-xs font-bold text-zinc-400 uppercase tracking-widest">
                                 {new Date(currentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                               </span>
                             )}
@@ -138,8 +138,8 @@ const Orders = () => {
                   {/* RIGHT: Price & Action */}
                   <div className="flex flex-col justify-between items-end gap-4 md:gap-6 border-t lg:border-t-0 lg:border-l border-zinc-100 pt-4 md:pt-6 lg:pt-0 lg:pl-10 w-full lg:w-auto">
                     <div className="text-right">
-                      <p className="!text-[7px] md:!text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
-                      <Price amount={order.totalPrice} className="!text-base md:!text-3xl font-black tracking-tighter" />
+                      <p className="text-[9px] md:text-xs font-bold text-zinc-400 uppercase tracking-widest">Grand Total</p>
+                      <Price amount={order.totalPrice} className="text-lg md:text-3xl font-black tracking-tighter" />
                     </div>
 
                     <button

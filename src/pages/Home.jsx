@@ -32,9 +32,9 @@ const Home = () => {
   const recentlyViewedRef = useRef(null);
 
   const slides = [
-    { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Modern Essentials" },
-    { id: 2, img: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Urban Living", subtitle: "Curated Design" },
-    { id: 3, img: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "Premium Quality", subtitle: "Built to Last" },
+    { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
+    { id: 2, img: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=2000", title: "Urban Living", subtitle: "Curated Design" },
+    { id: 3, img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=2000", title: "Premium Quality", subtitle: "Built to Last" },
   ];
 
   const scrollToProducts = () => {
@@ -258,7 +258,7 @@ const Home = () => {
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
                     alt="" 
                     onError={(e) => {
-                      e.target.src = "https://images.pexels.com/photos/3748221/pexels-photo-3748221.jpeg?auto=compress&cs=tinysrgb&w=800";
+                      e.target.style.display = 'none'; // Hide broken images instead of showing dummy
                     }}
                   />
                   <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">

@@ -113,33 +113,36 @@ const FeaturedReviews = () => {
                     className="fixed inset-0 z-[100] bg-zinc-900/95 backdrop-blur-xl flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300"
                     onClick={() => setSelectedReview(null)}
                 >
-                    {/* CLOSE BUTTON */}
-                    <button className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-50">
+                    {/* Global Close Button (Hidden on Mobile, handled by Modal Button) */}
+                    <button 
+                        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120] hidden md:block"
+                        onClick={() => setSelectedReview(null)}
+                    >
                         <X size={24} />
                     </button>
 
                     {/* REVIEW NAVIGATION ARROWS (Global) */}
                     <button
                         onClick={prevReview}
-                        className="absolute left-2 md:left-8 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md p-2 md:p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 flex items-center justify-center"
+                        className="absolute left-1 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-50 flex items-center justify-center p-2"
                     >
-                        <ChevronLeft size={24} className="md:w-8 md:h-8" />
+                        <ChevronLeft size={28} className="md:w-10 md:h-10" />
                     </button>
                     <button
                         onClick={nextReview}
-                        className="absolute right-2 md:right-8 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-md p-2 md:p-3 rounded-full text-white/50 hover:text-white hover:bg-white/20 transition-all z-50 flex items-center justify-center"
+                        className="absolute right-1 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-50 flex items-center justify-center p-2"
                     >
-                        <ChevronRight size={24} className="md:w-8 md:h-8" />
+                        <ChevronRight size={28} className="md:w-10 md:h-10" />
                     </button>
 
-                    <div className="bg-white w-[92%] md:w-full max-w-7xl h-[80vh] md:h-[85vh] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto md:mx-4" onClick={e => e.stopPropagation()}>
+                    <div className="bg-white w-[88%] md:w-full max-w-7xl h-[75vh] md:h-[85vh] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto md:mx-4" onClick={e => e.stopPropagation()}>
                         
-                        {/* Close Button (Mobile Floating) */}
+                        {/* Final Close Button */}
                         <button 
                             onClick={() => setSelectedReview(null)}
-                            className="absolute top-4 right-4 md:hidden z-[110] bg-black/50 backdrop-blur-md text-white p-2 rounded-full"
+                            className="absolute top-4 right-4 z-[110] bg-black text-white p-1.5 rounded-full shadow-lg"
                         >
-                            <X size={20} />
+                            <X size={16} />
                         </button>
 
                         {/* Media Section (Left) */}
@@ -168,15 +171,15 @@ const FeaturedReviews = () => {
                                 <>
                                     <button
                                         onClick={prevMedia}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-2 rounded-full text-white/70 hover:text-white hover:scale-110 transition-all z-20"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white hover:scale-110 transition-all z-20"
                                     >
-                                        <ChevronLeft size={20} />
+                                        <ChevronLeft size={24} />
                                     </button>
                                     <button
                                         onClick={nextMedia}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md p-2 rounded-full text-white/70 hover:text-white hover:scale-110 transition-all z-20"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white hover:scale-110 transition-all z-20"
                                     >
-                                        <ChevronRight size={20} />
+                                        <ChevronRight size={24} />
                                     </button>
                                 </>
                             )}
@@ -216,8 +219,8 @@ const FeaturedReviews = () => {
                                         <Star key={i} size={14} fill="black" className="text-black" />
                                     ))}
                                 </div>
-                                <h3 className="text-xl md:text-3xl font-sans mb-6 text-zinc-950 leading-tight italic font-bold">"{selectedReview.title || "Product Review"}"</h3>
-                                <p className="text-zinc-950 leading-[1.6] text-sm md:text-lg font-bold">
+                                <h3 className="text-lg md:text-3xl font-sans mb-4 md:mb-6 text-zinc-950 leading-tight italic font-bold">"{selectedReview.title || "Product Review"}"</h3>
+                                <p className="text-zinc-950 leading-[1.5] text-xs md:text-lg font-bold">
                                     {selectedReview.comment}
                                 </p>
 

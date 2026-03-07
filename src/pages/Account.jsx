@@ -144,7 +144,7 @@ const Account = () => {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <div className="bg-zinc-950 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-xl border border-white/10">
                 <Crown size={14} className="text-amber-400" />
-                <span className="text-[10px] font-black uppercase tracking-widest italic">{user?.membershipTier || 'Bronze'} Elite</span>
+                <span className="text-[10px] font-black uppercase tracking-widest">{user?.membershipTier || 'Bronze'} Elite</span>
               </div>
               <div className="bg-white text-zinc-950 px-6 py-2 rounded-full flex items-center gap-2 shadow-lg border border-zinc-100">
                 <Trophy size={14} className="text-amber-500" />
@@ -333,7 +333,7 @@ const Account = () => {
                 {/* RIGHT SIDE: ACTIONS */}
                 <div className="w-full md:w-1/2 p-6 md:p-8 flex flex-col bg-white overflow-y-auto no-scrollbar pb-24 md:pb-8">
                   <div className="flex justify-between items-center mb-6 md:mb-8">
-                    <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter italic">Step {uploadStep}/3</h3>
+                    <h3 className="text-xl md:text-2xl font-black uppercase tracking-tighter">Step {uploadStep}/3</h3>
                     <button onClick={() => setShowUploadModal(false)} className="p-2 hover:bg-zinc-50 rounded-full">
                       <X size={24} />
                     </button>
@@ -439,7 +439,7 @@ const Account = () => {
                           <CheckCircle2 size={40} />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black uppercase tracking-tighter italic">Ready for Review!</h4>
+                          <h4 className="text-xl font-black uppercase tracking-tighter">Ready for Review!</h4>
                           <p className="text-xs text-zinc-500 max-w-[250px] mx-auto mt-2 leading-relaxed">
                             Your look will be reviewed by the SLOOK Curators and should be live within 24 hours.
                           </p>

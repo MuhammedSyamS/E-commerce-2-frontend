@@ -67,7 +67,7 @@ const EditProfile = () => {
           <ArrowLeft size={16} /> Back to Dashboard
         </button>
 
-        <h1 className="text-3xl font-black uppercase italic tracking-tighter mb-8">Edit <span className="text-zinc-300">Profile</span></h1>
+        <h1 className="text-3xl font-black uppercase tracking-tighter mb-8">Edit <span className="text-zinc-300">Profile</span></h1>
 
         {message && (
           <div className={`p-4 mb-8 text-xs font-bold uppercase tracking-widest rounded-xl ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
