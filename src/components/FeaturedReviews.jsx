@@ -11,6 +11,33 @@ const FeaturedReviews = () => {
     const [loading, setLoading] = useState(true);
     const [selectedReview, setSelectedReview] = useState(null);
     const [commentExpanded, setCommentExpanded] = useState(false);
+    const scrollRef = useRef(null);
+
+    // Auto-scroll effect
+    useEffect(() => {
+        if (reviews.length <= 1) return;
+        const timer = setInterval(() => {
+            if (scrollRef.current) {
+                const el = scrollRef.current;
+                const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+                if (isAtEnd) {
+                    el.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                    el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' });
+                }
+            }
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [reviews.length]);
+
+    const scroll = (direction) => {
+        if (scrollRef.current) {
+            const el = scrollRef.current;
+            const width = el.clientWidth;
+            const scrollAmount = direction === 'left' ? -width * 0.8 : width * 0.8;
+            el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+    };
 
     // Auto-reset expansion on review change
     useEffect(() => {
@@ -303,8 +330,22 @@ const FeaturedReviews = () => {
                     </Link>
                 </div>
 
-                {/* MARQUEE WRAPPER */}
+                {/* CAROUSEL WRAPPER */}
                 <div className="relative group/review-scroller min-h-[300px]">
+                    {/* Navigation Buttons */}
+                    <button 
+                        onClick={() => scroll('left')}
+                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                        onClick={() => scroll('right')}
+                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
+
                     {loading ? (
                         <div className="flex gap-4 overflow-x-hidden py-4">
                             {[1, 2, 3].map(i => (
@@ -312,7 +353,10 @@ const FeaturedReviews = () => {
                             ))}
                         </div>
                     ) : (
-                        <MarqueeRibbon speed={30} className="py-4">
+                        <div 
+                            ref={scrollRef}
+                            className="flex gap-4 overflow-x-auto no-scrollbar py-4 snap-x snap-mandatory scroll-smooth"
+                        >
                             {reviews.map((item, idx) => {
                                 const r = item.review || item;
                                 const media = getMediaFromReview(item);
@@ -322,7 +366,7 @@ const FeaturedReviews = () => {
                                     <div
                                         key={idx}
                                         onClick={() => openModal(item, idx)}
-                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-4 shrink-0"
+                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-2 shrink-0 snap-center"
                                     >
                                         {/* MEDIA AREA (Top 60%) */}
                                         <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
@@ -393,7 +437,7 @@ const FeaturedReviews = () => {
                                     </div>
                                 );
                             })}
-                        </MarqueeRibbon>
+                        </div>
                     )}
                 </div>
             </div>

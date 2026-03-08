@@ -31,6 +31,7 @@ const Home = () => {
   const bestSellersSectionRef = useRef(null);
   const trendingRef = useRef(null);
   const recentlyViewedRef = useRef(null);
+  const communityLooksRef = useRef(null);
 
   const slides = [
     { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
@@ -88,6 +89,23 @@ const Home = () => {
     };
     fetchLooks();
   }, []);
+
+  // Auto-scroll Community Looks
+  useEffect(() => {
+    if (communityLooks.length <= 1) return;
+    const timer = setInterval(() => {
+        if (communityLooksRef.current) {
+            const el = communityLooksRef.current;
+            const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
+            if (isAtEnd) {
+                el.scrollTo({ left: 0, behavior: 'smooth' });
+            } else {
+                el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' });
+            }
+        }
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [communityLooks.length]);
 
   useEffect(() => {
     const fetchRecentlyViewed = async () => {
@@ -253,7 +271,23 @@ const Home = () => {
             </div>
 
             <div className="relative group/community">
-              <MarqueeRibbon speed={40} className="py-8">
+              <button 
+                onClick={() => scroll(communityLooksRef, 'left')}
+                className="absolute -left-4 md:-left-20 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+              >
+                <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+              </button>
+              <button 
+                onClick={() => scroll(communityLooksRef, 'right')}
+                className="absolute -right-4 md:-right-20 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+              >
+                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+              </button>
+
+              <div 
+                ref={communityLooksRef}
+                className="flex gap-4 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth"
+              >
                 {communityLooks.map((look) => {
                   const u = look.user;
                   const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : look.userName) || "House Stylist";
@@ -263,7 +297,7 @@ const Home = () => {
                     <Link 
                       key={look._id} 
                       to="/looks" 
-                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-zinc-50 mx-4 shrink-0"
+                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-zinc-50 mx-2 shrink-0 snap-center"
                     >
                       <img 
                         src={resolveMediaURL(look.image)} 
@@ -297,7 +331,7 @@ const Home = () => {
                     </Link>
                   );
                 })}
-              </MarqueeRibbon>
+              </div>
             </div>
           </section>
         </Reveal>
