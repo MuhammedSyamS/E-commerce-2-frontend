@@ -146,7 +146,7 @@ const UserReviews = () => {
                                         <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
                                             {activeReviewItem.productName}
                                         </h3>
-                                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
+                                        <p className="text-zinc-600 leading-relaxed text-base flex-grow mb-8">
                                             "{activeReviewItem.review.comment}"
                                         </p>
 
@@ -196,7 +196,7 @@ const UserReviews = () => {
                         <ChevronLeft size={24} className="group-hover:-translate-x-1 transition-transform" />
                     </button>
                     <div>
-                        <h1 className="text-4xl font-black uppercase tracking-tighter italic">My Reviews</h1>
+                        <h1 className="text-4xl font-black uppercase tracking-tighter">My Reviews</h1>
                         <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-400">Manage Your Feedback</p>
                     </div>
                 </div>
@@ -243,7 +243,7 @@ const UserReviews = () => {
 
                                 <div className="bg-zinc-50 p-6 rounded-2xl relative">
                                     <Quote size={20} className="text-zinc-200 absolute top-4 left-4" />
-                                    <p className="text-zinc-600 text-sm leading-relaxed pl-8 italic">"{item.review.comment}"</p>
+                                    <p className="text-zinc-600 text-sm leading-relaxed pl-8">"{item.review.comment}"</p>
 
                                     {/* DISPLAY IMAGES */}
                                     <div className="flex gap-2 mt-4 pl-8 flex-wrap">

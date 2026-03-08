@@ -54,11 +54,15 @@ const SocialFeed = () => {
             try {
                 const { data } = await api.get('/looks');
                 // Ensure data is mapped correctly if the backend returns different structure
-                const mappedData = (data || []).map(l => ({
-                    ...l,
-                    user: l.user || { firstName: "SLOOK", lastName: "Member" }
-                }));
-                // setLooks(mappedData.length > 0 ? mappedData : MOCK_LOOKS);
+                const mappedData = (data || []).map(l => {
+                    const u = l.user;
+                    const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : l.userName) || "House Stylist";
+                    return {
+                        ...l,
+                        displayHandle,
+                        formattedHandle: displayHandle.toLowerCase().replace(/\s+/g, '')
+                    };
+                });
                 setLooks(mappedData);
             } catch (err) {
                 console.error('Error fetching looks:', err);
@@ -109,10 +113,16 @@ const SocialFeed = () => {
 
                 {/* DETAILS SIDE */}
                 <div className="w-full md:w-[400px] flex flex-col p-6 md:p-8 bg-white flex-shrink-0">
-                    <div className="flex items-center gap-3 mb-8 pb-8 border-b border-zinc-50">
-                        <img src={look.user?.avatar ? resolveMediaURL(look.user.avatar) : "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-12 h-12 rounded-full border-2 border-zinc-50" alt="" />
+                    <div className="flex items-center gap-3 mb-8 pb-8 border-b border-zinc-50 uppercase">
+                        <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-100 flex items-center justify-center overflow-hidden">
+                            {look.user?.avatar ? (
+                                <img src={resolveMediaURL(look.user.avatar)} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-xs text-white font-black">{(look.displayHandle?.[0] || "S").toUpperCase()}</span>
+                            )}
+                        </div>
                         <div>
-                            <p className="text-sm font-black uppercase tracking-tight">{look.user?.firstName} {look.user?.lastName}</p>
+                            <p className="text-sm font-black uppercase tracking-tight">@{look.formattedHandle}</p>
                             <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">SLOOK ELITE MEMBER</p>
                         </div>
                     </div>
@@ -218,11 +228,16 @@ const SocialFeed = () => {
 
                                     <div className="p-5">
                                         <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-2">
-                                                <img src={look.user?.avatar ? resolveMediaURL(look.user.avatar) : "https://ui-avatars.com/api/?name=" + (look.user?.firstName || "U")} className="w-6 h-6 rounded-full group-hover:scale-110 transition-all border border-zinc-100"
-                                                    alt="" />
+                                            <div className="flex items-center gap-2 uppercase">
+                                                <div className="w-6 h-6 rounded-full bg-zinc-900 border border-zinc-100 flex items-center justify-center overflow-hidden">
+                                                    {look.user?.avatar ? (
+                                                        <img src={resolveMediaURL(look.user.avatar)} className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="text-[8px] text-white font-black">{(look.displayHandle?.[0] || "S").toUpperCase()}</span>
+                                                    )}
+                                                </div>
                                                 <div>
-                                                    <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 leading-none">{look.user?.firstName} {look.user?.lastName}</p>
+                                                    <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 leading-none">@{look.formattedHandle}</p>
                                                     <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Verified Style</p>
                                                 </div>
                                             </div>

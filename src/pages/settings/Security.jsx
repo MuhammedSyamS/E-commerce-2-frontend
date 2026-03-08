@@ -111,7 +111,7 @@ const Security = () => {
                         <ShieldCheck size={28} className="text-black" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black uppercase italic tracking-tighter">Security</h1>
+                        <h1 className="text-3xl font-black uppercase tracking-tighter">Security</h1>
                         <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Password Management</p>
                     </div>
                 </div>

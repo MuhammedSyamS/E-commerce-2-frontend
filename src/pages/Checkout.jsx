@@ -21,8 +21,7 @@ const Checkout = () => {
   const [couponApplied, setCouponApplied] = useState(null); // { code, discountAmount }
   const [discountError, setDiscountError] = useState('');
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
-  const [isGift, setIsGift] = useState(false);
-  const [giftNote, setGiftNote] = useState('');
+
   const [useLoyaltyPoints, setUseLoyaltyPoints] = useState(false);
 
 
@@ -173,8 +172,7 @@ const Checkout = () => {
         shippingPrice,
         discountAmount,
         couponCode: couponApplied?.code || (coupon?.code || ''),
-        orderNote: isGift ? `GIFT: ${giftNote}` : formData.orderNote,
-        isGift
+        orderNote: formData.orderNote,
       };
 
       // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
@@ -437,36 +435,7 @@ const Checkout = () => {
                     <input type="text" required className="!text-[12px] md:!text-[14px] w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-bold" value={formData.zip} onChange={e => setFormData({ ...formData, zip: e.target.value })} />
                   </div>
 
-                  {/* PREMIUM GIFT OPTIONS */}
-                  <div className={`p-6 rounded-3xl space-y-6 border transition-all duration-500 ${isGift ? 'bg-zinc-950 text-white border-black shadow-2xl' : 'bg-zinc-50 border-zinc-100'}`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl shadow-sm transition-colors ${isGift ? 'bg-white/10' : 'bg-white'}`}><Gift size={18} className={isGift ? 'text-white' : 'text-zinc-900'} /></div>
-                        <div>
-                          <p className="!text-[11px] md:!text-[13px] font-black uppercase tracking-tight">Elite Gift Packaging</p>
-                          <p className={`!text-[9px] md:!text-[11px] font-bold uppercase tracking-widest ${isGift ? 'text-zinc-500' : 'text-zinc-400'}`}>Handmade wrap & personal note</p>
-                        </div>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setIsGift(!isGift)}
-                        className={`w-12 h-6 rounded-full transition-colors relative ${isGift ? 'bg-amber-500' : 'bg-zinc-200'}`}
-                      >
-                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isGift ? 'left-7' : 'left-1'}`} />
-                      </button>
-                    </div>
 
-                    {isGift && (
-                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
-                        <textarea
-                          placeholder="WRITE A NOTE..."
-                          className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-white transition-all text-white placeholder:text-zinc-600"
-                          value={giftNote}
-                          onChange={(e) => setGiftNote(e.target.value)}
-                        />
-                      </div>
-                    )}
-                  </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-2">

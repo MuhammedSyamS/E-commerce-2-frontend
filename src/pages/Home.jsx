@@ -30,6 +30,7 @@ const Home = () => {
   const bestSellersSectionRef = useRef(null);
   const trendingRef = useRef(null);
   const recentlyViewedRef = useRef(null);
+  const communityRef = useRef(null);
 
   const slides = [
     { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
@@ -79,7 +80,7 @@ const Home = () => {
       try {
         const { data } = await api.get('/looks');
         if (data && data.length > 0) {
-          setCommunityLooks(data.slice(0, 4));
+          setCommunityLooks(data.slice(0, 12));
         }
       } catch (err) {
         console.error("Home Looks Fetch Error:", err);
@@ -242,32 +243,83 @@ const Home = () => {
 
       {activeView === 'all' && (
         <Reveal width="100%">
-          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
+          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100 group/community">
             <div className="flex justify-between items-end mb-12">
               <div>
-                <h2 className="text-xs md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
+                <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
                 <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Community Curation #StyledBySLOOK</p>
               </div>
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-              {communityLooks.filter(look => look && look.user).map((look) => (
-                <Link key={look._id} to="/looks" className="relative aspect-[3/4] overflow-hidden rounded-2xl group border border-zinc-100 bg-zinc-50">
-                  <img 
-                    src={resolveMediaURL(look.image)} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-700" 
-                    alt="" 
-                    onError={(e) => {
-                      e.target.style.display = 'none'; // Hide broken images instead of showing dummy
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
-                    <p className="text-[8px] font-black text-white uppercase tracking-widest">
-                      @{look.user ? `${look.user.firstName}${look.user.lastName || ''}` : 'User'}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+
+            <div className="relative">
+              {/* Navigation Arrows */}
+              <button 
+                onClick={() => communityRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
+                className="absolute -left-2 md:-left-12 top-1/2 -translate-y-1/2 z-50 p-2 md:p-3 bg-white border border-zinc-100 rounded-full shadow-xl transition-all hover:scale-110 active:scale-90 text-black"
+              >
+                <ChevronLeft size={20} className="md:w-6 md:h-6" strokeWidth={2.5} />
+              </button>
+              <button 
+                onClick={() => communityRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
+                className="absolute -right-2 md:-right-12 top-1/2 -translate-y-1/2 z-50 p-2 md:p-3 bg-white border border-zinc-100 rounded-full shadow-xl transition-all hover:scale-110 active:scale-90 text-black"
+              >
+                <ChevronRight size={20} className="md:w-6 md:h-6" strokeWidth={2.5} />
+              </button>
+
+              <div 
+                ref={communityRef}
+                className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-8 px-1"
+              >
+                {communityLooks.map((look) => {
+                  const u = look.user;
+                  
+                  // ADVANCED ATTRIBUTION LOGIC
+                  const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : look.userName) || "House Stylist";
+                  
+                  // Format for display (lowercase handle style)
+                  const formattedHandle = displayHandle.toLowerCase().replace(/\s+/g, '');
+                  
+                  return (
+                    <Link 
+                      key={look._id} 
+                      to="/looks" 
+                      className="relative min-w-[240px] md:min-w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group border border-zinc-100 bg-zinc-50 snap-start"
+                    >
+                      <img 
+                        src={resolveMediaURL(look.image)} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" 
+                        alt="" 
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                      
+                      {/* Attribution Bubble - Always Visible */}
+                      <div className="absolute top-4 left-4 z-10">
+                        <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-sm">
+                          <div className="w-5 h-5 rounded-full bg-zinc-900 border border-white/30 flex items-center justify-center overflow-hidden uppercase">
+                            {u?.avatar ? (
+                              <img src={resolveMediaURL(u.avatar)} className="w-full h-full object-cover" />
+                            ) : (
+                              <span className="text-[7px] text-white font-black">{(displayHandle[0] || "S").toUpperCase()}</span>
+                            )}
+                          </div>
+                          <p className="text-[8px] font-black text-black uppercase tracking-widest line-clamp-1">
+                            @{formattedHandle}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                        <p className="text-[10px] font-black text-white uppercase tracking-widest translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                          View Look
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </section>
         </Reveal>

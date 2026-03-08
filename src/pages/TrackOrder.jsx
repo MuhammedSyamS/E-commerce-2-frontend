@@ -108,7 +108,7 @@ const TrackOrder = () => {
         { label: 'Approved', icon: CheckCircle, status: 'Approved' },
         { label: 'Pick-up', icon: Truck, status: ['Pickup Scheduled', 'Picked Up', 'In Transit'] },
         { label: 'Quality Check', icon: ShieldCheck, status: ['Received', 'QC Pending', 'QC Passed', 'QC Failed'] },
-        { label: 'Resolved', icon: RotateCcw, status: ['Refund Initiated', 'Refund Completed', 'Replacement Sent', 'Exchanged'] }
+        { label: activeType === 'exchange' ? 'Exchanged' : 'Refunded', icon: RotateCcw, status: ['Refund Initiated', 'Refund Completed', 'Replacement Sent', 'Exchanged', 'Replacement Delivered'] }
       ];
     }
 
@@ -322,9 +322,9 @@ const TrackOrder = () => {
                             {m.label}
                           </p>
 
-                          {date && (
-                            <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
-                              {formatDate(date)}
+                          {(date || (orderData.returnStatus && m.status && (Array.isArray(m.status) ? m.status.includes(orderData.returnStatus) : m.status === orderData.returnStatus))) && (
+                            <p className="text-[5px] md:text-[7px] font-bold text-zinc-400 uppercase tracking-tighter leading-none mt-0.5 whitespace-nowrap">
+                              {formatDate(date || orderData.updatedAt)}
                             </p>
                           )}
                         </div>

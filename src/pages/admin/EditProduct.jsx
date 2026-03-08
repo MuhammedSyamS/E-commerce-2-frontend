@@ -5,6 +5,7 @@ import api from '../../api/instance';
 import StockHistory from '../../components/StockHistory';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const EditProduct = () => {
   const navigate = useNavigate();
@@ -269,7 +270,7 @@ const EditProduct = () => {
                   <div className="grid grid-cols-4 gap-4 mt-4">
                     {formData.images.map((img, idx) => (
                       <div key={idx} className="relative aspect-square rounded-lg overflow-hidden group border border-zinc-200">
-                        <img src={img} alt="" className="w-full h-full object-cover" />
+                        <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removeImage(idx)}
@@ -459,9 +460,9 @@ const EditProduct = () => {
                           onClick={() => setPreviewVariantIdx(idx)}
                           className={`flex gap-3 items-center p-3 rounded-2xl border transition-all cursor-pointer group ${previewVariantIdx === idx ? 'bg-zinc-900 border-zinc-900 shadow-lg' : 'bg-zinc-50 border-zinc-200 hover:border-black'}`}
                         >
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200 group-hover:border-white/20 transition-colors">
-                            {variant.image ? (
-                              <img src={variant.image} className="w-full h-full object-cover" alt="" />
+                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-zinc-100 flex-shrink-0 border border-zinc-200 group-hover:border-white/20 transition-colors">
+                             {variant.image ? (
+                               <img src={resolveMediaURL(variant.image)} className="w-full h-full object-cover" alt="" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center text-zinc-300">
                                 <Package size={14} />
@@ -636,11 +637,11 @@ const EditProduct = () => {
           <div className="lg:col-span-1">
             <h3 className="text-[10px] font-black uppercase text-zinc-400 mb-6 tracking-widest sticky top-32">Listing Preview</h3>
             <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100 sticky top-44">
-              <div className="aspect-[4/5] bg-zinc-100 rounded-2xl overflow-hidden mb-6 relative">
-                {previewVariantIdx !== null && formData.variants[previewVariantIdx]?.image ? (
-                  <img src={formData.variants[previewVariantIdx].image} className="w-full h-full object-cover" alt="Variant Preview" />
-                ) : formData.image ? (
-                  <img src={formData.image} className="w-full h-full object-cover" alt="Main Preview" />
+               <div className="aspect-[4/5] bg-zinc-100 rounded-2xl overflow-hidden mb-6 relative">
+                 {previewVariantIdx !== null && formData.variants[previewVariantIdx]?.image ? (
+                   <img src={resolveMediaURL(formData.variants[previewVariantIdx].image)} className="w-full h-full object-cover" alt="Variant Preview" />
+                 ) : formData.image ? (
+                   <img src={resolveMediaURL(formData.image)} className="w-full h-full object-cover" alt="Main Preview" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-zinc-300 gap-2">
                     <Upload size={24} />

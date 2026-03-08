@@ -9,7 +9,13 @@ const FeaturedReviews = () => {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
     const [selectedReview, setSelectedReview] = useState(null);
+    const [commentExpanded, setCommentExpanded] = useState(false);
     const scrollRef = useRef(null);
+
+    // Auto-reset expansion on review change
+    useEffect(() => {
+        setCommentExpanded(false);
+    }, [selectedReview?._id]);
 
     // Fetch Data
     useEffect(() => {
@@ -110,43 +116,43 @@ const FeaturedReviews = () => {
             {/* IMMERSIVE MODAL (With Navigation) */}
             {selectedReview && (
                 <div
-                    className="fixed inset-0 z-[100] bg-zinc-900/95 backdrop-blur-xl flex items-center justify-center p-0 md:p-8 animate-in fade-in duration-300"
+                    className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-lg flex items-center justify-center animate-in fade-in duration-300"
                     onClick={() => setSelectedReview(null)}
                 >
-                    {/* Global Close Button (Hidden on Mobile, handled by Modal Button) */}
-                    <button 
-                        className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120] hidden md:block"
-                        onClick={() => setSelectedReview(null)}
-                    >
-                        <X size={24} />
-                    </button>
-
-                    {/* REVIEW NAVIGATION ARROWS (Global) */}
+                    {/* ENHANCED NAVIGATION ARROWS (Outside Card) */}
                     <button
                         onClick={prevReview}
-                        className="absolute left-1 md:left-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-50 flex items-center justify-center p-2"
+                        className="fixed left-4 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
                     >
-                        <ChevronLeft size={28} className="md:w-10 md:h-10" />
+                        <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                            <ChevronLeft size={40} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREVIOUS</span>
                     </button>
                     <button
                         onClick={nextReview}
-                        className="absolute right-1 md:right-8 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-50 flex items-center justify-center p-2"
+                        className="fixed right-4 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
                     >
-                        <ChevronRight size={28} className="md:w-10 md:h-10" />
+                        <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                            <ChevronRight size={40} />
+                        </div>
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
                     </button>
 
-                    <div className="bg-white w-[88%] md:w-full max-w-7xl h-[75vh] md:h-[85vh] rounded-[2rem] md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto md:mx-4" onClick={e => e.stopPropagation()}>
-                        
+                    <div 
+                        className="bg-white w-full max-w-2xl h-full md:h-[90vh] md:rounded-[3rem] overflow-hidden flex flex-col shadow-2xl relative mx-auto" 
+                        onClick={e => e.stopPropagation()}
+                    >
                         {/* Final Close Button */}
                         <button 
                             onClick={() => setSelectedReview(null)}
-                            className="absolute top-4 right-4 z-[110] bg-black text-white p-1.5 rounded-full shadow-lg"
+                            className="absolute top-6 right-6 z-[130] bg-black text-white p-2.5 rounded-full shadow-2xl border border-white/20 hover:scale-110 active:scale-95 transition-all"
                         >
-                            <X size={16} />
+                            <X size={20} />
                         </button>
 
-                        {/* Media Section (Left) */}
-                        <div className="w-full md:w-3/5 h-[45vh] md:h-full bg-black relative flex items-center justify-center group bg-zinc-950 select-none border-b md:border-b-0 md:border-r border-zinc-100">
+                        {/* Media Section (TOP) */}
+                        <div className="w-full h-[55vh] bg-black relative flex items-center justify-center group bg-zinc-950 select-none border-b border-zinc-100 shrink-0">
                             {selectedReview.currentMedia ? (
                                 selectedReview.currentMedia.type === 'video' ? (
                                     <video
@@ -158,26 +164,30 @@ const FeaturedReviews = () => {
                                 ) : (
                                     <img
                                         src={resolveMediaURL(selectedReview.currentMedia.url)}
-                                        alt="Review"
+                                        alt=""
                                         className="w-full h-full object-contain"
                                     />
                                 )
                             ) : (
-                                <div className="text-zinc-500 font-medium">No Media</div>
+                                <div className="text-zinc-500 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                             )}
+
+                            {/* MOBILE NAVIGATION OVERLAYS */}
+                            <div className="absolute inset-y-0 left-0 w-20 z-20 md:hidden" onClick={prevReview} />
+                            <div className="absolute inset-y-0 right-0 w-20 z-20 md:hidden" onClick={nextReview} />
 
                             {/* MEDIA NAVIGATION ARROWS (Local) */}
                             {selectedReview.media?.length > 1 && (
                                 <>
                                     <button
                                         onClick={prevMedia}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white hover:scale-110 transition-all z-20"
+                                        className="absolute left-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
                                     <button
                                         onClick={nextMedia}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white hover:scale-110 transition-all z-20"
+                                        className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
                                     >
                                         <ChevronRight size={24} />
                                     </button>
@@ -186,7 +196,7 @@ const FeaturedReviews = () => {
 
                             {/* Carousel Dots */}
                             {selectedReview.media?.length > 1 && (
-                                <div className="absolute bottom-6 flex gap-1.5 z-10">
+                                <div className="absolute bottom-8 flex gap-2 z-10 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
                                     {selectedReview.media.map((_, idx) => (
                                         <button
                                             key={idx}
@@ -194,70 +204,89 @@ const FeaturedReviews = () => {
                                                 e.stopPropagation();
                                                 setSelectedReview({ ...selectedReview, mediaIndex: idx, currentMedia: selectedReview.media[idx] });
                                             }}
-                                            className={`w-1.5 h-1.5 rounded-full transition-all ${idx === selectedReview.mediaIndex ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/60'}`}
+                                            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${idx === selectedReview.mediaIndex ? 'bg-white scale-125' : 'bg-white/30 hover:bg-white/60'}`}
                                         />
                                     ))}
                                 </div>
                             )}
                         </div>
 
-                        {/* Content Section (Right) */}
-                        <div className="w-full md:w-2/5 p-6 md:p-12 flex flex-col h-[55vh] md:h-full overflow-y-auto bg-white custom-scrollbar">
-                            <div className="flex items-center gap-4 mb-6 md:mb-10">
-                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-950 flex items-center justify-center text-lg font-sans font-bold text-white shadow-xl shadow-zinc-200">
+                        {/* Content Section (BOTTOM) */}
+                        <div className="flex-1 p-8 md:p-12 flex flex-col h-[40%] bg-white overflow-hidden">
+                            {/* USER INFO */}
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-950 flex items-center justify-center text-lg font-sans font-bold text-white shadow-xl shadow-zinc-100">
                                     {(selectedReview.name || "U").charAt(0)}
                                 </div>
-                                <div>
-                                    <h4 className="text-base md:text-xl font-black text-zinc-900 leading-none mb-1 uppercase tracking-tight">{selectedReview.name}</h4>
-                                    <p className="text-zinc-400 text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Owner"}</p>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-1">
+                                        <div className="min-w-0">
+                                            <h4 className="text-base md:text-xl font-black text-zinc-900 leading-none uppercase tracking-tight truncate mb-1">{selectedReview.name}</h4>
+                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-black truncate">Experience with {selectedReview.productName}</p>
+                                        </div>
+                                        <div className="flex gap-0.5 ml-4 shrink-0">
+                                            {[...Array(5)].map((_, i) => (
+                                                <Star key={i} size={14} fill="currentColor" className="text-black" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <p className="text-zinc-400 text-[8px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Studio Member"}</p>
                                 </div>
                             </div>
 
-                            <div className="mb-8 overflow-y-auto flex-1">
-                                <div className="flex gap-0.5 mb-4">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} fill="black" className="text-black" />
-                                    ))}
+                            {/* COMMENT AREA (With Scroller) */}
+                            <div className="flex-1 overflow-y-auto no-scrollbar mb-8 pr-2">
+                                <div className="space-y-4">
+                                    <p className={`text-zinc-950 leading-[1.6] text-sm md:text-lg font-medium ${!commentExpanded && selectedReview.comment?.length > 150 ? 'line-clamp-4' : ''}`}>
+                                        {selectedReview.comment}
+                                    </p>
+                                    
+                                    {selectedReview.comment?.length > 150 && (
+                                        <button 
+                                            onClick={() => setCommentExpanded(!commentExpanded)}
+                                            className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b-2 border-zinc-900 pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-all flex items-center gap-2"
+                                        >
+                                            {commentExpanded ? 'Show Less' : 'View Full Experience'}
+                                            <ChevronRight size={14} className={`transition-transform duration-300 ${commentExpanded ? '-rotate-90' : 'rotate-90'}`} />
+                                        </button>
+                                    )}
                                 </div>
-                                <h3 className="text-lg md:text-3xl font-sans mb-4 md:mb-6 text-zinc-950 leading-tight italic font-bold">"{selectedReview.title || "Product Review"}"</h3>
-                                <p className="text-zinc-950 leading-[1.5] text-xs md:text-lg font-bold">
-                                    {selectedReview.comment}
-                                </p>
 
                                 {selectedReview.adminResponse && (
-                                    <div className="bg-zinc-50 p-5 rounded-[2rem] border border-zinc-100 mt-8 relative overflow-hidden">
-                                        <div className="absolute top-0 right-0 p-3 opacity-5">
-                                            <Zap size={40} fill="black" />
+                                    <div className="bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100 mt-8 relative overflow-hidden group/response">
+                                        <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/response:opacity-10 transition-opacity">
+                                            <Zap size={48} fill="black" />
                                         </div>
-                                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 mb-3 flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 bg-black rounded-full" /> Official Response
+                                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-4 flex items-center gap-2">
+                                            <span className="w-2 h-2 bg-black rounded-full animate-pulse" /> Official Response
                                         </p>
-                                        <p className="text-xs md:text-sm text-zinc-500 leading-relaxed italic">{selectedReview.adminResponse}</p>
+                                        <p className="text-xs md:text-sm text-zinc-500 leading-relaxed italic font-medium">{selectedReview.adminResponse}</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="mt-auto pt-6 border-t border-zinc-100">
+                            {/* PRODUCT LINK */}
+                            <div className="mt-auto border-t border-zinc-100 pt-6">
                                 <Link 
                                     to={`/product/${selectedReview.productSlug}`} 
-                                    className="group flex items-center justify-between p-4 md:p-5 rounded-[1.5rem] border border-zinc-100 bg-zinc-50/50 hover:bg-zinc-950 hover:text-white transition-all duration-500"
+                                    className="group flex items-center justify-between p-4 md:p-5 rounded-[1.5rem] border border-zinc-100 bg-zinc-50/50 hover:bg-zinc-950 hover:text-white transition-all duration-500 shadow-sm"
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className="relative">
-                                            {selectedReview.productImage && (
+                                        {selectedReview.productImage && (
+                                            <div className="relative overflow-hidden rounded-xl bg-white border border-zinc-100">
                                                 <img 
                                                     src={resolveMediaURL(selectedReview.productImage)} 
-                                                    className="w-12 h-12 md:w-14 md:h-14 object-cover rounded-xl shadow-sm" 
+                                                    className="w-12 h-12 md:w-14 md:h-14 object-cover group-hover:scale-110 transition-transform duration-500" 
                                                     alt="" 
                                                 />
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
                                         <div>
-                                            <p className="text-[8px] md:text-[9px] uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-500 mb-1 font-black">Collection Item</p>
+                                            <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-500 mb-1 font-black">Collection Item</p>
                                             <p className="font-black text-xs md:text-sm uppercase tracking-tight">{selectedReview.productName}</p>
                                         </div>
                                     </div>
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white flex items-center justify-center text-zinc-900 group-hover:bg-white/10 group-hover:text-white transition-all">
+                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white flex items-center justify-center text-zinc-900 group-hover:bg-white/10 group-hover:text-white transition-all shadow-sm">
                                         <ArrowRight size={16} />
                                     </div>
                                 </Link>
@@ -329,7 +358,7 @@ const FeaturedReviews = () => {
 
                                                 {/* Type Badge */}
                                                 <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 text-[10px] font-bold text-black uppercase tracking-widest rounded-md">
-                                                    {media[0].type === 'video' ? 'Video Review' : 'Verified Photo'}
+                                                    {media[0].type === 'video' ? 'Video Showcase' : 'Verified Photo'}
                                                 </div>
 
                                                 {/* Expand Overlay */}

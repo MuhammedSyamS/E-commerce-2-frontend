@@ -3,7 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/instance';
 import { Package, IndianRupee, ShoppingBag, Plus, Trash2, Edit, ExternalLink, Search, RefreshCw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { useStore } from '../../store/useStore'; // Explicit import needed for token
+import { useStore } from '../../store/useStore';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -142,7 +143,7 @@ const Admin = () => {
                     </td>
                     <td className="px-4 py-4 md:px-6 md:py-6">
                       <div className="flex items-center gap-4">
-                        <img src={product.image || "/placeholder.jpg"} className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-sm bg-zinc-100 flex-shrink-0" alt="" />
+                        <img src={resolveMediaURL(product.image) || "/placeholder.jpg"} className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-sm bg-zinc-100 flex-shrink-0" alt="" />
                         <div>
                           <p className="text-xs font-black uppercase truncate max-w-[150px] md:max-w-none">{product.name || "Unknown Interface"}</p>
                           <p className="text-[9px] text-zinc-400 font-bold uppercase">{product.slug || "No Slug"}</p>

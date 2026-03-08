@@ -35,6 +35,7 @@ const ProductDetails = () => {
   const [submitting, setSubmitting] = useState(false); // REVIEW MODAL STATE
   const [selectedReviewIdx, setSelectedReviewIdx] = useState(null);
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
+  const [modalCommentExpanded, setModalCommentExpanded] = useState(false);
   const [expandedReviewTexts, setExpandedReviewTexts] = useState({});
   const [sortOption, setSortOption] = useState('newest');
   const [siteSettings, setSiteSettings] = useState(null);
@@ -111,6 +112,13 @@ const ProductDetails = () => {
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
+    
+    // ENFORCE 10 IMAGE LIMIT
+    if (reviewImages.length + files.length > 10) {
+      addToast("Maximum 10 images allowed per review", "warning");
+      return;
+    }
+
     setUploading(true);
     for (const file of files) {
       if (!validateFile(file, 'image')) continue;
@@ -126,6 +134,13 @@ const ProductDetails = () => {
   const handleVideoUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
+
+    // ENFORCE 5 VIDEO LIMIT
+    if (reviewVideos.length + files.length > 5) {
+      addToast("Maximum 5 videos allowed per review", "warning");
+      return;
+    }
+
     setUploading(true);
     for (const file of files) {
       if (!validateFile(file, 'video')) continue;
@@ -170,6 +185,16 @@ const ProductDetails = () => {
       } catch (err) { console.error(err); } finally { setLoading(false); }
     };
     fetchData();
+    
+    // Check for post-submission scroll/tab target
+    const target = localStorage.getItem('scrollTarget');
+    if (target === 'reviews') {
+      setActiveTab('reviews');
+      localStorage.removeItem('scrollTarget');
+      setTimeout(() => {
+        reviewsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 1000);
+    }
   }, [slug, user]);
 
   useEffect(() => {
@@ -304,7 +329,9 @@ const ProductDetails = () => {
         { rating: ratingInput, comment, images: reviewImages, videos: reviewVideos },
         { headers: { Authorization: `Bearer ${user.token}` } }
       );
-      addToast("Review posted!", "success");
+      addToast("Shared with Community!", "success");
+      // AUTO-SWITCH TO REVIEWS TAB AND SCROLL
+      localStorage.setItem('scrollTarget', 'reviews');
       window.location.reload();
     } catch (err) { addToast(err.response?.data?.message || "Review failed", "error"); } finally { setSubmitting(false); }
   };
@@ -415,24 +442,43 @@ const ProductDetails = () => {
           </Helmet>
 
           {selectedReviewIdx !== null && (
-            <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}>
+            <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); setModalCommentExpanded(false); }}>
               <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
                 <X size={24} className="md:w-8 md:h-8" />
               </button>
 
-              {/* OUTER NAV: PREV REVIEW */}
+              {/* ENHANCED NAVIGATION ARROWS (Outside Card) */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length);
                   setSelectedMediaIdx(0);
+                  setModalCommentExpanded(false);
                 }}
-                className="hidden md:flex absolute left-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
+                className="fixed left-4 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
               >
-                <ChevronLeft size={32} />
+                <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                    <ChevronLeft size={40} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
               </button>
 
-              <div className="relative w-full max-w-5xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[80vh]" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length);
+                  setSelectedMediaIdx(0);
+                  setModalCommentExpanded(false);
+                }}
+                className="fixed right-4 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
+              >
+                <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                    <ChevronRight size={40} />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
+              </button>
+
+              <div className="relative w-full max-w-2xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col h-full md:h-[90vh] mx-auto overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -447,7 +493,7 @@ const ProductDetails = () => {
                     <>
                       {/* MEDIA SIDE - Only show if media exists */}
                       {currentMedia && (
-                        <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        <div className="relative w-full aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden shrink-0">
                           {allMedia.length > 1 && (
                             <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
                               <ChevronLeft size={20} />
@@ -477,50 +523,56 @@ const ProductDetails = () => {
                       )}
 
                       {/* TEXT SIDE */}
-                      <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative`}>
-                        <div className="flex gap-1 mb-4">
-                          {[...Array(5)].map((_, i) => (
-                            <Star key={i} size={14} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
-                          ))}
+                      <div className="w-full p-8 md:p-12 flex flex-col bg-white shrink-0">
+                        <div className="flex justify-between items-start mb-6">
+                            <div className="min-w-0">
+                                <div className="flex gap-1 mb-2">
+                                    {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={14} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
+                                    ))}
+                                </div>
+                                <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-black truncate">Experience with {product.name}</p>
+                            </div>
+                            <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest ml-4 shrink-0">
+                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}
+                            </p>
                         </div>
 
-                        <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
-                          {activeReviewItem.title || "Review"}
-                        </h3>
-                        <p className="text-zinc-600 italic leading-relaxed text-base flex-grow mb-8">
-                          "{activeReviewItem.comment}"
-                        </p>
+                        <div className="flex-grow overflow-y-auto no-scrollbar mb-8">
+                            <p className={`text-zinc-900 leading-relaxed text-sm md:text-lg font-medium ${!modalCommentExpanded && activeReviewItem.comment?.length > 200 ? 'line-clamp-4' : ''}`}>
+                                "{activeReviewItem.comment}"
+                            </p>
+                            
+                            {activeReviewItem.comment?.length > 200 && (
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); setModalCommentExpanded(!modalCommentExpanded); }}
+                                    className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-900 border-b-2 border-zinc-900 pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-all flex items-center gap-2"
+                                >
+                                    {modalCommentExpanded ? 'Show Less' : 'Read Full Comment'}
+                                    <ChevronRight size={14} className={`transition-transform duration-300 ${modalCommentExpanded ? '-rotate-90' : 'rotate-90'}`} />
+                                </button>
+                            )}
+                        </div>
 
-                        <div className="border-t border-zinc-100 pt-6 mt-auto">
-                          <div className="flex justify-between items-end mb-4">
-                            <div>
-                              <p className="text-sm font-black uppercase tracking-widest text-black">
-                                {activeReviewItem.name || "Verified Buyer"}
-                              </p>
-                              <p className="text-[10px] text-zinc-400 font-bold uppercase mt-1">
-                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}
-                              </p>
+                        <div className="border-t border-zinc-100 pt-8 mt-auto flex items-center justify-between gap-6">
+                            <div className="min-w-0">
+                                <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 truncate">
+                                    {activeReviewItem.name || "Verified Buyer"}
+                                </p>
                             </div>
-                          </div>
-                          <button onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-lg' : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'}`}><Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "white" : "none"} /><span>Helpful ({activeReviewItem.helpful?.length || 0})</span></button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }} 
+                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white'}`}
+                            >
+                                <Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "currentColor" : "none"} />
+                                <span>Helpful ({activeReviewItem.helpful?.length || 0})</span>
+                            </button>
                         </div>
                       </div>
                     </>
                   );
                 })()}
               </div>
-
-              {/* OUTER NAV: NEXT REVIEW */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length);
-                  setSelectedMediaIdx(0);
-                }}
-                className="hidden md:flex absolute right-8 p-4 rounded-full bg-white/10 text-white hover:bg-white hover:text-black transition-all z-20"
-              >
-                <ChevronRight size={32} />
-              </button>
 
               {/* MOBILE OUTER NAV */}
               <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
@@ -857,7 +909,7 @@ const ProductDetails = () => {
                   onClick={() => setActiveTab('reviews')}
                   className={`px-4 py-3 md:px-10 md:py-6 !text-[10px] md:!text-sm font-bold uppercase tracking-widest relative shrink-0 transition-all ${activeTab === 'reviews' ? 'text-black' : 'text-zinc-400 hover:text-black'}`}
                 >
-                  Verified Reviews ({product.numReviews})
+                  Community Gallery ({product.numReviews})
                   {activeTab === 'reviews' && <div className="absolute bottom-0 left-0 w-full h-0.5 bg-black" />}
                 </button>
               </div>
@@ -908,7 +960,7 @@ const ProductDetails = () => {
                               <div className="flex text-black">
                                 {[...Array(5)].map((_, i) => <Star key={i} size={14} fill={i < Math.floor(product.rating || 5) ? "currentColor" : "none"} />)}
                               </div>
-                              <p className="font-black uppercase tracking-widest text-zinc-400" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>Based on {product.numReviews} Reviews</p>
+                              <p className="font-black uppercase tracking-widest text-zinc-400" style={{ fontSize: 'clamp(8px, 2vw, 12px)' }}>Based on {product.numReviews} Verified Experiences</p>
                             </div>
                           </div>
                           <div className="space-y-3">
@@ -971,13 +1023,13 @@ const ProductDetails = () => {
                             </label>
                           </div>
 
-                          <button onClick={handleReviewSubmit} disabled={submitting || uploading} className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl font-black uppercase tracking-widest shadow-xl hover:shadow-2xl active:scale-95 transition-all py-4 flex justify-center items-center gap-2">{submitting || uploading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {submitting || uploading ? "Processing..." : "Submit Review"}</button>
+                          <button onClick={handleReviewSubmit} disabled={submitting || uploading} className="w-full bg-zinc-900 hover:bg-black text-white rounded-xl font-black uppercase tracking-widest shadow-xl hover:shadow-2xl active:scale-95 transition-all py-4 flex justify-center items-center gap-2">{submitting || uploading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />} {submitting || uploading ? "Processing..." : "Submit Experience"}</button>
                         </div>
                       </div>
 
                       <div className="lg:col-span-8 space-y-12">
                         <div className="flex justify-between items-center border-b border-zinc-100 pb-8">
-                          <div className="text-xl font-black tracking-tight text-zinc-900 uppercase">Social Proof</div>
+                          <div className="text-xl font-black tracking-tight text-zinc-900 uppercase">Community Stories</div>
                           <select onChange={(e) => setSortOption(e.target.value)} className="bg-transparent text-sm font-black uppercase tracking-widest outline-none cursor-pointer border-b-2 border-zinc-900 pb-1">
                             <option value="newest">Newest</option>
                             <option value="highest">Best Rating</option>
@@ -1018,7 +1070,7 @@ const ProductDetails = () => {
                                   const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
                                   const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
 
-                                  return allMedia.slice(0, 4).map((media, idx) => (
+                                  return allMedia.slice(0, 15).map((media, idx) => (
                                     <div
                                       key={idx}
                                       onClick={(e) => {

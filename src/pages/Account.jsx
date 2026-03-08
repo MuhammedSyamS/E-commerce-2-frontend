@@ -183,6 +183,13 @@ const Account = () => {
           />
 
           <AccountCard
+            icon={RotateCcw}
+            title="My Returns"
+            subtext="Track returns & exchanges"
+            onClick={() => navigate('/my-returns')}
+          />
+
+          <AccountCard
             icon={Camera}
             title="My SLOOKS"
             subtext="Share your style with community"
@@ -343,6 +350,9 @@ const Account = () => {
                     {uploadStep === 1 && (
                       <div className="space-y-6">
                         <div className="space-y-2">
+                            <h4 className="text-[10px] font-black uppercase tracking-widest text-orange-600 mb-2">
+                                Guidelines
+                            </h4>
                           <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Add a Caption</label>
                           <textarea
                             value={caption}
@@ -406,8 +416,8 @@ const Account = () => {
                             >
                               <img src={prod.image} className="w-10 h-12 object-cover rounded-lg" alt="" />
                               <div className="flex-1">
-                                <p className="text-[10px] font-black uppercase tracking-tight">{prod.name}</p>
-                                <p className="text-[9px] font-bold text-zinc-400">₹{prod.price}</p>
+                                <h2 className="text-2xl font-black uppercase tracking-tighter">My SLOOKS</h2>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Community Gallery</p>
                               </div>
                               <Plus size={14} className="text-zinc-300 group-hover:text-black" />
                             </div>
@@ -439,7 +449,7 @@ const Account = () => {
                           <CheckCircle2 size={40} />
                         </div>
                         <div>
-                          <h4 className="text-xl font-black uppercase tracking-tighter">Ready for Review!</h4>
+                            <h2 className="text-xl font-black uppercase tracking-tight">Personal Details</h2>
                           <p className="text-xs text-zinc-500 max-w-[250px] mx-auto mt-2 leading-relaxed">
                             Your look will be reviewed by the SLOOK Curators and should be live within 24 hours.
                           </p>
@@ -523,7 +533,7 @@ const Account = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
             <div>
               <p className="text-[9px] md:text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Social Proof</p>
-              <h2 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter leading-none">Your <span className="text-zinc-300">Signature</span> Looks</h2>
+                    <h2 className="!text-3xl md:!text-5xl font-black uppercase tracking-tighter leading-none">Your <span className="text-zinc-300">Signature</span> Looks</h2>
             </div>
             <button
               onClick={() => setShowUploadModal(true)}

@@ -4,7 +4,7 @@ import {
     Search, IndianRupee, CreditCard, RotateCcw, CheckCircle, 
     ArrowDownUp, RefreshCw, Clock, Download, 
     ChevronLeft, ChevronRight, ExternalLink, ShieldCheck, 
-    Calendar, TrendingUp, AlertTriangle, ChevronDown, ChevronUp
+    Calendar, TrendingUp, AlertTriangle, ChevronDown, ChevronUp, FileText
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -37,7 +37,7 @@ const AdminPayments = () => {
                     page: p,
                     pageSize: 15,
                     keyword: search,
-                    status: status === 'all' ? undefined : status,
+                    status: (status === 'paid' || status === 'pending') ? undefined : (status === 'all' ? undefined : status),
                     isPaid: status === 'paid' ? 'true' : (status === 'pending' ? 'false' : undefined)
                 }
             });
@@ -97,6 +97,22 @@ const AdminPayments = () => {
         }
     };
 
+    const downloadInvoice = async (orderId) => {
+        try {
+            const response = await api.get(`/orders/${orderId}/invoice`, { responseType: 'blob' });
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `receipt-${orderId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            addToast("Receipt downloading...", "success");
+        } catch (err) {
+            addToast("Failed to download receipt", "error");
+        }
+    };
+
     const toggleRow = (id) => {
         const newExpanded = new Set(expandedRows);
         if (newExpanded.has(id)) newExpanded.delete(id);
@@ -146,7 +162,25 @@ const AdminPayments = () => {
                     >
                         <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-3.5 bg-black text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] transition-all">
+                    <button 
+                        onClick={async () => {
+                            try {
+                                addToast("Generating Audit Report...", "info");
+                                const response = await api.get('/orders/admin/report', { responseType: 'blob' });
+                                const url = window.URL.createObjectURL(new Blob([response.data]));
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.setAttribute('download', 'audit-ledger.pdf');
+                                document.body.appendChild(link);
+                                link.click();
+                                link.remove();
+                                addToast("Audit Report Ready", "success");
+                            } catch (err) {
+                                addToast("Failed to generate report", "error");
+                            }
+                        }}
+                        className="flex items-center gap-2 px-6 py-3.5 bg-black text-white rounded-2xl text-[11px] font-bold uppercase tracking-widest shadow-xl shadow-black/10 hover:shadow-black/20 hover:scale-[1.02] transition-all"
+                    >
                         <Download size={14} /> Audit Report
                     </button>
                 </div>
@@ -251,6 +285,15 @@ const AdminPayments = () => {
                                                         {o.isPaid && o.orderStatus !== 'Refunded' && (
                                                             <button onClick={() => handleAction(o._id, 'refund')} className="p-2.5 bg-rose-50 text-rose-600 border border-rose-100 rounded-xl hover:bg-rose-600 hover:text-white transition-all shadow-sm" title="Process Refund">
                                                                 <RotateCcw size={14} />
+                                                            </button>
+                                                        )}
+                                                        {o.isPaid && (
+                                                            <button 
+                                                                onClick={() => downloadInvoice(o._id)}
+                                                                className="p-2.5 bg-zinc-50 text-zinc-600 border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm"
+                                                                title="Download Receipt"
+                                                            >
+                                                                <FileText size={14} />
                                                             </button>
                                                         )}
                                                         <button 

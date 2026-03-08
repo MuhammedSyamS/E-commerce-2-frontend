@@ -36,7 +36,8 @@ const MyReturns = () => {
         if (status === 'Picked Up' || status === 'In Transit') return 4;
         if (status === 'Received' || status === 'QC Pending') return 5;
         if (status === 'QC Passed') return 6;
-        if (status === 'Refund Completed' || status === 'Replacement Sent' || status === 'Exchanged' || status === 'Returned') return 7;
+        if (status === 'Refund Completed' || status === 'Returned') return 7;
+        if (status === 'Replacement Sent' || status === 'Exchanged' || status === 'Replacement Delivered') return 7;
         if (status === 'Rejected' || status === 'QC Failed') return -1;
         return 0;
     };
@@ -56,7 +57,7 @@ const MyReturns = () => {
                         <ChevronRight size={16} className="rotate-180 md:w-5 md:h-5" />
                     </button>
                     <div>
-                        <h1 className="!text-xl md:!text-3xl font-black uppercase tracking-tighter italic">My Returns</h1>
+                        <h1 className="!text-xl md:!text-3xl font-black uppercase tracking-tighter">My Returns</h1>
                         <p className="text-zinc-500 text-[7px] md:text-xs font-bold uppercase tracking-widest mt-1">Track your requests & history</p>
                     </div>
                 </div>
@@ -87,7 +88,7 @@ const MyReturns = () => {
                                 if (stepLabel === 'Resolved') targetStatus = ['Refund Completed', 'Replacement Sent', 'Exchanged'];
 
                                 const event = ret.timeline?.find(t => targetStatus.includes(t.status));
-                                return event ? new Date(event.date).toLocaleDateString() : (stepLabel === 'Requested' ? new Date(ret.createdAt).toLocaleDateString() : null);
+                                return event ? new Date(event.date).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : (stepLabel === 'Requested' ? new Date(ret.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : null);
                             };
 
                             return (
@@ -107,7 +108,11 @@ const MyReturns = () => {
                                                         {ret.type} Request
                                                     </span>
                                                     <h3 className="font-bold uppercase text-xs md:text-lg leading-tight">{ret.orderItem.name}</h3>
-                                                    <p className="text-[8px] md:text-xs text-zinc-500 font-mono mt-0.5 md:mt-1">Order #{ret.order?._id?.slice(-6)}</p>
+                                                    <p className="text-[8px] md:text-xs text-zinc-500 font-mono mt-0.5 md:mt-1">
+                                                        {ret.type === 'Exchange' ? 'EXC' : 'RTN'}-#{ret._id.slice(-8).toUpperCase()}
+                                                        <span className="text-zinc-300 mx-1">|</span>
+                                                        Order #{ret.order?._id?.slice(-6).toUpperCase()}
+                                                    </p>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className={`text-[8px] md:text-xs font-black uppercase tracking-widest ${isRejected ? 'text-red-500' : isDone ? 'text-green-500' : 'text-blue-500'}`}>
@@ -144,9 +149,9 @@ const MyReturns = () => {
                                                     style={{ width: isRejected ? '100%' : `${(step / 7) * 100}%` }}
                                                 />
 
-                                                <div className="relative flex justify-between">
-                                                    {['Requested', 'Approved', 'Pickup', 'QC', 'Resolved'].map((label, i) => {
-                                                        const isActive = step > i + 1; // +1 shift for 5 steps mapping to 7 detailed states
+                                                 <div className="relative flex justify-between">
+                                                    {['Requested', 'Approved', 'Pickup', 'QC', ret.type === 'Exchange' ? 'Exchanged' : 'Refunded'].map((label, i) => {
+                                                        const isActive = step > i + 1; 
                                                         let activeState = false;
                                                         if (i === 0 && step >= 1) activeState = true;
                                                         if (i === 1 && step >= 2) activeState = true;
@@ -156,7 +161,7 @@ const MyReturns = () => {
 
                                                         if (isRejected) activeState = false;
 
-                                                        const date = getDateForStep(label);
+                                                        const date = getDateForStep(i === 4 ? 'Resolved' : label);
 
                                                         return (
                                                             <div key={label} className="flex flex-col items-center gap-2 group/step w-1/5">
@@ -166,11 +171,11 @@ const MyReturns = () => {
                                                                     {isRejected && i === 4 && <XCircle size={8} className="text-white absolute -top-4 left-1/2 -translate-x-1/2" />}
                                                                 </div>
                                                                 <div className="text-center">
-                                                                    <span className={`block text-[6px] md:text-[9px] font-bold uppercase tracking-widest mb-0.5 ${activeState ? 'text-black' : 'text-zinc-300'}`}>
+                                                                    <span className={`block text-[6px] md:text-[8px] font-black uppercase tracking-widest mb-0.5 ${activeState ? 'text-black' : 'text-zinc-300'}`}>
                                                                         {isRejected && i === 4 ? 'Rejected' : label}
                                                                     </span>
                                                                     {activeState && date && (
-                                                                        <span className="block text-[6px] md:text-[8px] font-mono text-zinc-400">{date}</span>
+                                                                        <span className="block text-[5px] md:text-[7px] font-bold text-zinc-400 uppercase tracking-tighter leading-tight whitespace-nowrap">{date}</span>
                                                                     )}
                                                                 </div>
                                                             </div>

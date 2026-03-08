@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AdminOrders = () => {
     const { addToast } = useToast();
@@ -301,7 +302,7 @@ const AdminOrders = () => {
                                                                         {o.orderItems?.map((item, idx) => (
                                                                             <div key={idx} className="flex items-center gap-4 p-3 bg-white border border-zinc-100 rounded-2xl">
                                                                                 <div className="w-12 h-12 bg-zinc-50 rounded-xl overflow-hidden border border-zinc-200/50">
-                                                                                    <img src={item.image} alt="" className="w-full h-full object-cover" />
+                                                                                    <img src={resolveMediaURL(item.image)} alt="" className="w-full h-full object-cover" />
                                                                                 </div>
                                                                                 <div className="flex-1 min-w-0">
                                                                                     <p className="text-[11px] font-black uppercase truncate italic">{item.name}</p>

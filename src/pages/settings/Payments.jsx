@@ -88,7 +88,7 @@ const Payments = () => {
 
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h1 className="text-4xl font-black uppercase italic tracking-tighter">Payments</h1>
+            <h1 className="text-4xl font-black uppercase tracking-tighter">Payments</h1>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Manage Saved Cards</p>
           </div>
           <button onClick={() => setShowForm(!showForm)} className="bg-black text-white px-6 py-3 rounded-full font-black uppercase text-[10px] flex items-center gap-2">
@@ -153,7 +153,7 @@ const Payments = () => {
         {deleteModal.show && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white p-8 rounded-[2rem] max-w-sm w-full shadow-2xl animate-in zoom-in-95">
-              <h3 className="text-xl font-black uppercase tracking-tighter mb-4 italic text-center">Remove Card?</h3>
+              <h3 className="text-xl font-black uppercase tracking-tighter mb-4 text-center">Remove Card?</h3>
               <p className="text-center text-xs font-bold text-zinc-400 uppercase tracking-wide mb-8">
                 Are you sure you want to remove this payment method?
               </p>

@@ -259,10 +259,10 @@ const AdminReturns = () => {
                                                         )}
                                                         <button 
                                                             onClick={() => {
-                                                                const allMedia = [
-                                                                    ...(r.videos || []).map(v => ({ type: 'video', url: v })),
-                                                                    ...(r.images || []).map(i => ({ type: 'image', url: i }))
-                                                                ];
+                                                                const allMedia = (r.images || []).map(url => ({
+                                                                    type: (url.match(/\.(mp4|mov|avi|mkv|webm)$/i) || url.startsWith('data:video/')) ? 'video' : 'image',
+                                                                    url: url
+                                                                }));
                                                                 setViewMedia(allMedia);
                                                             }} 
                                                             className="p-2.5 bg-white border border-zinc-100 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm" 
@@ -313,10 +313,10 @@ const AdminReturns = () => {
                                                                     <h4 className="text-[9px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
                                                                         <Camera size={12} /> Proof Evidence
                                                                     </h4>
-                                                                    {((r.images && r.images.length > 0) || (r.videos && r.videos.length > 0)) ? (
+                                                                    {r.images && r.images.length > 0 ? (
                                                                         <div className="grid grid-cols-3 gap-3">
                                                                             {/* Videos first */}
-                                                                            {r.videos?.map((vid, i) => (
+                                                                            {r.images.filter(url => url.match(/\.(mp4|mov|avi|mkv|webm)$/i) || url.startsWith('data:video/')).map((vid, i) => (
                                                                                 <div key={`v-${i}`} onClick={() => setViewMedia([{type: 'video', url: vid}])} className="aspect-square bg-black rounded-2xl overflow-hidden border border-zinc-100 hover:scale-105 transition-transform cursor-zoom-in relative">
                                                                                     <video src={resolveMediaURL(vid)} className="w-full h-full object-cover opacity-60" />
                                                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -325,7 +325,7 @@ const AdminReturns = () => {
                                                                                 </div>
                                                                             ))}
                                                                             {/* Images */}
-                                                                            {r.images?.map((img, i) => (
+                                                                            {r.images.filter(url => !url.match(/\.(mp4|mov|avi|mkv|webm)$/i) && !url.startsWith('data:video/')).map((img, i) => (
                                                                                 <div key={`i-${i}`} onClick={() => setViewMedia([{type: 'image', url: img}])} className="aspect-square bg-white rounded-2xl overflow-hidden border border-zinc-100 hover:scale-105 transition-transform cursor-zoom-in">
                                                                                     <img src={resolveMediaURL(img)} alt="" className="w-full h-full object-cover" />
                                                                                 </div>

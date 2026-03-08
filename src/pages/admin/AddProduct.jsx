@@ -4,6 +4,7 @@ import { ArrowLeft, Save, Plus, X, Upload, Video } from 'lucide-react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -669,9 +670,9 @@ const AddProduct = () => {
             <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-zinc-100 sticky top-44">
               <div className="aspect-[4/5] bg-zinc-100 rounded-2xl overflow-hidden mb-6 relative">
                 {previewVariantIdx !== null && formData.variants[previewVariantIdx]?.image ? (
-                  <img src={formData.variants[previewVariantIdx].image} className="w-full h-full object-cover" alt="Variant Preview" />
+                  <img src={resolveMediaURL(formData.variants[previewVariantIdx].image)} className="w-full h-full object-cover" alt="Variant Preview" />
                 ) : formData.image ? (
-                  <img src={formData.image} className="w-full h-full object-cover" alt="Main Preview" />
+                  <img src={resolveMediaURL(formData.image)} className="w-full h-full object-cover" alt="Main Preview" />
                 ) : (
                   <div className="w-full h-full flex flex-col items-center justify-center text-zinc-300 gap-2">
                     <Upload size={24} />

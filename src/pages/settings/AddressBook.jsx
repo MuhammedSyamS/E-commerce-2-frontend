@@ -72,7 +72,7 @@ const AddressBook = () => {
 
         <div className="flex justify-between items-end mb-12">
           <div>
-            <h1 className="text-4xl font-black uppercase italic tracking-tighter">Address Book</h1>
+            <h1 className="text-4xl font-black uppercase tracking-tighter">Address Book</h1>
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 mt-2">Manage Your Shipping Destinations</p>
           </div>
           <button onClick={() => setShowForm(!showForm)} className="bg-black text-white px-6 py-3 rounded-full font-black uppercase text-[10px] flex items-center gap-2">
