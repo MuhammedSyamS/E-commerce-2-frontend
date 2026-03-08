@@ -478,7 +478,7 @@ const ProductDetails = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 
-              <div className="relative w-full max-w-2xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col h-full md:h-[90vh] mx-auto overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+              <div className="relative w-full max-w-2xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh] mx-auto overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -493,7 +493,7 @@ const ProductDetails = () => {
                     <>
                       {/* MEDIA SIDE - Only show if media exists */}
                       {currentMedia && (
-                        <div className="relative w-full aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="relative w-full aspect-[4/5] md:aspect-square bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
                           {allMedia.length > 1 && (
                             <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
                               <ChevronLeft size={20} />
@@ -538,7 +538,7 @@ const ProductDetails = () => {
                             </p>
                         </div>
 
-                        <div className="flex-grow overflow-y-auto no-scrollbar mb-8">
+                        <div className="mb-8">
                             <p className={`text-zinc-900 leading-relaxed text-sm md:text-lg font-medium ${!modalCommentExpanded && activeReviewItem.comment?.length > 200 ? 'line-clamp-4' : ''}`}>
                                 "{activeReviewItem.comment}"
                             </p>

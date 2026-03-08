@@ -140,7 +140,7 @@ const FeaturedReviews = () => {
                     </button>
 
                     <div 
-                        className="bg-white w-full max-w-2xl h-full md:h-[90vh] md:rounded-[3rem] overflow-hidden flex flex-col shadow-2xl relative mx-auto" 
+                        className="bg-white w-full max-w-2xl max-h-[95vh] md:max-h-[90vh] md:rounded-[3rem] overflow-y-auto no-scrollbar flex flex-col shadow-2xl relative mx-auto" 
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Final Close Button */}
@@ -152,7 +152,7 @@ const FeaturedReviews = () => {
                         </button>
 
                         {/* Media Section (TOP) */}
-                        <div className="w-full h-[55vh] bg-black relative flex items-center justify-center group bg-zinc-950 select-none border-b border-zinc-100 shrink-0">
+                        <div className="w-full aspect-[4/5] md:aspect-square bg-zinc-950 relative flex items-center justify-center group select-none border-b border-zinc-100 shrink-0">
                             {selectedReview.currentMedia ? (
                                 selectedReview.currentMedia.type === 'video' ? (
                                     <video
@@ -212,7 +212,7 @@ const FeaturedReviews = () => {
                         </div>
 
                         {/* Content Section (BOTTOM) */}
-                        <div className="flex-1 p-8 md:p-12 flex flex-col h-[40%] bg-white overflow-hidden">
+                        <div className="flex-1 p-8 md:p-12 flex flex-col bg-white">
                             {/* USER INFO */}
                             <div className="flex items-center gap-4 mb-8">
                                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-950 flex items-center justify-center text-lg font-sans font-bold text-white shadow-xl shadow-zinc-100">

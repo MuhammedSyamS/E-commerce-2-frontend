@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Heart, Share2, X, Plus, ChevronRight, User } from 'lucide-react';
+import { ShoppingBag, Heart, Share2, X, Plus, ChevronRight, User, Sparkles } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
@@ -80,15 +80,15 @@ const SocialFeed = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-10 bg-black/90 backdrop-blur-md"
+            className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-10 bg-black/95 backdrop-blur-xl"
         >
             <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] bg-black/40 md:bg-transparent p-2 md:p-0 rounded-full">
                 <X size={24} className="md:w-8 md:h-8" />
             </button>
 
-            <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-3xl md:rounded-[2.5rem] overflow-y-auto md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative custom-scrollbar">
+            <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-[2.5rem] md:rounded-[3rem] overflow-y-auto no-scrollbar md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
                 {/* IMAGE SIDE */}
-                <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-100 overflow-hidden group flex-shrink-0">
+                <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-950 overflow-hidden group flex-shrink-0">
                     <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover" alt="" />
                     {look.products.map(prod => (
                         <div
@@ -138,7 +138,7 @@ const SocialFeed = () => {
                                 <div
                                     key={prod._id}
                                     onClick={() => { navigate(`/product/${prod.slug}`); onClose(); }}
-                                    className="flex items-center gap-4 p-4 rounded-3xl bg-zinc-50 border border-zinc-100 cursor-pointer hover:border-black transition-all group"
+                                    className="flex items-center gap-4 p-4 rounded-3xl bg-zinc-50 border border-zinc-100 cursor-pointer hover:border-black hover:bg-white transition-all group/item"
                                 >
                                     <img src={resolveMediaURL(prod.image)} className="w-16 h-20 object-cover rounded-2xl" alt="" />
                                     <div className="flex-1">
@@ -185,7 +185,7 @@ const SocialFeed = () => {
 
                 {/* HEADER */}
                 <div className="text-center mb-16 space-y-6">
-                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter">
+                    <h1 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-[0.9]">
                         Styled by <span className="text-zinc-300">Community</span>
                     </h1>
                     <div className="flex flex-col items-center gap-6">
@@ -238,7 +238,10 @@ const SocialFeed = () => {
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase tracking-tight text-zinc-900 leading-none">@{look.formattedHandle}</p>
-                                                    <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest mt-0.5">Verified Style</p>
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <Sparkles size={8} className="text-amber-500 fill-amber-500" />
+                                                        <p className="text-[7px] font-bold text-zinc-400 uppercase tracking-widest">Elite Stylist</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5">
