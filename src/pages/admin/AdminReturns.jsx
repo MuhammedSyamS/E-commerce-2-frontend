@@ -5,14 +5,17 @@ import {
     AlertCircle, Camera, User, ShoppingBag, 
     ArrowRight, ChevronLeft, ChevronRight, 
     FileText, ShieldCheck, ShieldAlert, History,
-    ChevronDown, Package, CheckCircle2, XCircle, Play
+    ChevronDown, Package, CheckCircle2, XCircle, Play,
+    ArrowLeft
 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resolveMediaURL } from '../../utils/mediaUtils';
 
 const AdminReturns = () => {
     const { addToast } = useToast();
+    const navigate = useNavigate();
     const [returns, setReturns] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -116,16 +119,24 @@ const AdminReturns = () => {
         <div className="p-8 bg-[#fbfbfb] min-h-screen relative font-sans">
             {/* Header */}
             <header className="max-w-[1500px] mx-auto flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center shadow-xl shadow-zinc-200">
-                            <RefreshCw className="text-white" size={20} />
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={() => navigate('/admin')}
+                        className="p-3 bg-white border border-zinc-200 rounded-2xl hover:bg-black hover:text-white transition-all shadow-sm group"
+                    >
+                        <ArrowLeft size={18} className="group-active:scale-90 transition-transform" />
+                    </button>
+                    <div>
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-10 h-10 bg-black rounded-2xl flex items-center justify-center shadow-xl shadow-zinc-200">
+                                <RefreshCw className="text-white" size={20} />
+                            </div>
+                            <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">
+                                Pick <span className="text-zinc-300">Up</span>
+                            </h1>
                         </div>
-                        <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">
-                            Reverse <span className="text-zinc-300">Desk</span>
-                        </h1>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Claim Reconciliation & Logistics</p>
                     </div>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Claim Reconciliation & Logistics</p>
                 </div>
 
                 <div className="flex flex-wrap gap-3 items-center">
@@ -368,7 +379,7 @@ const AdminReturns = () => {
                     {/* Pagination */}
                     <div className="p-8 bg-zinc-50/50 border-t border-zinc-100 flex flex-col md:flex-row items-center justify-between gap-6">
                         <div className="text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">
-                            Reverse Log: <span className="text-zinc-900">{total} CLAIMS</span> • Page {page} / {pages}
+                            Pick Up Log: <span className="text-zinc-900">{total} CLAIMS</span> • Page {page} / {pages}
                         </div>
                         <div className="flex items-center gap-3">
                             <button 
@@ -398,9 +409,17 @@ const AdminReturns = () => {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setViewMedia(null)}
-                        className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex items-center justify-center p-8"
+                        className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[100] flex flex-col items-center justify-center p-8"
                     >
-                        <button className="absolute top-8 right-8 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all">
+                        <div className="absolute top-8 left-8 flex items-center gap-4">
+                            <button 
+                                onClick={() => setViewMedia(null)}
+                                className="flex items-center gap-3 px-6 py-3 bg-white/10 text-white rounded-2xl hover:bg-white/20 transition-all text-xs font-black uppercase tracking-widest backdrop-blur-md border border-white/10"
+                            >
+                                <ArrowLeft size={16} /> Back to List
+                            </button>
+                        </div>
+                        <button className="absolute top-8 right-8 p-4 bg-white/10 text-white rounded-full hover:bg-white/20 transition-all border border-white/10">
                             <X size={24} />
                         </button>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl w-full" onClick={e => e.stopPropagation()}>

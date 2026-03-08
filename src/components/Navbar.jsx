@@ -285,9 +285,9 @@ const Navbar = () => {
 
             {/* WISHLIST (Desktop Only) */}
             <Link to="/wishlist" className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
-              <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+              <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
               {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 bg-white text-black text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black ring-2 ring-black">
+                <span className="absolute top-1 right-1 bg-white text-black text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black ring-2 ring-black">
                   {wishlistCount}
                 </span>
               )}
@@ -295,9 +295,9 @@ const Navbar = () => {
 
             {/* CART (Desktop Only) */}
             <button onClick={toggleCart} className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
-              <ShoppingBag className={`w-5 h-5 text-white transition hover:text-zinc-400 ${cartCount > 0 ? 'fill-white' : ''}`} />
+              <ShoppingBag className={`w-5 h-5 transition ${cartCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-white text-black text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black ring-2 ring-black">
+                <span className="absolute top-1 right-1 bg-white text-black text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black ring-2 ring-black">
                   {cartCount}
                 </span>
               )}
@@ -318,7 +318,7 @@ const Navbar = () => {
               >
                 <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
                 {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
+                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
                     {unreadCount}
                   </span>
                 )}
@@ -467,9 +467,9 @@ const Navbar = () => {
 
               <div className="flex items-center gap-4">
                 <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full relative">
-                  <Heart size={14} className={wishlistCount > 0 ? 'fill-white' : ''} />
+                  <Heart size={14} className={wishlistCount > 0 ? 'text-black fill-white' : ''} />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">
+                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black">
                       {wishlistCount}
                     </span>
                   )}
@@ -484,15 +484,15 @@ const Navbar = () => {
                 >
                   <Bell size={14} />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black animate-pulse">
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black animate-pulse">
                       {unreadCount}
                     </span>
                   )}
                 </button>
                 <div onClick={() => { setIsMenuOpen(false); toggleCart(); }} className="text-white p-2 bg-white/5 rounded-full relative">
-                  <ShoppingBag size={14} className={cartCount > 0 ? 'fill-white' : ''} />
+                  <ShoppingBag size={14} className={cartCount > 0 ? 'text-black fill-white' : ''} />
                   {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] w-3 h-3 flex items-center justify-center rounded-full font-black">
+                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black">
                       {cartCount}
                     </span>
                   )}

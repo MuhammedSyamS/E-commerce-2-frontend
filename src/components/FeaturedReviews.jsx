@@ -98,7 +98,7 @@ const FeaturedReviews = () => {
         });
     };
 
-    if (loading) return null;
+    // if (loading) return null; // Removed to prevent section flicker/missing on slow mobile
 
     return (
         <section className="bg-zinc-50 py-12 md:py-24 border-t border-zinc-200">
@@ -304,89 +304,97 @@ const FeaturedReviews = () => {
                 </div>
 
                 {/* MARQUEE WRAPPER */}
-                <div className="relative group/review-scroller">
-                    <MarqueeRibbon speed={30} className="py-4">
-                        {reviews.map((item, idx) => {
-                            const r = item.review || item;
-                            const media = getMediaFromReview(item);
-                            const hasMedia = media.length > 0;
+                <div className="relative group/review-scroller min-h-[300px]">
+                    {loading ? (
+                        <div className="flex gap-4 overflow-x-hidden py-4">
+                            {[1, 2, 3].map(i => (
+                                <div key={i} className="w-[280px] md:w-[400px] aspect-[4/5] bg-zinc-100 animate-pulse rounded-[2rem] shrink-0" />
+                            ))}
+                        </div>
+                    ) : (
+                        <MarqueeRibbon speed={30} className="py-4">
+                            {reviews.map((item, idx) => {
+                                const r = item.review || item;
+                                const media = getMediaFromReview(item);
+                                const hasMedia = media.length > 0;
 
-                            return (
-                                <div
-                                    key={idx}
-                                    onClick={() => openModal(item, idx)}
-                                    className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-4 shrink-0"
-                                >
-                                    {/* MEDIA AREA (Top 60%) */}
-                                    <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
-                                        {hasMedia ? (
-                                            <div className="w-full h-full relative">
-                                                {media[0].type === 'video' ? (
-                                                    <video src={resolveMediaURL(media[0].url)} muted loop autoPlay className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
-                                                ) : (
-                                                    <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
-                                                )}
+                                return (
+                                    <div
+                                        key={idx}
+                                        onClick={() => openModal(item, idx)}
+                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-4 shrink-0"
+                                    >
+                                        {/* MEDIA AREA (Top 60%) */}
+                                        <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
+                                            {hasMedia ? (
+                                                <div className="w-full h-full relative">
+                                                    {media[0].type === 'video' ? (
+                                                        <video src={resolveMediaURL(media[0].url)} muted loop autoPlay playsInline className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
+                                                    ) : (
+                                                        <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
+                                                    )}
 
-                                                {/* Count Badge */}
-                                                {media.length > 1 && (
-                                                    <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-2 py-1 text-[10px] font-bold text-white uppercase tracking-widest rounded-md">
-                                                        +{media.length - 1} More
+                                                    {/* Count Badge */}
+                                                    {media.length > 1 && (
+                                                        <div className="absolute top-4 right-4 bg-black/50 backdrop-blur px-2 py-1 text-[10px] font-bold text-white uppercase tracking-widest rounded-md">
+                                                            +{media.length - 1} More
+                                                        </div>
+                                                    )}
+
+                                                    {/* Type Badge */}
+                                                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 text-[10px] font-bold text-black uppercase tracking-widest rounded-md">
+                                                        {media[0].type === 'video' ? 'Video Showcase' : 'Verified Photo'}
                                                     </div>
-                                                )}
 
-                                                {/* Type Badge */}
-                                                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-2 py-1 text-[10px] font-bold text-black uppercase tracking-widest rounded-md">
-                                                    {media[0].type === 'video' ? 'Video Showcase' : 'Verified Photo'}
-                                                </div>
-
-                                                {/* Expand Overlay */}
-                                                <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
-                                                    <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300">
-                                                        <Maximize2 size={16} />
-                                                        <span className="text-xs font-bold uppercase tracking-widest">Read More</span>
+                                                    {/* Expand Overlay */}
+                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300">
+                                                            <Maximize2 size={16} />
+                                                            <span className="text-xs font-bold uppercase tracking-widest">Read More</span>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-6 md:p-8 whitespace-normal">
-                                                <p className="font-sans text-xl md:text-2xl text-zinc-300 text-center leading-tight">
-                                                    "{r.comment?.substring(0, 50)}..."
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    {/* CONTENT AREA (Bottom 40%) */}
-                                    <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-white whitespace-normal">
-                                        <div className="flex gap-0.5 mb-4">
-                                            {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={12} fill="black" className="text-black" />
-                                            ))}
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-6 md:p-8 whitespace-normal">
+                                                    <p className="font-sans text-xl md:text-2xl text-zinc-300 text-center leading-tight">
+                                                        "{r.comment?.substring(0, 50)}..."
+                                                    </p>
+                                                </div>
+                                            )}
                                         </div>
 
-                                        <h3 className="font-sans text-base md:text-lg mb-4 line-clamp-3 leading-relaxed">
-                                            "{r.comment}"
-                                        </h3>
-
-                                        <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center font-bold text-xs">
-                                                    {(r.name || "U").charAt(0)}
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold uppercase tracking-wide text-zinc-900">{r.name}</p>
-                                                    <p className="text-[10px] text-zinc-400 font-medium">Verified Buyer</p>
-                                                </div>
+                                        {/* CONTENT AREA (Bottom 40%) */}
+                                        <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-white whitespace-normal">
+                                            <div className="flex gap-0.5 mb-4">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={12} fill="black" className="text-black" />
+                                                ))}
                                             </div>
-                                            <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
-                                                <ArrowUpRight size={14} />
+
+                                            <h3 className="font-sans text-base md:text-lg mb-4 line-clamp-3 leading-relaxed">
+                                                "{r.comment}"
+                                            </h3>
+
+                                            <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center font-bold text-xs">
+                                                        {(r.name || "U").charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs font-bold uppercase tracking-wide text-zinc-900">{r.name}</p>
+                                                        <p className="text-[10px] text-zinc-400 font-medium">Verified Buyer</p>
+                                                    </div>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                                                    <ArrowUpRight size={14} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            );
-                        })}
-                    </MarqueeRibbon>
+                                );
+                            })}
+                        </MarqueeRibbon>
+                    )}
                 </div>
             </div>
         </section>

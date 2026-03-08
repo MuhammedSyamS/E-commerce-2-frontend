@@ -82,37 +82,44 @@ const SocialFeed = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-10 bg-black/95 backdrop-blur-xl"
         >
-            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] bg-black/40 md:bg-transparent p-2 md:p-0 rounded-full">
+            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] bg-black/40 md:bg-white p-2 md:p-4 rounded-full border border-white/20 md:border-zinc-200 md:text-black shadow-2xl">
                 <X size={24} className="md:w-8 md:h-8" />
             </button>
+            <div className="absolute top-4 left-4 z-[120] md:hidden">
+                <button onClick={onClose} className="flex items-center gap-2 bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest">
+                    <ChevronRight size={16} className="rotate-180" /> Back
+                </button>
+            </div>
 
             <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-[2.5rem] md:rounded-[3rem] overflow-y-auto no-scrollbar md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
                 {/* IMAGE SIDE */}
-                <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-950 overflow-hidden group flex-shrink-0">
-                    <img src={resolveMediaURL(look.image)} className="w-full h-full object-cover" alt="" />
-                    {look.products.map(prod => (
-                        <div
-                            key={prod._id}
-                            className="absolute w-8 h-8 bg-zinc-900 shadow-xl rounded-full flex items-center justify-center cursor-pointer hover:scale-125 transition-transform group/tag"
-                            style={{ left: `${prod.x}%`, top: `${prod.y}%` }}
-                        >
-                            <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 bg-white text-black p-3 rounded-2xl shadow-2xl opacity-0 group-hover/tag:opacity-100 transition-opacity pointer-events-none min-w-[180px]">
-                                <div className="flex gap-3 items-center">
-                                    <img src={resolveMediaURL(prod.image)} className="w-10 h-12 object-cover rounded-lg" alt="" />
-                                    <div>
-                                        <p className="text-[10px] font-black uppercase tracking-tighter truncate">{prod.name}</p>
-                                        <Price amount={prod.price} className="text-[11px] font-bold text-zinc-500" />
+                <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-950 overflow-hidden group flex-shrink-0 flex items-center justify-center max-h-[60vh] md:max-h-none">
+                    <img src={resolveMediaURL(look.image)} className="w-full h-full object-contain md:object-cover" alt="" />
+                    <div className="absolute inset-0 pointer-events-none md:pointer-events-auto">
+                        {look.products.map(prod => (
+                            <div
+                                key={prod._id}
+                                className="absolute w-8 h-8 bg-zinc-900 shadow-xl rounded-full flex items-center justify-center cursor-pointer hover:scale-125 transition-transform group/tag pointer-events-auto"
+                                style={{ left: `${prod.x}%`, top: `${prod.y}%` }}
+                            >
+                                <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 bg-white text-black p-3 rounded-2xl shadow-2xl opacity-0 group-hover/tag:opacity-100 transition-opacity pointer-events-none min-w-[150px] md:min-w-[180px]">
+                                    <div className="flex gap-3 items-center">
+                                        <img src={resolveMediaURL(prod.image)} className="w-8 h-10 md:w-10 md:h-12 object-cover rounded-lg" alt="" />
+                                        <div>
+                                            <p className="text-[9px] md:text-[10px] font-black uppercase tracking-tighter truncate">{prod.name}</p>
+                                            <Price amount={prod.price} className="text-[10px] md:text-[11px] font-bold text-zinc-500" />
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="w-2 h-2 bg-white rounded-full animate-ping absolute" />
+                                <ShoppingBag size={14} className="text-white relative z-10" />
                             </div>
-                            <div className="w-2 h-2 bg-white rounded-full animate-ping absolute" />
-                            <ShoppingBag size={14} className="text-white relative z-10" />
-                        </div>
-                    ))}
+                        ))}
+                    </div>
                 </div>
 
                 {/* DETAILS SIDE */}
-                <div className="w-full md:w-[400px] flex flex-col p-6 md:p-8 bg-white flex-shrink-0">
+                <div className="w-full md:w-[400px] flex flex-col p-6 md:p-8 bg-white flex-shrink-0 min-h-[400px] md:min-h-0">
                     <div className="flex items-center gap-3 mb-8 pb-8 border-b border-zinc-50 uppercase">
                         <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-100 flex items-center justify-center overflow-hidden">
                             {look.user?.avatar ? (
@@ -208,25 +215,25 @@ const SocialFeed = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                         {looks.map((look) => (
                             <motion.div
                                 key={look._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 onClick={() => setActiveLook(look)}
-                                className="break-inside-avoid group cursor-pointer relative"
+                                className="group cursor-pointer relative"
                             >
-                                <div className="relative overflow-hidden rounded-[2rem] shadow-sm border border-zinc-100 bg-white group-hover:shadow-2xl transition-all duration-500">
+                                <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-zinc-100 bg-white group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
                                     <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                         <div className="bg-white/90 backdrop-blur-md p-3 rounded-full shadow-xl">
                                             <ShoppingBag size={18} />
                                         </div>
                                     </div>
 
-                                    <img src={resolveMediaURL(look.image)} className="w-full h-auto group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
+                                    <img src={resolveMediaURL(look.image)} className="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
 
-                                    <div className="p-5">
+                                    <div className="p-3 md:p-5 flex-1 flex flex-col justify-between">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2 uppercase">
                                                 <div className="w-6 h-6 rounded-full bg-zinc-900 border border-zinc-100 flex items-center justify-center overflow-hidden">
@@ -262,23 +269,22 @@ const SocialFeed = () => {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.5 }}
-                            className="break-inside-avoid"
                         >
                             <Link
                                 to="/account?action=upload"
-                                className="block relative overflow-hidden rounded-[2rem] border-2 border-dashed border-zinc-200 bg-zinc-50/50 hover:border-black hover:bg-white transition-all duration-500 aspect-[3/4] flex flex-col items-center justify-center p-8 text-center gap-6"
+                                className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] border-2 border-dashed border-zinc-200 bg-zinc-50/50 hover:border-black hover:bg-white transition-all duration-500 aspect-[3/4] flex flex-col items-center justify-center p-4 md:p-8 text-center gap-4 md:gap-6"
                             >
-                                <div className="w-16 h-16 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-black group-hover:text-white transition-all duration-500">
-                                    <Plus size={32} />
+                                <div className="w-10 h-10 md:w-16 md:h-16 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-400 group-hover:bg-black group-hover:text-white transition-all duration-500">
+                                    <Plus size={24} className="md:w-8 md:h-8" />
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-black uppercase tracking-tight mb-2">You're Next</h3>
-                                    <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed">
+                                    <h3 className="text-sm md:text-xl font-black uppercase tracking-tight mb-2">You're Next</h3>
+                                    <p className="text-[7px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-relaxed">
                                         Show the community how you style SLOOK. <br />
                                         Get featured & earn Elite rewards.
                                     </p>
                                 </div>
-                                <div className="text-[10px] font-black uppercase tracking-widest bg-zinc-100 px-4 py-2 rounded-full">
+                                <div className="text-[8px] md:text-[10px] font-black uppercase tracking-widest bg-zinc-100 px-3 md:px-4 py-1.5 md:py-2 rounded-full">
                                     Post Your Look
                                 </div>
                             </Link>
