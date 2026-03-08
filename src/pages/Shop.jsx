@@ -330,12 +330,11 @@ const Shop = () => {
           <div className="flex items-center justify-between w-full md:w-auto gap-4">
             {/* Search Trigger */}
             <div className="relative group flex items-center flex-1 md:flex-none">
-              <input
                 type="text"
                 placeholder="Seach Collection..."
                 value={keyword}
                 onChange={handleSearchChange}
-                className="bg-zinc-50/50 md:bg-transparent border-none py-2 px-3 md:px-1 text-xs md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
+                className="bg-zinc-50/50 md:bg-transparent border-none py-1.5 px-3 md:px-1 text-[10px] md:text-[10px] font-bold uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-full md:w-32 focus:md:w-48 rounded-xl md:rounded-none"
               />
               <Search className="absolute right-3 md:relative md:right-0 text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
             </div>

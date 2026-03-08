@@ -506,13 +506,13 @@ const Navbar = () => {
         {isSearchOpen && (
           <div className="fixed inset-0 md:absolute md:top-0 md:left-0 md:w-full bg-white text-black md:rounded-b-2xl flex flex-col z-[200] shadow-2xl animate-in slide-in-from-top duration-500 overflow-hidden">
             {/* SEARCH INPUT AREA */}
-            <div className="flex items-center px-6 md:px-8 h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
+            <div className="flex items-center px-5 md:px-8 h-16 md:h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
               <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
               <input
                 autoFocus
                 type="text"
                 placeholder="SEARCH SLOOK..."
-                className="flex-1 bg-transparent outline-none px-4 text-sm md:text-sm font-black uppercase tracking-widest h-full placeholder:text-zinc-300"
+                className="flex-1 bg-transparent outline-none px-4 text-xs md:text-sm font-black uppercase tracking-widest h-full placeholder:text-zinc-300"
                 onChange={(e) => handleSearchInput(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -548,7 +548,7 @@ const Navbar = () => {
                               toggleSearch();
                               navigate(`/shop?category=${cat}`);
                             }}
-                            className="px-5 py-2.5 bg-white border border-zinc-200 rounded-full text-[10px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
+                            className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
                           >
                             {cat}
                           </button>
@@ -569,19 +569,19 @@ const Navbar = () => {
                               toggleSearch();
                               navigate(`/product/${p.slug}`);
                             }}
-                            className="flex items-center gap-4 md:gap-5 p-3 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
+                            className="flex items-center gap-3 md:gap-5 p-2 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
                           >
-                            <div className="w-16 h-20 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
+                            <div className="w-12 h-16 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
                               <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h4 className="text-sm md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
+                              <h4 className="text-[11px] md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
                                 {p.name}
                                 <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors shrink-0" />
                               </h4>
                               <div className="flex items-center gap-3 mt-1.5">
-                                <Price amount={p.price} className="text-xs md:text-xs text-zinc-900 font-extrabold" />
-                                <span className="text-[9px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">{p.category}</span>
+                                <Price amount={p.price} className="text-[10px] md:text-xs text-zinc-900 font-extrabold" />
+                                <span className="text-[8px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">{p.category}</span>
                               </div>
                             </div>
                             <ChevronRight size={16} className="text-zinc-200 group-hover:text-black group-hover:translate-x-1 transition-all shrink-0" />
