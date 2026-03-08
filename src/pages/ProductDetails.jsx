@@ -685,7 +685,7 @@ const ProductDetails = () => {
                 <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
                   <div className="space-y-3">
                     <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                    <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80 italic">"{product.description}"</p>
+                    <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80">"{product.description}"</p>
                   </div>
                   <div className="space-y-3">
                     <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
@@ -871,19 +871,19 @@ const ProductDetails = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 lg:gap-12">
                   <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
                     <ShieldCheck className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secure Checkout</span>
+                    <span className="text-[8px] md:text-sm font-black uppercase tracking-[0.2em] text-zinc-900">Secure Checkout</span>
                   </div>
                   <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
                     <RotateCcw className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">7 Days Return</span>
+                    <span className="text-[8px] md:text-sm font-black uppercase tracking-[0.2em] text-zinc-900">7 Days Return</span>
                   </div>
                   <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
                     <Lock className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Secured Payment</span>
+                    <span className="text-[8px] md:text-sm font-black uppercase tracking-[0.2em] text-zinc-900">Secured Payment</span>
                   </div>
                   <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-6 md:p-10 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
                     <Award className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-xs font-black uppercase tracking-[0.2em] text-zinc-900">Authentic Product</span>
+                    <span className="text-[8px] md:text-sm font-black uppercase tracking-[0.2em] text-zinc-900">Authentic Product</span>
                   </div>
                 </div>
               </div>
@@ -925,10 +925,10 @@ const ProductDetails = () => {
                             <span className="text-[10px] font-black uppercase tracking-[0.4em] text-zinc-400">The Slook Philosophy</span>
                             <div className="h-[1px] w-12 bg-zinc-900" />
                           </div>
-                          <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic leading-none">The Art of <span className="text-zinc-400">Creation</span></h2>
+                          <h2 className="text-2xl md:text-4xl font-black uppercase tracking-tighter leading-none">The Art of <span className="text-zinc-400">Creation</span></h2>
                         </div>
 
-                        <p className="text-zinc-600 text-lg md:text-xl leading-relaxed font-medium italic max-w-3xl mx-auto px-4">
+                        <p className="text-zinc-600 text-lg md:text-xl leading-relaxed font-medium max-w-3xl mx-auto px-4">
                           {product.richDescription || product.story || `Every ${product.name} in our collection is a testament to the pursuit of perfection. Meticulously crafted with a focus on form, function, and the subtle interplay of materials, this item embodies our philosophy of elevated minimalism.`}
                         </p>
 

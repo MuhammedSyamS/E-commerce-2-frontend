@@ -215,25 +215,26 @@ const SocialFeed = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
+                ) : (
+                    <div className="columns-2 lg:columns-3 gap-3 md:gap-6 space-y-3 md:space-y-6">
                         {looks.map((look) => (
                             <motion.div
                                 key={look._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 onClick={() => setActiveLook(look)}
-                                className="group cursor-pointer relative"
+                                className="break-inside-avoid mb-3 md:mb-6 group cursor-pointer relative"
                             >
-                                <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-zinc-100 bg-white group-hover:shadow-2xl transition-all duration-500 h-full flex flex-col">
+                                <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-zinc-100 bg-white hover:shadow-2xl transition-all duration-500">
                                     <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                         <div className="bg-white/90 backdrop-blur-md p-3 rounded-full shadow-xl">
                                             <ShoppingBag size={18} />
                                         </div>
                                     </div>
 
-                                    <img src={resolveMediaURL(look.image)} className="w-full aspect-[3/4] object-cover group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
+                                    <img src={resolveMediaURL(look.image)} className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
 
-                                    <div className="p-3 md:p-5 flex-1 flex flex-col justify-between">
+                                    <div className="p-3 md:p-5">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-2 uppercase">
                                                 <div className="w-6 h-6 rounded-full bg-zinc-900 border border-zinc-100 flex items-center justify-center overflow-hidden">
@@ -269,6 +270,7 @@ const SocialFeed = () => {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: 0.5 }}
+                            className="break-inside-avoid"
                         >
                             <Link
                                 to="/account?action=upload"

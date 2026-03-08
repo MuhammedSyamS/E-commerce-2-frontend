@@ -141,7 +141,7 @@ export const useStore = create(
               selectedVariant: product.selectedVariant
             }, { headers: { Authorization: `Bearer ${state.user.token}` } });
             // Sync with backend response to get correct _id fields
-            set({ user: { ...get().user, cart: data } });
+            set({ user: { ...get().user, cart: data }, isCartOpen: true });
           } catch (err) {
             console.error("Cart sync failed:", err);
           }

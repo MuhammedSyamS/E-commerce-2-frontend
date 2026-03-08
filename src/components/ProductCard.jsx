@@ -22,9 +22,9 @@ const ProductCard = ({ product, onAddToCart }) => {
   // Hover state — React controlled (100% reliable vs CSS group-hover)
   const [hovered, setHovered] = useState(false);
 
-  // Qty state — local, instant, no store lookup
-  const [qty, setQty] = useState(0);
-  const inCart = qty > 0;
+  // Determine if product is in cart (based on store state for accurate badge/state)
+  const cart = user ? (user.cart || []) : useStore.getState().cart;
+  const inCart = (cart || []).some(item => (item.product?._id || item.product || item._id).toString() === product._id.toString());
 
   // Determine if product is available — check variant.stock (exact schema field) or countInStock
   const hasVariants = product.variants?.length > 0;
@@ -74,32 +74,23 @@ const ProductCard = ({ product, onAddToCart }) => {
         ? { size: selectedSize || product.variants[0].size, color: product.variants.find(v => v.size === (selectedSize || product.variants[0].size))?.color || product.variants[0].color }
         : null;
 
-      const { data } = await api.post('/cart/add', {
-        productId: product._id,
+      // Use the store's addToCart which now handles drawer opening and quantity increments
+      await addToCart({
+        _id: product._id,
         name: product.name,
         price: finalPrice,
         image: resolveMediaURL(product.image),
+        quantity: 1,
         selectedVariant: variantData
-      }, { headers: { Authorization: `Bearer ${user.token}` } });
+      });
 
-      setUser({ ...user, cart: data });
-      setQty(1);
       setShowQuickAdd(false);
       success(`Added to bag`);
       if (onAddToCart) onAddToCart();
-    } catch (err) { error(err?.response?.data?.message || "Failed to add to bag"); }
+    } catch (err) { error("Failed to add to bag"); }
     finally { setCartLoading(false); }
   };
 
-  const increment = (e) => {
-    e.preventDefault(); e.stopPropagation();
-    setQty(q => q + 1);
-  };
-
-  const decrement = (e) => {
-    e.preventDefault(); e.stopPropagation();
-    setQty(q => Math.max(0, q - 1));
-  };
 
   if (!product?._id) return null;
 
@@ -215,33 +206,13 @@ const ProductCard = ({ product, onAddToCart }) => {
               pointerEvents: 'auto'
             }}
           >
-            {inCart ? (
-              <div className="flex items-stretch w-full">
-                <button
-                  onClick={decrement}
-                  className="flex-1 h-11 flex items-center justify-center hover:bg-zinc-800 border-r border-white/10"
-                >
-                  {qty === 1 ? <X size={11} /> : <Minus size={11} />}
-                </button>
-                <div className="flex-1 flex items-center justify-center text-[11px] font-black bg-zinc-900">
-                  {qty}
-                </div>
-                <button
-                  onClick={increment}
-                  className="flex-1 h-11 flex items-center justify-center hover:bg-zinc-800 border-l border-white/10"
-                >
-                  <Plus size={11} />
-                </button>
-              </div>
-            ) : (
-              <button
-                onClick={handleAdd}
-                disabled={cartLoading || isOutOfStock}
-                className="w-full h-11 text-[9px] font-black uppercase tracking-[0.15em] hover:bg-zinc-900 disabled:opacity-50"
-              >
-                {isOutOfStock ? 'Out of Stock' : cartLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : 'Add to Bag'}
-              </button>
-            )}
+            <button
+              onClick={handleAdd}
+              disabled={cartLoading || isOutOfStock}
+              className="w-full h-11 text-[9px] font-black uppercase tracking-[0.15em] hover:bg-zinc-900 disabled:opacity-50"
+            >
+              {isOutOfStock ? 'Out of Stock' : cartLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : inCart ? 'Add More' : 'Add to Bag'}
+            </button>
           </div>
         )}
       </div>
