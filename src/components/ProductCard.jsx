@@ -199,11 +199,11 @@ const ProductCard = ({ product, onAddToCart }) => {
         */}
         {!showQuickAdd && (
           <div
-            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white lg:translate-y-10 lg:opacity-0 lg:group-hover:translate-y-0 lg:group-hover:opacity-100 transition-all duration-500 ease-out"
+            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white transition-all duration-500 ease-out"
             style={{
-              opacity: inCart ? 1 : undefined,
-              transform: inCart ? 'translateY(0)' : undefined,
-              pointerEvents: 'auto'
+              opacity: hovered ? 1 : 0,
+              transform: hovered ? 'translateY(0)' : 'translateY(100%)',
+              pointerEvents: hovered ? 'auto' : 'none'
             }}
           >
             <button
@@ -211,7 +211,7 @@ const ProductCard = ({ product, onAddToCart }) => {
               disabled={cartLoading || isOutOfStock}
               className="w-full h-11 text-[9px] font-black uppercase tracking-[0.15em] hover:bg-zinc-900 disabled:opacity-50"
             >
-              {isOutOfStock ? 'Out of Stock' : cartLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : inCart ? 'Add More' : 'Add to Bag'}
+              {isOutOfStock ? 'Out of Stock' : cartLoading ? <Loader2 size={12} className="animate-spin mx-auto" /> : 'Add to Bag'}
             </button>
           </div>
         )}
