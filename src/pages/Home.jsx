@@ -10,6 +10,7 @@ import FeaturedReviews from '../components/FeaturedReviews';
 import FlashSaleBanner from '../components/FlashSaleBanner';
 import Reveal from '../components/Reveal';
 import Marquee from '../components/Marquee';
+import MarqueeRibbon from '../components/MarqueeRibbon';
 import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
@@ -30,7 +31,6 @@ const Home = () => {
   const bestSellersSectionRef = useRef(null);
   const trendingRef = useRef(null);
   const recentlyViewedRef = useRef(null);
-  const communityRef = useRef(null);
 
   const slides = [
     { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
@@ -252,50 +252,28 @@ const Home = () => {
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
 
-            <div className="relative">
-              {/* Navigation Arrows */}
-              <button 
-                onClick={() => communityRef.current?.scrollBy({ left: -400, behavior: 'smooth' })}
-                className="absolute -left-2 md:-left-12 top-1/2 -translate-y-1/2 z-50 p-2 md:p-3 bg-white border border-zinc-100 rounded-full shadow-xl transition-all hover:scale-110 active:scale-90 text-black"
-              >
-                <ChevronLeft size={20} className="md:w-6 md:h-6" strokeWidth={2.5} />
-              </button>
-              <button 
-                onClick={() => communityRef.current?.scrollBy({ left: 400, behavior: 'smooth' })}
-                className="absolute -right-2 md:-right-12 top-1/2 -translate-y-1/2 z-50 p-2 md:p-3 bg-white border border-zinc-100 rounded-full shadow-xl transition-all hover:scale-110 active:scale-90 text-black"
-              >
-                <ChevronRight size={20} className="md:w-6 md:h-6" strokeWidth={2.5} />
-              </button>
-
-              <div 
-                ref={communityRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-8 px-1"
-              >
+            <div className="relative group/community">
+              <MarqueeRibbon speed={40} className="py-8">
                 {communityLooks.map((look) => {
                   const u = look.user;
-                  
-                  // ADVANCED ATTRIBUTION LOGIC
                   const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : look.userName) || "House Stylist";
-                  
-                  // Format for display (lowercase handle style)
                   const formattedHandle = displayHandle.toLowerCase().replace(/\s+/g, '');
                   
                   return (
                     <Link 
                       key={look._id} 
                       to="/looks" 
-                      className="relative min-w-[240px] md:min-w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group border border-zinc-100 bg-zinc-50 snap-start"
+                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-zinc-50 mx-4 shrink-0"
                     >
                       <img 
                         src={resolveMediaURL(look.image)} 
-                        className="w-full h-full object-cover group-hover:scale-105 transition-all duration-1000" 
+                        className="w-full h-full object-cover group-hover/card:scale-105 transition-all duration-1000" 
                         alt="" 
                         onError={(e) => {
                           e.target.style.display = 'none';
                         }}
                       />
                       
-                      {/* Attribution Bubble - Always Visible */}
                       <div className="absolute top-4 left-4 z-10">
                         <div className="flex items-center gap-2 bg-white/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 shadow-sm">
                           <div className="w-5 h-5 rounded-full bg-zinc-900 border border-white/30 flex items-center justify-center overflow-hidden uppercase">
@@ -311,15 +289,15 @@ const Home = () => {
                         </div>
                       </div>
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                        <p className="text-[10px] font-black text-white uppercase tracking-widest translate-y-2 group-hover:translate-y-0 transition-transform duration-500">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity flex items-end p-6">
+                        <p className="text-[10px] font-black text-white uppercase tracking-widest translate-y-2 group-hover/card:translate-y-0 transition-transform duration-500">
                           View Look
                         </p>
                       </div>
                     </Link>
                   );
                 })}
-              </div>
+              </MarqueeRibbon>
             </div>
           </section>
         </Reveal>

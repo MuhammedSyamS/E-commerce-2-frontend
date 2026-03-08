@@ -455,10 +455,10 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed left-4 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
+                className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                    <ChevronLeft size={40} />
+                <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                    <ChevronLeft size={24} className="md:w-10 md:h-10" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
               </button>
@@ -470,15 +470,15 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed right-4 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group hidden md:flex flex-col items-center gap-2"
+                className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <div className="p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                    <ChevronRight size={40} />
+                <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
+                    <ChevronRight size={24} className="md:w-10 md:h-10" />
                 </div>
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 
-              <div className="relative w-full max-w-2xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col max-h-[95vh] md:max-h-[90vh] mx-auto overflow-y-auto no-scrollbar" onClick={(e) => e.stopPropagation()}>
+              <div className="relative w-full md:max-w-4xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row max-h-[95vh] md:max-h-[70vh] mx-auto overflow-y-auto no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -493,7 +493,7 @@ const ProductDetails = () => {
                     <>
                       {/* MEDIA SIDE - Only show if media exists */}
                       {currentMedia && (
-                        <div className="relative w-full aspect-[4/5] md:aspect-square bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
+                        <div className="relative w-full md:w-1/2 aspect-[4/5] md:aspect-auto bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
                           {allMedia.length > 1 && (
                             <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
                               <ChevronLeft size={20} />
@@ -523,7 +523,7 @@ const ProductDetails = () => {
                       )}
 
                       {/* TEXT SIDE */}
-                      <div className="w-full p-8 md:p-12 flex flex-col bg-white shrink-0">
+                      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar">
                         <div className="flex justify-between items-start mb-6">
                             <div className="min-w-0">
                                 <div className="flex gap-1 mb-2">
@@ -539,7 +539,7 @@ const ProductDetails = () => {
                         </div>
 
                         <div className="mb-8">
-                            <p className={`text-zinc-900 leading-relaxed text-sm md:text-lg font-medium ${!modalCommentExpanded && activeReviewItem.comment?.length > 200 ? 'line-clamp-4' : ''}`}>
+                            <p className={`text-zinc-900 leading-relaxed text-[13px] md:text-base font-medium ${!modalCommentExpanded && activeReviewItem.comment?.length > 200 ? 'line-clamp-4' : ''}`}>
                                 "{activeReviewItem.comment}"
                             </p>
                             
