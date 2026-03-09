@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus, ArrowUpRight, Heart, Award, Crown, Zap, ShieldCheck, Star } from 'lucide-react';
 import api from '../api/instance';
@@ -15,6 +15,8 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
 
+
+
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -24,7 +26,6 @@ const Home = () => {
   const [communityLooks, setCommunityLooks] = useState([]);
   const [scrollY, setScrollY] = useState(0);
   const { user } = useStore();
-  const [settings, setSettings] = useState(null);
 
   const newArrivalRef = useRef(null);
   const bestSellersSectionRef = useRef(null);
@@ -32,24 +33,11 @@ const Home = () => {
   const recentlyViewedRef = useRef(null);
   const communityLooksRef = useRef(null);
 
-  const defaultSlides = useMemo(() => [
+  const slides = [
     { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
     { id: 2, img: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=2000", title: "Urban Living", subtitle: "Curated Design" },
     { id: 3, img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=2000", title: "Premium Quality", subtitle: "Built to Last" },
-  ], []);
-
-  const slides = useMemo(() => {
-    const raw = settings?.heroSlides || [];
-    const valid = raw.filter(s => s && s.img);
-    if (valid.length > 0) {
-      return valid.map((s, i) => ({
-        ...s,
-        img: resolveMediaURL(s.img),
-        key: `dynamic-${i}-${s.img.slice(-5)}`
-      }));
-    }
-    return defaultSlides.map((s, i) => ({ ...s, key: `default-${i}` }));
-  }, [settings?.heroSlides, defaultSlides]);
+  ];
 
   const scrollToProducts = () => {
     trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -69,27 +57,23 @@ const Home = () => {
   useEffect(() => {
     const fetchHomeData = async () => {
       try {
+        console.log("HOME: Fetching products...");
         setLoading(true);
         const { data } = await api.get('/products/home');
-        if (data) setHomeData(data);
+        console.log("HOME: Data received:", data);
+        if (data) {
+          setHomeData(data);
+        } else {
+          console.warn("HOME: Received empty data from API");
+        }
       } catch (err) {
         console.error("HOME: Data Fetch Error:", err);
-        setError("Failed to fetch products.");
+        setError("Failed to fetch products. Please refresh.");
       } finally {
         setLoading(false);
       }
     };
     fetchHomeData();
-
-    const fetchSettings = async () => {
-      try {
-        const { data } = await api.get(`/settings?t=${Date.now()}`);
-        setSettings(data);
-      } catch (err) {
-        console.error("Home Settings Fetch Error:", err);
-      }
-    };
-    fetchSettings();
   }, []);
 
   useEffect(() => {
@@ -145,35 +129,17 @@ const Home = () => {
     }
   }, [location]);
 
-  // --- CAROUSEL LOGIC ---
-  const [resetKey, setResetKey] = useState(0);
-
-  const nextSlide = React.useCallback(() => {
-    setCurrentSlide(prev => (prev + 1) % slides.length);
-  }, [slides.length]);
-
-  const prevSlide = React.useCallback(() => {
-    setCurrentSlide(prev => (prev - 1 + slides.length) % slides.length);
-  }, [slides.length]);
-
   useEffect(() => {
-    if (activeView !== 'all' || slides.length <= 1) return;
-    const timer = setInterval(nextSlide, 5000);
-    return () => clearInterval(timer);
-  }, [nextSlide, activeView, resetKey]);
-
-  // Safety: Reset if out of bounds
-  useEffect(() => {
-    if (currentSlide >= slides.length) {
-      setCurrentSlide(0);
+    if (activeView === 'all') {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+      }, 5000);
+      return () => clearInterval(timer);
     }
-  }, [slides.length, currentSlide]);
+  }, [currentSlide, activeView, slides.length]);
 
-  const handleManualNav = (dir) => {
-    if (dir === 'next') nextSlide();
-    else prevSlide();
-    setResetKey(prev => prev + 1);
-  };
+  const nextSlide = () => setCurrentSlide((prev) => (prev === slides.length - 1 ? 0 : prev + 1));
+  const prevSlide = () => setCurrentSlide((prev) => (prev === 0 ? slides.length - 1 : prev - 1));
 
   const scroll = (ref, direction) => {
     if (ref.current) {
@@ -191,7 +157,7 @@ const Home = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen selection:bg-black selection:text-white overflow-x-hidden font-sans">
+    <div className="bg-white min-h-screen selection:bg-black selection:text-white overflow-x-hidden">
       <Helmet>
         <title>SLOOK | Modern Essentials & Curated Goods</title>
         <meta name="description" content="Discover premium essentials at SLOOK. Curated designs for the modern aesthetic." />
@@ -201,70 +167,35 @@ const Home = () => {
 
       {activeView === 'all' && (
         <>
-          <section className="relative w-full h-screen overflow-hidden bg-black group/hero">
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={slides[currentSlide]?.key || currentSlide}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
-                className="absolute inset-0"
-              >
-                <div className="absolute inset-0 overflow-hidden">
-                  <motion.img
-                    src={slides[currentSlide]?.img}
-                    initial={{ scale: 1.3 }}
-                    animate={{ 
-                      scale: 1.1 + (scrollY * 0.0005),
-                      y: scrollY * 0.1
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="w-full h-full object-cover"
-                    alt=""
-                    loading="eager"
-                  />
-                </div>
-                
+          <section className="relative w-full h-screen overflow-hidden bg-zinc-950">
+            {slides.map((slide, index) => (
+              <div key={slide.id} className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide ? "opacity-100 z-10" : "opacity-0 z-0"}`}>
+                <img
+                  src={slide.img}
+                  className={`w-full h-full object-cover transition-transform will-change-transform`}
+                  style={{
+                    transitionDuration: index === currentSlide ? '0ms' : '1000ms',
+                    transform: index === currentSlide ? `scale(${1.1 + (scrollY * 0.0005)}) translateY(${scrollY * 0.2}px)` : 'scale(1)'
+                  }}
+                  alt=""
+                  loading="eager"
+                />
                 <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
-                  <motion.div 
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
-                    className="text-center"
-                  >
-                    <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
-                    <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                      <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
-                      {slides[currentSlide]?.link && (
-                        <button onClick={() => navigate(slides[currentSlide].link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
-                      )}
-                    </div>
-                  </motion.div>
+                  <div className="text-center">
+                    <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slide.subtitle}</p>
+                    <h2 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-6 leading-tighter">{slide.title}</h2>
+                    <button onClick={scrollToProducts} className="bg-white text-black px-8 py-3 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer">Explore SLOOK</button>
+                  </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
-              </motion.div>
-            </AnimatePresence>
-
-            {/* CONTROLS */}
-            <div className="absolute inset-0 z-30 flex items-center justify-between px-4 md:px-10 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-500">
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleManualNav('prev'); }} 
-                className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
-              >
-                <ChevronLeft strokeWidth={1} size={64} />
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleManualNav('next'); }} 
-                className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
-              >
-                <ChevronRight strokeWidth={1} size={64} />
-              </button>
+                <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/40 z-10"></div>
+              </div>
+            ))}
+            <div className="absolute inset-0 z-30 flex items-center justify-between px-2 md:px-10 pointer-events-none">
+              <button onClick={prevSlide} className="text-white/50 hover:text-white transition-colors pointer-events-auto"><ChevronLeft className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
+              <button onClick={nextSlide} className="text-white/50 hover:text-white transition-colors pointer-events-auto"><ChevronRight className="w-10 h-10 md:w-16 md:h-16" strokeWidth={1} /></button>
             </div>
-
           </section>
-          <Marquee text="Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •" />
+          <Marquee text="Premium Artifacts ΓÇó High Quality ΓÇó Studio Drops ΓÇó Handpicked Originals ΓÇó" />
         </>
       )}
 
@@ -317,6 +248,8 @@ const Home = () => {
               </section>
             </Reveal>
           )}
+
+
         </React.Fragment>
       ))}
 
@@ -437,6 +370,7 @@ const Home = () => {
           </section>
         </Reveal>
       )}
+
 
       {activeView === 'all' && user && recentlyViewed.length > 0 && (
         <Reveal width="100%">

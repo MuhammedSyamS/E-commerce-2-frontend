@@ -9,6 +9,43 @@ import { useStore } from '../store/useStore';
 import api from '../api/instance';
 import Price from './Price'; // Assuming Price component exists or needs to be handled
 import { io } from 'socket.io-client';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const Badge = ({ count, textColor = "text-white" }) => (
+  <AnimatePresence mode="popLayout">
+    {count > 0 && (
+      <motion.div
+        key="badge-container"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 500, damping: 25 }}
+        className={`absolute -top-1.5 -right-1 ${textColor} text-[11px] font-black pointer-events-none z-10 flex items-center justify-center`}
+        style={{
+          textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.5)'
+        }}
+      >
+        <div className="relative overflow-hidden h-[1.2rem] flex items-center leading-none">
+          <AnimatePresence mode="wait">
+            <motion.span
+              key={count}
+              initial={{ y: 15, opacity: 0, scale: 0.8 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: -15, opacity: 0, scale: 0.8 }}
+              transition={{ 
+                type: "spring",
+                stiffness: 400,
+                damping: 20
+              }}
+            >
+              {count}
+            </motion.span>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 
 const Navbar = () => {
   const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates, cart } = useStore();
@@ -60,21 +97,35 @@ const Navbar = () => {
 
   const isAdminRoute = location.pathname.startsWith('/admin');
 
-  // ... (existing code)
-
-
-  // SEARCH OVERLAY
-
 
   // --- TOP BANNER LOGIC ---
-  const messages = ["Save 5% on prepaid orders!", "Free Shipping on orders over ₹1999", "New Collection Drops Every Friday"];
+  const [messages, setMessages] = useState([]);
   const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
+    const fetchTopBanners = async () => {
+      try {
+        const { data } = await api.get('/settings');
+        if (data && data.topNavbarMessages) {
+            setMessages(data.topNavbarMessages);
+        }
+      } catch (err) {
+         console.error("Failed to fetch top banners", err);
+      }
+    };
+    fetchTopBanners();
+
+    // Listen for live updates from Admin Settings
+    window.addEventListener('settings-updated', fetchTopBanners);
+    return () => window.removeEventListener('settings-updated', fetchTopBanners);
+  }, []);
+
+  useEffect(() => {
+    if (messages.length <= 1) return;
     const timer = setInterval(() => { handleNext(); }, 4000);
     return () => clearInterval(timer);
-  }, [currentMsgIndex]);
+  }, [currentMsgIndex, messages.length]);
 
   useEffect(() => {
     const handleScroll = () => { setIsScrolled(window.scrollY > 20); };
@@ -110,13 +161,9 @@ const Navbar = () => {
 
       socket.on('notification', (notif) => {
         setNotifications(prev => [notif, ...(Array.isArray(prev) ? prev : [])]);
-        // Optional: show a toast if you have access to it here, 
-        // but Navbar usually doesn't have useToast unless imported.
-        // Let's check if useToast is available in useStore or similar.
       });
 
       socket.on('ticket-reply', (data) => {
-        // We could also trigger a fetch or just let 'notification' handle it
         console.log("Ticket Reply Received:", data);
       });
     }
@@ -130,7 +177,6 @@ const Navbar = () => {
   }, [user?.token, user?._id]);
 
   const handleNotificationClick = async (notif) => {
-    // 1. Mark as read
     if (!notif.isRead) {
       try {
         await api.put(`/users/notifications/${notif._id}/read`, {});
@@ -138,34 +184,26 @@ const Navbar = () => {
       } catch (err) { }
     }
 
-    // 2. Navigate if URL exists
-    // Robust check for data object
     const data = notif.data || {};
     let targetUrl = data.url || data.link;
 
-    // FIX COLD DATA: If backend sent wrong URL structure, fix it here
     if (targetUrl && targetUrl.includes('/account/orders/')) {
       targetUrl = targetUrl.replace('/account/orders/', '/order/');
     }
 
     if (targetUrl) {
-      console.log("Navigating to:", targetUrl);
       navigate(targetUrl);
       setShowNotif(false);
     } else if (notif.type === 'order') {
-      // Fallback: If we have orderId but no URL, make one
       if (data.orderId) {
         navigate(`/order/${data.orderId}`);
       } else {
         navigate('/my-orders');
       }
       setShowNotif(false);
-    } else {
-      console.log("No URL found in notification", notif);
     }
   };
 
-  // --- CLICK OUTSIDE TO CLOSE DROPDOWNS ---
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (showNotif && !event.target.closest('.group')) {
@@ -206,35 +244,41 @@ const Navbar = () => {
   return (
     <div className={`fixed top-0 z-[100] transition-all duration-300 ease-in-out left-0 w-full`}>
 
-      {/* --- TOP BANNER (FIXED ALIGNMENT) --- */}
+      {/* --- TOP BANNER --- */}
+      {messages.length > 0 && (
       <div className="bg-black text-white h-10 flex items-center justify-center px-4">
-        {/* Left Arrow */}
+        {messages.length > 1 && (
         <button onClick={handlePrev} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer flex-shrink-0">
           <ChevronLeft size={14} />
         </button>
-
-        {/* Message Container - Now using Flex Centering */}
+        )}
         <div className="h-full w-full max-w-[280px] md:max-w-[400px] relative overflow-hidden mx-2">
           <div className={`w-full h-full flex items-center justify-center transition-all duration-300 transform ${isAnimating ? 'translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-            <p className="font-black tracking-mega uppercase text-[8px] md:text-[9px] text-center">
-              {messages[currentMsgIndex]}
-            </p>
+            {messages[currentMsgIndex]?.link ? (
+              <Link to={messages[currentMsgIndex].link} className="font-black tracking-mega uppercase text-[8px] md:text-[9px] text-center hover:text-zinc-300 transition-colors">
+                {messages[currentMsgIndex].text}
+              </Link>
+            ) : (
+              <p className="font-black tracking-mega uppercase text-[8px] md:text-[9px] text-center">
+                {messages[currentMsgIndex]?.text}
+              </p>
+            )}
           </div>
         </div>
-
-        {/* Right Arrow */}
+        {messages.length > 1 && (
         <button onClick={handleNext} className="p-1 hover:bg-white/20 rounded-full transition cursor-pointer flex-shrink-0">
           <ChevronRight size={14} />
         </button>
+        )}
       </div>
+      )}
 
       {/* MAIN NAV */}
       <nav className={`transition-all duration-700 relative border-b border-white/10 ${isScrolled || isMenuOpen || isAdminRoute ? 'bg-black/95 shadow-xl' : 'bg-black/40'}`}>
         <div className="container mx-auto px-4 md:px-6 flex items-center h-16 md:h-20">
 
-          {/* 1. LEFT SECTION (LOGO) */}
+          {/* LEFT SECTION */}
           <div className="flex-1 flex items-center gap-2 md:gap-4">
-            {/* ADMIN TOGGLE (YouTube Style) */}
             {isAdminRoute && (
               <button onClick={toggleAdminSidebar} className="p-2 text-white hover:bg-white/10 rounded-full transition">
                 <Menu size={24} />
@@ -248,10 +292,7 @@ const Navbar = () => {
             )}
 
             <Link to="/" onClick={() => handleFilterNavigation('all')} className="text-lg md:text-3xl font-black tracking-tighter text-white uppercase transform scale-y-110 flex items-center gap-2">
-              {/* HIDE 'SLOOK' FOR MANAGERS TO SAVE SPACE */}
               {user?.role !== 'manager' && <span>SLOOK</span>}
-
-              {/* DYNAMIC ROLE SUFFIX */}
               {user?.role === 'admin' || user?.isAdmin ? (
                 <span className="text-red-500 drop-shadow-md text-xs md:text-sm">ADMIN</span>
               ) : user?.role === 'manager' ? (
@@ -260,7 +301,7 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* 2. CENTER SECTION (LINKS) */}
+          {/* CENTER SECTION */}
           <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
@@ -269,62 +310,41 @@ const Navbar = () => {
               <span className="absolute -top-1 -right-4 bg-red-600 text-[6px] px-1 rounded animate-pulse text-white tracking-normal">LIVE</span>
             </Link>
             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
-            <button
-              onClick={() => navigate('/support')}
-              className="text-white hover:text-zinc-400 transition whitespace-nowrap"
-            >
-              NEED HELP
-            </button>
+            <button onClick={() => navigate('/support')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEED HELP</button>
           </div>
 
-          {/* 3. RIGHT SECTION (ICONS) */}
+          {/* RIGHT SECTION */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
             <button onClick={toggleSearch} className="relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <Search className="w-5 h-5 text-white group-hover:text-zinc-400 transition" />
             </button>
 
-            {/* WISHLIST (Desktop Only) */}
+            {/* WISHLIST */}
             <Link to="/wishlist" className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
-              {wishlistCount > 0 && (
-                <span className="absolute top-1 right-1 bg-white text-black text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black ring-2 ring-black">
-                  {wishlistCount}
-                </span>
-              )}
+              <Badge count={wishlistCount} />
             </Link>
 
-            {/* CART (Desktop Only) */}
+            {/* CART */}
             <button onClick={toggleCart} className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <ShoppingBag className={`w-5 h-5 transition ${cartCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
-              {cartCount > 0 && (
-                <span className="absolute top-1 right-1 bg-white text-black text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black ring-2 ring-black">
-                  {cartCount}
-                </span>
-              )}
+              <Badge count={cartCount} />
             </button>
 
-            {/* NOTIFICATIONS BELL */}
+            {/* NOTIFICATIONS */}
             <div className="relative group">
               <button
                 onClick={() => {
                   if (!user) { navigate('/login'); return; }
-                  if (window.innerWidth < 768) {
-                    navigate('/account/notifications');
-                  } else {
-                    setShowNotif(!showNotif);
-                  }
+                  if (window.innerWidth < 768) { navigate('/account/notifications'); } 
+                  else { setShowNotif(!showNotif); }
                 }}
                 className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
               >
                 <Bell className={`w-5 h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1 right-1 bg-red-600 text-white text-[9px] min-w-[14px] h-[14px] px-1 flex items-center justify-center rounded-full font-black animate-pulse ring-2 ring-black">
-                    {unreadCount}
-                  </span>
-                )}
+                <Badge count={unreadCount} textColor="text-red-500" />
               </button>
 
-              {/* NOTIFICATION DROPDOWN */}
               {showNotif && (
                 <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
                   <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
@@ -368,32 +388,14 @@ const Navbar = () => {
               )}
             </div>
 
-            {/* ADMIN / STAFF PANEL LINK */}
-            {(() => {
-              const isAdmin = user?.role === 'admin' || user?.isAdmin;
-              const isStaff = isAdmin || ['manager', 'client_support_executive', 'digital_marketing_executive'].includes(user?.role);
+            {/* ADMIN SHORTCUT */}
+            {(user?.role === 'admin' || user?.isAdmin) && (
+              <Link to="/admin/dashboard" className="hidden md:flex p-2 rounded-full hover:bg-white/10 transition-all text-red-500" title="Admin Dashboard">
+                <Shield className="w-5 h-5 fill-red-500/10" />
+              </Link>
+            )}
 
-              if (isAdmin) {
-                return (
-                  <Link to="/admin" className="relative group" title="Admin Panel">
-                    <Shield className="w-5 h-5 text-white transition group-hover:text-zinc-400" />
-                  </Link>
-                );
-              }
-              if (isStaff) {
-                return (
-                  <Link to="/admin" className="relative group" title="Staff Panel">
-                    <div className="relative">
-                      <Shield className={`w-5 h-5 transition group-hover:text-white ${user?.role === 'manager' ? 'text-purple-400' : (user?.role === 'client_support_executive' ? 'text-blue-400' : 'text-orange-400')}`} />
-                      <div className={`absolute -bottom-1 -right-1 w-2 h-2 rounded-full border border-black ${user?.role === 'manager' ? 'bg-purple-500' : (user?.role === 'client_support_executive' ? 'bg-blue-500' : 'bg-orange-500')}`}></div>
-                    </div>
-                  </Link>
-                );
-              }
-              return null;
-            })()}
-
-            {/* USER PROFILE DIRECT LINK */}
+            {/* PROFILE */}
             {user ? (
               <Link to="/account" className="relative group flex items-center gap-2 outline-none group/badge">
                 <User className="w-5 h-5 transition-all text-white fill-white scale-110 md:hover:text-zinc-400" />
@@ -401,7 +403,7 @@ const Navbar = () => {
                   (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
                     (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
                       'bg-orange-700'
-                  }`} title={`${(user.totalSpend || 0) >= 50000 ? 'Platinum' : (user.totalSpend || 0) >= 20000 ? 'Gold' : (user.totalSpend || 0) >= 5000 ? 'Silver' : 'Bronze'} Member`} />
+                  }`} />
               </Link>
             ) : (
               <Link to="/login">
@@ -409,52 +411,22 @@ const Navbar = () => {
               </Link>
             )}
 
-            {/* GLOBAL HUB REMOVED */}
-
           </div>
         </div>
 
-        {/* MOBILE MENU DRAWER */}
+        {/* MOBILE MENU */}
         {isMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-3xl px-8 pb-12 border-t border-white/10 animate-in slide-in-from-top duration-500">
             <div className="pt-10 grid grid-cols-2 gap-x-8 gap-y-8">
-              {/* Left Column: Core Shopping */}
               <div className="flex flex-col gap-6">
                 <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Discovery</p>
                 <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">New Arrivals</button>
                 <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">Best Sellers</button>
                 <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Shop All</Link>
-                <Link to="/community" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
-                  Community
-                  <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-ping" />
-                </Link>
               </div>
-
-              {/* Right Column: Account & Support */}
               <div className="flex flex-col gap-6">
-                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">My Account</p>
-                {user && (
-                  <Link to="/my-orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">My Orders</Link>
-                )}
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    const footer = document.getElementById('footer-track');
-                    if (footer) footer.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="text-white text-[11px] font-black uppercase tracking-widest text-left"
-                >
-                  Track
-                </button>
-                <button
-                  onClick={() => {
-                    setIsMenuOpen(false);
-                    navigate('/support');
-                  }}
-                  className="text-white text-[11px] font-black uppercase tracking-widest text-left"
-                >
-                  NEED HELP
-                </button>
+                <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Support</p>
+                <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Need Help</Link>
               </div>
             </div>
 
@@ -466,13 +438,14 @@ const Navbar = () => {
               )}
 
               <div className="flex items-center gap-4">
+                {(user?.role === 'admin' || user?.isAdmin) && (
+                  <Link to="/admin/dashboard" onClick={() => setIsMenuOpen(false)} className="text-red-500 p-2 bg-red-500/10 rounded-full" title="Admin Dashboard">
+                    <Shield size={14} fill="currentColor" fillOpacity={0.1} />
+                  </Link>
+                )}
                 <Link to="/wishlist" onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full relative">
                   <Heart size={14} className={wishlistCount > 0 ? 'text-black fill-white' : ''} />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black">
-                      {wishlistCount}
-                    </span>
-                  )}
+                  <Badge count={wishlistCount} />
                 </Link>
                 <button
                   onClick={() => {
@@ -483,127 +456,13 @@ const Navbar = () => {
                   className="text-white p-2 bg-white/5 rounded-full relative"
                 >
                   <Bell size={14} />
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black animate-pulse">
-                      {unreadCount}
-                    </span>
-                  )}
+                  <Badge count={unreadCount} textColor="text-red-500" />
                 </button>
                 <div onClick={() => { setIsMenuOpen(false); toggleCart(); }} className="text-white p-2 bg-white/5 rounded-full relative">
                   <ShoppingBag size={14} className={cartCount > 0 ? 'text-black fill-white' : ''} />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-white text-black text-[7px] min-w-[12px] h-[12px] px-0.5 flex items-center justify-center rounded-full font-black">
-                      {cartCount}
-                    </span>
-                  )}
+                  <Badge count={cartCount} />
                 </div>
               </div>
-            </div>
-          </div>
-        )}
-
-        {/* SEARCH OVERLAY */}
-        {isSearchOpen && (
-          <div className="fixed inset-0 md:absolute md:top-0 md:left-0 md:w-full bg-white text-black md:rounded-b-2xl flex flex-col z-[200] shadow-2xl animate-in slide-in-from-top duration-500 overflow-hidden">
-            {/* SEARCH INPUT AREA */}
-            <div className="flex items-center px-5 md:px-8 h-16 md:h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
-              <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
-              <input
-                autoFocus
-                type="text"
-                placeholder="SEARCH SLOOK..."
-                className="flex-1 bg-transparent outline-none px-4 text-xs md:text-sm font-black uppercase tracking-widest h-full placeholder:text-zinc-300"
-                onChange={(e) => handleSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    toggleSearch();
-                    navigate(`/shop?keyword=${e.target.value}`);
-                  }
-                }}
-              />
-              <button
-                onClick={toggleSearch}
-                className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-2 md:hidden"
-              >
-                Cancel
-              </button>
-              <button onClick={toggleSearch} className="hidden md:block">
-                <X className="w-5 h-5 text-black flex-shrink-0 hover:rotate-90 transition-transform" />
-              </button>
-            </div>
-
-            {/* SUGGESTIONS AREA */}
-            <div className="flex-1 md:max-h-[60vh] overflow-y-auto no-scrollbar bg-[#fcfcfc] pb-20 md:pb-0">
-              {(suggestions.products?.length > 0 || suggestions.categories?.length > 0) ? (
-                <>
-                  {/* CATEGORIES GROUP */}
-                  {suggestions.categories?.length > 0 && (
-                    <div className="p-6 md:p-8 border-b border-zinc-100 bg-white/50">
-                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Categories</p>
-                      <div className="flex flex-wrap gap-2.5">
-                        {suggestions.categories.map((cat, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              toggleSearch();
-                              navigate(`/shop?category=${cat}`);
-                            }}
-                            className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
-                          >
-                            {cat}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* PRODUCTS GROUP */}
-                  {suggestions.products?.length > 0 && (
-                    <div className="p-6 md:p-8">
-                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Products</p>
-                      <div className="grid grid-cols-1 gap-3">
-                        {suggestions.products.map((p) => (
-                          <div
-                            key={p._id}
-                            onClick={() => {
-                              toggleSearch();
-                              navigate(`/product/${p.slug}`);
-                            }}
-                            className="flex items-center gap-3 md:gap-5 p-2 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
-                          >
-                            <div className="w-12 h-16 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
-                              <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-[11px] md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
-                                {p.name}
-                                <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors shrink-0" />
-                              </h4>
-                              <div className="flex items-center gap-3 mt-1.5">
-                                <Price amount={p.price} className="text-[10px] md:text-xs text-zinc-900 font-extrabold" />
-                                <span className="text-[8px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">{p.category}</span>
-                              </div>
-                            </div>
-                            <ChevronRight size={16} className="text-zinc-200 group-hover:text-black group-hover:translate-x-1 transition-all shrink-0" />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <div
-                    onClick={() => toggleSearch()}
-                    className="p-8 text-center text-[10px] md:text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white transition-colors"
-                  >
-                    View all results
-                  </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
-                  <Search size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Start typing to explore</p>
-                </div>
-              )}
             </div>
           </div>
         )}
