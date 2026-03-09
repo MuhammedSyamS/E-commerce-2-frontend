@@ -273,6 +273,67 @@ const Navbar = () => {
       </div>
       )}
 
+      {/* SEARCH OVERLAY */}
+      <AnimatePresence>
+        {isSearchOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex flex-col items-center pt-24 md:pt-32 px-4"
+          >
+            <button onClick={toggleSearch} className="absolute top-6 right-6 text-white hover:text-zinc-400 p-2">
+              <X size={32} />
+            </button>
+            <div className="w-full max-w-3xl relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-400" size={24} />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search products..."
+                onChange={(e) => handleSearchInput(e.target.value)}
+                className="w-full bg-transparent border-b-2 border-white/20 text-white text-2xl md:text-5xl font-black uppercase tracking-tighter py-4 pl-14 pr-4 outline-none focus:border-white transition-colors placeholder:text-zinc-700"
+              />
+            </div>
+            
+            {/* SEARCH RESULTS */}
+            <div className="w-full max-w-5xl mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pb-20 no-scrollbar">
+              {suggestions?.products?.length > 0 && (
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6">Artifacts</h3>
+                  <div className="flex flex-col gap-4">
+                    {suggestions.products.map(p => {
+                      const imgPath = p.images?.[0] || '';
+                      const imgSrc = imgPath.startsWith('http') ? imgPath : `${import.meta.env.VITE_API_URL?.replace('/api', '') || window.location.origin}${imgPath}`;
+                      return (
+                      <div key={p._id} onClick={() => { navigate(`/product/${p.slug || p._id}`); toggleSearch(); }} className="flex gap-4 items-center group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
+                        <img src={imgSrc} className="w-16 h-16 object-cover rounded-lg bg-zinc-900 group-hover:scale-105 transition" />
+                        <div>
+                          <p className="text-white text-xs md:text-sm font-black uppercase tracking-tight">{p.name}</p>
+                          <p className="text-zinc-400 text-[10px] uppercase mt-1">₹{p.price}</p>
+                        </div>
+                      </div>
+                    )})}
+                  </div>
+                </div>
+              )}
+              {suggestions?.categories?.length > 0 && (
+                <div>
+                  <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6">Categories</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestions.categories.map(c => (
+                      <button key={c} onClick={() => { navigate(`/shop?category=${c}`); toggleSearch(); }} className="px-4 py-2 border border-white/20 rounded-full text-[10px] font-black text-white uppercase tracking-widest hover:bg-white hover:text-black transition">
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* MAIN NAV */}
       <nav className={`transition-all duration-700 relative border-b border-white/10 ${isScrolled || isMenuOpen || isAdminRoute ? 'bg-black/95 shadow-xl' : 'bg-black/40'}`}>
         <div className="container mx-auto px-4 md:px-6 flex items-center h-16 md:h-20">
@@ -423,10 +484,15 @@ const Navbar = () => {
                 <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">New Arrivals</button>
                 <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-[11px] font-black uppercase tracking-widest text-left">Best Sellers</button>
                 <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Shop All</Link>
+                <div className="flex items-center gap-2">
+                  <Link to="/community" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Community</Link>
+                  <span className="bg-red-600 text-[6px] px-1 rounded animate-pulse text-white tracking-normal">LIVE</span>
+                </div>
               </div>
               <div className="flex flex-col gap-6">
                 <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Support</p>
                 <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Need Help</Link>
+                <Link to="/account/orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
               </div>
             </div>
 
