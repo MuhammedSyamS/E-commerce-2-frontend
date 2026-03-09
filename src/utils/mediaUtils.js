@@ -7,6 +7,9 @@
 export const resolveMediaURL = (path) => {
     if (!path) return '';
 
+    // Fix backslashes
+    path = path.replace(/\\\\/g, '/');
+
     // If it's already an absolute URL (http/https), Base64, or blob, return as is
     if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:') || path.startsWith('blob:')) {
         return path;

@@ -10,6 +10,7 @@ import api from '../api/instance';
 import Price from './Price'; // Assuming Price component exists or needs to be handled
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
+import { resolveMediaURL } from '../utils/mediaUtils';
 
 const Badge = ({ count, textColor = "text-white" }) => (
   <AnimatePresence mode="popLayout">
@@ -292,7 +293,7 @@ const Navbar = () => {
                 type="text"
                 placeholder="Search products..."
                 onChange={(e) => handleSearchInput(e.target.value)}
-                className="w-full bg-transparent border-b-2 border-zinc-200 text-black text-xl md:text-3xl font-black uppercase tracking-tighter py-4 pl-12 pr-4 outline-none focus:border-black transition-colors placeholder:text-zinc-400"
+                className="w-full bg-transparent border-b-2 border-zinc-200 text-black text-base md:text-xl font-black uppercase tracking-tighter py-2 pl-12 pr-4 outline-none focus:border-black transition-colors placeholder:text-zinc-400"
               />
             </div>
             
@@ -303,8 +304,8 @@ const Navbar = () => {
                   <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-6">Artifacts</h3>
                   <div className="flex flex-col gap-4">
                     {suggestions.products.map(p => {
-                      const imgPath = p.images?.[0] || '';
-                      const imgSrc = imgPath.startsWith('http') ? imgPath : `${import.meta.env.VITE_API_URL?.replace('/api', '') || window.location.origin}${imgPath}`;
+                      const imgPath = p.image || p.images?.[0] || '';
+                      const imgSrc = resolveMediaURL(imgPath);
                       return (
                       <div key={p._id} onClick={() => { navigate(`/product/${p.slug || p._id}`); toggleSearch(); }} className="flex gap-4 items-center group cursor-pointer hover:bg-zinc-100 p-2 rounded-xl transition">
                         <img src={imgSrc} className="w-16 h-16 object-cover rounded-lg bg-zinc-100 group-hover:scale-105 transition" />
