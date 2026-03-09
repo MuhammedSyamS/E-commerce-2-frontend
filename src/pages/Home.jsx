@@ -201,7 +201,7 @@ const Home = () => {
 
       {activeView === 'all' && (
         <>
-          <section className="relative w-full h-[100svh] md:h-screen min-h-[500px] overflow-hidden bg-black group/hero">
+          <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
             <AnimatePresence initial={false}>
               <motion.div
                 key={slides[currentSlide]?.key || currentSlide}
