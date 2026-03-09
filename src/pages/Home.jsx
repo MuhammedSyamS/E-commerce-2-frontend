@@ -203,48 +203,52 @@ const Home = () => {
         <>
           <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
             <AnimatePresence initial={false}>
-              <motion.div
-                key={slides[currentSlide]?.key || currentSlide}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
-                className="absolute inset-0"
-              >
-                <div className="absolute inset-0 overflow-hidden">
-                  <motion.img
-                    src={slides[currentSlide]?.img}
-                    initial={{ scale: 1.3 }}
-                    animate={{ 
-                      scale: 1.1 + (scrollY * 0.0005),
-                      y: scrollY * 0.1
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="w-full h-full object-cover"
-                    alt=""
-                    loading="eager"
-                  />
-                </div>
-                
-                <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
-                  <motion.div 
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
-                    className="text-center"
+              {slides.map((slide, index) => (
+                index === currentSlide && (
+                  <motion.div
+                    key={slide.key || index}
+                    initial={{ opacity: 0, x: 100 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -100 }}
+                    transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
+                    className="absolute inset-0"
                   >
-                    <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
-                    <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                      <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
-                      {slides[currentSlide]?.link && (
-                        <button onClick={() => navigate(slides[currentSlide].link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
-                      )}
+                    <div className="absolute inset-0 overflow-hidden">
+                      <motion.img
+                        src={slide.img}
+                        initial={{ scale: 1.3 }}
+                        animate={{ 
+                          scale: 1.1 + (scrollY * 0.0005),
+                          y: scrollY * 0.1
+                        }}
+                        transition={{ duration: 0.2 }}
+                        className="w-full h-full object-cover"
+                        alt=""
+                        loading="eager"
+                      />
                     </div>
+                    
+                    <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 40 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+                        className="text-center"
+                      >
+                        <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slide.subtitle}</p>
+                        <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slide.title}</h1>
+                        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                          <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
+                          {slide.link && (
+                            <button onClick={() => navigate(slide.link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
+                          )}
+                        </div>
+                      </motion.div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
                   </motion.div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
-              </motion.div>
+                )
+              ))}
             </AnimatePresence>
 
             {/* CONTROLS */}
