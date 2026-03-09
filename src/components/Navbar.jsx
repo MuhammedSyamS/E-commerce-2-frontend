@@ -277,57 +277,112 @@ const Navbar = () => {
       {/* SEARCH OVERLAY */}
       <AnimatePresence>
         {isSearchOpen && (
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-3xl flex flex-col items-center pt-24 md:pt-32 px-4"
+            className="fixed inset-0 md:absolute md:top-0 md:left-0 md:w-full bg-white text-black md:rounded-b-2xl flex flex-col z-[200] shadow-2xl overflow-hidden"
           >
-            <button onClick={toggleSearch} className="absolute top-6 right-6 text-white hover:text-zinc-400 p-2">
-              <X size={32} />
-            </button>
-            <div className="w-full max-w-3xl relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" size={20} />
+            {/* SEARCH INPUT AREA */}
+            <div className="flex items-center px-5 md:px-8 h-16 md:h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
+              <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
               <input
                 autoFocus
                 type="text"
-                placeholder="Search products..."
+                placeholder="SEARCH SLOOK..."
+                className="flex-1 bg-transparent outline-none px-4 text-xs md:text-sm font-black uppercase tracking-widest h-full placeholder:text-zinc-300"
                 onChange={(e) => handleSearchInput(e.target.value)}
-                className="w-full bg-transparent border-b-2 border-white/20 text-white text-xl md:text-3xl font-black uppercase tracking-tighter py-4 pl-12 pr-4 outline-none focus:border-white transition-colors placeholder:text-zinc-600"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    toggleSearch();
+                    navigate(`/shop?keyword=${e.target.value}`);
+                  }
+                }}
               />
+              <button
+                onClick={toggleSearch}
+                className="text-xs font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors px-2 md:hidden"
+              >
+                Cancel
+              </button>
+              <button onClick={toggleSearch} className="hidden md:block">
+                <X className="w-5 h-5 text-black flex-shrink-0 hover:rotate-90 transition-transform" />
+              </button>
             </div>
-            
-            {/* SEARCH RESULTS */}
-            <div className="w-full max-w-5xl mt-12 grid grid-cols-1 md:grid-cols-2 gap-8 overflow-y-auto pb-20 no-scrollbar">
-              {suggestions?.products?.length > 0 && (
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6">Artifacts</h3>
-                  <div className="flex flex-col gap-4">
-                    {suggestions.products.map(p => {
-                      const imgPath = p.image || p.images?.[0] || '';
-                      const imgSrc = resolveMediaURL(imgPath);
-                      return (
-                      <div key={p._id} onClick={() => { navigate(`/product/${p.slug || p._id}`); toggleSearch(); }} className="flex gap-4 items-center group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition">
-                        <img src={imgSrc} className="w-16 h-16 object-cover rounded-lg bg-zinc-900 group-hover:scale-105 transition" />
-                        <div>
-                          <p className="text-white text-xs md:text-sm font-black uppercase tracking-tight">{p.name}</p>
-                          <p className="text-zinc-500 text-[10px] uppercase mt-1">₹{p.price}</p>
-                        </div>
+
+            {/* SUGGESTIONS AREA */}
+            <div className="flex-1 md:max-h-[60vh] overflow-y-auto no-scrollbar bg-[#fcfcfc] pb-20 md:pb-0">
+              {(suggestions.products?.length > 0 || suggestions.categories?.length > 0) ? (
+                <>
+                  {/* CATEGORIES GROUP */}
+                  {suggestions.categories?.length > 0 && (
+                    <div className="p-6 md:p-8 border-b border-zinc-100 bg-white/50">
+                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Categories</p>
+                      <div className="flex flex-wrap gap-2.5">
+                        {suggestions.categories.map((cat, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => {
+                              toggleSearch();
+                              navigate(`/shop?category=${cat}`);
+                            }}
+                            className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
+                          >
+                            {cat}
+                          </button>
+                        ))}
                       </div>
-                    )})}
+                    </div>
+                  )}
+
+                  {/* PRODUCTS GROUP */}
+                  {suggestions.products?.length > 0 && (
+                    <div className="p-6 md:p-8">
+                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Products</p>
+                      <div className="grid grid-cols-1 gap-3">
+                        {suggestions.products.map((p) => {
+                          const imgPath = p.image || p.images?.[0] || '';
+                          const imgSrc = resolveMediaURL(imgPath);
+                          return (
+                          <div
+                            key={p._id}
+                            onClick={() => {
+                              toggleSearch();
+                              navigate(`/product/${p.slug || p._id}`);
+                            }}
+                            className="flex items-center gap-3 md:gap-5 p-2 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
+                          >
+                            <div className="w-12 h-16 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
+                              <img src={imgSrc} alt={p.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="text-[11px] md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
+                                {p.name}
+                                <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors shrink-0" />
+                              </h4>
+                              <div className="flex items-center gap-3 mt-1.5">
+                                <Price amount={p.price} className="text-[10px] md:text-xs text-zinc-900 font-extrabold" />
+                                <span className="text-[8px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">{(p.category || 'Product').substring(0, 15)}</span>
+                              </div>
+                            </div>
+                            <ChevronRight size={16} className="text-zinc-200 group-hover:text-black group-hover:translate-x-1 transition-all shrink-0" />
+                          </div>
+                        )})}
+                      </div>
+                    </div>
+                  )}
+
+                  <div
+                    onClick={() => toggleSearch()}
+                    className="p-8 text-center text-[10px] md:text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white transition-colors"
+                  >
+                    View all results
                   </div>
-                </div>
-              )}
-              {suggestions?.categories?.length > 0 && (
-                <div>
-                  <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-500 mb-6">Categories</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {suggestions.categories.map(c => (
-                      <button key={c} onClick={() => { navigate(`/shop?category=${c}`); toggleSearch(); }} className="px-4 py-2 border border-white/20 rounded-full text-[10px] font-black text-white uppercase tracking-widest hover:bg-white hover:text-black transition">
-                        {c}
-                      </button>
-                    ))}
-                  </div>
+                </>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
+                  <Search size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Start typing to explore</p>
                 </div>
               )}
             </div>
