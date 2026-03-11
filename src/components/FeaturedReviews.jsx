@@ -370,15 +370,15 @@ const FeaturedReviews = () => {
                     {/* Navigation Buttons */}
                     <button 
                         onClick={() => scroll('left')}
-                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
                     >
-                        <ChevronLeft size={24} />
+                        <ChevronLeft size={32} strokeWidth={1.5} />
                     </button>
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
                     >
-                        <ChevronRight size={24} />
+                        <ChevronRight size={32} strokeWidth={1.5} />
                     </button>
 
                     {loading ? (

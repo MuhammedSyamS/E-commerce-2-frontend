@@ -368,20 +368,20 @@ const Home = () => {
             <div className="relative group/community">
               <button 
                 onClick={() => scroll(communityLooksRef, 'left')}
-                className="absolute -left-4 md:-left-20 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+                className="absolute -left-4 md:-left-20 top-1/2 -translate-y-1/2 z-50 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
               >
-                <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+                <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
               </button>
               <button 
                 onClick={() => scroll(communityLooksRef, 'right')}
-                className="absolute -right-4 md:-right-20 top-1/2 -translate-y-1/2 z-50 p-4 bg-white/80 backdrop-blur-md rounded-full border border-zinc-200 shadow-xl hover:bg-black hover:text-white hover:border-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+                className="absolute -right-4 md:-right-20 top-1/2 -translate-y-1/2 z-50 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
               >
-                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1.5} />
+                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1} />
               </button>
 
               <div 
                 ref={communityLooksRef}
-                className="flex gap-4 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth"
+                className="flex gap-4 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth px-4"
               >
                 {communityLooks.map((look) => {
                   const u = look.user;
