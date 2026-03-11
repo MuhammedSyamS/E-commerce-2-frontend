@@ -355,17 +355,13 @@ const FeaturedReviews = () => {
             <div className="max-w-[1440px] mx-auto px-6 md:px-24">
 
                 {/* HEADER */}
-                <div className="flex justify-between items-center mb-8 md:mb-12">
+                <div className="flex justify-between items-end mb-12 px-2">
                     <div>
-                        <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
-                            Customer Reviews
-                        </p>
-                        <h2 className="text-4xl md:text-5xl font-sans text-zinc-900">
-                            What our community says
-                        </h2>
+                        <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Customer Reviews</h2>
+                        <p className="text-[9px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">What our community says</p>
                     </div>
                     <Link to="/reviews" className="flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">
-                        View All Reviews <ArrowRight size={14} />
+                        View All <ArrowRight size={14} />
                     </Link>
                 </div>
 

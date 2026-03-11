@@ -225,7 +225,7 @@ const Home = () => {
         <>
           {slides.length > 0 && (
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
-              <AnimatePresence mode="wait">
+              <AnimatePresence>
                 <motion.div
                   key={slides[currentSlide]?.key || currentSlide}
                   initial={{ opacity: 0 }}
