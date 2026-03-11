@@ -432,7 +432,7 @@ const Navbar = () => {
 
           {/* RIGHT SECTION */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
-            <button onClick={toggleSearch} className="relative group p-2 rounded-full border border-white/20 hover:border-white/40 transition-all">
+            <button onClick={toggleSearch} className="relative group p-2 transition-all">
               <Search className="w-4 h-4 text-white group-hover:text-zinc-200 transition" />
             </button>
 

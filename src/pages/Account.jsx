@@ -84,6 +84,7 @@ const Account = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [tagCoords, setTagCoords] = useState(null); // { x, y }
 
   // Redirect if not logged in
   if (!user) {
@@ -326,11 +327,30 @@ const Account = () => {
                   {selectedImage ? (
                     <div className="w-full h-full relative">
                       <img src={selectedImage} className="w-full h-full object-cover" alt="Preview" />
-                      {uploadStep === 2 && (
-                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                          <p className="text-white text-[9px] font-black uppercase tracking-widest bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-md">
-                            Tap image to pin tag
-                          </p>
+                      {selectedImage && uploadStep === 2 && (
+                        <div 
+                          className="absolute inset-0 z-10 cursor-crosshair"
+                          onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const x = ((e.clientX - rect.left) / rect.width) * 100;
+                            const y = ((e.clientY - rect.top) / rect.height) * 100;
+                            setTagCoords({ x, y });
+                            // Option: also trigger search automatically or focus it
+                          }}
+                        >
+                          {tagCoords && (
+                            <div 
+                              className="absolute w-6 h-6 bg-white rounded-full border-2 border-black flex items-center justify-center -translate-x-1/2 -translate-y-1/2 animate-bounce-short"
+                              style={{ left: `${tagCoords.x}%`, top: `${tagCoords.y}%` }}
+                            >
+                              <div className="w-2 h-2 bg-black rounded-full" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/10 pointer-events-none flex items-center justify-center">
+                            <p className="text-white text-[9px] font-black uppercase tracking-widest bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-md">
+                              {tagCoords ? 'Tag Position Set' : 'Tap image to pin tag position'}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -449,8 +469,21 @@ const Account = () => {
                             <div
                               key={prod._id}
                               onClick={() => {
-                                if (!taggedProducts.find(p => p._id === prod._id)) {
-                                  setTaggedProducts([...taggedProducts, prod]);
+                                if (!tagCoords) {
+                                  info("Please tap on the image first to set tag position");
+                                  return;
+                                }
+                                if (!taggedProducts.find(p => p.product === prod._id)) {
+                                  setTaggedProducts([...taggedProducts, {
+                                      product: prod._id,
+                                      name: prod.name,
+                                      price: prod.price,
+                                      image: prod.image,
+                                      slug: prod.slug,
+                                      x: tagCoords.x,
+                                      y: tagCoords.y
+                                  }]);
+                                  setTagCoords(null);
                                 }
                                 setSearchQuery('');
                                 setSearchResults([]);
