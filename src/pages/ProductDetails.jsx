@@ -502,7 +502,7 @@ const ProductDetails = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 
-              <div className="relative w-full md:max-w-7xl bg-white md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[90vh] mx-auto overflow-y-auto no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="relative w-full md:max-w-7xl bg-white md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-full max-h-[90vh] md:max-h-[90vh] mx-auto overflow-y-auto md:overflow-hidden no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -560,8 +560,8 @@ const ProductDetails = () => {
                       {/* TEXT SIDE - 40% Rich Content */}
                       <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-8 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
                         
-                        {/* 1. USER INFO AT TOP (Mobile & Desktop) */}
-                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
+                        {/* 1. USER INFO AT TOP (Sticky on Mobile) */}
+                        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
                             <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
                                 {(activeReviewItem.name || "V").charAt(0)}
                             </div>
@@ -584,7 +584,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* 2. PRODUCT REFERENCE (Below User Info on Mobile) */}
-                        <div className="md:hidden mb-6 p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center gap-3">
+                        <div className="md:hidden sticky top-[80px] z-10 bg-white px-3 py-3 mb-6 bg-zinc-50/50 rounded-2xl border border-zinc-100 flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
                                 <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
                             </div>
@@ -596,7 +596,7 @@ const ProductDetails = () => {
 
                         {/* 3. MEDIA (Mobile In-line) */}
                         {currentMedia && (
-                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6">
+                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6 shrink-0">
                              {currentMedia.type === 'video' ? (
                                 <video src={resolveMediaURL(currentMedia.url)} controls className="w-full h-full object-contain" />
                               ) : (

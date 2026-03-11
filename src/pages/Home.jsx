@@ -38,7 +38,7 @@ const Home = () => {
     return valid.map((s, i) => ({
       ...s,
       img: resolveMediaURL(s.img),
-      key: `dynamic-${i}-${s.img.slice(-5)}`
+      key: `dynamic-${i}-${(s.img || '').slice(-5)}`
     }));
   }, [settings?.heroSlides]);
 
@@ -138,6 +138,7 @@ const Home = () => {
 
   // --- CAROUSEL LOGIC ---
   const [resetKey, setResetKey] = useState(0);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   const nextSlide = React.useCallback(() => {
     setCurrentSlide(prev => (prev + 1) % slides.length);
@@ -161,6 +162,7 @@ const Home = () => {
   }, [slides.length, currentSlide]);
 
   const handleManualNav = (dir) => {
+    setImageLoaded(false);
     if (dir === 'next') nextSlide();
     else prevSlide();
     setResetKey(prev => prev + 1);
@@ -202,7 +204,7 @@ const Home = () => {
         <>
           {slides.length > 0 && (
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
-              <AnimatePresence initial={false} mode="wait">
+              <AnimatePresence>
                 <motion.div
                   key={currentSlide}
                   initial={{ opacity: 0 }}
@@ -214,16 +216,19 @@ const Home = () => {
                   <div className="absolute inset-0 overflow-hidden bg-black">
                     <motion.img
                       src={slides[currentSlide]?.img}
+                      onLoad={() => setImageLoaded(true)}
                       initial={{ scale: 1.3, opacity: 0 }}
                       animate={{ 
                         scale: 1.1 + (scrollY * 0.0005),
                         y: scrollY * 0.1,
-                        opacity: 1
+                        opacity: imageLoaded ? 1 : 0
                       }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
+                      transition={{ 
+                        opacity: { duration: 0.8 },
+                        scale: { duration: 0 }
+                      }}
                       className="w-full h-full object-cover"
                       alt={slides[currentSlide]?.title}
-                      loading="eager"
                     />
                   </div>
                   
