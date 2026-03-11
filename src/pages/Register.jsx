@@ -124,7 +124,7 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
       <div className="w-full max-w-md">
-        <h1 className="text-xl md:text-3xl font-black uppercase tracking-tighter text-center mb-2">
+        <h1 className="text-xl md:text-3xl font-black uppercase tracking-normal md:tracking-tighter text-center mb-2 whitespace-nowrap">
           {showOtp ? <span>Verify <span className="text-red-500">OTP</span></span> : <span>Create <span className="text-red-500">Account</span></span>}
         </h1>
 
@@ -158,7 +158,7 @@ const Register = () => {
         {!showOtp ? (
           <div className="space-y-6">
             <form onSubmit={handleRegisterSubmit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <input
                   type="text"
                   placeholder="First Name"
@@ -229,9 +229,9 @@ const Register = () => {
         ) : (
           <div className="space-y-8">
             <form onSubmit={handleOtpVerify} className="space-y-8">
-              <div className="flex justify-between gap-2">
+              <div className="flex justify-between gap-1 md:gap-2">
                 {otp.map((data, i) => (
-                  <input key={i} type="text" maxLength="1" className="w-12 h-14 border-b-2 border-gray-300 text-center text-lg md:text-xl font-bold focus:border-black outline-none" value={data} onChange={(e) => handleOtpChange(e, i)} />
+                  <input key={i} type="text" maxLength="1" className="w-10 h-12 md:w-12 md:h-14 border-b-2 border-gray-300 text-center text-lg md:text-xl font-bold focus:border-black outline-none" value={data} onChange={(e) => handleOtpChange(e, i)} />
                 ))}
               </div>
               <button type="submit" disabled={loading} className="w-full bg-black text-white py-4 font-black uppercase tracking-widest text-sm md:text-sm active:scale-95 transition-all">

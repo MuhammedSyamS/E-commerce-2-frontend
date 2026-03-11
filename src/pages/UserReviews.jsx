@@ -139,14 +139,14 @@ const UserReviews = () => {
                                     <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col bg-white overflow-y-auto custom-scrollbar relative">
                                         <div className="flex gap-1 mb-4">
                                             {[...Array(activeReviewItem.review.rating || 5)].map((_, i) => (
-                                                <Star key={i} size={14} fill="black" className="text-black" />
+                                                <Star key={i} size={10} fill="black" className="text-black" />
                                             ))}
                                         </div>
 
                                         <h3 className="text-2xl font-black uppercase tracking-tight mb-4">
                                             {activeReviewItem.productName}
                                         </h3>
-                                        <p className="text-zinc-600 leading-relaxed text-base flex-grow mb-8">
+                                        <p className="text-zinc-600 leading-relaxed text-xs md:text-sm flex-grow mb-8">
                                             "{activeReviewItem.review.comment}"
                                         </p>
 
@@ -216,18 +216,29 @@ const UserReviews = () => {
                             <div key={reviewIdx} className="bg-white p-8 rounded-3xl border border-zinc-100 shadow-sm relative group hover:shadow-md transition-all">
 
                                 <div className="flex justify-between items-start mb-6">
-                                    <div className="flex gap-6">
-                                        <img src={resolveMediaURL(item.productImage)} alt={item.productName} className="w-20 h-20 object-cover rounded-2xl bg-zinc-100" />
-                                        <div>
-                                            <Link to={`/product/${item.productSlug}`} className="font-bold text-lg hover:underline">{item.productName}</Link>
-                                            <div className="flex items-center gap-1 mt-1 mb-2">
+                                    {/* ABSOLUTE PRODUCT REFERENCE */}
+                                    <div className="absolute top-6 right-6 z-10 opacity-60 group-hover:opacity-100 transition-opacity">
+                                        <Link to={`/product/${item.productSlug}`} className="flex items-center gap-3 p-1.5 bg-white/50 backdrop-blur rounded-xl border border-zinc-100 shadow-sm hover:shadow-md transition-all">
+                                            <img src={resolveMediaURL(item.productImage)} alt={item.productName} className="w-10 h-10 object-cover rounded-lg bg-zinc-100" />
+                                            <div className="hidden lg:block">
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate max-w-[100px]">{item.productName}</p>
+                                                <p className="text-[7px] text-zinc-400 font-bold uppercase">View details</p>
+                                            </div>
+                                        </Link>
+                                    </div>
+                                    
+                                    {/* USER METADATA (SHRUNK) */}
+                                    <div className="flex items-center justify-between w-full pr-16">
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-0.5">
                                                 {[...Array(item.review.rating)].map((_, i) => (
-                                                    <Star key={i} size={14} fill="black" className="text-black" />
+                                                    <Star key={i} size={12} fill="black" className="text-black" />
                                                 ))}
                                             </div>
-                                            <div className="flex items-center gap-2 text-xs text-zinc-400 font-medium">
-                                                <Calendar size={12} />
-                                                {new Date(item.review.createdAt).toLocaleDateString()}
+                                            <span className="w-1 h-1 rounded-full bg-zinc-200"></span>
+                                            <div className="flex items-center gap-1.5 text-[9px] text-zinc-400 font-black uppercase tracking-widest">
+                                                <Calendar size={10} />
+                                                {new Date(item.review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </div>
                                         </div>
                                     </div>
@@ -241,11 +252,11 @@ const UserReviews = () => {
                                     </button>
                                 </div>
 
-                                <div className="bg-zinc-50 p-6 rounded-2xl relative">
-                                    <Quote size={20} className="text-zinc-200 absolute top-4 left-4" />
-                                    <p className="text-zinc-600 text-sm leading-relaxed pl-8">"{item.review.comment}"</p>
+                                <div className="bg-zinc-50/50 p-4 md:p-6 rounded-2xl relative border border-zinc-100/50">
+                                    <Quote size={16} className="text-zinc-200 absolute top-4 left-4" />
+                                    <p className="text-zinc-600 text-[11px] md:text-sm leading-relaxed pl-8 font-medium">"{item.review.comment}"</p>
 
-                                    {/* DISPLAY IMAGES */}
+                                    {/* DISPLAY IMAGES (Compact) */}
                                     <div className="flex gap-2 mt-4 pl-8 flex-wrap">
                                         {(() => {
                                             const allImages = item.review.images && item.review.images.length > 0 ? item.review.images : (item.review.reviewImage ? [item.review.reviewImage] : []);
@@ -259,7 +270,7 @@ const UserReviews = () => {
                                                         setSelectedReviewIdx(reviewIdx);
                                                         setSelectedMediaIdx(mediaIdx);
                                                     }}
-                                                    className="w-16 h-16 rounded-lg object-cover border border-zinc-200 cursor-zoom-in hover:opacity-80 transition-opacity"
+                                                    className="w-12 h-16 md:w-16 md:h-20 rounded-xl object-cover border border-zinc-100 cursor-zoom-in hover:opacity-80 transition-opacity"
                                                 />
                                             ));
                                         })()}

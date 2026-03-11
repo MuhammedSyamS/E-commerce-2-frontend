@@ -139,25 +139,21 @@ const FeaturedReviews = () => {
                     {/* ENHANCED NAVIGATION ARROWS (Outside Card) */}
                     <button
                         onClick={prevReview}
-                        className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                        className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
                     >
-                        <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                            <ChevronLeft size={24} className="md:w-10 md:h-10" />
-                        </div>
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREVIOUS</span>
+                        <ChevronLeft size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
                     </button>
                     <button
                         onClick={nextReview}
-                        className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                        className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
                     >
-                        <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                            <ChevronRight size={24} className="md:w-10 md:h-10" />
-                        </div>
+                        <ChevronRight size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
                     </button>
 
                     <div 
-                        className="bg-white w-full md:max-w-4xl max-h-[95vh] md:max-h-[70vh] md:rounded-[3rem] overflow-y-auto no-scrollbar flex flex-col md:flex-row shadow-2xl relative mx-auto" 
+                        className="bg-white w-full md:max-w-7xl max-h-[95vh] md:max-h-[85vh] md:rounded-[3rem] overflow-y-auto no-scrollbar flex flex-col md:flex-row shadow-2xl relative mx-auto" 
                         onClick={e => e.stopPropagation()}
                     >
                         {/* Final Close Button */}
@@ -189,6 +185,19 @@ const FeaturedReviews = () => {
                                 <div className="text-zinc-500 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                             )}
 
+                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY */}
+                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none">
+                                <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
+                                    <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
+                                        <img src={resolveMediaURL(selectedReview.productImage)} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
+                                        <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{selectedReview.productName}</p>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* MOBILE NAVIGATION OVERLAYS */}
                             <div className="absolute inset-y-0 left-0 w-20 z-20 md:hidden" onClick={prevReview} />
                             <div className="absolute inset-y-0 right-0 w-20 z-20 md:hidden" onClick={nextReview} />
@@ -198,13 +207,13 @@ const FeaturedReviews = () => {
                                 <>
                                     <button
                                         onClick={prevMedia}
-                                        className="absolute left-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
+                                        className="absolute left-6 bottom-10 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
                                     <button
                                         onClick={nextMedia}
-                                        className="absolute right-6 top-1/2 -translate-y-1/2 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
+                                        className="absolute right-6 bottom-10 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
                                     >
                                         <ChevronRight size={24} />
                                     </button>
@@ -229,27 +238,25 @@ const FeaturedReviews = () => {
                         </div>
 
                         {/* Content Section (BOTTOM) */}
-                        <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col bg-white overflow-y-auto no-scrollbar">
-                            {/* USER INFO */}
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-950 flex items-center justify-center text-lg font-sans font-bold text-white shadow-xl shadow-zinc-100">
+                        <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col bg-white overflow-y-auto no-scrollbar relative">
+                            {/* USER INFO AT TOP */}
+                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
+                                <div className="w-12 h-12 rounded-full bg-zinc-950 flex items-center justify-center text-xs font-sans font-black text-white shadow-xl">
                                     {(selectedReview.name || "U").charAt(0)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-1">
-                                        <div className="min-w-0">
-                                            <h4 className="text-base md:text-xl font-black text-zinc-900 leading-none uppercase tracking-tight truncate mb-1">{selectedReview.name}</h4>
-                                            <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-black truncate">Experience with {selectedReview.productName}</p>
-                                        </div>
-                                        <div className="flex gap-0.5 ml-4 shrink-0">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <h4 className="text-xs md:text-sm font-black text-zinc-900 leading-none uppercase tracking-widest truncate">{selectedReview.name}</h4>
+                                        <div className="flex gap-0.5">
                                             {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={14} fill="currentColor" className="text-black" />
+                                                <Star key={i} size={11} fill="currentColor" className="text-black" />
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-zinc-400 text-[8px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Studio Member"}</p>
+                                    <p className="text-zinc-400 text-[9px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Studio Member"}</p>
                                 </div>
                             </div>
+
 
                             {/* COMMENT AREA (With Scroller) */}
                             <div className="flex-1 overflow-y-auto no-scrollbar mb-8 pr-2">
@@ -280,33 +287,6 @@ const FeaturedReviews = () => {
                                         <p className="text-xs md:text-sm text-zinc-500 leading-relaxed italic font-medium">{selectedReview.adminResponse}</p>
                                     </div>
                                 )}
-                            </div>
-
-                            {/* PRODUCT LINK */}
-                            <div className="mt-auto border-t border-zinc-100 pt-6">
-                                <Link 
-                                    to={`/product/${selectedReview.productSlug}`} 
-                                    className="group flex items-center justify-between p-4 md:p-5 rounded-[1.5rem] border border-zinc-100 bg-zinc-50/50 hover:bg-zinc-950 hover:text-white transition-all duration-500 shadow-sm"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        {selectedReview.productImage && (
-                                            <div className="relative overflow-hidden rounded-xl bg-white border border-zinc-100">
-                                                <img 
-                                                    src={resolveMediaURL(selectedReview.productImage)} 
-                                                    className="w-12 h-12 md:w-14 md:h-14 object-cover group-hover:scale-110 transition-transform duration-500" 
-                                                    alt="" 
-                                                />
-                                            </div>
-                                        )}
-                                        <div>
-                                            <p className="text-[9px] uppercase tracking-[0.2em] text-zinc-400 group-hover:text-zinc-500 mb-1 font-black">Collection Item</p>
-                                            <p className="font-black text-xs md:text-sm uppercase tracking-tight">{selectedReview.productName}</p>
-                                        </div>
-                                    </div>
-                                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white flex items-center justify-center text-zinc-900 group-hover:bg-white/10 group-hover:text-white transition-all shadow-sm">
-                                        <ArrowRight size={16} />
-                                    </div>
-                                </Link>
                             </div>
                         </div>
                     </div>
@@ -373,9 +353,9 @@ const FeaturedReviews = () => {
                                             {hasMedia ? (
                                                 <div className="w-full h-full relative">
                                                     {media[0].type === 'video' ? (
-                                                        <video src={resolveMediaURL(media[0].url)} muted loop autoPlay playsInline className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
+                                                        <video src={resolveMediaURL(media[0].url)} muted loop autoPlay playsInline className="w-full h-full object-cover transition-all duration-700" />
                                                     ) : (
-                                                        <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover grayscale group-hover/card:grayscale-0 transition-all duration-700" />
+                                                        <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover transition-all duration-700" />
                                                     )}
 
                                                     {/* Count Badge */}
@@ -390,11 +370,11 @@ const FeaturedReviews = () => {
                                                         {media[0].type === 'video' ? 'Video Showcase' : 'Verified Photo'}
                                                     </div>
 
-                                                    {/* Expand Overlay */}
-                                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
-                                                        <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-300">
-                                                            <Maximize2 size={16} />
-                                                            <span className="text-xs font-bold uppercase tracking-widest">Read More</span>
+                                                    {/* Expand Overlay - Pure Minimalist */}
+                                                    <div className="absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center justify-center">
+                                                        <div className="bg-white/95 backdrop-blur-xl px-6 py-3 rounded-full flex items-center gap-2 transform translate-y-4 group-hover/card:translate-y-0 transition-transform duration-500 shadow-2xl border border-zinc-100">
+                                                            <Maximize2 size={16} className="text-zinc-900" />
+                                                            <span className="text-[10px] font-black uppercase tracking-widest text-zinc-900">Experience Full Details</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -411,23 +391,26 @@ const FeaturedReviews = () => {
                                         <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-white whitespace-normal">
                                             <div className="flex gap-0.5 mb-4">
                                                 {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={12} fill="black" className="text-black" />
+                                                    <Star key={i} size={14} fill="black" className="text-black" />
                                                 ))}
                                             </div>
 
-                                            <h3 className="font-sans text-base md:text-lg mb-4 line-clamp-3 leading-relaxed">
+                                            <p className="font-sans text-sm md:text-base mb-6 line-clamp-6 leading-relaxed text-zinc-600 font-medium font-medium whitespace-normal">
                                                 "{r.comment}"
-                                            </h3>
+                                            </p>
 
-                                            <div className="mt-auto pt-6 border-t border-zinc-100 flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center font-bold text-xs">
+                                            <div className="mt-auto pt-4 border-t border-zinc-100 flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-lg">
                                                         {(r.name || "U").charAt(0)}
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs font-bold uppercase tracking-wide text-zinc-900">{r.name}</p>
-                                                        <p className="text-[10px] text-zinc-400 font-medium">Verified Buyer</p>
-                                                    </div>
+                                                        <div>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900 line-clamp-1">{r.name}</p>
+                                                            <div className="flex items-center gap-1">
+                                                                <CheckCircle2 size={9} className="text-blue-600 fill-blue-50" />
+                                                                <p className="text-[8px] text-zinc-400 font-black uppercase tracking-widest whitespace-nowrap">Verified Buyer</p>
+                                                            </div>
+                                                        </div>
                                                 </div>
                                                 <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
                                                     <ArrowUpRight size={14} />

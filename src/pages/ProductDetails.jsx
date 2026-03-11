@@ -166,23 +166,51 @@ const ProductDetails = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get(`/products/${slug}`);
+        // Start all fetches in parallel
+        const productPromise = api.get(`/products/${slug}`);
+        const settingsPromise = api.get('/settings');
+        
+        const [{ data }] = await Promise.all([productPromise, settingsPromise]);
+        
         setProduct(data);
+        setSiteSettings((await settingsPromise).data);
+        
+        // Main data is ready, we can stop the initial spinner
+        setLoading(false);
+
+        // Fetch recommendations in background
+        api.get(`/products/recommendations?category=${data.category}&exclude=${data._id}`)
+          .then(recRes => setSuggestions(recRes.data || []))
+          .catch(err => console.error("Rec fetch error:", err));
+
+        // Update local history
         let history = [];
         try { history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]'); } catch (e) { history = []; }
+        // Update local history with full stock data to prevent incorrect OOS badges
+        // Update local history with ultra-resilient stock data
         const updatedHistory = [
-          { _id: data._id, name: data.name, slug: data.slug, image: data.image, price: data.price },
+          { 
+            _id: data._id, 
+            name: data.name, 
+            slug: data.slug, 
+            image: data.image, 
+            price: data.price,
+            countInStock: data.countInStock,
+            stock: data.stock,
+            qty: data.qty,
+            variants: data.variants || []
+          },
           ...(Array.isArray(history) ? history.filter(item => item._id !== data._id) : [])
         ].slice(0, 10);
         localStorage.setItem('recentlyViewed', JSON.stringify(updatedHistory));
+
         if (user && data._id && user.token) {
           api.post('/users/history', { productId: data._id }).catch(() => { });
         }
-        const recRes = await api.get(`/products/recommendations?category=${data.category}&exclude=${data._id}`);
-        setSuggestions(recRes.data || []);
-        const settingsRes = await api.get('/settings');
-        setSiteSettings(settingsRes.data);
-      } catch (err) { console.error(err); } finally { setLoading(false); }
+      } catch (err) { 
+        console.error(err); 
+        setLoading(false);
+      }
     };
     fetchData();
     
@@ -455,11 +483,9 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                    <ChevronLeft size={24} className="md:w-10 md:h-10" />
-                </div>
+                <ChevronLeft size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
               </button>
 
@@ -470,15 +496,13 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <div className="p-2 md:p-4 bg-white/5 rounded-full backdrop-blur-md border border-white/10 group-hover:bg-white/10 group-hover:border-white/20">
-                    <ChevronRight size={24} className="md:w-10 md:h-10" />
-                </div>
+                <ChevronRight size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 
-              <div className="relative w-full md:max-w-4xl bg-white md:rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row max-h-[95vh] md:max-h-[70vh] mx-auto overflow-y-auto no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="relative w-full md:max-w-7xl bg-white md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:max-h-[90vh] mx-auto overflow-y-auto no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -491,81 +515,100 @@ const ProductDetails = () => {
 
                   return (
                     <>
-                      {/* MEDIA SIDE - Only show if media exists */}
-                      {currentMedia && (
-                        <div className="relative w-full md:w-1/2 aspect-[4/5] md:aspect-auto bg-zinc-950 flex items-center justify-center overflow-hidden shrink-0">
-                          {allMedia.length > 1 && (
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
-                              <ChevronLeft size={20} />
-                            </button>
-                          )}
+                      {/* MEDIA SIDE - 60% Cinematic Experience */}
+                      <div className={`relative w-full ${currentMedia ? 'md:w-[60%]' : 'hidden'} aspect-square md:aspect-auto bg-black flex items-center justify-center overflow-hidden shrink-0`}>
+                        {currentMedia && (
+                          <>
+                            {currentMedia.type === 'video' ? (
+                              <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain" />
+                            ) : (
+                              <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
+                            )}
 
-                          {currentMedia.type === 'video' ? (
-                            <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain bg-black" />
-                          ) : (
-                            <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain bg-black" />
-                          )}
-
-                          {allMedia.length > 1 && (
-                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/50 text-white hover:bg-black transition-all z-20">
-                              <ChevronRight size={20} />
-                            </button>
-                          )}
-
-                          {allMedia.length > 1 && (
-                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                              {allMedia.map((_, i) => (
-                                <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {/* TEXT SIDE */}
-                      <div className="w-full md:w-1/2 p-8 md:p-12 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar">
-                        <div className="flex justify-between items-start mb-6">
-                            <div className="min-w-0">
-                                <div className="flex gap-1 mb-2">
-                                    {[...Array(5)].map((_, i) => (
-                                        <Star key={i} size={14} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-200"} />
-                                    ))}
+                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY */}
+                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none">
+                                <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
+                                    <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
+                                        <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="min-w-0">
+                                        <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
+                                        <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{product.name}</p>
+                                    </div>
                                 </div>
-                                <p className="text-zinc-500 text-[10px] uppercase tracking-widest font-black truncate">Experience with {product.name}</p>
                             </div>
-                            <p className="text-[10px] text-zinc-400 font-black uppercase tracking-widest ml-4 shrink-0">
-                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString()}
-                            </p>
+
+                            {allMedia.length > 1 && (
+                              <>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                  <ChevronLeft size={20} />
+                                </button>
+                                <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                  <ChevronRight size={20} />
+                                </button>
+                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
+                                  {allMedia.map((_, i) => (
+                                    <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === selectedMediaIdx ? 'w-8 bg-white' : 'w-2 bg-white/30'}`} />
+                                  ))}
+                                </div>
+                              </>
+                            )}
+                          </>
+                        )}
+                      </div>
+
+                      {/* TEXT SIDE - 40% Rich Content */}
+                      <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-8 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
+                        {/* USER INFO AT TOP */}
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
+                            <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
+                                {(activeReviewItem.name || "V").charAt(0)}
+                            </div>
+                             <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 leading-none">
+                                        {activeReviewItem.name || "Verified Buyer"}
+                                    </p>
+                                    <div className="flex gap-0.5">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} size={11} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-100"} />
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 size={12} className="text-blue-600 fill-blue-50" />
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Verified Perspective</span>
+                                </div>
+                             </div>
                         </div>
 
-                        <div className="mb-8">
-                            <p className={`text-zinc-900 leading-relaxed text-[13px] md:text-base font-medium ${!modalCommentExpanded && activeReviewItem.comment?.length > 200 ? 'line-clamp-4' : ''}`}>
+                        <div className="flex justify-between items-start mb-4">
+                            <div className="space-y-1.5">
+                            </div>
+                            <time className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-0.5">
+                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </time>
+                        </div>
+
+                        <div className="flex-grow flex flex-col justify-start">
+                            {activeReviewItem.title && (
+                                <h3 className="text-base md:text-lg font-black uppercase tracking-tight mb-4 leading-tight">
+                                    {activeReviewItem.title}
+                                </h3>
+                            )}
+                            <p className="text-zinc-900 leading-[1.8] text-[13px] md:text-base font-medium whitespace-pre-line">
                                 "{activeReviewItem.comment}"
                             </p>
-                            
-                            {activeReviewItem.comment?.length > 200 && (
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); setModalCommentExpanded(!modalCommentExpanded); }}
-                                    className="mt-4 text-[10px] font-black uppercase tracking-widest text-zinc-900 border-b-2 border-zinc-900 pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-all flex items-center gap-2"
-                                >
-                                    {modalCommentExpanded ? 'Show Less' : 'Read Full Comment'}
-                                    <ChevronRight size={14} className={`transition-transform duration-300 ${modalCommentExpanded ? '-rotate-90' : 'rotate-90'}`} />
-                                </button>
-                            )}
                         </div>
 
-                        <div className="border-t border-zinc-100 pt-8 mt-auto flex items-center justify-between gap-6">
-                            <div className="min-w-0">
-                                <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 truncate">
-                                    {activeReviewItem.name || "Verified Buyer"}
-                                </p>
-                            </div>
-                            <button 
-                                onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }} 
-                                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${(user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white'}`}
+                        <div className="border-t border-zinc-50 pt-10 mt-auto">
+
+                            <button
+                                onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }}
+                                className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[9px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl scale-[1.02]' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-0.5' }`}
                             >
                                 <Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "currentColor" : "none"} />
-                                <span>Helpful ({activeReviewItem.helpful?.length || 0})</span>
+                                <span>Found this helpful ({activeReviewItem.helpful?.length || 0})</span>
                             </button>
                         </div>
                       </div>
@@ -652,6 +695,33 @@ const ProductDetails = () => {
                     </AnimatePresence>
                   </div>
 
+                  {/* PREMIUM TRUST BAR UNDER IMAGE */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 mt-12 pt-10 border-t border-zinc-100/60 lg:px-4">
+                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
+                        <ShieldCheck size={20} strokeWidth={1} className="text-zinc-900" />
+                      </div>
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Secure<br/>Checkout</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
+                        <RotateCcw size={20} strokeWidth={1} className="text-zinc-900" />
+                      </div>
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">7 Days<br/>Return</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
+                        <Lock size={20} strokeWidth={1} className="text-zinc-900" />
+                      </div>
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Secured<br/>Payment</span>
+                    </div>
+                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-700">
+                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
+                        <Award size={20} strokeWidth={1} className="text-zinc-900" />
+                      </div>
+                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Authentic<br/>Product</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -684,11 +754,11 @@ const ProductDetails = () => {
                 {/* PRODUCT DNA SECTION (Moved here for better visibility) */}
                 <div className="space-y-8 animate-in fade-in slide-in-from-top-4 duration-700">
                   <div className="space-y-3">
-                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Description</h3>
-                    <p className="text-zinc-600 text-[13px] leading-relaxed font-bold opacity-80">"{product.description}"</p>
+                    <h3 className="text-[10px] md:text-sm font-black uppercase text-zinc-900 border-b border-zinc-100 pb-2">Description</h3>
+                    <p className="text-zinc-900 text-[13px] leading-relaxed font-bold opacity-80">"{product.description}"</p>
                   </div>
                   <div className="space-y-3">
-                    <h3 className="text-[10px] md:text-sm font-black uppercase tracking-mega text-zinc-400 border-b border-zinc-100 pb-2">Specifications</h3>
+                    <h3 className="text-[10px] md:text-sm font-black uppercase text-zinc-900 border-b border-zinc-100 pb-2">Specifications</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-3">
                       {(product.specs && product.specs.length > 0 ? product.specs : [
                         { key: 'Craftsmanship', value: 'Bespoke' },
@@ -866,27 +936,6 @@ const ProductDetails = () => {
                 </div>
               )}
 
-              {/* TRUST ELEMENTS BAR (Directly Under Actions) */}
-              <div className="flex flex-col gap-8 pt-16 border-t border-zinc-100 mt-16">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 lg:gap-12">
-                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-4 md:p-6 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                    <ShieldCheck className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 leading-tight">Secure Checkout</span>
-                  </div>
-                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-4 md:p-6 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                    <RotateCcw className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 leading-tight">7 Days Return</span>
-                  </div>
-                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-4 md:p-6 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                    <Lock className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 leading-tight">Secured Payment</span>
-                  </div>
-                  <div className="flex flex-col items-center text-center justify-center gap-4 bg-zinc-50/50 p-4 md:p-6 rounded-[2rem] border border-zinc-100/50 hover:bg-zinc-100/50 transition-all hover:shadow-xl hover:-translate-y-1">
-                    <Award className="text-zinc-900 w-8 h-8 md:w-10 md:h-10" strokeWidth={1.5} />
-                    <span className="text-[10px] md:text-[11px] font-black uppercase tracking-[0.2em] text-zinc-900 leading-tight">Authentic Product</span>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -1037,67 +1086,81 @@ const ProductDetails = () => {
                           </select>
                         </div>
                         <div className="space-y-16">
-                          {sortedReviews.map((rev, i) => (
-                            <div key={i} className="space-y-6 group">
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 rounded-full bg-zinc-100 flex items-center justify-center font-bold text-sm text-zinc-900 border border-zinc-200">{rev.name?.charAt(0)}</div>
-                                  <div className="space-y-1">
-                                    <p className="font-bold text-sm text-zinc-900">{rev.name}</p>
-                                    <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={12} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
-                                  </div>
-                                </div>
-                                <span className="text-xs text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString()}</span>
-                              </div>
-                              <div
-                                className="cursor-pointer group/text"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setExpandedReviewTexts(prev => ({ ...prev, [i]: !prev[i] }));
-                                }}
-                              >
-                                {rev.title && <h3 className="font-bold text-sm mb-2 text-zinc-900 border-l-2 border-zinc-100 pl-6 ml-6">{rev.title}</h3>}
-                                <p className={`text-sm text-zinc-600 leading-relaxed italic border-l-2 border-zinc-100 pl-6 ml-6 ${expandedReviewTexts[i] ? '' : 'line-clamp-3'}`}>"{rev.comment}"</p>
-                                {rev.comment && rev.comment.length > 100 && (
-                                  <span className="text-[10px] uppercase font-black tracking-widest text-zinc-400 mt-2 block group-hover/text:text-black transition-colors border-l-2 border-zinc-100 pl-6 ml-6">
-                                    {expandedReviewTexts[i] ? 'Show Less' : 'Read More'}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex gap-3 ml-12">
-                                {(() => {
-                                  const videos = rev.videos || (rev.video ? [rev.video] : []);
-                                  const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
-                                  const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
-
-                                  return allMedia.slice(0, 15).map((media, idx) => (
-                                    <div
-                                      key={idx}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setSelectedReviewIdx(i);
-                                        setSelectedMediaIdx(idx);
-                                      }}
-                                      className="w-20 h-24 rounded-xl overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all cursor-pointer relative"
-                                    >
-                                      {media.type === 'video' ? (
-                                        <>
-                                          <video src={resolveMediaURL(media.url)} className="w-full h-full object-cover opacity-60 bg-black" />
-                                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                            <div className="w-6 h-6 bg-white/30 backdrop-blur rounded-full flex items-center justify-center">
-                                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                                            </div>
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <img src={resolveMediaURL(media.url)} className="w-full h-full object-cover" alt="" />
-                                      )}
+                          {sortedReviews.length > 0 ? (
+                            sortedReviews.map((rev, i) => (
+                              <div key={i} className="space-y-6 group">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex items-center gap-3">
+                                    <div className="w-7 h-7 rounded-full bg-zinc-900 flex items-center justify-center font-bold text-[9px] text-white border border-zinc-800 shadow-sm">{rev.name?.charAt(0)}</div>
+                                    <div className="space-y-0.5">
+                                      <div className="flex items-center gap-2">
+                                        <p className="font-black text-[9px] md:text-[10px] uppercase tracking-widest text-zinc-900 leading-none">{rev.name}</p>
+                                        {rev.comment && rev.comment.length > 100 && (
+                                          <button 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setExpandedReviewTexts(prev => ({ ...prev, [i]: !prev[i] }));
+                                            }}
+                                            className="text-[8px] md:text-[9px] uppercase font-black tracking-widest text-zinc-400 hover:text-black transition-colors"
+                                          >
+                                            {expandedReviewTexts[i] ? 'Less' : 'More'}
+                                          </button>
+                                        )}
+                                      </div>
+                                      <div className="flex gap-0.5">{[...Array(5)].map((_, j) => <Star key={j} size={10} className={j < rev.rating ? "fill-zinc-900 text-zinc-900" : "text-zinc-200"} />)}</div>
                                     </div>
-                                  ));
-                                })()}
+                                  </div>
+                                  <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest">{new Date(rev.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                </div>
+                                <div
+                                  className="group/text"
+                                >
+                                  {rev.title && <h3 className="font-bold text-[9px] mb-1 text-zinc-900 border-l-2 border-zinc-100 pl-4 ml-5">{rev.title}</h3>}
+                                  <p className={`text-[9px] text-zinc-600 leading-relaxed border-l-2 border-zinc-100 pl-4 ml-5 ${expandedReviewTexts[i] ? '' : 'line-clamp-4'}`}>"{rev.comment}"</p>
+                                </div>
+                                <div className="flex gap-2 ml-10">
+                                  {(() => {
+                                    const videos = rev.videos || (rev.video ? [rev.video] : []);
+                                    const images = rev.images || (rev.reviewImage ? [rev.reviewImage] : []);
+                                    const allMedia = [...videos.map(v => ({ type: 'video', url: v })), ...images.map(img => ({ type: 'image', url: img }))];
+
+                                    return allMedia.slice(0, 15).map((media, idx) => (
+                                      <div
+                                        key={idx}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setSelectedReviewIdx(i);
+                                          setSelectedMediaIdx(idx);
+                                        }}
+                                        className="w-16 h-20 rounded-lg overflow-hidden shadow-sm border border-zinc-100 hover:scale-105 transition-all cursor-pointer relative"
+                                      >
+                                        {media.type === 'video' ? (
+                                          <>
+                                            <video src={resolveMediaURL(media.url)} className="w-full h-full object-cover opacity-60 bg-black" />
+                                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                              <div className="w-5 h-5 bg-white/30 backdrop-blur rounded-full flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="white" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                              </div>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <img src={resolveMediaURL(media.url)} className="w-full h-full object-cover" alt="" />
+                                        )}
+                                      </div>
+                                    ));
+                                  })()}
+                                </div>
                               </div>
+                            ))
+                          ) : (
+                            <div className="py-20 text-center bg-zinc-50 rounded-[2rem] border border-zinc-100 animate-in fade-in duration-700">
+                                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
+                                    <MessageCircle size={32} className="text-zinc-200" />
+                                </div>
+                                <h3 className="text-lg font-black uppercase tracking-tighter text-zinc-900 mb-2">No Community Stories Yet</h3>
+                                <p className="text-xs font-black uppercase tracking-widest text-zinc-400 max-w-xs mx-auto">Be the first to share your experience with this artifact.</p>
                             </div>
-                          ))}
+                          )}
                         </div>
                       </div>
                     </div>

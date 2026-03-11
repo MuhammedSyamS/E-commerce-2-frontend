@@ -98,9 +98,9 @@ const Footer = () => {
           <div id="footer-track" className="lg:col-span-2 space-y-4 md:space-y-6 mt-8 md:mt-0 text-center md:text-left">
             <h3 className="text-[12px] md:text-[11px] font-black uppercase tracking-[0.3em] text-white">Track</h3>
             <ul className="space-y-3 md:space-y-4 text-[10px] md:text-[11px] font-bold text-zinc-500 uppercase tracking-widest">
-              <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Order Track</Link></li>
-              <li><Link to="/track-order?type=return" className="hover:text-white transition-colors">Return Track</Link></li>
-              <li><Link to="/track-order?type=exchange" className="hover:text-white transition-colors">Exchange Track</Link></li>
+              <li><Link to="/track-order?type=order" className="hover:text-white transition-colors">Track Order</Link></li>
+              <li><Link to="/track-order?type=return" className="hover:text-white transition-colors">Track Return</Link></li>
+              <li><Link to="/track-order?type=exchange" className="hover:text-white transition-colors">Track Exchange</Link></li>
             </ul>
           </div>
 

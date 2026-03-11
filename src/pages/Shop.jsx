@@ -529,14 +529,14 @@ const Shop = () => {
   };
 
   return (
-    <div className="bg-white min-h-screen pb-20 selection:bg-black selection:text-white overflow-hidden">
+    <div className="bg-white min-h-screen pb-20 selection:bg-black selection:text-white overflow-x-hidden">
       <Helmet>
         <title>The Collection | SLOOK</title>
         <meta name="description" content="Explore SLOOK's premium collection of hand-picked artifacts." />
       </Helmet>
 
       {/* --- CONDENSED SHOP HERO --- */}
-      <section className="relative pt-24 pb-8 md:pt-36 md:pb-12 px-6 overflow-hidden bg-white">
+      <section className="relative pt-32 pb-8 md:pt-48 md:pb-12 px-6 bg-white w-full">
         <div className="container-responsive relative">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
@@ -557,8 +557,8 @@ const Shop = () => {
       </section>
 
       {/* --- MINIMALIST MNC TOOLBAR --- */}
-      <nav className="sticky top-[64px] md:top-[80px] z-[90] px-4 md:px-8 py-2 transition-all duration-500 bg-white/80 backdrop-blur-2xl border-b border-zinc-100">
-        <div className="container-responsive flex items-center justify-between gap-8">
+      <nav className="sticky top-[104px] md:top-[120px] z-[90] px-4 md:px-8 py-2 transition-all duration-500 bg-white/90 backdrop-blur-2xl border-b border-zinc-100 w-full">
+        <div className="container-responsive flex items-center justify-between gap-4 md:gap-8">
           
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 hidden sm:block">

@@ -64,8 +64,10 @@ const Navbar = () => {
   // SEARCH SUGGESTIONS
   const [suggestions, setSuggestions] = useState({ products: [], categories: [] });
   const [searchTimer, setSearchTimer] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
 
   const handleSearchInput = (val) => {
+    setSearchValue(val);
     if (searchTimer) clearTimeout(searchTimer);
     if (!val) {
       setSuggestions({ products: [], categories: [] });
@@ -281,7 +283,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 md:absolute md:top-0 md:left-0 md:w-full bg-white text-black md:rounded-b-2xl flex flex-col z-[200] shadow-2xl overflow-hidden"
+            className="fixed inset-0 top-[max(env(safe-area-inset-top),0px)] md:absolute md:top-full md:left-0 md:right-0 md:bottom-auto bg-white text-black md:rounded-b-2xl flex flex-col z-[200] shadow-2xl overflow-hidden max-h-screen md:max-h-[80vh]"
           >
             {/* SEARCH INPUT AREA */}
             <div className="flex items-center px-5 md:px-8 h-16 md:h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
@@ -311,81 +313,85 @@ const Navbar = () => {
             </div>
 
             {/* SUGGESTIONS AREA */}
-            <div className="flex-1 md:max-h-[60vh] overflow-y-auto no-scrollbar bg-[#fcfcfc] pb-20 md:pb-0">
-              {(suggestions.products?.length > 0 || suggestions.categories?.length > 0) ? (
-                <>
-                  {/* CATEGORIES GROUP */}
-                  {suggestions.categories?.length > 0 && (
-                    <div className="p-6 md:p-8 border-b border-zinc-100 bg-white/50">
-                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Categories</p>
-                      <div className="flex flex-wrap gap-2.5">
-                        {suggestions.categories.map((cat, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => {
-                              toggleSearch();
-                              navigate(`/shop?category=${cat}`);
-                            }}
-                            className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
-                          >
-                            {cat}
-                          </button>
-                        ))}
+            {searchValue && (
+              <div className="flex-1 md:max-h-[60vh] overflow-y-auto no-scrollbar bg-[#fcfcfc] pb-20 md:pb-0">
+                {(suggestions.products?.length > 0 || suggestions.categories?.length > 0) ? (
+                  <>
+                    {/* CATEGORIES GROUP */}
+                    {suggestions.categories?.length > 0 && (
+                      <div className="p-6 md:p-8 border-b border-zinc-100 bg-white/50">
+                        <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Categories</p>
+                        <div className="flex flex-wrap gap-2.5">
+                          {suggestions.categories.map((cat, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                toggleSearch();
+                                navigate(`/shop?category=${cat}`);
+                              }}
+                              className="px-3 py-2 bg-white border border-zinc-200 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white transition-all shadow-sm active:scale-95"
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {/* PRODUCTS GROUP */}
-                  {suggestions.products?.length > 0 && (
-                    <div className="p-6 md:p-8">
-                      <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Products</p>
-                      <div className="grid grid-cols-1 gap-3">
-                        {suggestions.products.map((p) => {
-                          const imgPath = p.image || p.images?.[0] || '';
-                          const imgSrc = resolveMediaURL(imgPath);
-                          return (
-                          <div
-                            key={p._id}
-                            onClick={() => {
-                              toggleSearch();
-                              navigate(`/product/${p.slug || p._id}`);
-                            }}
-                            className="flex items-center gap-3 md:gap-5 p-2 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
-                          >
-                            <div className="w-12 h-16 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
-                              <img src={imgSrc} alt={p.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <h4 className="text-[11px] md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
-                                {p.name}
-                                <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors shrink-0" />
-                              </h4>
-                              <div className="flex items-center gap-3 mt-1.5">
-                                <Price amount={p.price} className="text-[10px] md:text-xs text-zinc-900 font-extrabold" />
-                                <span className="text-[8px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">{(p.category || 'Product').substring(0, 15)}</span>
+                    {/* PRODUCTS GROUP */}
+                    {suggestions.products?.length > 0 && (
+                      <div className="p-6 md:p-8">
+                        <p className="text-[10px] md:text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-6">Products</p>
+                        <div className="grid grid-cols-1 gap-3">
+                          {suggestions.products.map((p) => {
+                            const imgPath = p.image || p.images?.[0] || '';
+                            const imgSrc = resolveMediaURL(imgPath);
+                            return (
+                            <div
+                              key={p._id}
+                              onClick={() => {
+                                toggleSearch();
+                                navigate(`/product/${p.slug || p._id}`);
+                              }}
+                              className="flex items-center gap-3 md:gap-5 p-2 md:p-4 bg-white hover:shadow-xl rounded-[1.5rem] cursor-pointer transition-all border border-zinc-100 hover:border-black/5 group"
+                            >
+                              <div className="w-12 h-16 md:w-14 md:h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0 border border-zinc-100 group-hover:scale-95 transition-transform">
+                                <img src={imgSrc} alt={p.name} className="w-full h-full object-cover" />
                               </div>
+                              <div className="flex-1 min-w-0">
+                                <h4 className="text-[11px] md:text-xs font-black uppercase tracking-tight text-black flex items-center gap-2 truncate">
+                                  {p.name}
+                                  <Zap size={10} className="text-zinc-200 group-hover:text-amber-400 transition-colors shrink-0" />
+                                </h4>
+                                <div className="flex items-center gap-3 mt-1.5">
+                                  <Price amount={p.price} className="text-[10px] md:text-xs text-zinc-900 font-extrabold" />
+                                  <span className="text-[8px] md:text-[9px] font-black uppercase bg-zinc-100 px-2 py-0.5 rounded text-zinc-400 tracking-wider">
+                                    {String(Array.isArray(p.category) ? p.category[0] : (p.category || 'Product')).substring(0, 15)}
+                                  </span>
+                                </div>
+                              </div>
+                              <ChevronRight size={16} className="text-zinc-200 group-hover:text-black group-hover:translate-x-1 transition-all shrink-0" />
                             </div>
-                            <ChevronRight size={16} className="text-zinc-200 group-hover:text-black group-hover:translate-x-1 transition-all shrink-0" />
-                          </div>
-                        )})}
+                          )})}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  <div
-                    onClick={() => toggleSearch()}
-                    className="p-8 text-center text-[10px] md:text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white transition-colors"
-                  >
-                    View all results
+                    <div
+                      onClick={() => toggleSearch()}
+                      className="p-8 text-center text-[10px] md:text-[10px] font-black uppercase tracking-[0.5em] text-zinc-400 hover:text-black cursor-pointer border-t border-zinc-50 bg-white transition-colors"
+                    >
+                      View all results
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
+                    <Search size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">No results found</p>
                   </div>
-                </>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
-                  <Search size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em]">Start typing to explore</p>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -548,6 +554,7 @@ const Navbar = () => {
               <div className="flex flex-col gap-6">
                 <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Support</p>
                 <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Need Help</Link>
+                <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest text-orange-400">Contact Us</Link>
                 <Link to="/account/orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
               </div>
             </div>

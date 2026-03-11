@@ -203,6 +203,19 @@ const TrackOrder = () => {
           <form onSubmit={handleSubmit} className="w-full p-5 md:p-10 flex flex-col md:flex-row gap-4 md:gap-6 items-end relative z-10">
 
             <div className="flex-1 w-full space-y-1.5 md:space-y-3">
+              <label className="text-[6px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">Type</label>
+              <select
+                value={activeType}
+                onChange={(e) => setActiveType(e.target.value)}
+                className="w-full bg-white border border-zinc-200 py-2.5 px-4 md:py-3 md:px-5 rounded-lg md:rounded-xl text-[10px] md:text-base font-black tracking-widest focus:outline-none focus:border-black transition-all appearance-none cursor-pointer"
+              >
+                <option value="order">ORDER</option>
+                <option value="return">RETURN</option>
+                <option value="exchange">EXCHANGE</option>
+              </select>
+            </div>
+
+            <div className="flex-1 w-full space-y-1.5 md:space-y-3">
               <label className="text-[6px] md:text-[9px] font-black uppercase tracking-[0.4em] text-zinc-400 ml-2">{config.label}</label>
               <input
                 type="text" required value={orderId} onChange={(e) => setOrderId(e.target.value)}

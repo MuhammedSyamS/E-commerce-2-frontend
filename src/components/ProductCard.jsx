@@ -26,14 +26,23 @@ const ProductCard = ({ product, onAddToCart }) => {
   const cart = user ? (user.cart || []) : useStore.getState().cart;
   const inCart = (cart || []).some(item => (item.product?._id || item.product || item._id).toString() === product._id.toString());
 
-  // Determine if product is available — check variant.stock (exact schema field) or countInStock
-  const hasVariants = product.variants?.length > 0;
+  // Determine if product is available — resilient check across schema variations
+  const hasVariants = product.variants && product.variants.length > 0;
+  
+  // Robustly extract stock info or lack thereof
+  const stockInfo = (product.countInStock !== undefined && product.countInStock !== null) ? Number(product.countInStock) : 
+                    (product.stock !== undefined && product.stock !== null) ? Number(product.stock) : 
+                    (product.qty !== undefined && product.qty !== null) ? Number(product.qty) : null;
+
   const totalVariantStock = hasVariants
-    ? product.variants.reduce((sum, v) => sum + Number(v.stock || 0), 0)
-    : 0;
-  const isOutOfStock = hasVariants
-    ? totalVariantStock <= 0
-    : Number(product.countInStock ?? 0) <= 0;
+    ? product.variants.reduce((sum, v) => sum + Number(v.stock || v.countInStock || v.qty || 0), 0)
+    : stockInfo;
+
+  // CRITICAL: If we have NO stock information at all (null), we MUST assume it's in stock 
+  // to prevent false "Out of Stock" labels on legacy history entries.
+  const isOutOfStock = hasVariants 
+    ? totalVariantStock <= 0 
+    : (totalVariantStock !== null && totalVariantStock <= 0);
 
   // Flash sale
   const isFlashSale = flashSale?.products?.some(p => (p._id || p) === product._id);
@@ -127,16 +136,16 @@ const ProductCard = ({ product, onAddToCart }) => {
             <p className="text-[8px] font-black uppercase tracking-widest flex items-center gap-1"><Zap size={10} fill="currentColor" /> Flash Sale</p>
           </div>
         )}
-        {product.isNewArrival && !isFlashSale && (
+        {product.badge && (
           <div className="absolute top-0 left-0 bg-black text-white px-3 py-1.5 z-10">
-            <p className="text-[8px] font-black uppercase tracking-widest">New Arrival</p>
+            <p className="text-[8px] font-black uppercase tracking-widest">{product.badge}</p>
           </div>
         )}
-        {product.isBestSeller && !product.isNewArrival && !isFlashSale && (
-          <div className="absolute top-0 left-0 bg-zinc-800 text-white px-3 py-1.5 z-10">
-            <p className="text-[8px] font-black uppercase tracking-widest">Elite Choice</p>
+        {product.tags && product.tags.length > 0 && product.tags.filter(t => t !== product.badge).slice(0, 1).map((tag, idx) => (
+          <div key={idx} className={`absolute text-white px-3 py-1.5 z-10 ${product.badge ? 'top-8 left-0 bg-zinc-800' : 'top-0 left-0 bg-black'}`}>
+            <p className="text-[8px] font-black uppercase tracking-widest">{tag}</p>
           </div>
-        )}
+        ))}
         {!isOutOfStock && (product.countInStock < 5 || product.variants?.some(v => Number(v.stock ?? 0) > 0 && Number(v.stock ?? 0) < 5)) && (
           <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-10">
             <p className="text-[8px] font-black uppercase tracking-widest">Low Stock</p>

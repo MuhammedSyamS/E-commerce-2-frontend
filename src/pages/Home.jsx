@@ -32,24 +32,15 @@ const Home = () => {
   const recentlyViewedRef = useRef(null);
   const communityLooksRef = useRef(null);
 
-  const defaultSlides = useMemo(() => [
-    { id: 1, img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&q=80&w=2000", title: "The 2026 Collection", subtitle: "Modern Essentials" },
-    { id: 2, img: "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?auto=format&fit=crop&q=80&w=2000", title: "Urban Living", subtitle: "Curated Design" },
-    { id: 3, img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&q=80&w=2000", title: "Premium Quality", subtitle: "Built to Last" },
-  ], []);
-
   const slides = useMemo(() => {
     const raw = settings?.heroSlides || [];
     const valid = raw.filter(s => s && s.img);
-    if (valid.length > 0) {
-      return valid.map((s, i) => ({
-        ...s,
-        img: resolveMediaURL(s.img),
-        key: `dynamic-${i}-${s.img.slice(-5)}`
-      }));
-    }
-    return defaultSlides.map((s, i) => ({ ...s, key: `default-${i}` }));
-  }, [settings?.heroSlides, defaultSlides]);
+    return valid.map((s, i) => ({
+      ...s,
+      img: resolveMediaURL(s.img),
+      key: `dynamic-${i}-${s.img.slice(-5)}`
+    }));
+  }, [settings?.heroSlides]);
 
   const scrollToProducts = () => {
     trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -185,9 +176,17 @@ const Home = () => {
   };
 
   const productSections = [
-    { id: 'most-viewed', title: 'Trending Now', subtitle: 'Most Explored Artifacts', items: homeData.trending, link: '/shop?sort=mostViewed', ref: trendingRef, bg: 'bg-zinc-50' },
-    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'The Most Iconic Pieces', items: homeData.bestSellers, link: '/shop?best=true', ref: bestSellersSectionRef, bg: 'bg-white' },
-    { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Studio Drops', items: homeData.newArrivals, link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' }
+    { id: 'trending', title: 'Trending Now', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-zinc-50' },
+    { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Drops Studio', items: homeData.newArrivals || [], link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' },
+    ...(homeData.dynamicSections || []).map((section, idx) => ({
+      id: section.id,
+      title: section.title,
+      subtitle: 'Curated Studio Series',
+      items: section.items || [],
+      link: `/shop?keyword=${encodeURIComponent(section.title)}`,
+      ref: React.createRef(),
+      bg: idx % 2 === 0 ? 'bg-zinc-50' : 'bg-white'
+    }))
   ];
 
   return (
@@ -201,69 +200,71 @@ const Home = () => {
 
       {activeView === 'all' && (
         <>
-          <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
-            <AnimatePresence initial={false}>
-              <motion.div
-                key={currentSlide}
-                initial={{ opacity: 0, x: 100 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -100 }}
-                transition={{ duration: 1, ease: [0.19, 1, 0.22, 1] }}
-                className="absolute inset-0"
-              >
-                <div className="absolute inset-0 overflow-hidden">
-                  <motion.img
-                    src={slides[currentSlide]?.img}
-                    initial={{ scale: 1.3 }}
-                    animate={{ 
-                      scale: 1.1 + (scrollY * 0.0005),
-                      y: scrollY * 0.1
-                    }}
-                    transition={{ duration: 0.2 }}
-                    className="w-full h-full object-cover"
-                    alt={slides[currentSlide]?.title}
-                    loading="eager"
-                  />
-                </div>
-                
-                <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
-                  <motion.div 
-                    initial={{ opacity: 0, y: 40 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
-                    className="text-center"
-                  >
-                    <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
-                    <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
-                    <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                      <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
-                      {slides[currentSlide]?.link && (
-                        <button onClick={() => navigate(slides[currentSlide]?.link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
-                      )}
-                    </div>
-                  </motion.div>
-                </div>
-                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
-              </motion.div>
-            </AnimatePresence>
+          {slides.length > 0 && (
+            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-zinc-100 group/hero overflow-hidden">
+              <AnimatePresence initial={false}>
+                <motion.div
+                  key={currentSlide}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  className="absolute inset-0"
+                >
+                  <div className="absolute inset-0 overflow-hidden">
+                    <motion.img
+                      src={slides[currentSlide]?.img}
+                      initial={{ scale: 1.3 }}
+                      animate={{ 
+                        scale: 1.1 + (scrollY * 0.0005),
+                        y: scrollY * 0.1
+                      }}
+                      transition={{ duration: 0 }}
+                      className="w-full h-full object-cover"
+                      alt={slides[currentSlide]?.title}
+                      loading="eager"
+                    />
+                  </div>
+                  
+                  <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
+                    <motion.div 
+                      initial={{ opacity: 0, y: 40 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+                      className="text-center"
+                    >
+                      <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
+                      <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
+                      <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                        <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
+                        {slides[currentSlide]?.link && (
+                          <button onClick={() => navigate(slides[currentSlide]?.link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
+                        )}
+                      </div>
+                    </motion.div>
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
+                </motion.div>
+              </AnimatePresence>
 
-            {/* CONTROLS */}
-            <div className="absolute inset-0 z-30 flex items-center justify-between px-4 md:px-10 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-500">
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleManualNav('prev'); }} 
-                className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
-              >
-                <ChevronLeft strokeWidth={1} size={64} />
-              </button>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleManualNav('next'); }} 
-                className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
-              >
-                <ChevronRight strokeWidth={1} size={64} />
-              </button>
-            </div>
+              {/* CONTROLS */}
+              <div className="absolute inset-0 z-30 flex items-center justify-between px-4 md:px-10 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-500">
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleManualNav('prev'); }} 
+                  className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
+                >
+                  <ChevronLeft strokeWidth={1} size={64} />
+                </button>
+                <button 
+                  onClick={(e) => { e.stopPropagation(); handleManualNav('next'); }} 
+                  className="text-white/40 hover:text-white transition-all pointer-events-auto transform hover:scale-125 active:scale-90"
+                >
+                  <ChevronRight strokeWidth={1} size={64} />
+                </button>
+              </div>
 
-          </section>
+            </section>
+          )}
           <Marquee text="Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •" />
         </>
       )}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save, Plus, X, Upload, Video } from 'lucide-react';
+import { ArrowLeft, Save, Plus, X, Upload, Video, Copy } from 'lucide-react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
@@ -24,13 +24,20 @@ const AddProduct = () => {
     specs: [],
     countInStock: 0,
     isBestSeller: false,
+    isNewArrival: false,
     video: '', // Video URL
     variants: [], // { size, color, stock }
     seo: { metaTitle: '', metaDescription: '' },
+    badge: '',
     richDescription: ''
   });
 
   const [previewVariantIdx, setPreviewVariantIdx] = useState(null);
+  
+  // Quick Variant State
+  const [showQuickVariant, setShowQuickVariant] = useState(false);
+  const [quickVariantType, setQuickVariantType] = useState(''); // 'clothing' or 'shoes'
+  const [quickVariantColor, setQuickVariantColor] = useState('');
 
   const [newImageUrl, setNewImageUrl] = useState('');
 
@@ -51,8 +58,18 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/products', formData);
-      addToast("Piece added to Studio collection", "success");
+      // Auto-add pending tag
+      let finalTags = formData.tags || [];
+      const tagInput = document.getElementById('tagInput');
+      if (tagInput && tagInput.value.trim()) {
+        const val = tagInput.value.trim();
+        if (!finalTags.includes(val)) finalTags = [...finalTags, val];
+        tagInput.value = '';
+      }
+      
+      const payload = { ...formData, tags: finalTags };
+      await api.post('/products', payload);
+      addToast("Product Published", "success");
       navigate('/admin/products');
     } catch (error) {
       addToast(error.response?.data?.message || 'Failed to create product', 'error');
@@ -65,8 +82,18 @@ const AddProduct = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/products', formData);
-      addToast('Product Saved! Ready for next.', 'success');
+      // Auto-add pending tag
+      let finalTags = formData.tags || [];
+      const tagInput = document.getElementById('tagInput');
+      if (tagInput && tagInput.value.trim()) {
+        const val = tagInput.value.trim();
+        if (!finalTags.includes(val)) finalTags = [...finalTags, val];
+        tagInput.value = '';
+      }
+      
+      const payload = { ...formData, tags: finalTags };
+      await api.post('/products', payload);
+      addToast("Product Saved. Add another!", "success");
 
       // Reset Form but keep Category/Subcategory/Tags for speed
       setFormData(prev => ({
@@ -80,6 +107,7 @@ const AddProduct = () => {
         specs: [],
         countInStock: 0,
         isBestSeller: false,
+        isNewArrival: false,
         video: '',
         variants: [],
         seo: { metaTitle: '', metaDescription: '' },
@@ -431,16 +459,95 @@ const AddProduct = () => {
 
                 {/* VARIANTS SECTION */}
                 <div>
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                     <label className="block text-[10px] font-bold uppercase text-zinc-400 tracking-widest">Product Variants (Size/Color)</label>
-                    <button
-                      type="button"
-                      onClick={() => setFormData({ ...formData, variants: [...(formData.variants || []), { size: '', color: '', stock: 0 }] })}
-                      className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1 rounded-full hover:bg-zinc-800"
-                    >
-                      + Add Variant
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                       <button
+                        type="button"
+                        onClick={() => {
+                          setShowQuickVariant(true);
+                          setQuickVariantType('clothing');
+                        }}
+                        className="text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-200 text-black px-3 py-1 rounded-full hover:bg-zinc-200"
+                      >
+                        + Quick Sizes (S-XL)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowQuickVariant(true);
+                          setQuickVariantType('shoes');
+                        }}
+                        className="text-[10px] font-bold uppercase bg-zinc-100 border border-zinc-200 text-black px-3 py-1 rounded-full hover:bg-zinc-200"
+                      >
+                        + Quick Shoes (6-11)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, variants: [...(formData.variants || []), { size: '', color: '', stock: 0 }] })}
+                        className="text-[10px] font-bold uppercase bg-black text-white px-3 py-1 rounded-full hover:bg-zinc-800"
+                      >
+                        + Custom Variant
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Inline Quick Variant UI */}
+                  {showQuickVariant && (
+                    <div className="bg-zinc-50 border border-zinc-200 p-4 rounded-xl mb-4 flex flex-col md:flex-row items-end gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="w-full md:flex-1">
+                        <label className="block text-[9px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">
+                          Base Color for {quickVariantType === 'clothing' ? 'Sizes S-XL' : 'Shoes 6-11'} (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Black, Navy, Gold..."
+                          className="w-full bg-white border border-zinc-200 p-3 rounded-lg outline-none focus:border-black text-xs font-bold uppercase"
+                          value={quickVariantColor}
+                          onChange={(e) => setQuickVariantColor(e.target.value)}
+                          onKeyDown={(e) => {
+                             if(e.key === 'Enter') {
+                               e.preventDefault();
+                               const sizes = quickVariantType === 'clothing' ? ['S', 'M', 'L', 'XL'] : ['6', '7', '8', '9', '10', '11'];
+                               const newVariants = sizes.map(size => ({ size, color: quickVariantColor.trim(), stock: 10 }));
+                               const updatedVariants = [...(formData.variants || []), ...newVariants];
+                               const total = updatedVariants.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
+                               setFormData({ ...formData, variants: updatedVariants, countInStock: total });
+                               setShowQuickVariant(false);
+                               setQuickVariantColor('');
+                             }
+                          }}
+                        />
+                      </div>
+                      <div className="flex gap-2 w-full md:w-auto">
+                        <button
+                           type="button"
+                           onClick={() => {
+                             setShowQuickVariant(false);
+                             setQuickVariantColor('');
+                           }}
+                           className="flex-1 md:flex-none px-4 py-3 border border-zinc-200 rounded-lg text-xs font-bold uppercase text-zinc-500 hover:bg-zinc-100 transition"
+                        >
+                          Cancel
+                        </button>
+                         <button
+                           type="button"
+                           onClick={() => {
+                             const sizes = quickVariantType === 'clothing' ? ['S', 'M', 'L', 'XL'] : ['6', '7', '8', '9', '10', '11'];
+                             const newVariants = sizes.map(size => ({ size, color: quickVariantColor.trim(), stock: 10 }));
+                             const updatedVariants = [...(formData.variants || []), ...newVariants];
+                             const total = updatedVariants.reduce((acc, curr) => acc + (Number(curr.stock) || 0), 0);
+                             setFormData({ ...formData, variants: updatedVariants, countInStock: total });
+                             setShowQuickVariant(false);
+                             setQuickVariantColor('');
+                           }}
+                           className="flex-1 md:flex-none px-6 py-3 bg-black text-white rounded-lg text-xs font-black uppercase tracking-widest hover:bg-zinc-800 transition"
+                         >
+                           Generate Details
+                         </button>
+                      </div>
+                    </div>
+                  )}
 
                   {formData.variants && formData.variants.length > 0 ? (
                     <div className="space-y-3">
@@ -521,6 +628,29 @@ const AddProduct = () => {
                           >
                             <Upload size={14} />
                           </button>
+                          
+                          {variant.image && variant.color && (
+                             <button
+                               type="button"
+                               onClick={(e) => {
+                                 e.stopPropagation();
+                                 if (window.confirm(`Apply this image to all variants with color "${variant.color}"?`)) {
+                                    const newVar = formData.variants.map(v => 
+                                       (v.color || '').trim().toLowerCase() === (variant.color || '').trim().toLowerCase() 
+                                       ? { ...v, image: variant.image } 
+                                       : v
+                                    );
+                                    setFormData({ ...formData, variants: newVar });
+                                    addToast(`Image applied to all ${variant.color} variants`, "success");
+                                 }
+                               }}
+                               className="p-3 bg-indigo-50 text-indigo-500 rounded-xl hover:bg-indigo-100 transition-colors"
+                               title={`Apply image to all ${variant.color} variants`}
+                             >
+                                <Copy size={14} />
+                             </button>
+                          )}
+
                           <button
                             type="button"
                             onClick={(e) => {
@@ -561,6 +691,67 @@ const AddProduct = () => {
                       </p>
                     </div>
                   )}
+                </div>
+
+                {/* BADGES / TOGGLES */}
+                <div className="space-y-4">
+                  <label className="block text-[10px] font-bold uppercase text-zinc-400 tracking-widest">Visibility Badges</label>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <label className="flex items-center gap-3 p-4 border border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-50 transition w-full md:w-1/2">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isNewArrival}
+                        onChange={e => setFormData({ ...formData, isNewArrival: e.target.checked })}
+                        className="w-5 h-5 accent-black" 
+                      />
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-black">New Arrival</p>
+                        <p className="text-[9px] text-zinc-500 font-medium mt-1">Shows in the "Fresh Drops" section</p>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-4 border border-zinc-200 rounded-xl cursor-pointer hover:bg-zinc-50 transition w-full md:w-1/2">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isBestSeller}
+                        onChange={e => setFormData({ ...formData, isBestSeller: e.target.checked })}
+                        className="w-5 h-5 accent-black" 
+                      />
+                      <div>
+                        <p className="text-xs font-black uppercase tracking-widest text-black">Trending Now</p>
+                        <p className="text-[9px] text-zinc-500 font-medium mt-1">Shows in the "Trending Now" section</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {/* DEDICATED BADGE */}
+                <div className="space-y-4">
+                  <label className="block text-[10px] font-bold uppercase text-zinc-400 tracking-widest">Featured Badge (Primary)</label>
+                  <div className="flex flex-col md:flex-row gap-4">
+                    <div className="w-full md:w-1/2">
+                      <input
+                        type="text"
+                        placeholder="e.g. Home Appliances, Limited Edition"
+                        className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black font-black uppercase text-[10px] tracking-widest"
+                        value={formData.badge || ''}
+                        onChange={e => setFormData({ ...formData, badge: e.target.value })}
+                      />
+                      <p className="text-[9px] text-zinc-400 mt-2 pl-1">This badge appears prominently on the product card and creates a special section on the homepage.</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 w-full md:w-1/2">
+                      {['Trending Now', 'New Arrival', 'Best Seller', 'Home Appliances', 'Special Offer'].map(b => (
+                        <button
+                          key={b}
+                          type="button"
+                          onClick={() => setFormData({ ...formData, badge: b })}
+                          className={`px-3 py-1.5 rounded-full text-[8px] font-black uppercase tracking-widest transition ${formData.badge === b ? 'bg-black text-white' : 'bg-zinc-100 text-zinc-500 hover:bg-zinc-200'}`}
+                        >
+                          {b}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
 
                 {/* TAGS */}
