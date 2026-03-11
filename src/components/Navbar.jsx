@@ -437,24 +437,23 @@ const Navbar = () => {
             </button>
 
             {/* WISHLIST */}
-            <Link to="/wishlist" className="relative group p-2 rounded-full border border-white/20 hover:border-white/40 transition-all">
+            <Link to="/wishlist" className="relative group p-2 transition-all">
               <Heart className={`w-4 h-4 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={wishlistCount} />
             </Link>
 
             {/* CART */}
-            <button onClick={toggleCart} className="relative group p-2 rounded-full border border-white/20 hover:border-white/40 transition-all">
+            <button onClick={toggleCart} className="relative group p-2 transition-all">
               <ShoppingBag className={`w-4 h-4 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={cartCount} />
             </button>
 
-            {/* NOTIFICATIONS */}
-            <div className="relative group">
+            {/* NOTIFICATIONS - DESKTOP ONLY */}
+            <div className="hidden md:block relative group">
               <button
                 onClick={() => {
                   if (!user) { navigate('/login'); return; }
-                  if (window.innerWidth < 768) { navigate('/account/notifications'); } 
-                  else { setShowNotif(!showNotif); }
+                  setShowNotif(!showNotif);
                 }}
                 className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
               >
@@ -504,6 +503,11 @@ const Navbar = () => {
                 </div>
               )}
             </div>
+
+            {/* PROFILE - DESKTOP ONLY */}
+            <Link to={user ? "/account" : "/login"} className="hidden md:flex p-2 rounded-full hover:bg-white/10 transition-all text-white">
+              <User className="w-4 h-4" fill={user ? "currentColor" : "none"} />
+            </Link>
 
             {/* ADMIN SHORTCUT */}
             {(user?.role === 'admin' || user?.isAdmin) && (
@@ -569,6 +573,9 @@ const Navbar = () => {
                   <Bell size={14} />
                   <Badge count={unreadCount} />
                 </button>
+                <Link to={user ? "/account" : "/login"} onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full relative">
+                  <User size={14} fill={user ? "currentColor" : "none"} />
+                </Link>
               </div>
             </div>
           </div>

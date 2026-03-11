@@ -121,6 +121,38 @@ const Account = () => {
   );
 
 
+  const resizeImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          const MAX_WIDTH = 1200;
+          const MAX_HEIGHT = 1200;
+          if (width > height) {
+            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+          } else {
+            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Convert to blob
+          canvas.toBlob((blob) => {
+            resolve(blob);
+          }, 'image/jpeg', 0.82);
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleDeleteLook = async (lookId) => {
     if (!window.confirm("Are you sure you want to delete this look? This cannot be undone.")) return;
     try {
@@ -312,13 +344,24 @@ const Account = () => {
                         type="file"
                         accept="image/*"
                         className="absolute inset-0 opacity-0 cursor-pointer"
-                        onChange={(e) => {
+                        onChange={async (e) => {
                           const file = e.target.files[0];
                           if (file) {
-                            setSelectedFile(file);
-                            const reader = new FileReader();
-                            reader.onloadend = () => setSelectedImage(reader.result);
-                            reader.readAsDataURL(file);
+                            setIsSubmitting(true);
+                            try {
+                                const resizedBlob = await resizeImage(file);
+                                const resizedFile = new File([resizedBlob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", { type: 'image/jpeg' });
+                                setSelectedFile(resizedFile);
+                                
+                                const reader = new FileReader();
+                                reader.onloadend = () => setSelectedImage(reader.result);
+                                reader.readAsDataURL(resizedFile);
+                            } catch (err) {
+                                console.error("Image processing failed:", err);
+                                toastError("Failed to process image");
+                            } finally {
+                                setIsSubmitting(false);
+                            }
                           }
                         }}
                       />
@@ -414,7 +457,7 @@ const Account = () => {
                               }}
                               className="flex items-center gap-4 p-3 rounded-2xl border border-zinc-50 hover:border-black cursor-pointer transition-all group"
                             >
-                              <img src={prod.image} className="w-10 h-12 object-cover rounded-lg" alt="" />
+                              <img src={resolveMediaURL(prod.image)} className="w-10 h-12 object-cover rounded-lg" alt="" />
                               <div className="flex-1">
                                 <h2 className="text-2xl font-black uppercase tracking-tighter">My SLOOKS</h2>
                             <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Community Gallery</p>

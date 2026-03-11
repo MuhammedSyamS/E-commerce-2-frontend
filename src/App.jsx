@@ -141,8 +141,8 @@ const App = () => {
     <ErrorBoundary>
       <ToastProvider>
         <div className="font-sans text-[#1a1a1a] flex flex-col min-h-screen bg-white">
-          {/* Navbar Hidden on Admin Routes & Full Screen Review */}
-          {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/review/') && <Navbar />}
+          {/* Navbar Hidden on Full Screen Review only */}
+          {!location.pathname.startsWith('/review/') && <Navbar />}
 
           <main className="flex-grow">
             <ScrollToTop />
