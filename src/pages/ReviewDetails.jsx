@@ -13,30 +13,36 @@ const ReviewDetails = () => {
     const [loading, setLoading] = useState(true);
     const [mediaIndex, setMediaIndex] = useState(0);
 
+    // Initial fetch of all reviews
     useEffect(() => {
-        const fetchReviews = async () => {
+        const fetchAllReviews = async () => {
             try {
                 const { data } = await api.get('/products/reviews/featured');
                 setAllReviews(data);
-                
-                const review = data.find(item => {
-                    const r = item.review || item;
-                    return r._id === reviewId;
-                });
-                
-                if (review) {
-                    processReview(review);
-                } else {
-                    setReviewData(null);
-                }
             } catch (err) {
-                console.error("Error fetching review:", err);
+                console.error("Error fetching reviews:", err);
             } finally {
                 setLoading(false);
             }
         };
-        fetchReviews();
-    }, [reviewId]);
+        fetchAllReviews();
+    }, []);
+
+    // Update specific review data when reviewId or allReviews changes
+    useEffect(() => {
+        if (allReviews.length > 0) {
+            const review = allReviews.find(item => {
+                const r = item.review || item;
+                return r._id === reviewId;
+            });
+            
+            if (review) {
+                processReview(review);
+            } else {
+                setReviewData(null);
+            }
+        }
+    }, [reviewId, allReviews]);
 
     const processReview = (review) => {
         const r = review.review || review;
@@ -76,6 +82,7 @@ const ReviewDetails = () => {
         const currentIdx = allReviews.findIndex(item => (item.review?._id || item._id) === reviewId);
         const nextIdx = (currentIdx + 1) % allReviews.length;
         const nextId = allReviews[nextIdx].review?._id || allReviews[nextIdx]._id;
+        // Navigation is now instant because allReviews is already in memory
         navigate(`/review/${nextId}`, { replace: true });
     };
 
@@ -96,11 +103,11 @@ const ReviewDetails = () => {
         );
     }
 
-    if (!reviewData) {
+    if (!reviewData && !loading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-white text-zinc-950 p-6">
                 <h2 className="text-xl font-black uppercase tracking-tighter mb-4">Review Not Found</h2>
-                <button onClick={() => navigate(-1)} className="bg-black text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest">Go Back</button>
+                <button onClick={() => navigate('/')} className="bg-black text-white px-6 py-2 rounded-full text-xs font-black uppercase tracking-widest">Go Home</button>
             </div>
         );
     }
@@ -112,10 +119,10 @@ const ReviewDetails = () => {
             {/* MOBILE HEADER - Transparent overlay */}
             <div className="absolute top-0 inset-x-0 z-[210] flex items-center justify-between p-4 bg-gradient-to-b from-white/80 to-transparent">
                 <button 
-                    onClick={() => navigate(-1)}
-                    className="bg-black/5 text-zinc-900 p-2 rounded-full backdrop-blur-md active:scale-90 transition-all"
+                    onClick={() => navigate('/')}
+                    className="bg-black/5 text-zinc-900 p-2 rounded-full backdrop-blur-md active:scale-90 transition-all font-black uppercase tracking-widest text-[10px] flex items-center gap-1"
                 >
-                    <ChevronLeft size={24} />
+                    <ChevronLeft size={20} /> Back
                 </button>
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[10px] font-black text-white">
@@ -130,7 +137,7 @@ const ReviewDetails = () => {
                         </div>
                     </div>
                 </div>
-                <div className="w-10"></div>
+                <div className="w-16"></div> {/* Placeholder to keep header design consistent */}
             </div>
 
             {/* MEDIA SECTION - Exactly 50% Height */}
@@ -155,7 +162,7 @@ const ReviewDetails = () => {
                     <div className="text-zinc-300 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                 )}
 
-                {/* MEDIA NAVIGATION - NO BLUR CIRCLE BRACKET */}
+                {/* MEDIA NAVIGATION - Minimalist icons */}
                 {reviewData.media.length > 1 && (
                     <div className="absolute inset-0 z-30 pointer-events-none flex justify-between items-center px-4">
                         <button 
@@ -222,7 +229,7 @@ const ReviewDetails = () => {
                     )}
                 </div>
 
-                {/* REVIEW NAVIGATION (Positioned at the bottom of the content section) */}
+                {/* REVIEW NAVIGATION - Instant switching */}
                 <div className="absolute bottom-6 inset-x-0 px-8 flex justify-between items-center pointer-events-none">
                     <button 
                         onClick={prevReview}
