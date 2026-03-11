@@ -553,12 +553,12 @@ const ProductDetails = () => {
 
                                     {/* MOBILE MEDIA NAV OVERLAYS (Meesho Style) */}
                                     <div className="absolute inset-y-0 left-0 w-1/4 z-30 flex items-center justify-start pl-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }}>
-                                        <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                        <div className="text-white/50">
                                             <ChevronLeft size={24} />
                                         </div>
                                     </div>
                                     <div className="absolute inset-y-0 right-0 w-1/4 z-30 flex items-center justify-end pr-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }}>
-                                        <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                        <div className="text-white/50">
                                             <ChevronRight size={24} />
                                         </div>
                                     </div>
@@ -579,10 +579,10 @@ const ProductDetails = () => {
                                     {/* DESKTOP MEDIA NAVIGATION */}
                                     {allMedia.length > 1 && (
                                         <>
-                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="hidden md:flex absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="hidden md:flex absolute left-6 bottom-10 p-3 text-white/60 hover:text-white transition-all z-20">
                                                 <ChevronLeft size={20} />
                                             </button>
-                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="hidden md:flex absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="hidden md:flex absolute right-6 bottom-10 p-3 text-white/60 hover:text-white transition-all z-20">
                                                 <ChevronRight size={20} />
                                             </button>
                                             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
@@ -684,10 +684,10 @@ const ProductDetails = () => {
 
               {/* MOBILE OUTER NAV */}
               <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
-                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 text-white">
                   <ChevronLeft size={20} />
                 </button>
-                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
+                <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }} className="p-3 text-white">
                   <ChevronRight size={20} />
                 </button>
               </div>
@@ -1235,7 +1235,7 @@ const ProductDetails = () => {
                 <button
                   disabled={lightboxIndex === 0}
                   onClick={() => setLightboxIndex(prev => prev - 1)}
-                  className="absolute left-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                  className="absolute left-8 p-4 text-white transition-all disabled:opacity-0"
                 >
                   <ChevronLeft size={32} />
                 </button>
@@ -1243,7 +1243,7 @@ const ProductDetails = () => {
                 <button
                   disabled={lightboxIndex === mediaItems.length - 1}
                   onClick={() => setLightboxIndex(prev => prev + 1)}
-                  className="absolute right-8 p-4 bg-white/10 rounded-full text-white hover:bg-white/20 transition-all disabled:opacity-0"
+                  className="absolute right-8 p-4 text-white transition-all disabled:opacity-0"
                 >
                   <ChevronRight size={32} />
                 </button>

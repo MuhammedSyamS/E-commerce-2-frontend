@@ -216,12 +216,12 @@ const FeaturedReviews = () => {
 
                             {/* MOBILE MEDIA NAVIGATION OVERLAYS (Meesho Style) */}
                             <div className="absolute inset-y-0 left-0 w-1/4 z-30 flex items-center justify-start pl-4 md:hidden" onClick={prevMedia}>
-                                <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                <div className="text-white/50">
                                     <ChevronLeft size={24} />
                                 </div>
                             </div>
                             <div className="absolute inset-y-0 right-0 w-1/4 z-30 flex items-center justify-end pr-4 md:hidden" onClick={nextMedia}>
-                                <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                <div className="text-white/50">
                                     <ChevronRight size={24} />
                                 </div>
                             </div>
@@ -244,13 +244,13 @@ const FeaturedReviews = () => {
                                 <>
                                     <button
                                         onClick={prevMedia}
-                                        className="hidden md:flex absolute left-6 bottom-10 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
+                                        className="hidden md:flex absolute left-6 bottom-10 text-white/60 hover:text-white p-2 transition-all z-30"
                                     >
                                         <ChevronLeft size={24} />
                                     </button>
                                     <button
                                         onClick={nextMedia}
-                                        className="hidden md:flex absolute right-6 bottom-10 text-white/60 hover:text-white bg-black/20 backdrop-blur-md p-2 rounded-full hover:bg-black/40 transition-all z-30"
+                                        className="hidden md:flex absolute right-6 bottom-10 text-white/60 hover:text-white p-2 transition-all z-30"
                                     >
                                         <ChevronRight size={24} />
                                     </button>

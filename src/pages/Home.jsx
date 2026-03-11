@@ -376,7 +376,7 @@ const Home = () => {
                 onClick={() => scroll(communityLooksRef, 'right')}
                 className="absolute -right-4 md:-right-20 top-1/2 -translate-y-1/2 z-50 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
               >
-                <ChevronRight className="w-6 h-6 md:w-8 md:h-8" strokeWidth={1} />
+                <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
               </button>
 
               <div 

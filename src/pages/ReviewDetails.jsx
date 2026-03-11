@@ -233,14 +233,14 @@ const ReviewDetails = () => {
                 <div className="absolute bottom-6 inset-x-0 px-8 flex justify-between items-center pointer-events-none">
                     <button 
                         onClick={prevReview}
-                        className="pointer-events-auto bg-black text-white p-4 rounded-full shadow-2xl active:scale-90 transition-all flex items-center gap-2"
+                        className="pointer-events-auto text-zinc-900 p-4 active:scale-90 transition-all flex items-center gap-2"
                     >
                         <ChevronLeft size={20} />
                         <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">Prev Review</span>
                     </button>
                     <button 
                         onClick={nextReview}
-                        className="pointer-events-auto bg-black text-white p-4 rounded-full shadow-2xl active:scale-90 transition-all flex items-center gap-2"
+                        className="pointer-events-auto text-zinc-900 p-4 active:scale-90 transition-all flex items-center gap-2"
                     >
                         <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">Next Review</span>
                         <ChevronRight size={20} />
