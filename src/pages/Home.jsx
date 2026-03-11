@@ -15,6 +15,21 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
 
+const DEFAULT_SLIDES = [
+  {
+    title: "SLOOK STUDIO SERIES",
+    subtitle: "Premium Essentials",
+    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
+    link: "/shop"
+  },
+  {
+    title: "MODERN ARTIFACTS",
+    subtitle: "Curated Drops",
+    img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
+    link: "/shop"
+  }
+];
+
 const Home = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -35,10 +50,12 @@ const Home = () => {
   const slides = useMemo(() => {
     const raw = settings?.heroSlides || [];
     const valid = raw.filter(s => s && s.img);
-    return valid.map((s, i) => ({
+    const final = valid.length > 0 ? valid : DEFAULT_SLIDES;
+    
+    return final.map((s, i) => ({
       ...s,
       img: resolveMediaURL(s.img),
-      key: `dynamic-${i}-${(s.img || '').slice(-5)}`
+      key: `hero-${i}-${(s.img || '').slice(-5)}`
     }));
   }, [settings?.heroSlides]);
 
@@ -138,7 +155,6 @@ const Home = () => {
 
   // --- CAROUSEL LOGIC ---
   const [resetKey, setResetKey] = useState(0);
-  const [imageLoaded, setImageLoaded] = useState(false);
 
   const nextSlide = React.useCallback(() => {
     setCurrentSlide(prev => (prev + 1) % slides.length);
@@ -162,7 +178,6 @@ const Home = () => {
   }, [slides.length, currentSlide]);
 
   const handleManualNav = (dir) => {
-    setImageLoaded(false);
     if (dir === 'next') nextSlide();
     else prevSlide();
     setResetKey(prev => prev + 1);
@@ -206,29 +221,29 @@ const Home = () => {
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
               <AnimatePresence>
                 <motion.div
-                  key={currentSlide}
-                  initial={{ opacity: 0 }}
+                  key={slides[currentSlide]?.key || currentSlide}
+                  initial={{ opacity: 1 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
                   className="absolute inset-0"
                 >
-                  <div className="absolute inset-0 overflow-hidden bg-black">
+                  <div className="absolute inset-0 overflow-hidden bg-zinc-900">
                     <motion.img
                       src={slides[currentSlide]?.img}
-                      onLoad={() => setImageLoaded(true)}
-                      initial={{ scale: 1.3, opacity: 0 }}
+                      initial={{ scale: 1.2, opacity: 1 }}
                       animate={{ 
                         scale: 1.1 + (scrollY * 0.0005),
                         y: scrollY * 0.1,
-                        opacity: imageLoaded ? 1 : 0
+                        opacity: 1
                       }}
                       transition={{ 
-                        opacity: { duration: 0.8 },
+                        opacity: { duration: 1.2, ease: "easeOut" },
                         scale: { duration: 0 }
                       }}
                       className="w-full h-full object-cover"
                       alt={slides[currentSlide]?.title}
+                      loading="eager"
                     />
                   </div>
                   

@@ -165,28 +165,10 @@ const FeaturedReviews = () => {
                         </button>
 
                         {/* Media Section (TOP) */}
-                        <div className="w-full md:w-1/2 aspect-[4/5] md:aspect-auto bg-zinc-950 relative flex items-center justify-center group select-none border-b border-zinc-100 shrink-0">
-                            {selectedReview.currentMedia ? (
-                                selectedReview.currentMedia.type === 'video' ? (
-                                    <video
-                                        controls
-                                        autoPlay
-                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
-                                        className="w-full h-full object-contain"
-                                    />
-                                ) : (
-                                    <img
-                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
-                                        alt=""
-                                        className="w-full h-full object-contain"
-                                    />
-                                )
-                            ) : (
-                                <div className="text-zinc-500 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                             )}
 
-                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY */}
-                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none">
+                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY (DEKTOP ONLY) */}
+                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none hidden md:block">
                                 <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
                                     <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
                                         <img src={resolveMediaURL(selectedReview.productImage)} alt="" className="w-full h-full object-cover" />

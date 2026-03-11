@@ -502,7 +502,7 @@ const ProductDetails = () => {
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 
-              <div className="relative w-full md:max-w-7xl bg-white md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-full max-h-[90vh] md:max-h-[90vh] mx-auto overflow-y-auto md:overflow-hidden no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="relative w-full md:max-w-7xl bg-white md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row h-full max-h-[90vh] md:max-h-[90vh] mx-auto overflow-y-auto no-scrollbar shadow-2xl" onClick={(e) => e.stopPropagation()}>
                 {(() => {
                   const activeReviewItem = sortedReviews[selectedReviewIdx];
                   const videos = activeReviewItem?.videos || (activeReviewItem?.video ? [activeReviewItem.video] : []);
@@ -558,45 +558,34 @@ const ProductDetails = () => {
                       </div>
 
                       {/* TEXT SIDE - 40% Rich Content */}
-                      <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-8 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
+                      <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-6 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
                         
-                        {/* 1. USER INFO AT TOP (Sticky on Mobile) */}
-                        <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-md flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
-                            <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
+                        {/* 1. USER INFO AT TOP (Always visible first core) */}
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
                                 {(activeReviewItem.name || "V").charAt(0)}
                             </div>
                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-2">
-                                    <p className="text-xs md:text-sm font-black uppercase tracking-widest text-zinc-900 leading-none">
+                                <div className="flex items-center justify-between mb-1 md:mb-2">
+                                    <p className="text-[10px] md:text-sm font-black uppercase tracking-widest text-zinc-900 leading-none">
                                         {activeReviewItem.name || "Verified Buyer"}
                                     </p>
                                     <div className="flex gap-0.5">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} size={11} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-100"} />
+                                            <Star key={i} size={10} fill={i < activeReviewItem.rating ? "black" : "none"} className={i < activeReviewItem.rating ? "text-black" : "text-zinc-100"} />
                                         ))}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <CheckCircle2 size={12} className="text-blue-600 fill-blue-50" />
-                                    <span className="text-[9px] font-black uppercase tracking-widest text-zinc-400">Verified Perspective</span>
+                                    <CheckCircle2 size={10} className="text-blue-600 fill-blue-50" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Verified Perspective</span>
                                 </div>
                              </div>
                         </div>
 
-                        {/* 2. PRODUCT REFERENCE (Below User Info on Mobile) */}
-                        <div className="md:hidden sticky top-[80px] z-10 bg-white px-3 py-3 mb-6 bg-zinc-50/50 rounded-2xl border border-zinc-100 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
-                                <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
-                            </div>
-                            <div className="min-w-0">
-                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product</p>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate">{product.name}</p>
-                            </div>
-                        </div>
-
-                        {/* 3. MEDIA (Mobile In-line) */}
+                        {/* 2. MEDIA (MOBILE INLINE) */}
                         {currentMedia && (
-                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6 shrink-0">
+                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6 flex items-center justify-center shrink-0">
                              {currentMedia.type === 'video' ? (
                                 <video src={resolveMediaURL(currentMedia.url)} controls className="w-full h-full object-contain" />
                               ) : (
@@ -605,28 +594,39 @@ const ProductDetails = () => {
                           </div>
                         )}
 
+                        {/* 3. PRODUCT REFERENCE (MOBILE) */}
+                        <div className="md:hidden flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
+                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
+                                <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product Reference</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate">{product.name}</p>
+                            </div>
+                        </div>
+
                         {/* 4. TITLE & COMMENTS */}
                         <div className="flex-grow flex flex-col justify-start">
                             {activeReviewItem.title && (
-                                <h3 className="text-base md:text-lg font-black uppercase tracking-tight mb-4 leading-tight">
+                                <h3 className="text-sm md:text-lg font-black uppercase tracking-tight mb-4 leading-tight text-zinc-900">
                                     {activeReviewItem.title}
                                 </h3>
                             )}
-                            <p className="text-zinc-900 leading-[1.8] text-[13px] md:text-base font-medium whitespace-pre-line">
+                            <p className="text-zinc-900 leading-[1.8] text-[12px] md:text-base font-medium whitespace-pre-line">
                                 "{activeReviewItem.comment}"
                             </p>
-                            <time className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-4">
+                            <time className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-6 mt-auto">
                                 {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </time>
                         </div>
 
-                        <div className="border-t border-zinc-50 pt-10 mt-auto">
+                        <div className="border-t border-zinc-50 pt-8 mt-6">
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }}
-                                className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[9px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl scale-[1.02]' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-0.5' }`}
+                                className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[8px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl scale-[1.02]' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-0.5' }`}
                             >
                                 <Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "currentColor" : "none"} />
-                                <span>Found this helpful ({activeReviewItem.helpful?.length || 0})</span>
+                                <span>Helpful ({activeReviewItem.helpful?.length || 0})</span>
                             </button>
                         </div>
                       </div>
