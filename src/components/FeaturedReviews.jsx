@@ -134,7 +134,7 @@ const FeaturedReviews = () => {
     // if (loading) return null; // Removed to prevent section flicker/missing on slow mobile
 
     return (
-        <section className="bg-zinc-950 py-12 md:py-24 border-t border-white/5">
+        <section className="bg-zinc-50 py-12 md:py-24 border-t border-zinc-200">
 
             {/* IMMERSIVE MODAL (Meesho Style Full-Screen) */}
             {selectedReview && (
@@ -358,13 +358,13 @@ const FeaturedReviews = () => {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 md:mb-12">
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
-                            Community Verified
+                            Authentic Perspectives
                         </p>
-                        <h2 className="text-4xl md:text-5xl font-sans text-white">
-                            The Collection in the Wild
+                        <h2 className="text-4xl md:text-5xl font-sans text-zinc-900">
+                            Studio Chronicles
                         </h2>
                     </div>
-                    <Link to="/reviews" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-white/20 pb-1 hover:border-white hover:text-zinc-400 transition-all text-white/60">
+                    <Link to="/reviews" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">
                         View All Reviews
                     </Link>
                 </div>
@@ -405,16 +405,16 @@ const FeaturedReviews = () => {
                                     <div
                                         key={idx}
                                         onClick={() => openModal(item, idx)}
-                                        className="w-[280px] md:w-[400px] bg-zinc-900 border border-white/5 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-2 shrink-0 snap-center"
+                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-2 shrink-0 snap-center"
                                     >
                                         {/* MEDIA AREA (Top 60%) */}
                                         <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">
                                             {hasMedia ? (
                                                 <div className="w-full h-full relative">
                                                     {media[0].type === 'video' ? (
-                                                        <video src={resolveMediaURL(media[0].url)} muted loop autoPlay playsInline className="w-full h-full object-cover transition-all duration-700 brightness-75 group-hover/card:brightness-100" />
+                                                        <video src={resolveMediaURL(media[0].url)} muted loop autoPlay playsInline className="w-full h-full object-cover transition-all duration-700" />
                                                     ) : (
-                                                        <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover transition-all duration-700 brightness-75 group-hover/card:brightness-100" />
+                                                        <img src={resolveMediaURL(media[0].url)} alt="" className="w-full h-full object-cover transition-all duration-700" />
                                                     )}
 
                                                     {/* Count Badge */}
@@ -438,8 +438,8 @@ const FeaturedReviews = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-zinc-900 p-6 md:p-8 whitespace-normal">
-                                                    <p className="font-sans text-xl md:text-2xl text-zinc-700 text-center leading-tight">
+                                                <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-6 md:p-8 whitespace-normal">
+                                                    <p className="font-sans text-xl md:text-2xl text-zinc-300 text-center leading-tight">
                                                         "{r.comment?.substring(0, 50)}..."
                                                     </p>
                                                 </div>
@@ -447,31 +447,31 @@ const FeaturedReviews = () => {
                                         </div>
 
                                         {/* CONTENT AREA (Bottom 40%) */}
-                                        <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-zinc-900 whitespace-normal">
+                                        <div className="p-6 md:p-8 flex flex-col flex-1 relative bg-white whitespace-normal">
                                             <div className="flex gap-0.5 mb-4">
                                                 {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} size={14} fill="white" className="text-white" />
+                                                    <Star key={i} size={14} fill="currentColor" className="text-black" />
                                                 ))}
                                             </div>
 
-                                            <p className="font-sans text-sm md:text-base mb-6 line-clamp-6 leading-relaxed text-zinc-400 font-medium whitespace-normal">
+                                            <p className="font-sans text-sm md:text-base mb-6 line-clamp-6 leading-relaxed text-zinc-600 font-medium font-medium whitespace-normal">
                                                 "{r.comment}"
                                             </p>
 
-                                            <div className="mt-auto pt-4 border-t border-white/5 flex items-center justify-between">
+                                            <div className="mt-auto pt-4 border-t border-zinc-100 flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-xs text-black shadow-lg">
+                                                    <div className="w-10 h-10 bg-zinc-900 rounded-full flex items-center justify-center font-bold text-xs text-white shadow-lg">
                                                         {(r.name || "U").charAt(0)}
                                                     </div>
                                                         <div>
-                                                            <p className="text-[10px] font-black uppercase tracking-widest text-white line-clamp-1">{r.name}</p>
+                                                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900 line-clamp-1">{r.name}</p>
                                                             <div className="flex items-center gap-1">
-                                                                <CheckCircle2 size={9} className="text-blue-400 fill-blue-400/10" />
-                                                                <p className="text-[8px] text-zinc-500 font-black uppercase tracking-widest whitespace-nowrap">Verified Buyer</p>
+                                                                <CheckCircle2 size={9} className="text-blue-600 fill-blue-50" />
+                                                                <p className="text-[8px] text-zinc-400 font-black uppercase tracking-widest whitespace-nowrap">Verified Buyer</p>
                                                             </div>
                                                         </div>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-white hover:bg-white hover:text-black transition-colors">
+                                                <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
                                                     <ArrowUpRight size={14} />
                                                 </div>
                                             </div>
