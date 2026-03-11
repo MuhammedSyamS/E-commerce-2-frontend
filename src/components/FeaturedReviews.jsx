@@ -355,12 +355,12 @@ const FeaturedReviews = () => {
             <div className="max-w-[1440px] mx-auto px-6 md:px-24">
 
                 {/* HEADER */}
-                <div className="flex flex-row justify-between items-center mb-12 px-2 gap-4">
+                <div className="flex flex-row justify-between items-end mb-12 px-2 gap-4">
                     <div className="min-w-0">
                         <h2 className="text-2xl md:text-5xl font-black uppercase tracking-tighter whitespace-nowrap">Customer Reviews</h2>
                         <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1 whitespace-nowrap">What our community says</p>
                     </div>
-                    <Link to="/reviews" className="flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all whitespace-nowrap shrink-0">
+                    <Link to="/reviews" className="flex items-center gap-2 text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1.5 hover:border-black hover:text-zinc-600 transition-all whitespace-nowrap shrink-0">
                         View All <ArrowRight size={14} />
                     </Link>
                 </div>

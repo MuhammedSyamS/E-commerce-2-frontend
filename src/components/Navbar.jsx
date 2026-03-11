@@ -26,15 +26,17 @@ const Badge = ({ count, textColor = "text-white" }) => (
           textShadow: '0 2px 10px rgba(0,0,0,0.8), 0 1px 2px rgba(0,0,0,0.5)'
         }}
       >
-        <div className="relative overflow-hidden h-[1.2rem] flex items-center leading-none">
+        <div className="relative flex items-center justify-center min-w-[14px] h-[14px] bg-white rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.3)] px-1">
           <AnimatePresence mode="wait">
             <motion.span
               key={count}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className="w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.8)]"
-            />
+              className="text-[8px] text-black font-black leading-none"
+            >
+              {count > 9 ? '9+' : count}
+            </motion.span>
           </AnimatePresence>
         </div>
       </motion.div>
@@ -432,19 +434,19 @@ const Navbar = () => {
 
           {/* RIGHT SECTION */}
           <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
-            <button onClick={toggleSearch} className="relative group p-2 transition-all">
-              <Search className="w-4 h-4 text-white group-hover:text-zinc-200 transition" />
+            <button onClick={toggleSearch} className="relative group p-2.5 transition-all">
+              <Search className="w-5 h-5 md:w-4 md:h-4 text-white group-hover:text-zinc-200 transition" />
             </button>
 
             {/* WISHLIST */}
-            <Link to="/wishlist" className="relative group p-2 transition-all">
-              <Heart className={`w-4 h-4 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+            <Link to="/wishlist" className="relative group p-2.5 transition-all">
+              <Heart className={`w-5 h-5 md:w-4 md:h-4 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={wishlistCount} />
             </Link>
 
             {/* CART */}
-            <button onClick={toggleCart} className="relative group p-2 transition-all">
-              <ShoppingBag className={`w-4 h-4 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+            <button onClick={toggleCart} className="relative group p-2.5 transition-all">
+              <ShoppingBag className={`w-5 h-5 md:w-4 md:h-4 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={cartCount} />
             </button>
 
@@ -568,14 +570,11 @@ const Navbar = () => {
                     if (!user) { navigate('/login'); return; }
                     navigate('/account/notifications');
                   }}
-                  className="text-white p-2 bg-white/5 rounded-full relative"
+                  className="text-white p-3 bg-white/5 rounded-full relative"
                 >
-                  <Bell size={14} />
+                  <Bell size={18} />
                   <Badge count={unreadCount} />
                 </button>
-                <Link to={user ? "/account" : "/login"} onClick={() => setIsMenuOpen(false)} className="text-white p-2 bg-white/5 rounded-full relative">
-                  <User size={14} fill={user ? "currentColor" : "none"} />
-                </Link>
               </div>
             </div>
           </div>
