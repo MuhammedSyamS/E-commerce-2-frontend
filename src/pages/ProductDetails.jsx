@@ -515,8 +515,8 @@ const ProductDetails = () => {
 
                   return (
                     <>
-                      {/* MEDIA SIDE - 60% Cinematic Experience */}
-                      <div className={`relative w-full ${currentMedia ? 'md:w-[60%]' : 'hidden'} aspect-square md:aspect-auto bg-black flex items-center justify-center overflow-hidden shrink-0`}>
+                      {/* MEDIA SIDE - 60% Cinematic Experience (Desktop only or hidden when media null) */}
+                      <div className={`hidden md:flex relative w-full ${currentMedia ? 'md:w-[60%]' : 'hidden'} aspect-square md:aspect-auto bg-black items-center justify-center overflow-hidden shrink-0`}>
                         {currentMedia && (
                           <>
                             {currentMedia.type === 'video' ? (
@@ -559,7 +559,8 @@ const ProductDetails = () => {
 
                       {/* TEXT SIDE - 40% Rich Content */}
                       <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-8 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
-                        {/* USER INFO AT TOP */}
+                        
+                        {/* 1. USER INFO AT TOP (Mobile & Desktop) */}
                         <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
                             <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
                                 {(activeReviewItem.name || "V").charAt(0)}
@@ -582,14 +583,29 @@ const ProductDetails = () => {
                              </div>
                         </div>
 
-                        <div className="flex justify-between items-start mb-4">
-                            <div className="space-y-1.5">
+                        {/* 2. PRODUCT REFERENCE (Below User Info on Mobile) */}
+                        <div className="md:hidden mb-6 p-3 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
+                                <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
                             </div>
-                            <time className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-0.5">
-                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </time>
+                            <div className="min-w-0">
+                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate">{product.name}</p>
+                            </div>
                         </div>
 
+                        {/* 3. MEDIA (Mobile In-line) */}
+                        {currentMedia && (
+                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6">
+                             {currentMedia.type === 'video' ? (
+                                <video src={resolveMediaURL(currentMedia.url)} controls className="w-full h-full object-contain" />
+                              ) : (
+                                <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
+                              )}
+                          </div>
+                        )}
+
+                        {/* 4. TITLE & COMMENTS */}
                         <div className="flex-grow flex flex-col justify-start">
                             {activeReviewItem.title && (
                                 <h3 className="text-base md:text-lg font-black uppercase tracking-tight mb-4 leading-tight">
@@ -599,10 +615,12 @@ const ProductDetails = () => {
                             <p className="text-zinc-900 leading-[1.8] text-[13px] md:text-base font-medium whitespace-pre-line">
                                 "{activeReviewItem.comment}"
                             </p>
+                            <time className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-4">
+                                {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </time>
                         </div>
 
                         <div className="border-t border-zinc-50 pt-10 mt-auto">
-
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }}
                                 className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[9px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl scale-[1.02]' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-0.5' }`}
@@ -693,34 +711,6 @@ const ProductDetails = () => {
                         )}
                       </motion.div>
                     </AnimatePresence>
-                  </div>
-
-                  {/* PREMIUM TRUST BAR UNDER IMAGE */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4 mt-12 pt-10 border-t border-zinc-100/60 lg:px-4">
-                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
-                        <ShieldCheck size={20} strokeWidth={1} className="text-zinc-900" />
-                      </div>
-                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Secure<br/>Checkout</span>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
-                        <RotateCcw size={20} strokeWidth={1} className="text-zinc-900" />
-                      </div>
-                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">7 Days<br/>Return</span>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-500">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
-                        <Lock size={20} strokeWidth={1} className="text-zinc-900" />
-                      </div>
-                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Secured<br/>Payment</span>
-                    </div>
-                    <div className="flex flex-col items-center text-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-700">
-                      <div className="w-12 h-12 rounded-2xl bg-zinc-50 flex items-center justify-center border border-zinc-100 shadow-sm">
-                        <Award size={20} strokeWidth={1} className="text-zinc-900" />
-                      </div>
-                      <span className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-900 leading-tight">Authentic<br/>Product</span>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -868,6 +858,26 @@ const ProductDetails = () => {
                         <span className="font-black text-sm w-6 text-center">{quantity}</span>
                         <button onClick={() => setQuantity(Math.min(currentStock || 10, quantity + 1))} className="text-zinc-600 hover:text-black transition-colors"><Plus size={16} /></button>
                       </div>
+                    </div>
+
+                    {/* RELOCATED TRUST TILES (Compact for mobile side column) */}
+                    <div className="grid grid-cols-4 gap-2 pt-2">
+                        <div className="flex flex-col items-center text-center gap-2 p-3 bg-zinc-50/50 rounded-xl border border-zinc-100">
+                           <ShieldCheck size={16} strokeWidth={1.5} className="text-zinc-900" />
+                           <span className="text-[7px] font-black uppercase tracking-tight text-zinc-900 leading-none">Secure<br/>Checkout</span>
+                        </div>
+                        <div className="flex flex-col items-center text-center gap-2 p-3 bg-zinc-50/50 rounded-xl border border-zinc-100">
+                           <RotateCcw size={16} strokeWidth={1.5} className="text-zinc-900" />
+                           <span className="text-[7px] font-black uppercase tracking-tight text-zinc-900 leading-none">7 Days<br/>Return</span>
+                        </div>
+                        <div className="flex flex-col items-center text-center gap-2 p-3 bg-zinc-50/50 rounded-xl border border-zinc-100">
+                           <Lock size={16} strokeWidth={1.5} className="text-zinc-900" />
+                           <span className="text-[7px] font-black uppercase tracking-tight text-zinc-900 leading-none">Secured<br/>Payment</span>
+                        </div>
+                        <div className="flex flex-col items-center text-center gap-2 p-3 bg-zinc-50/50 rounded-xl border border-zinc-100">
+                           <Award size={16} strokeWidth={1.5} className="text-zinc-900" />
+                           <span className="text-[7px] font-black uppercase tracking-tight text-zinc-900 leading-none">Authentic<br/>Product</span>
+                        </div>
                     </div>
 
                     <div className="hidden lg:flex flex-col space-y-3">

@@ -201,25 +201,26 @@ const Home = () => {
       {activeView === 'all' && (
         <>
           {slides.length > 0 && (
-            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-zinc-100 group/hero overflow-hidden">
-              <AnimatePresence initial={false}>
+            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
+              <AnimatePresence initial={false} mode="wait">
                 <motion.div
                   key={currentSlide}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
                   className="absolute inset-0"
                 >
-                  <div className="absolute inset-0 overflow-hidden">
+                  <div className="absolute inset-0 overflow-hidden bg-black">
                     <motion.img
                       src={slides[currentSlide]?.img}
-                      initial={{ scale: 1.3 }}
+                      initial={{ scale: 1.3, opacity: 0 }}
                       animate={{ 
                         scale: 1.1 + (scrollY * 0.0005),
-                        y: scrollY * 0.1
+                        y: scrollY * 0.1,
+                        opacity: 1
                       }}
-                      transition={{ duration: 0 }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
                       className="w-full h-full object-cover"
                       alt={slides[currentSlide]?.title}
                       loading="eager"

@@ -443,13 +443,13 @@ const Navbar = () => {
             </button>
 
             {/* WISHLIST */}
-            <Link to="/wishlist" className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
+            <Link to="/wishlist" className="relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <Heart className={`w-5 h-5 transition ${wishlistCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
               <Badge count={wishlistCount} />
             </Link>
 
             {/* CART */}
-            <button onClick={toggleCart} className="hidden md:flex relative group p-2 rounded-full hover:bg-white/10 transition-all">
+            <button onClick={toggleCart} className="relative group p-2 rounded-full hover:bg-white/10 transition-all">
               <ShoppingBag className={`w-5 h-5 transition ${cartCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
               <Badge count={cartCount} />
             </button>
@@ -518,21 +518,6 @@ const Navbar = () => {
               </Link>
             )}
 
-            {/* PROFILE */}
-            {user ? (
-              <Link to="/account" className="relative group flex items-center gap-2 outline-none group/badge">
-                <User className="w-5 h-5 transition-all text-white fill-white scale-110 md:hover:text-zinc-400" />
-                <div className={`absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full border border-black shadow-[0_0_10px_rgba(255,255,255,0.5)] animate-pulse ${(user.totalSpend || 0) >= 50000 ? 'bg-gradient-to-tr from-zinc-200 to-zinc-400' :
-                  (user.totalSpend || 0) >= 20000 ? 'bg-amber-400' :
-                    (user.totalSpend || 0) >= 5000 ? 'bg-zinc-300' :
-                      'bg-orange-700'
-                  }`} />
-              </Link>
-            ) : (
-              <Link to="/login">
-                <User className="w-5 h-5 text-white hover:text-zinc-400 transition" />
-              </Link>
-            )}
 
           </div>
         </div>
@@ -555,15 +540,22 @@ const Navbar = () => {
                 <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.3em] mb-2">Support</p>
                 <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Need Help</Link>
                 <Link to="/contact" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest text-orange-400">Contact Us</Link>
-                <Link to="/account/orders" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
+                <Link to="/track-order" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Track Order</Link>
               </div>
             </div>
 
             <div className="border-t border-white/10 mt-10 pt-8 flex items-center justify-between">
               {user ? (
-                <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 text-[11px] font-black uppercase tracking-widest">Log Out</button>
+                <div className="flex flex-col gap-4">
+                  <Link to="/account" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
+                    <User size={14} className="fill-white" /> My Account
+                  </Link>
+                  <button onClick={() => { useStore.getState().logout(); navigate('/login'); setIsMenuOpen(false); }} className="text-red-500 text-[11px] font-black uppercase tracking-widest text-left">Log Out</button>
+                </div>
               ) : (
-                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest">Sign In</Link>
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="text-white text-[11px] font-black uppercase tracking-widest flex items-center gap-2">
+                   <User size={14} /> Sign In
+                </Link>
               )}
 
               <div className="flex items-center gap-4">
