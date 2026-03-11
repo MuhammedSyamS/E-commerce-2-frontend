@@ -27,6 +27,12 @@ const DEFAULT_SLIDES = [
     subtitle: "Curated Drops",
     img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
     link: "/shop"
+  },
+  {
+    title: "ARCHIVAL SELECTIONS",
+    subtitle: "Timeless Quality",
+    img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop",
+    link: "/shop"
   }
 ];
 
@@ -219,10 +225,10 @@ const Home = () => {
         <>
           {slides.length > 0 && (
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
-              <AnimatePresence>
+              <AnimatePresence mode="wait">
                 <motion.div
                   key={slides[currentSlide]?.key || currentSlide}
-                  initial={{ opacity: 1 }}
+                  initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.8, ease: "easeOut" }}

@@ -50,6 +50,7 @@ const Reviews = lazyWithRetry(() => import('./pages/Reviews'));
 const SupportHub = lazyWithRetry(() => import('./pages/SupportHub'));
 const ReturnPortal = lazyWithRetry(() => import('./pages/ReturnPortal'));
 const Invoice = lazyWithRetry(() => import('./pages/Invoice'));
+const ReviewDetails = lazyWithRetry(() => import('./pages/ReviewDetails'));
 
 // Content Pages
 const About = lazyWithRetry(() => import('./pages/About'));
@@ -140,9 +141,8 @@ const App = () => {
     <ErrorBoundary>
       <ToastProvider>
         <div className="font-sans text-[#1a1a1a] flex flex-col min-h-screen bg-white">
-          {/* Navbar Hidden on Admin Routes to prevent overlap/layout conflicts */}
-          {/* GLOBAL NAVBAR (Visible everywhere, handles Admin/User logic internally) */}
-          <Navbar />
+          {/* Navbar Hidden on Admin Routes & Full Screen Review */}
+          {!location.pathname.startsWith('/admin') && !location.pathname.startsWith('/review/') && <Navbar />}
 
           <main className="flex-grow">
             <ScrollToTop />
@@ -183,6 +183,7 @@ const App = () => {
                 <Route path="/returns" element={<Returns />} />
 
                 <Route path="/reviews" element={<Reviews />} />
+                <Route path="/review/:reviewId" element={<ReviewDetails />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
