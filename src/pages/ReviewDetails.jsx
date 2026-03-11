@@ -8,38 +8,26 @@ import { Loader2 } from 'lucide-react';
 const ReviewDetails = () => {
     const { reviewId } = useParams();
     const navigate = useNavigate();
+    const [allReviews, setAllReviews] = useState([]);
     const [reviewData, setReviewData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [mediaIndex, setMediaIndex] = useState(0);
 
     useEffect(() => {
-        const fetchReview = async () => {
+        const fetchReviews = async () => {
             try {
-                // We'll use the featured reviews endpoint and find the specific one for now
-                // Ideally there should be a /reviews/:id endpoint
                 const { data } = await api.get('/products/reviews/featured');
+                setAllReviews(data);
+                
                 const review = data.find(item => {
                     const r = item.review || item;
                     return r._id === reviewId;
                 });
                 
                 if (review) {
-                    const r = review.review || review;
-                    const images = Array.isArray(r.images) ? r.images : (r.reviewImage ? [r.reviewImage] : []);
-                    const videos = Array.isArray(r.videos) ? r.videos : (r.video ? [r.video] : []);
-                    
-                    const media = [
-                        ...videos.map(url => ({ type: 'video', url })),
-                        ...images.map(url => ({ type: 'image', url }))
-                    ];
-
-                    setReviewData({
-                        ...r,
-                        productName: review.productName,
-                        productSlug: review.productSlug,
-                        productImage: review.productImage,
-                        media
-                    });
+                    processReview(review);
+                } else {
+                    setReviewData(null);
                 }
             } catch (err) {
                 console.error("Error fetching review:", err);
@@ -47,8 +35,28 @@ const ReviewDetails = () => {
                 setLoading(false);
             }
         };
-        fetchReview();
+        fetchReviews();
     }, [reviewId]);
+
+    const processReview = (review) => {
+        const r = review.review || review;
+        const images = Array.isArray(r.images) ? r.images : (r.reviewImage ? [r.reviewImage] : []);
+        const videos = Array.isArray(r.videos) ? r.videos : (r.video ? [r.video] : []);
+        
+        const media = [
+            ...videos.map(url => ({ type: 'video', url })),
+            ...images.map(url => ({ type: 'image', url }))
+        ];
+
+        setReviewData({
+            ...r,
+            productName: review.productName,
+            productSlug: review.productSlug,
+            productImage: review.productImage,
+            media
+        });
+        setMediaIndex(0); // Reset media index on new review
+    };
 
     const nextMedia = (e) => {
         e.stopPropagation();
@@ -60,6 +68,24 @@ const ReviewDetails = () => {
         e.stopPropagation();
         if (!reviewData?.media || reviewData.media.length <= 1) return;
         setMediaIndex(prev => (prev - 1 + reviewData.media.length) % reviewData.media.length);
+    };
+
+    const nextReview = (e) => {
+        e.stopPropagation();
+        if (allReviews.length <= 1) return;
+        const currentIdx = allReviews.findIndex(item => (item.review?._id || item._id) === reviewId);
+        const nextIdx = (currentIdx + 1) % allReviews.length;
+        const nextId = allReviews[nextIdx].review?._id || allReviews[nextIdx]._id;
+        navigate(`/review/${nextId}`, { replace: true });
+    };
+
+    const prevReview = (e) => {
+        e.stopPropagation();
+        if (allReviews.length <= 1) return;
+        const currentIdx = allReviews.findIndex(item => (item.review?._id || item._id) === reviewId);
+        const prevIdx = (currentIdx - 1 + allReviews.length) % allReviews.length;
+        const prevId = allReviews[prevIdx].review?._id || allReviews[prevIdx]._id;
+        navigate(`/review/${prevId}`, { replace: true });
     };
 
     if (loading) {
@@ -95,8 +121,8 @@ const ReviewDetails = () => {
                     <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-[10px] font-black text-white">
                         {(reviewData.name || "U").charAt(0)}
                     </div>
-                    <div>
-                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-950 leading-none mb-1">{reviewData.name}</p>
+                    <div className="max-w-[120px]">
+                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-950 leading-none mb-1 truncate">{reviewData.name}</p>
                         <div className="flex gap-0.5">
                             {[...Array(5)].map((_, i) => (
                                 <Star key={i} size={8} fill="currentColor" className="text-black" />
@@ -104,12 +130,8 @@ const ReviewDetails = () => {
                         </div>
                     </div>
                 </div>
-                <button 
-                    onClick={() => navigate('/')}
-                    className="bg-black/5 text-zinc-900 p-2 rounded-full backdrop-blur-md"
-                >
-                    <X size={24} />
-                </button>
+                {/* Removed the X button from here as requested */}
+                <div className="w-10"></div> {/* Spacer to keep header balanced if needed, or just leave it */}
             </div>
 
             {/* MEDIA SECTION */}
@@ -134,33 +156,37 @@ const ReviewDetails = () => {
                     <div className="text-zinc-300 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                 )}
 
-                {/* MEDIA NAVIGATION */}
+                {/* MEDIA NAVIGATION (Inner) */}
                 {reviewData.media.length > 1 && (
-                    <>
-                        <div className="absolute inset-y-0 left-0 w-1/4 z-30 flex items-center justify-start pl-4" onClick={prevMedia}>
+                    <div className="absolute inset-0 z-30 pointer-events-none">
+                        <div className="absolute inset-y-0 left-0 w-1/4 pointer-events-auto flex items-center justify-start pl-4" onClick={prevMedia}>
                             <div className="p-2 bg-black/5 backdrop-blur-sm rounded-full text-black/20">
-                                <ChevronLeft size={24} />
+                                <ChevronLeft size={20} />
                             </div>
                         </div>
-                        <div className="absolute inset-y-0 right-0 w-1/4 z-30 flex items-center justify-end pr-4" onClick={nextMedia}>
+                        <div className="absolute inset-y-0 right-0 w-1/4 pointer-events-auto flex items-center justify-end pr-4" onClick={nextMedia}>
                             <div className="p-2 bg-black/5 backdrop-blur-sm rounded-full text-black/20">
-                                <ChevronRight size={24} />
+                                <ChevronRight size={20} />
                             </div>
                         </div>
-                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-black/5">
-                            {reviewData.media.map((_, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`w-1 h-1 rounded-full transition-all duration-300 ${idx === mediaIndex ? 'bg-black scale-125' : 'bg-black/10'}`}
-                                />
-                            ))}
-                        </div>
-                    </>
+                    </div>
+                )}
+                
+                {/* MEDIA INDICATORS */}
+                {reviewData.media.length > 1 && (
+                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-black/5">
+                        {reviewData.media.map((_, idx) => (
+                            <div
+                                key={idx}
+                                className={`w-1 h-1 rounded-full transition-all duration-300 ${idx === mediaIndex ? 'bg-black scale-125' : 'bg-black/10'}`}
+                            />
+                        ))}
+                    </div>
                 )}
             </div>
 
             {/* CONTENT SECTION */}
-            <div className="w-full p-6 pb-24 bg-white flex flex-col flex-1">
+            <div className="w-full p-6 pb-32 bg-white flex flex-col flex-1">
                 {/* PRODUCT REFERENCE */}
                 <Link to={`/product/${reviewData.productSlug}`} className="flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
                     <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-100 shrink-0">
@@ -194,6 +220,24 @@ const ReviewDetails = () => {
                 )}
             </div>
             
+            {/* NEXT/PREV REVIEW NAVIGATION (Bottom Bar above CTA) */}
+            <div className="fixed bottom-24 inset-x-0 px-4 flex justify-between items-center pointer-events-none">
+                <button 
+                    onClick={prevReview}
+                    className="pointer-events-auto bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl border border-zinc-100 text-zinc-900 active:scale-90 transition-all flex items-center gap-2"
+                >
+                    <ChevronLeft size={20} />
+                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Prev Review</span>
+                </button>
+                <button 
+                    onClick={nextReview}
+                    className="pointer-events-auto bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl border border-zinc-100 text-zinc-900 active:scale-90 transition-all flex items-center gap-2"
+                >
+                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Next Review</span>
+                    <ChevronRight size={20} />
+                </button>
+            </div>
+
             {/* BOTTOM CTA */}
             <div className="fixed bottom-0 inset-x-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent">
                 <Link 
