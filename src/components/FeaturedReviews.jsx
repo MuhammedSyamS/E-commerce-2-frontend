@@ -164,11 +164,29 @@ const FeaturedReviews = () => {
                             <X size={20} />
                         </button>
 
-                        {/* Media Section (TOP) */}
+                        {/* DESKTOP MEDIA SECTION (Hidden on Mobile) */}
+                        <div className="hidden md:flex w-1/2 bg-zinc-950 relative items-center justify-center group select-none shrink-0 border-r border-zinc-100">
+                            {selectedReview.currentMedia ? (
+                                selectedReview.currentMedia.type === 'video' ? (
+                                    <video
+                                        controls
+                                        autoPlay
+                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
+                                        className="w-full h-full object-contain"
+                                    />
+                                ) : (
+                                    <img
+                                        src={resolveMediaURL(selectedReview.currentMedia.url)}
+                                        alt=""
+                                        className="w-full h-full object-contain"
+                                    />
+                                )
+                            ) : (
+                                <div className="text-zinc-500 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                             )}
 
-                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY (DEKTOP ONLY) */}
-                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none hidden md:block">
+                            {/* DESKTOP PRODUCT OVERLAY */}
+                            <div className="absolute top-8 left-8 z-30 pointer-events-none">
                                 <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
                                     <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
                                         <img src={resolveMediaURL(selectedReview.productImage)} alt="" className="w-full h-full object-cover" />
@@ -179,10 +197,6 @@ const FeaturedReviews = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* MOBILE NAVIGATION OVERLAYS */}
-                            <div className="absolute inset-y-0 left-0 w-20 z-20 md:hidden" onClick={prevReview} />
-                            <div className="absolute inset-y-0 right-0 w-20 z-20 md:hidden" onClick={nextReview} />
 
                             {/* MEDIA NAVIGATION ARROWS (Local) */}
                             {selectedReview.media?.length > 1 && (
@@ -219,41 +233,86 @@ const FeaturedReviews = () => {
                             )}
                         </div>
 
-                        {/* Content Section (BOTTOM) */}
-                        <div className="w-full md:w-1/2 p-8 md:p-14 flex flex-col bg-white overflow-y-auto no-scrollbar relative">
-                            {/* USER INFO AT TOP */}
-                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
-                                <div className="w-12 h-12 rounded-full bg-zinc-950 flex items-center justify-center text-xs font-sans font-black text-white shadow-xl">
+                        {/* CONTENT SECTION (W-FULL ON MOBILE, W-1/2 ON DESKTOP) */}
+                        <div className="w-full md:w-1/2 p-6 md:p-14 flex flex-col bg-white overflow-y-auto no-scrollbar relative">
+                            
+                            {/* 1. USER IDENTITY (TOP) */}
+                            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
+                                <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-950 flex items-center justify-center text-xs font-black text-white shadow-xl">
                                     {(selectedReview.name || "U").charAt(0)}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h4 className="text-xs md:text-sm font-black text-zinc-900 leading-none uppercase tracking-widest truncate">{selectedReview.name}</h4>
+                                    <div className="flex items-center justify-between mb-1 md:mb-2">
+                                        <h4 className="text-[10px] md:text-sm font-black text-zinc-900 leading-none uppercase tracking-widest truncate">{selectedReview.name}</h4>
                                         <div className="flex gap-0.5">
                                             {[...Array(5)].map((_, i) => (
-                                                <Star key={i} size={11} fill="currentColor" className="text-black" />
+                                                <Star key={i} size={10} fill="currentColor" className="text-black" />
                                             ))}
                                         </div>
                                     </div>
-                                    <p className="text-zinc-400 text-[9px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Studio Member"}</p>
+                                    <p className="text-zinc-400 text-[8px] uppercase tracking-[0.2em] font-black">{selectedReview.role || "Verified Studio Member"}</p>
                                 </div>
                             </div>
 
+                            {/* 2. MEDIA (MOBILE INLINE) */}
+                            <div className="md:hidden w-full mb-6 shrink-0">
+                                {selectedReview.currentMedia ? (
+                                    <div className="w-full aspect-square bg-black rounded-2xl overflow-hidden flex items-center justify-center relative">
+                                        {selectedReview.currentMedia.type === 'video' ? (
+                                            <video
+                                                controls
+                                                src={resolveMediaURL(selectedReview.currentMedia.url)}
+                                                className="w-full h-full object-contain"
+                                            />
+                                        ) : (
+                                            <img
+                                                src={resolveMediaURL(selectedReview.currentMedia.url)}
+                                                alt=""
+                                                className="w-full h-full object-contain"
+                                            />
+                                        )}
+                                        
+                                        {/* Mobile Media Nav Overlay */}
+                                        {selectedReview.media?.length > 1 && (
+                                            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                                                {selectedReview.media.map((_, idx) => (
+                                                    <div key={idx} className={`w-1 h-1 rounded-full ${idx === selectedReview.mediaIndex ? 'bg-white' : 'bg-white/30'}`} />
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="w-full aspect-video bg-zinc-50 rounded-2xl flex items-center justify-center border border-dashed border-zinc-200">
+                                        <p className="text-[8px] font-black uppercase text-zinc-300 tracking-widest">No Media Experience</p>
+                                    </div>
+                                )}
+                            </div>
 
-                            {/* COMMENT AREA (With Scroller) */}
+                            {/* 3. PRODUCT REFERENCE (MOBILE) */}
+                            <div className="md:hidden flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
+                                <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
+                                    <img src={resolveMediaURL(selectedReview.productImage)} alt="" className="w-full h-full object-cover" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product Reference</p>
+                                    <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate">{selectedReview.productName}</p>
+                                </div>
+                            </div>
+
+                            {/* 4. COMMENT AREA */}
                             <div className="flex-1 overflow-y-auto no-scrollbar mb-8 pr-2">
                                 <div className="space-y-4">
-                                    <p className={`text-zinc-950 leading-[1.6] text-[13px] md:text-base font-medium ${!commentExpanded && selectedReview.comment?.length > 150 ? 'line-clamp-4' : ''}`}>
-                                        {selectedReview.comment}
+                                    <p className={`text-zinc-950 leading-[1.8] text-[12px] md:text-base font-medium whitespace-pre-line ${!commentExpanded && selectedReview.comment?.length > 200 ? 'line-clamp-6' : ''}`}>
+                                        "{selectedReview.comment}"
                                     </p>
                                     
-                                    {selectedReview.comment?.length > 150 && (
+                                    {selectedReview.comment?.length > 200 && (
                                         <button 
                                             onClick={() => setCommentExpanded(!commentExpanded)}
-                                            className="text-xs font-black uppercase tracking-widest text-zinc-900 border-b-2 border-zinc-900 pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-all flex items-center gap-2"
+                                            className="text-[9px] font-black uppercase tracking-widest text-zinc-900 border-b border-zinc-900 pb-0.5 hover:text-zinc-500 hover:border-zinc-500 transition-all flex items-center gap-1"
                                         >
                                             {commentExpanded ? 'Show Less' : 'View Full Experience'}
-                                            <ChevronRight size={14} className={`transition-transform duration-300 ${commentExpanded ? '-rotate-90' : 'rotate-90'}`} />
+                                            <ChevronRight size={12} className={`transition-transform duration-300 ${commentExpanded ? '-rotate-90' : 'rotate-90'}`} />
                                         </button>
                                     )}
                                 </div>
@@ -263,10 +322,10 @@ const FeaturedReviews = () => {
                                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover/response:opacity-10 transition-opacity">
                                             <Zap size={48} fill="black" />
                                         </div>
-                                        <p className="text-[10px] font-black uppercase tracking-widest text-zinc-900 mb-4 flex items-center gap-2">
+                                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 mb-4 flex items-center gap-2">
                                             <span className="w-2 h-2 bg-black rounded-full animate-pulse" /> Official Response
                                         </p>
-                                        <p className="text-xs md:text-sm text-zinc-500 leading-relaxed italic font-medium">{selectedReview.adminResponse}</p>
+                                        <p className="text-[11px] md:text-sm text-zinc-500 leading-relaxed italic font-medium">{selectedReview.adminResponse}</p>
                                     </div>
                                 )}
                             </div>
