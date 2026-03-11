@@ -515,59 +515,99 @@ const ProductDetails = () => {
 
                   return (
                     <>
-                      {/* MEDIA SIDE - 60% Cinematic Experience (Desktop only or hidden when media null) */}
-                      <div className={`hidden md:flex relative w-full ${currentMedia ? 'md:w-[60%]' : 'hidden'} aspect-square md:aspect-auto bg-black items-center justify-center overflow-hidden shrink-0`}>
-                        {currentMedia && (
-                          <>
-                            {currentMedia.type === 'video' ? (
-                              <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain" />
-                            ) : (
-                              <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
-                            )}
-
-                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY */}
-                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none">
-                                <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
-                                    <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
-                                        <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
-                                        <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{product.name}</p>
+                      {/* MEDIA SIDE (DESKTOP) / HEADER & MEDIA (MOBILE) */}
+                      <div className={`w-full ${currentMedia ? 'md:w-[60%]' : 'hidden'} flex flex-col md:flex-row bg-zinc-950 md:bg-black shrink-0 overflow-hidden relative`}>
+                        
+                        {/* 1. MOBILE HEADER (Sticky) */}
+                        <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-zinc-950 z-[140] shrink-0">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-black text-black">
+                                    {(activeReviewItem.name || "V").charAt(0)}
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-white leading-none mb-1">{activeReviewItem.name || "Verified Buyer"}</p>
+                                    <div className="flex gap-0.5">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star key={i} size={8} fill="currentColor" className="text-white" />
+                                        ))}
                                     </div>
                                 </div>
                             </div>
+                            <button 
+                                onClick={() => setSelectedReviewIdx(null)}
+                                className="bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-all"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                            {allMedia.length > 1 && (
-                              <>
-                                <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
-                                  <ChevronLeft size={20} />
-                                </button>
-                                <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
-                                  <ChevronRight size={20} />
-                                </button>
-                                <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-                                  {allMedia.map((_, i) => (
-                                    <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i === selectedMediaIdx ? 'w-8 bg-white' : 'w-2 bg-white/30'}`} />
-                                  ))}
-                                </div>
-                              </>
+                        {/* DESKTOP MEDIA VIEW */}
+                        <div className="flex-1 relative flex items-center justify-center bg-black overflow-hidden h-[50vh] md:h-full">
+                            {currentMedia && (
+                                <>
+                                    {currentMedia.type === 'video' ? (
+                                        <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain" />
+                                    ) : (
+                                        <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
+                                    )}
+
+                                    {/* MOBILE MEDIA NAV OVERLAYS (Meesho Style) */}
+                                    <div className="absolute inset-y-0 left-0 w-1/4 z-30 flex items-center justify-start pl-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }}>
+                                        <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                            <ChevronLeft size={24} />
+                                        </div>
+                                    </div>
+                                    <div className="absolute inset-y-0 right-0 w-1/4 z-30 flex items-center justify-end pr-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }}>
+                                        <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                            <ChevronRight size={24} />
+                                        </div>
+                                    </div>
+
+                                    {/* DESKTOP PRODUCT OVERLAY */}
+                                    <div className="hidden md:block absolute top-8 left-8 z-30 pointer-events-none">
+                                        <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
+                                            <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
+                                                <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
+                                                <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{product.name}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* DESKTOP MEDIA NAVIGATION */}
+                                    {allMedia.length > 1 && (
+                                        <>
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }} className="hidden md:flex absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                                <ChevronLeft size={20} />
+                                            </button>
+                                            <button onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }} className="hidden md:flex absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20">
+                                                <ChevronRight size={20} />
+                                            </button>
+                                            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                                                {allMedia.map((_, i) => (
+                                                    <div key={i} className={`w-1 h-1 rounded-full transition-all duration-300 ${i === selectedMediaIdx ? 'bg-white scale-125' : 'bg-white/20'}`} />
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </>
                             )}
-                          </>
-                        )}
+                        </div>
                       </div>
 
-                      {/* TEXT SIDE - 40% Rich Content */}
-                      <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-6 md:p-14 flex flex-col bg-white shrink-0 overflow-y-auto no-scrollbar relative`}>
+                      {/* CONTENT SIDE (MOBILE - SCROLLABLE BELOW MEDIA) */}
+                      <div className={`w-full ${currentMedia ? 'md:w-[40%]' : 'md:w-full'} p-6 md:p-14 flex flex-col bg-zinc-950 md:bg-white shrink-0 md:overflow-y-auto no-scrollbar relative flex-1`}>
                         
-                        {/* 1. USER INFO AT TOP (Always visible first core) */}
-                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
+                        {/* DESKTOP USER INFO (Hidden on Mobile Header) */}
+                        <div className="hidden md:flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50 pt-2">
+                            <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
                                 {(activeReviewItem.name || "V").charAt(0)}
                             </div>
                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center justify-between mb-1 md:mb-2">
-                                    <p className="text-[10px] md:text-sm font-black uppercase tracking-widest text-zinc-900 leading-none">
+                                <div className="flex items-center justify-between mb-2">
+                                    <p className="text-sm font-black uppercase tracking-widest text-zinc-900 leading-none">
                                         {activeReviewItem.name || "Verified Buyer"}
                                     </p>
                                     <div className="flex gap-0.5">
@@ -583,50 +623,57 @@ const ProductDetails = () => {
                              </div>
                         </div>
 
-                        {/* 2. MEDIA (MOBILE INLINE) */}
-                        {currentMedia && (
-                          <div className="md:hidden w-full aspect-square bg-black rounded-2xl overflow-hidden mb-6 flex items-center justify-center shrink-0">
-                             {currentMedia.type === 'video' ? (
-                                <video src={resolveMediaURL(currentMedia.url)} controls className="w-full h-full object-contain" />
-                              ) : (
-                                <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
-                              )}
-                          </div>
-                        )}
-
-                        {/* 3. PRODUCT REFERENCE (MOBILE) */}
-                        <div className="md:hidden flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
-                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-200 shrink-0">
+                        {/* MOBILE PRODUCT REFERENCE */}
+                        <div className="md:hidden flex items-center gap-3 p-3 mb-6 bg-white/5 rounded-2xl border border-white/10">
+                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
                                 <img src={resolveMediaURL(product.images[0])} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div className="min-w-0">
-                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product Reference</p>
-                                <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 truncate">{product.name}</p>
+                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-none mb-1">Product Reference</p>
+                                <p className="text-[9px] font-black uppercase tracking-widest text-white truncate">{product.name}</p>
                             </div>
                         </div>
 
-                        {/* 4. TITLE & COMMENTS */}
+                        {/* COMMENT AREA */}
                         <div className="flex-grow flex flex-col justify-start">
                             {activeReviewItem.title && (
-                                <h3 className="text-sm md:text-lg font-black uppercase tracking-tight mb-4 leading-tight text-zinc-900">
+                                <h3 className="text-sm md:text-lg font-black uppercase tracking-tight mb-4 leading-tight text-white md:text-zinc-900">
                                     {activeReviewItem.title}
                                 </h3>
                             )}
-                            <p className="text-zinc-900 leading-[1.8] text-[12px] md:text-base font-medium whitespace-pre-line">
+                            <p className="text-zinc-300 md:text-zinc-900 leading-[1.8] text-[13px] md:text-base font-medium whitespace-pre-line">
                                 "{activeReviewItem.comment}"
                             </p>
-                            <time className="text-[8px] text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-6 mt-auto">
+                            <time className="text-[8px] text-zinc-500 md:text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-6 mt-auto">
                                 {new Date(activeReviewItem.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                             </time>
                         </div>
 
-                        <div className="border-t border-zinc-50 pt-8 mt-6">
+                        <div className="border-t border-white/5 md:border-zinc-50 pt-8 mt-6">
                             <button
                                 onClick={(e) => { e.stopPropagation(); handleHelpfulVote(activeReviewItem._id); }}
-                                className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[8px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-black text-white shadow-xl scale-[1.02]' : 'bg-zinc-100 text-zinc-500 hover:bg-black hover:text-white hover:shadow-lg hover:-translate-y-0.5' }`}
+                                className={`w-full flex items-center justify-center gap-3 py-4 rounded-[1.5rem] text-[8px] font-black uppercase tracking-[0.25em] transition-all duration-500 ${ (user && activeReviewItem.helpful?.includes(user._id)) ? 'bg-white text-black shadow-xl scale-[1.02]' : 'bg-white/5 md:bg-zinc-100 text-white md:text-zinc-500 hover:bg-white hover:text-black hover:shadow-lg' }`}
                             >
                                 <Heart size={14} fill={(user && activeReviewItem.helpful?.includes(user._id)) ? "currentColor" : "none"} />
                                 <span>Helpful ({activeReviewItem.helpful?.length || 0})</span>
+                            </button>
+                        </div>
+
+                        {/* MOBILE REVIEW NAVIGATION */}
+                        <div className="md:hidden grid grid-cols-2 gap-3 mt-4">
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + sortedReviews.length) % sortedReviews.length); setSelectedMediaIdx(0); }}
+                                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 border border-white/10 text-white active:scale-95 transition-all text-center"
+                            >
+                                <ChevronLeft size={20} className="mb-1 opacity-50" />
+                                <span className="text-[7px] font-black tracking-widest uppercase">Previous Review</span>
+                            </button>
+                            <button 
+                                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % sortedReviews.length); setSelectedMediaIdx(0); }}
+                                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/10 border border-white/20 text-white active:scale-95 transition-all text-center"
+                            >
+                                <ChevronRight size={20} className="mb-1 opacity-50" />
+                                <span className="text-[7px] font-black tracking-widest uppercase">Next Review</span>
                             </button>
                         </div>
                       </div>

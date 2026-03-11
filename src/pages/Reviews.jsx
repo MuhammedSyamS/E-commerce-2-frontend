@@ -46,32 +46,39 @@ const Reviews = () => {
                 <meta name="description" content="Read what our customers are saying about SLOOK." />
             </Helmet>
 
-            {/* LIGHTBOX MODAL */}
+            {/* LIGHTBOX MODAL (Meesho Style Full-Screen) */}
             {selectedReviewIdx !== null && (
                 <div
-                    className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300"
+                    className="fixed inset-0 z-[100] bg-black flex items-center justify-center animate-in fade-in zoom-in-95 duration-300"
                     onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
                 >
-                    <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
-
-                    {/* OUTER NAV: PREV REVIEW */}
+                    {/* DESKTOP-ONLY NEXT/PREV ARROWS */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             setSelectedReviewIdx((prev) => (prev - 1 + filteredReviews.length) % filteredReviews.length);
                             setSelectedMediaIdx(0);
                         }}
-                        className="hidden md:flex absolute left-8 text-black/20 hover:text-black transition-all z-20 group flex-col items-center gap-2"
+                        className="hidden md:flex fixed left-8 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex-col items-center gap-2"
                     >
-                        <ChevronLeft size={48} strokeWidth={1.5} className="drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+                        <ChevronLeft size={64} strokeWidth={1} />
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length);
+                            setSelectedMediaIdx(0);
+                        }}
+                        className="hidden md:flex fixed right-8 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex-col items-center gap-2"
+                    >
+                        <ChevronRight size={64} strokeWidth={1} />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
                     </button>
 
                     {/* MODAL CONTENT */}
                     <div
-                        className="relative w-full max-w-7xl bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[90vh] md:max-h-[85vh]"
+                        className="bg-zinc-950 md:bg-white w-full h-full md:w-auto md:max-w-7xl md:h-auto md:max-h-[85vh] md:rounded-[3rem] overflow-hidden flex flex-col md:flex-row shadow-2xl relative mx-auto"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {(() => {
@@ -86,67 +93,103 @@ const Reviews = () => {
 
                             return (
                                 <>
-                                    {/* MEDIA SIDE - Only show if media exists */}
-                                    {currentMedia && (
-                                        <div className="relative w-full md:w-1/2 aspect-[4/3] md:aspect-auto bg-zinc-100 flex items-center justify-center overflow-hidden flex-shrink-0">
-                                            {/* INNER NAVIGATION ARROWS (Lowered) */}
-                                            {allMedia.length > 1 && (
-                                                <>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length);
-                                                        }}
-                                                        className="absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20"
-                                                    >
-                                                        <ChevronLeft size={20} />
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length);
-                                                        }}
-                                                        className="absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20"
-                                                    >
-                                                        <ChevronRight size={20} />
-                                                    </button>
-                                                </>
-                                            )}
-
-                                            {currentMedia.type === 'video' ? (
-                                                <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain bg-black" />
-                                            ) : (
-                                                <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain bg-black" />
-                                            )}
-
-                                            {/* MEDIA DOTS */}
-                                            {allMedia.length > 1 && (
-                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
-                                                    {allMedia.map((_, i) => (
-                                                        <div key={i} className={`h-1.5 rounded-full transition-all ${i === selectedMediaIdx ? 'w-4 bg-white' : 'w-1.5 bg-white/50'}`} />
+                                    {/* 1. MOBILE HEADER (Sticky Top) */}
+                                    <div className="md:hidden flex items-center justify-between p-4 border-b border-white/5 bg-zinc-950 z-[140]">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[10px] font-black text-black">
+                                                {(activeReviewItem.review.name || "V").charAt(0)}
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-white leading-none mb-1">{activeReviewItem.review.name || "Verified Buyer"}</p>
+                                                <div className="flex gap-0.5">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} size={8} fill="currentColor" className="text-white" />
                                                     ))}
-                                                </div>
-                                            )}
-
-                                            {/* ABSOLUTE PRODUCT REFERENCE OVERLAY */}
-                                            <div className="absolute top-4 left-4 md:top-8 md:left-8 z-30 pointer-events-none">
-                                                <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
-                                                    <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
-                                                        <img src={resolveMediaURL(activeReviewItem.productImage)} alt="" className="w-full h-full object-cover" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
-                                                        <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{activeReviewItem.productName}</p>
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    )}
+                                        <button 
+                                            onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
+                                            className="bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-all"
+                                        >
+                                            <X size={20} />
+                                        </button>
+                                    </div>
 
-                                    {/* TEXT SIDE */}
-                                    <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-14 flex flex-col bg-white overflow-y-auto custom-scrollbar relative`}>
-                                        {/* USER INFO AT TOP */}
-                                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
+                                    {/* DESKTOP CLOSE BUTTON */}
+                                    <button 
+                                        onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
+                                        className="hidden md:block absolute top-6 right-6 z-[130] bg-black text-white p-2.5 rounded-full shadow-2xl border border-white/20 hover:scale-110 active:scale-95 transition-all"
+                                    >
+                                        <X size={20} />
+                                    </button>
+
+                                    {/* MEDIA SIDE (FULL ON MOBILE, 1/2 ON DESKTOP) */}
+                                    <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'hidden'} h-[50vh] md:h-auto bg-black relative flex items-center justify-center group select-none shrink-0 overflow-hidden`}>
+                                        {currentMedia && (
+                                            <>
+                                                {currentMedia.type === 'video' ? (
+                                                    <video src={resolveMediaURL(currentMedia.url)} controls autoPlay className="w-full h-full object-contain" />
+                                                ) : (
+                                                    <img src={resolveMediaURL(currentMedia.url)} alt="Review Media" className="w-full h-full object-contain" />
+                                                )}
+
+                                                {/* MOBILE MEDIA NAVIGATION OVERLAYS (Meesho Style) */}
+                                                <div className="absolute inset-y-0 left-0 w-1/4 z-30 flex items-center justify-start pl-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }}>
+                                                    <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                                        <ChevronLeft size={24} />
+                                                    </div>
+                                                </div>
+                                                <div className="absolute inset-y-0 right-0 w-1/4 z-30 flex items-center justify-end pr-4 md:hidden" onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }}>
+                                                    <div className="p-2 bg-black/20 backdrop-blur-sm rounded-full text-white/50">
+                                                        <ChevronRight size={24} />
+                                                    </div>
+                                                </div>
+
+                                                {/* DESKTOP PRODUCT OVERLAY */}
+                                                <div className="hidden md:block absolute top-8 left-8 z-30 pointer-events-none">
+                                                    <div className="flex items-center gap-2 px-2.5 py-1 bg-black/40 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl">
+                                                        <div className="w-7 h-7 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
+                                                            <img src={resolveMediaURL(activeReviewItem.productImage)} alt="" className="w-full h-full object-cover" />
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-[6px] font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-0.5">Reviewing</p>
+                                                            <p className="text-[8px] font-black uppercase tracking-widest text-white truncate max-w-[100px]">{activeReviewItem.productName}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* DESKTOP MEDIA NAVIGATION (Lower Center) */}
+                                                {allMedia.length > 1 && (
+                                                    <>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev - 1 + allMedia.length) % allMedia.length); }}
+                                                            className="hidden md:flex absolute left-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20"
+                                                        >
+                                                            <ChevronLeft size={20} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); setSelectedMediaIdx((prev) => (prev + 1) % allMedia.length); }}
+                                                            className="hidden md:flex absolute right-6 bottom-10 p-3 rounded-full bg-black/40 backdrop-blur-md text-white/60 hover:bg-white hover:text-black transition-all z-20"
+                                                        >
+                                                            <ChevronRight size={20} />
+                                                        </button>
+                                                        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-20 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+                                                            {allMedia.map((_, i) => (
+                                                                <div key={i} className={`w-1 h-1 rounded-full transition-all duration-300 ${i === selectedMediaIdx ? 'bg-white scale-125' : 'bg-white/20'}`} />
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* TEXT SIDE (MOBILE - SCROLLABLE BELOW MEDIA) */}
+                                    <div className={`w-full ${currentMedia ? 'md:w-1/2' : 'md:w-full'} p-6 md:p-14 flex flex-col bg-zinc-950 md:bg-white shrink-0 md:overflow-y-auto no-scrollbar relative flex-1`}>
+                                        
+                                        {/* DESKTOP USER INFO (Hidden on Mobile Header) */}
+                                        <div className="hidden md:flex items-center gap-4 mb-6 pb-6 border-b border-zinc-50">
                                             <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center font-black text-xs text-white shadow-xl">
                                                 {(activeReviewItem.review.name || "V").charAt(0)}
                                             </div>
@@ -167,48 +210,53 @@ const Reviews = () => {
                                             </div>
                                         </div>
 
+                                        {/* MOBILE PRODUCT REFERENCE */}
+                                        <div className="md:hidden flex items-center gap-3 p-3 mb-6 bg-white/5 rounded-2xl border border-white/10">
+                                            <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-white/5 shrink-0">
+                                                <img src={resolveMediaURL(activeReviewItem.productImage)} alt="" className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className="text-[7px] font-black uppercase tracking-[0.2em] text-white/30 leading-none mb-1">Product Reference</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-white truncate">{activeReviewItem.productName}</p>
+                                            </div>
+                                        </div>
 
-                                        {activeReviewItem.review.title && (
-                                            <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight mb-4 text-zinc-900 leading-tight">
-                                                {activeReviewItem.review.title}
-                                            </h3>
-                                        )}
-                                        <p className="text-zinc-900 font-medium leading-relaxed text-[13px] md:text-base flex-grow mb-8 whitespace-pre-line">
-                                            "{activeReviewItem.review.comment}"
-                                        </p>
-
-                                        <div className="border-t border-zinc-50 pt-6 mt-auto">
-                                            <p className="text-[7px] md:text-[8px] text-zinc-400 font-bold uppercase tracking-widest">
-                                                {new Date(activeReviewItem.review.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                        {/* CONTENT AREA */}
+                                        <div className="flex-grow flex flex-col justify-start">
+                                            {activeReviewItem.review.title && (
+                                                <h3 className="text-xl md:text-2xl font-black uppercase tracking-tight mb-4 text-white md:text-zinc-900 leading-tight">
+                                                    {activeReviewItem.review.title}
+                                                </h3>
+                                            )}
+                                            <p className="text-zinc-300 md:text-zinc-900 font-medium leading-[1.8] text-[13px] md:text-base mb-8 whitespace-pre-line">
+                                                "{activeReviewItem.review.comment}"
                                             </p>
+                                            <time className="text-[8px] text-zinc-500 md:text-zinc-400 font-bold uppercase tracking-widest whitespace-nowrap pt-6 mt-auto">
+                                                {new Date(activeReviewItem.review.date || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </time>
+                                        </div>
+
+                                        {/* MOBILE REVIEW NAVIGATION */}
+                                        <div className="md:hidden grid grid-cols-2 gap-3 mt-8">
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + filteredReviews.length) % filteredReviews.length); setSelectedMediaIdx(0); }}
+                                                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/5 border border-white/10 text-white active:scale-95 transition-all text-center"
+                                            >
+                                                <ChevronLeft size={20} className="mb-1 opacity-50" />
+                                                <span className="text-[7px] font-black tracking-widest uppercase">Previous Review</span>
+                                            </button>
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length); setSelectedMediaIdx(0); }}
+                                                className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white/10 border border-white/20 text-white active:scale-95 transition-all text-center"
+                                            >
+                                                <ChevronRight size={20} className="mb-1 opacity-50" />
+                                                <span className="text-[7px] font-black tracking-widest uppercase">Next Review</span>
+                                            </button>
                                         </div>
                                     </div>
                                 </>
                             );
                         })()}
-                    </div>
-
-                    {/* OUTER NAV: NEXT REVIEW */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length);
-                            setSelectedMediaIdx(0);
-                        }}
-                        className="hidden md:flex absolute right-8 text-black/20 hover:text-black transition-all z-20 group flex-col items-center gap-2"
-                    >
-                        <ChevronRight size={48} strokeWidth={1.5} className="drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
-                    </button>
-
-                    {/* MOBILE OUTER NAV */}
-                    <div className="md:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-4 z-[120]">
-                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev - 1 + filteredReviews.length) % filteredReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); setSelectedReviewIdx((prev) => (prev + 1) % filteredReviews.length); setSelectedMediaIdx(0); }} className="p-3 bg-black text-white rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                        </button>
                     </div>
                 </div>
             )}
