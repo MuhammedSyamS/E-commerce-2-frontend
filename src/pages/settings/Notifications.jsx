@@ -124,7 +124,7 @@ const Notifications = () => {
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-zinc-900 flex items-center gap-3">
                 Inbox
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center justify-center px-4 py-1.5 bg-red-600 text-white text-[9px] md:text-xs font-black rounded-full shadow-lg shadow-red-200 animate-pulse tracking-widest whitespace-nowrap ml-2">
+                  <span className="inline-flex items-center justify-center px-4 py-1.5 bg-red-600 text-white text-[9px] md:text-xs font-black rounded-full shadow-lg shadow-red-200 animate-pulse tracking-widest whitespace-nowrap ml-4">
                     {unreadCount} NEW
                   </span>
                 )}

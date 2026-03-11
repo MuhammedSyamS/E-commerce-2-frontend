@@ -187,7 +187,7 @@ const SocialFeed = () => {
     );
 
     return (
-        <div className="min-h-screen bg-zinc-50/50 pt-44 md:pt-52 pb-20">
+        <div className="min-h-screen bg-zinc-50/50 pt-44 md:pt-52 pb-32 md:pb-20">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* HEADER */}
@@ -215,7 +215,7 @@ const SocialFeed = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="columns-2 lg:columns-3 gap-3 md:gap-6 space-y-3 md:space-y-6 pb-32">
+                    <div className="columns-2 lg:columns-3 gap-3 md:gap-6 space-y-3 md:space-y-6">
                         {looks.map((look) => (
                             <motion.div
                                 key={look._id}

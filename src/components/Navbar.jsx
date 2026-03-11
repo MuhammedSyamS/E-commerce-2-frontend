@@ -433,20 +433,20 @@ const Navbar = () => {
           </div>
 
           {/* RIGHT SECTION */}
-          <div className="flex-1 flex items-center justify-end gap-2 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
-            <button onClick={toggleSearch} className="relative group p-2.5 transition-all">
-              <Search className="w-5 h-5 md:w-4 md:h-4 text-white group-hover:text-zinc-200 transition" />
+          <div className="flex-1 flex items-center justify-end gap-3 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
+            <button onClick={toggleSearch} className="relative group p-3 transition-all">
+              <Search className="w-7 h-7 md:w-4 md:h-4 text-white group-hover:text-zinc-200 transition" />
             </button>
 
             {/* WISHLIST */}
-            <Link to="/wishlist" className="relative group p-2.5 transition-all">
-              <Heart className={`w-5 h-5 md:w-4 md:h-4 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+            <Link to="/wishlist" className="relative group p-3 transition-all">
+              <Heart className={`w-7 h-7 md:w-4 md:h-4 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={wishlistCount} />
             </Link>
 
             {/* CART */}
-            <button onClick={toggleCart} className="relative group p-2.5 transition-all">
-              <ShoppingBag className={`w-5 h-5 md:w-4 md:h-4 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+            <button onClick={toggleCart} className="relative group p-3 transition-all">
+              <ShoppingBag className={`w-7 h-7 md:w-4 md:h-4 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
               <Badge count={cartCount} />
             </button>
 
