@@ -108,12 +108,12 @@ const ReviewDetails = () => {
     const currentMedia = reviewData.media[mediaIndex];
 
     return (
-        <div className="fixed inset-0 z-[200] bg-white flex flex-col animate-in fade-in duration-300 overflow-y-auto no-scrollbar">
-            {/* MOBILE HEADER */}
-            <div className="fixed top-0 inset-x-0 z-[210] flex items-center justify-between p-4 bg-gradient-to-b from-white/90 to-transparent">
+        <div className="fixed inset-0 z-[200] bg-white flex flex-col h-screen overflow-hidden animate-in fade-in duration-300">
+            {/* MOBILE HEADER - Transparent overlay */}
+            <div className="absolute top-0 inset-x-0 z-[210] flex items-center justify-between p-4 bg-gradient-to-b from-white/80 to-transparent">
                 <button 
                     onClick={() => navigate(-1)}
-                    className="bg-black/5 text-zinc-900 p-2 rounded-full backdrop-blur-md"
+                    className="bg-black/5 text-zinc-900 p-2 rounded-full backdrop-blur-md active:scale-90 transition-all"
                 >
                     <ChevronLeft size={24} />
                 </button>
@@ -130,12 +130,11 @@ const ReviewDetails = () => {
                         </div>
                     </div>
                 </div>
-                {/* Removed the X button from here as requested */}
-                <div className="w-10"></div> {/* Spacer to keep header balanced if needed, or just leave it */}
+                <div className="w-10"></div>
             </div>
 
-            {/* MEDIA SECTION */}
-            <div className="w-full aspect-[3/4] md:aspect-auto md:h-screen bg-zinc-50 relative flex items-center justify-center select-none overflow-hidden mt-16">
+            {/* MEDIA SECTION - Exactly 50% Height */}
+            <div className="w-full h-[50vh] bg-zinc-50 relative flex items-center justify-center select-none overflow-hidden shrink-0">
                 {currentMedia ? (
                     currentMedia.type === 'video' ? (
                         <video
@@ -156,25 +155,27 @@ const ReviewDetails = () => {
                     <div className="text-zinc-300 font-medium italic uppercase tracking-widest text-[10px]">No Media Experience</div>
                 )}
 
-                {/* MEDIA NAVIGATION (Inner) */}
+                {/* MEDIA NAVIGATION - NO BLUR CIRCLE BRACKET */}
                 {reviewData.media.length > 1 && (
-                    <div className="absolute inset-0 z-30 pointer-events-none">
-                        <div className="absolute inset-y-0 left-0 w-1/4 pointer-events-auto flex items-center justify-start pl-4" onClick={prevMedia}>
-                            <div className="p-2 bg-black/5 backdrop-blur-sm rounded-full text-black/20">
-                                <ChevronLeft size={20} />
-                            </div>
-                        </div>
-                        <div className="absolute inset-y-0 right-0 w-1/4 pointer-events-auto flex items-center justify-end pr-4" onClick={nextMedia}>
-                            <div className="p-2 bg-black/5 backdrop-blur-sm rounded-full text-black/20">
-                                <ChevronRight size={20} />
-                            </div>
-                        </div>
+                    <div className="absolute inset-0 z-30 pointer-events-none flex justify-between items-center px-4">
+                        <button 
+                            onClick={prevMedia}
+                            className="pointer-events-auto text-zinc-900/30 hover:text-zinc-900 p-2 transition-all active:scale-75"
+                        >
+                            <ChevronLeft size={32} strokeWidth={1.5} />
+                        </button>
+                        <button 
+                            onClick={nextMedia}
+                            className="pointer-events-auto text-zinc-900/30 hover:text-zinc-900 p-2 transition-all active:scale-75"
+                        >
+                            <ChevronRight size={32} strokeWidth={1.5} />
+                        </button>
                     </div>
                 )}
                 
                 {/* MEDIA INDICATORS */}
                 {reviewData.media.length > 1 && (
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-black/5">
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 bg-white/40 backdrop-blur-md px-3 py-1.5 rounded-full border border-black/5">
                         {reviewData.media.map((_, idx) => (
                             <div
                                 key={idx}
@@ -185,67 +186,59 @@ const ReviewDetails = () => {
                 )}
             </div>
 
-            {/* CONTENT SECTION */}
-            <div className="w-full p-6 pb-32 bg-white flex flex-col flex-1">
-                {/* PRODUCT REFERENCE */}
-                <Link to={`/product/${reviewData.productSlug}`} className="flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
-                    <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-100 shrink-0">
-                        <img src={resolveMediaURL(reviewData.productImage)} alt="" className="w-full h-full object-cover" />
-                    </div>
-                    <div className="min-w-0">
-                        <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product Reference</p>
-                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-950 truncate">{reviewData.productName}</p>
-                    </div>
-                    <ArrowUpRight size={14} className="ml-auto text-zinc-300" />
-                </Link>
+            {/* CONTENT SECTION - Exactly 50% Height */}
+            <div className="w-full h-[50vh] bg-white flex flex-col relative shrink-0">
+                <div className="flex-1 overflow-y-auto no-scrollbar p-6 pb-24">
+                    {/* PRODUCT REFERENCE */}
+                    <Link to={`/product/${reviewData.productSlug}`} className="flex items-center gap-3 p-3 mb-6 bg-zinc-50 rounded-2xl border border-zinc-100">
+                        <div className="w-10 h-10 rounded-lg bg-white overflow-hidden border border-zinc-100 shrink-0">
+                            <img src={resolveMediaURL(reviewData.productImage)} alt="" className="w-full h-full object-cover" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[7px] font-black uppercase tracking-[0.2em] text-zinc-400 leading-none mb-1">Product Reference</p>
+                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-950 truncate">{reviewData.productName}</p>
+                        </div>
+                        <ArrowUpRight size={14} className="ml-auto text-zinc-300" />
+                    </Link>
 
-                {/* COMMENT */}
-                <div className="space-y-4 mb-8">
-                    <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle2 size={12} className="text-blue-600 fill-blue-50" />
-                        <p className="text-[8px] text-zinc-400 font-black uppercase tracking-widest">Verified Experience</p>
+                    {/* COMMENT */}
+                    <div className="space-y-4 mb-8">
+                        <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle2 size={12} className="text-blue-600 fill-blue-50" />
+                            <p className="text-[8px] text-zinc-400 font-black uppercase tracking-widest">Verified Experience</p>
+                        </div>
+                        <p className="text-zinc-600 leading-[1.8] text-[15px] font-medium whitespace-pre-line">
+                            "{reviewData.comment}"
+                        </p>
                     </div>
-                    <p className="text-zinc-600 leading-[1.8] text-[15px] font-medium whitespace-pre-line">
-                        "{reviewData.comment}"
-                    </p>
+
+                    {reviewData.adminResponse && (
+                        <div className="bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100 relative overflow-hidden">
+                            <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 mb-4 flex items-center gap-2">
+                                <span className="w-2 h-2 bg-black rounded-full animate-pulse" /> Official Response
+                            </p>
+                            <p className="text-[12px] text-zinc-500 leading-relaxed italic font-medium">{reviewData.adminResponse}</p>
+                        </div>
+                    )}
                 </div>
 
-                {reviewData.adminResponse && (
-                    <div className="bg-zinc-50 p-6 rounded-[2rem] border border-zinc-100 relative overflow-hidden">
-                        <p className="text-[9px] font-black uppercase tracking-widest text-zinc-900 mb-4 flex items-center gap-2">
-                            <span className="w-2 h-2 bg-black rounded-full animate-pulse" /> Official Response
-                        </p>
-                        <p className="text-[12px] text-zinc-500 leading-relaxed italic font-medium">{reviewData.adminResponse}</p>
-                    </div>
-                )}
-            </div>
-            
-            {/* NEXT/PREV REVIEW NAVIGATION (Bottom Bar above CTA) */}
-            <div className="fixed bottom-24 inset-x-0 px-4 flex justify-between items-center pointer-events-none">
-                <button 
-                    onClick={prevReview}
-                    className="pointer-events-auto bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl border border-zinc-100 text-zinc-900 active:scale-90 transition-all flex items-center gap-2"
-                >
-                    <ChevronLeft size={20} />
-                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Prev Review</span>
-                </button>
-                <button 
-                    onClick={nextReview}
-                    className="pointer-events-auto bg-white/90 backdrop-blur-xl p-4 rounded-full shadow-2xl border border-zinc-100 text-zinc-900 active:scale-90 transition-all flex items-center gap-2"
-                >
-                    <span className="text-[8px] font-black uppercase tracking-widest hidden sm:inline">Next Review</span>
-                    <ChevronRight size={20} />
-                </button>
-            </div>
-
-            {/* BOTTOM CTA */}
-            <div className="fixed bottom-0 inset-x-0 p-4 bg-gradient-to-t from-white via-white/90 to-transparent">
-                <Link 
-                    to={`/product/${reviewData.productSlug}`}
-                    className="w-full bg-black text-white py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 shadow-2xl"
-                >
-                    View Product Details <ArrowUpRight size={14} />
-                </Link>
+                {/* REVIEW NAVIGATION (Positioned at the bottom of the content section) */}
+                <div className="absolute bottom-6 inset-x-0 px-8 flex justify-between items-center pointer-events-none">
+                    <button 
+                        onClick={prevReview}
+                        className="pointer-events-auto bg-black text-white p-4 rounded-full shadow-2xl active:scale-90 transition-all flex items-center gap-2"
+                    >
+                        <ChevronLeft size={20} />
+                        <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">Prev Review</span>
+                    </button>
+                    <button 
+                        onClick={nextReview}
+                        className="pointer-events-auto bg-black text-white p-4 rounded-full shadow-2xl active:scale-90 transition-all flex items-center gap-2"
+                    >
+                        <span className="text-[9px] font-black uppercase tracking-widest hidden sm:inline">Next Review</span>
+                        <ChevronRight size={20} />
+                    </button>
+                </div>
             </div>
         </div>
     );
