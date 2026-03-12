@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import api from '../api/instance';
+import { isSameVariant, getItemId } from '../utils/cartUtils';
 
 export const useStore = create(
   persist(
@@ -93,33 +94,20 @@ export const useStore = create(
         const currentCart = state.user ? (state.user.cart || []) : state.cart;
         const productId = product._id;
 
-        const isSameVariant = (v1, v2) => {
-          if (!v1 && !v2) return true;
-          if (!v1 || !v2) return false;
-          return String(v1.size || '').toLowerCase() === String(v2.size || '').toLowerCase() &&
-            String(v1.color || '').toLowerCase() === String(v2.color || '').toLowerCase();
-        };
-
         const existingItem = currentCart.find((item) => {
-          const itemProductId = (item.product?._id || item.product || item._id || '').toString();
-          const sameId = itemProductId === (productId || '').toString();
-          const sameVariant = isSameVariant(item.selectedVariant, product.selectedVariant);
-          return sameId && sameVariant;
+          return getItemId(item) === (productId || '').toString() && 
+                 isSameVariant(item.selectedVariant, product.selectedVariant);
         });
 
         let updatedCart;
         if (existingItem) {
           updatedCart = currentCart.map((item) => {
-            const itemProductId = (item.product?._id || item.product || item._id || '').toString();
-            const sameId = itemProductId === productId;
-            const sameVariant = isSameVariant(item.selectedVariant, product.selectedVariant);
-            if (sameId && sameVariant) {
+            if (getItemId(item) === productId && isSameVariant(item.selectedVariant, product.selectedVariant)) {
               return { ...item, quantity: (item.quantity || 1) + (product.quantity || 1) };
             }
             return item;
           });
         } else {
-          // Store with `product` field to match backend format
           updatedCart = [...currentCart, { ...product, product: productId, quantity: product.quantity || 1 }];
         }
 
@@ -129,7 +117,6 @@ export const useStore = create(
           set({ cart: updatedCart, isCartOpen: true });
         }
 
-        // 2. Backend Sync
         if (state.user?.token) {
           try {
             const { data } = await api.post('/cart/add', {
@@ -140,11 +127,57 @@ export const useStore = create(
               quantity: product.quantity || 1,
               selectedVariant: product.selectedVariant
             }, { headers: { Authorization: `Bearer ${state.user.token}` } });
-            // Sync with backend response to get correct _id fields
             set({ user: { ...get().user, cart: data }, isCartOpen: true });
           } catch (err) {
             console.error("Cart sync failed:", err);
           }
+        }
+      },
+
+      updateCartQuantity: async (productId, variant, change) => {
+        const state = get();
+        const currentCart = state.user ? (state.user.cart || []) : state.cart;
+        const targetId = productId.toString();
+
+        const updatedCart = currentCart.map(item => {
+          if (getItemId(item) === targetId && isSameVariant(item.selectedVariant, variant)) {
+            const newQty = (item.quantity || 1) + change;
+            return { ...item, quantity: Math.max(1, newQty) };
+          }
+          return item;
+        });
+
+        if (state.user) {
+          set({ user: { ...state.user, cart: updatedCart } });
+          try {
+            if (change > 0) {
+              await api.post('/cart/add', { productId, quantity: 1, selectedVariant: variant });
+            } else {
+              await api.post('/cart/decrease', { productId, selectedVariant: variant });
+            }
+          } catch (err) { console.error("Cart update failed:", err); }
+        } else {
+          set({ cart: updatedCart });
+        }
+      },
+
+      removeFromCart: async (productId, variant, itemId) => {
+        const state = get();
+        const currentCart = state.user ? (state.user.cart || []) : state.cart;
+        const targetId = productId.toString();
+
+        const updatedCart = currentCart.filter(item => {
+          if (itemId && item._id === itemId) return false;
+          return !(getItemId(item) === targetId && isSameVariant(item.selectedVariant, variant));
+        });
+
+        if (state.user) {
+          set({ user: { ...state.user, cart: updatedCart } });
+          try {
+            await api.post('/cart/remove', { productId, selectedVariant: variant, _id: itemId });
+          } catch (err) { console.error("Remove failed:", err); }
+        } else {
+          set({ cart: updatedCart });
         }
       },
 
@@ -209,7 +242,6 @@ export const useStore = create(
         const state = get();
         if (!state.user?.token || !state.wishlist?.length) return;
 
-        console.log("Syncing guest wishlist to account...");
         const guestItems = state.wishlist;
 
         try {
@@ -223,7 +255,6 @@ export const useStore = create(
             user: { ...get().user, wishlist: data },
             wishlist: []
           });
-          console.log("Guest wishlist synced successfully.");
         } catch (err) {
           console.error("Failed to sync guest wishlist:", err);
         }

@@ -8,7 +8,7 @@ import api from '../api/instance';
 import Price from './Price';
 
 const CartDrawer = () => {
-  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon, cart: guestCart, setCart: setGuestCart, refreshUser } = useStore();
+  const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon, cart: guestCart, setCart: setGuestCart, refreshUser, updateCartQuantity, removeFromCart: storeRemoveFromCart } = useStore();
   const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
   const { addToast } = useToast();
   const navigate = useNavigate();
@@ -60,62 +60,6 @@ const CartDrawer = () => {
   }, [isCartOpen, user?.token]);
 
   // --- CART ACTIONS ---
-  const getItemId = (item) => (item.product?._id || item.product || item._id || '').toString();
-
-  const updateQty = async (productId, currentQty, change, variant) => {
-    const parsedQty = Number(currentQty) || 1;
-    const newQty = parsedQty + change;
-    if (newQty < 1) return;
-
-    const targetId = productId.toString();
-
-    if (user) {
-      const updatedCart = (user.cart || []).map(item => {
-        if (getItemId(item) === targetId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      });
-      setUser({ ...user, cart: updatedCart });
-
-      try {
-        if (change > 0) {
-          await api.post('/cart/add', { productId, quantity: 1, selectedVariant: variant });
-        } else {
-          await api.post('/cart/decrease', { productId, selectedVariant: variant });
-        }
-      } catch (err) { console.error("Cart update failed:", err); }
-    } else {
-      const updatedCart = guestCart.map(item => {
-        if (getItemId(item) === targetId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant)) {
-          return { ...item, quantity: newQty };
-        }
-        return item;
-      });
-      setGuestCart(updatedCart);
-    }
-  };
-
-  const removeItem = async (productId, variant, itemId) => {
-    const targetId = productId.toString();
-    if (user) {
-      const updatedCart = (user.cart || []).filter(item => {
-        if (itemId && item._id === itemId) return false;
-        return !(getItemId(item) === targetId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
-      });
-      setUser({ ...user, cart: updatedCart });
-      try {
-        await api.post('/cart/remove', { productId, selectedVariant: variant, _id: itemId });
-        addToast("Item removed", "info");
-      } catch (err) { console.error("Remove failed:", err); }
-    } else {
-      const updatedCart = guestCart.filter(item => {
-        return !(getItemId(item) === targetId && JSON.stringify(item.selectedVariant) === JSON.stringify(variant));
-      });
-      setGuestCart(updatedCart);
-      addToast("Item removed", "info");
-    }
-  };
 
   const handleSaveForLater = async (itemId) => {
     if (!user) return addToast("Login to save for later", "info");
@@ -135,10 +79,8 @@ const CartDrawer = () => {
     } catch (err) { addToast("Failed to move item", "error"); }
   };
 
+
   const cartItems = user ? (user.cart || []) : guestCart;
-
-
-  // ROBUST CALCULATION
   const subtotal = cartItems.reduce((acc, item) => {
     const price = Number(item.price) || 0;
     const qty = Number(item.quantity) || 1;
@@ -226,9 +168,9 @@ const CartDrawer = () => {
                       <div className="flex flex-wrap items-center justify-between gap-1.5 mt-1.5">
                         <div className="flex flex-wrap items-center gap-1.5">
                           <div className="flex items-center gap-2 md:gap-1.5 bg-zinc-100 rounded-xl md:rounded-lg px-2 py-1.5 md:px-2.5 md:py-1 border border-zinc-200/50">
-                            <button onClick={() => updateQty(item.product?._id || item._id || item.product, item.quantity, -1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-0.5"><Minus className="w-2.5 h-2.5 md:w-2.5 md:h-2.5" /></button>
+                            <button onClick={() => updateCartQuantity(item.product?._id || item._id || item.product, item.selectedVariant, -1)} className="text-zinc-400 hover:text-black transition-colors p-0.5"><Minus className="w-2.5 h-2.5 md:w-2.5 md:h-2.5" /></button>
                             <span className="font-black text-[10px] md:text-[9px] w-3 text-center text-black">{item.quantity}</span>
-                            <button onClick={() => updateQty(item.product?._id || item._id || item.product, item.quantity, 1, item.selectedVariant)} className="text-zinc-400 hover:text-black transition-colors p-0.5"><Plus className="w-2.5 h-2.5 md:w-2.5 md:h-2.5" /></button>
+                            <button onClick={() => updateCartQuantity(item.product?._id || item._id || item.product, item.selectedVariant, 1)} className="text-zinc-400 hover:text-black transition-colors p-0.5"><Plus className="w-2.5 h-2.5 md:w-2.5 md:h-2.5" /></button>
                           </div>
                         </div>
                         <div className="flex items-center gap-0.5">
@@ -240,7 +182,10 @@ const CartDrawer = () => {
                             <Heart size={11} />
                           </button>
                           <button
-                            onClick={() => removeItem(item.product?._id || item._id || item.product, item.selectedVariant, item._id)}
+                            onClick={async () => {
+                               await storeRemoveFromCart(item.product?._id || item._id || item.product, item.selectedVariant, item._id);
+                               addToast("Item removed", "info");
+                             }}
                             className="p-1 text-zinc-300 hover:text-red-500 transition-colors"
                             title="Remove Item"
                           >

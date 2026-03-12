@@ -32,10 +32,10 @@ const Marquee = ({ text, items = [], reverse = false }) => {
           100% { transform: translateX(0%); }
         }
         .animate-marquee {
-          animation: marquee 80s linear infinite;
+          animation: marquee 30s linear infinite;
         }
         .animate-marquee2 {
-          animation: marquee2 80s linear infinite;
+          animation: marquee2 30s linear infinite;
         }
       `}</style>
     </div>

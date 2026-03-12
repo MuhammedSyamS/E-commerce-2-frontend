@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus, ArrowUpRight, Heart, Award, Crown, Zap, ShieldCheck, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import api from '../api/instance';
 import { resolveMediaURL } from '../utils/mediaUtils';
 import { useStore } from '../store/useStore';
@@ -12,8 +12,9 @@ import Reveal from '../components/Reveal';
 import Marquee from '../components/Marquee';
 import MarqueeRibbon from '../components/MarqueeRibbon';
 import { Skeleton } from '../components/ui/Skeleton';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
+
 
 const DEFAULT_SLIDES = [];
 
@@ -24,9 +25,12 @@ const Home = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [communityLooks, setCommunityLooks] = useState([]);
-  const [scrollY, setScrollY] = useState(0);
   const { user } = useStore();
   const [settings, setSettings] = useState(null);
+  const [loadedImages, setLoadedImages] = useState({}); // Tracking loaded state per slide
+  const { scrollY } = useScroll();
+  const heroScale = useTransform(scrollY, [0, 1000], [1.1, 1.6]);
+  const heroY = useTransform(scrollY, [0, 1000], [0, 100]);
 
   const newArrivalRef = useRef(null);
   const bestSellersSectionRef = useRef(null);
@@ -48,12 +52,6 @@ const Home = () => {
   const scrollToProducts = () => {
     trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   // --- OPTIMIZED DATA FETCHING ---
   const [homeData, setHomeData] = useState({ trending: [], newArrivals: [], bestSellers: [] });
@@ -85,18 +83,47 @@ const Home = () => {
     fetchAllData();
   }, [user?._id]); // Re-fetch only on user change to refresh specific state if needed
 
-  // Auto-scroll Community Looks
+  // Infinite Scroll Implementation for Community Looks
+  const displayLooks = useMemo(() => {
+    if (communityLooks.length === 0) return [];
+    return [...communityLooks, ...communityLooks, ...communityLooks]; // Triple for maximum smoothness
+  }, [communityLooks]);
+  
+  // Initial scroll position to the middle set
+  useEffect(() => {
+    if (communityLooksRef.current) {
+      const el = communityLooksRef.current;
+      const singleSetWidth = el.scrollWidth / 3;
+      el.scrollLeft = singleSetWidth;
+    }
+  }, [communityLooks.length]);
+
+  useEffect(() => {
+    const el = communityLooksRef.current;
+    if (!el || communityLooks.length === 0) return;
+
+    const handleInfiniteScroll = () => {
+      const singleSetWidth = el.scrollWidth / 3;
+      // If we scroll into the 3rd set, jump back to 2nd set
+      if (el.scrollLeft >= singleSetWidth * 2) {
+        el.scrollLeft -= singleSetWidth;
+      } 
+      // If we scroll into the 1st set, jump forward to 2nd set
+      else if (el.scrollLeft <= 0) {
+        el.scrollLeft += singleSetWidth;
+      }
+    };
+
+    el.addEventListener('scroll', handleInfiniteScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleInfiniteScroll);
+  }, [communityLooks.length]);
+
+  // Auto-scroll Timer for Infinite Loop
   useEffect(() => {
     if (communityLooks.length <= 1) return;
     const timer = setInterval(() => {
         if (communityLooksRef.current) {
-            const el = communityLooksRef.current;
-            const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
-            if (isAtEnd) {
-                el.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' });
-            }
+            communityLooksRef.current.scrollBy({ left: communityLooksRef.current.clientWidth * 0.8, behavior: 'smooth' });
         }
     }, 6000);
     return () => clearInterval(timer);
@@ -137,16 +164,19 @@ const Home = () => {
 
   useEffect(() => {
     if (activeView !== 'all' || slides.length <= 1) return;
-    const timer = setInterval(nextSlide, 5000);
+    const timer = setInterval(nextSlide, 4000);
     return () => clearInterval(timer);
   }, [nextSlide, activeView, resetKey]);
 
-  // Preload Images
+  // Preload Images and Track Loading status
   useEffect(() => {
     if (slides.length > 0) {
-      slides.forEach(slide => {
+      slides.forEach((slide, index) => {
         const img = new Image();
         img.src = slide.img;
+        img.onload = () => {
+          setLoadedImages(prev => ({ ...prev, [index]: true }));
+        };
       });
     }
   }, [slides]);
@@ -200,31 +230,30 @@ const Home = () => {
         <>
           {slides.length > 0 && (
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
-              <AnimatePresence>
+              <AnimatePresence initial={false}>
                 <motion.div
                   key={slides[currentSlide]?.key || currentSlide}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: "linear" }}
-                  className="absolute inset-0"
+                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  className="absolute inset-0 z-20"
                 >
-                  <div className="absolute inset-0 overflow-hidden bg-black"> {/* Changed from zinc-900 to black */}
+                  <div className="absolute inset-0 overflow-hidden bg-black">
                     <motion.img
                       src={slides[currentSlide]?.img}
-                      initial={{ scale: 1.1, opacity: 0 }}
+                      style={{ 
+                        scale: heroScale,
+                        y: heroY
+                      }}
                       animate={{ 
-                        scale: 1.1 + (scrollY * 0.0005),
-                        y: scrollY * 0.1,
-                        opacity: 1
+                        opacity: loadedImages[currentSlide] ? 1 : 0
                       }}
                       transition={{ 
-                        opacity: { duration: 0.5 },
-                        scale: { duration: 0 }
+                        opacity: { duration: 0.8 }
                       }}
                       className="w-full h-full object-cover"
                       alt={slides[currentSlide]?.title}
-                      loading="eager"
                     />
                   </div>
                   
@@ -232,7 +261,7 @@ const Home = () => {
                     <motion.div 
                       initial={{ opacity: 0, y: 40 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+                      transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
                       className="text-center"
                     >
                       <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
@@ -272,8 +301,8 @@ const Home = () => {
         <React.Fragment key={section.id}>
           {(activeView === 'all' || activeView === section.id) && (
             <Reveal width="100%" delay={idx * 0.1}>
-              <section id={section.id} className={`container-responsive relative ${section.bg} ${activeView !== 'all' ? 'pt-44 md:pt-52 pb-24 md:pb-32' : 'py-12 md:py-24'}`}>
-                <div className="flex justify-between items-end mb-12 px-2">
+              <section id={section.id} className={`container-responsive relative ${section.bg} ${activeView !== 'all' ? 'pt-44 md:pt-52 pb-24 md:pb-32' : 'py-8 md:py-16'}`}>
+                <div className="flex justify-between items-end mb-10 px-2">
                   <div>
                     <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
                     <p className="text-[9px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">{section.subtitle}</p>
@@ -328,8 +357,8 @@ const Home = () => {
 
       {activeView === 'all' && (
         <Reveal width="100%">
-          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100 group/community">
-            <div className="flex justify-between items-end mb-12">
+          <section className="container-responsive py-8 md:py-16 relative bg-white border-t border-zinc-100 group/community">
+            <div className="flex justify-between items-end mb-10">
               <div>
                 <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">Styled by You</h2>
                 <p className="text-[8px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-1">Community Curation #StyledBySLOOK</p>
@@ -337,25 +366,25 @@ const Home = () => {
               <Link to="/looks" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All Looks</Link>
             </div>
 
-            <div className="relative group/community">
+            <div className="relative group/community-nav">
               <button 
                 onClick={() => scroll(communityLooksRef, 'left')}
-                className="absolute -left-4 md:-left-20 top-1/2 -translate-y-1/2 z-50 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+                className="absolute -left-2 md:-left-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
               >
                 <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
               </button>
               <button 
                 onClick={() => scroll(communityLooksRef, 'right')}
-                className="absolute -right-4 md:-right-20 top-1/2 -translate-y-1/2 z-50 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/community:opacity-100"
+                className="absolute -right-2 md:-right-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
               >
                 <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
               </button>
 
               <div 
                 ref={communityLooksRef}
-                className="flex gap-4 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth px-4"
+                className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth px-4 md:px-0"
               >
-                {communityLooks.map((look) => {
+                {displayLooks.map((look, index) => {
                   const u = look.user;
                   const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : look.userName) || "House Stylist";
                   const formattedHandle = displayHandle.toLowerCase().replace(/\s+/g, '');
@@ -364,7 +393,7 @@ const Home = () => {
                     <Link 
                       key={look._id} 
                       to="/looks" 
-                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-white mx-2 shrink-0 snap-center"
+                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-white shrink-0 snap-center"
                     >
                       <img 
                         src={resolveMediaURL(look.image)} 
@@ -440,8 +469,8 @@ const Home = () => {
 
       {activeView === 'all' && user && recentlyViewed.length > 0 && (
         <Reveal width="100%">
-          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
-            <div className="flex justify-between items-end mb-12">
+          <section className="container-responsive py-8 md:py-16 relative bg-white border-t border-zinc-100">
+            <div className="flex justify-between items-end mb-10">
               <div>
                 <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter">Recently Viewed</h2>
                 <p className="text-sm md:text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Pick up where you left off</p>

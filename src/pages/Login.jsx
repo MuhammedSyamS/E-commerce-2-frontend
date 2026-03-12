@@ -35,7 +35,6 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      console.log("Google Credential Received:", credentialResponse);
       const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
       });

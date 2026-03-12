@@ -11,7 +11,6 @@ if (rawBaseUrl && !rawBaseUrl.endsWith('/api')) {
     baseUrl = `${rawBaseUrl}/api`;
 }
 
-console.log("API Base URL:", baseUrl);
 
 const instance = axios.create({
     baseURL: baseUrl,

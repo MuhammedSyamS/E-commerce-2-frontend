@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import api from '../api/instance';
 import ProductCard from '../components/ProductCard';
-import { Search, SlidersHorizontal, ChevronDown, X, RotateCcw, Zap, Layers, Tag, Palette, Maximize, CreditCard, Box, Star, Percent } from 'lucide-react';
+import { Search, SlidersHorizontal, ChevronDown, X, RotateCcw, Zap, Star, Percent } from 'lucide-react';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { Helmet } from 'react-helmet-async';
 import { Skeleton } from '../components/ui/Skeleton';

@@ -14,18 +14,44 @@ const FeaturedReviews = () => {
     const scrollRef = useRef(null);
     const navigate = useNavigate();
 
-    // Auto-scroll effect
+    // Infinite Scroll Implementation
+    const displayReviews = React.useMemo(() => {
+        if (reviews.length === 0) return [];
+        return [...reviews, ...reviews, ...reviews]; // Triple for maximum smoothness
+    }, [reviews]);
+    
+    // Initial scroll position to the middle set
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (el && reviews.length > 0) {
+            const singleSetWidth = el.scrollWidth / 3;
+            el.scrollLeft = singleSetWidth;
+        }
+    }, [reviews.length]);
+
+    useEffect(() => {
+        const el = scrollRef.current;
+        if (!el || reviews.length === 0) return;
+
+        const handleInfiniteScroll = () => {
+            const singleSetWidth = el.scrollWidth / 3;
+            if (el.scrollLeft >= singleSetWidth * 2) {
+                el.scrollLeft -= singleSetWidth;
+            } else if (el.scrollLeft <= 0) {
+                el.scrollLeft += singleSetWidth;
+            }
+        };
+
+        el.addEventListener('scroll', handleInfiniteScroll, { passive: true });
+        return () => el.removeEventListener('scroll', handleInfiniteScroll);
+    }, [reviews.length]);
+
+    // Auto-scroll Timer for Infinite Loop
     useEffect(() => {
         if (reviews.length <= 1) return;
         const timer = setInterval(() => {
             if (scrollRef.current) {
-                const el = scrollRef.current;
-                const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 10;
-                if (isAtEnd) {
-                    el.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    el.scrollBy({ left: el.clientWidth * 0.8, behavior: 'smooth' });
-                }
+                scrollRef.current.scrollBy({ left: scrollRef.current.clientWidth * 0.8, behavior: 'smooth' });
             }
         }, 5000);
         return () => clearInterval(timer);
@@ -134,7 +160,7 @@ const FeaturedReviews = () => {
     // if (loading) return null; // Removed to prevent section flicker/missing on slow mobile
 
     return (
-        <section className="bg-white py-12 md:py-24 border-t border-zinc-200">
+        <section className="bg-white py-8 md:py-16 border-t border-zinc-200">
 
             {/* IMMERSIVE MODAL (Meesho Style Full-Screen) */}
             {selectedReview && (
@@ -355,7 +381,7 @@ const FeaturedReviews = () => {
             <div className="container-responsive mx-auto">
 
                 {/* HEADER */}
-                <div className="mb-12 px-2">
+                <div className="mb-10 px-2">
                     <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-1">Customer Reviews</h2>
                     <div className="flex justify-between items-end">
                         <p className="text-[9px] md:text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">What our community says</p>
@@ -369,16 +395,16 @@ const FeaturedReviews = () => {
                 <div className="relative group/review-scroller min-h-[300px]">
                     {/* Navigation Buttons */}
                     <button 
-                        onClick={() => scroll('left')}
-                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                         onClick={() => scroll('left')}
+                        className="absolute -left-2 md:-left-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
                     >
-                        <ChevronLeft size={32} strokeWidth={1.5} />
+                        <ChevronLeft size={64} strokeWidth={1} />
                     </button>
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                        className="absolute -right-2 md:-right-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
                     >
-                        <ChevronRight size={32} strokeWidth={1.5} />
+                        <ChevronRight size={64} strokeWidth={1} />
                     </button>
 
                     {loading ? (
@@ -390,9 +416,9 @@ const FeaturedReviews = () => {
                     ) : (
                         <div 
                             ref={scrollRef}
-                            className="flex gap-4 overflow-x-auto no-scrollbar py-4 snap-x snap-mandatory scroll-smooth"
+                            className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar py-4 snap-x snap-mandatory scroll-smooth px-4 md:px-0"
                         >
-                            {reviews.map((item, idx) => {
+                            {displayReviews.map((item, idx) => {
                                 const r = item.review || item;
                                 const media = getMediaFromReview(item);
                                 const hasMedia = media.length > 0;
@@ -401,7 +427,7 @@ const FeaturedReviews = () => {
                                     <div
                                         key={idx}
                                         onClick={() => openModal(item, idx)}
-                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer mx-2 shrink-0 snap-center"
+                                        className="w-[280px] md:w-[400px] bg-white border border-zinc-200 flex flex-col group/card hover:shadow-xl transition-shadow duration-500 cursor-pointer shrink-0 snap-center"
                                     >
                                         {/* MEDIA AREA (Top 60%) */}
                                         <div className="h-[250px] md:h-[400px] bg-zinc-100 relative overflow-hidden border-b border-zinc-100">

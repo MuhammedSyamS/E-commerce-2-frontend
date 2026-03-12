@@ -156,7 +156,6 @@ const Navbar = () => {
       socket = io(socketUrl);
 
       socket.on('connect', () => {
-        console.log("Connected to Notifications Socket");
         socket.emit('join-user-room', user._id);
       });
 
@@ -165,7 +164,6 @@ const Navbar = () => {
       });
 
       socket.on('ticket-reply', (data) => {
-        console.log("Ticket Reply Received:", data);
       });
     }
 

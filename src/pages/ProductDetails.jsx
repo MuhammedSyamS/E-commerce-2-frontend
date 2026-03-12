@@ -49,6 +49,8 @@ const ProductDetails = () => {
   const [weight, setWeight] = useState('');
   const [fitPreference, setFitPreference] = useState('Standard');
   const [aiRecommendation, setAiRecommendation] = useState(null);
+  const [fullReviews, setFullReviews] = useState([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
 
   // Dynamic Delivery Logic
   const deliveryDate = useMemo(() => {
@@ -224,6 +226,23 @@ const ProductDetails = () => {
       }, 1000);
     }
   }, [slug, user]);
+
+  useEffect(() => {
+    if (activeTab === 'reviews' && product?._id && fullReviews.length === 0) {
+      const fetchFullReviews = async () => {
+        try {
+          setLoadingReviews(true);
+          const { data } = await api.get(`/products/${product._id}/reviews/full`);
+          setFullReviews(data);
+          setLoadingReviews(false);
+        } catch (err) {
+          console.error("Failed to fetch full reviews", err);
+          setLoadingReviews(false);
+        }
+      };
+      fetchFullReviews();
+    }
+  }, [activeTab, product?._id]);
 
   useEffect(() => {
     if (product?.variants && product.variants.length > 0) {
@@ -409,7 +428,8 @@ const ProductDetails = () => {
   };
 
   const sortedReviews = (() => {
-    let reviews = [...(product?.reviews || [])].filter(r => r.isApproved !== false);
+    let reviewsSource = fullReviews.length > 0 ? fullReviews : (product?.reviews || []);
+    let reviews = [...reviewsSource].filter(r => r.isApproved !== false);
     switch (sortOption) {
       case 'newest': return reviews.reverse();
       case 'oldest': return reviews;
@@ -1057,8 +1077,14 @@ const ProductDetails = () => {
 
                 {activeTab === 'reviews' && (
                   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
-                      <div className="lg:col-span-4 space-y-12">
+                    {loadingReviews ? (
+                      <div className="flex flex-col items-center justify-center py-40 space-y-6">
+                        <Loader2 className="w-12 h-12 text-zinc-200 animate-spin" strokeWidth={1} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-300">Synchronizing Perspective...</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+                        <div className="lg:col-span-4 space-y-12">
                         <div className="space-y-6">
                           <div className="flex items-baseline gap-2 md:gap-4">
                             <h2 className="font-black text-zinc-900 tracking-tighter" style={{ fontSize: 'clamp(1.5rem, 6vw, 3rem)' }}>{(product.rating || 0).toFixed(1)}</h2>
@@ -1221,9 +1247,10 @@ const ProductDetails = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
+            </div>
             </div>
           </div>
 

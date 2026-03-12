@@ -180,18 +180,14 @@ const Checkout = () => {
         const config = { headers: { Authorization: `Bearer ${user.token}` } };
         const finalAmountToPay = total;
 
-        console.log("PAYMENT: Starting Flow for method:", step);
         // A. Fetch Key
         const { data: { key } } = await api.get('/payments/key');
-        console.log("PAYMENT: Key Fetched:", key);
 
         // B. Create Order on Server
         const { data: paymentOrder } = await api.post('/payments/create-order', { amount: finalAmountToPay }, config);
-        console.log("PAYMENT: Order Created:", paymentOrder);
 
         // C. Check for MOCK Mode
         if (key === 'rzp_test_placeholder' || paymentOrder.id.startsWith('order_mock_')) {
-          console.log("PAYMENT: Mock Mode Detected - Simulating...");
           addToast("Simulating Secure Payment...", "success");
 
           // Simulate Delay
@@ -199,7 +195,6 @@ const Checkout = () => {
             try {
               // Create Local Order First
               const orderRes = await api.post('/orders', orderData, config);
-              console.log("PAYMENT: Local Order Created:", orderRes.data._id);
 
               // Verify Mock
               await api.post('/payments/verify', {
@@ -208,7 +203,6 @@ const Checkout = () => {
                 razorpay_signature: 'mock_signature_bypass', // Backend ignores this for mock orders
                 orderId: orderRes.data._id
               }, config);
-              console.log("PAYMENT: Verification Success");
 
               // Clear Cart & Redirect
               await api.delete('/cart/clear', config);
@@ -241,11 +235,6 @@ const Checkout = () => {
           image: "https://cdn-icons-png.flaticon.com/512/3119/3119338.png", // Use valid image
           order_id: paymentOrder.id,
           handler: async function (response) {
-            console.log("✅ RAZORPAY HANDLER FIRED:", {
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              has_signature: !!response.razorpay_signature
-            });
             try {
               // Create Local Order (Pending)
               let orderRes;

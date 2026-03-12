@@ -23,7 +23,6 @@ const AdminLayout = () => {
         const socket = io();
 
         socket.on('connect', () => {
-            console.log("Connected to Socket.IO Server");
         });
 
         socket.on('new-order', (data) => {

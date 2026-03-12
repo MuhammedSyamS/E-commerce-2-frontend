@@ -19,7 +19,8 @@ const FlashSaleBanner = () => {
             return;
         }
 
-        const calculateTimeLeft = () => {
+        let isFetching = false;
+        const calculateTimeLeft = async () => {
             const difference = new Date(flashSale.endTime) - new Date();
             if (difference > 0) {
                 setTimeLeft({
@@ -29,7 +30,11 @@ const FlashSaleBanner = () => {
                 });
             } else {
                 setTimeLeft(null);
-                fetchFlashSale(); // Refresh to potentially clear expired sale
+                if (!isFetching) {
+                    isFetching = true;
+                    await fetchFlashSale(); // Refresh to potentially clear expired sale
+                    isFetching = false;
+                }
             }
         };
 

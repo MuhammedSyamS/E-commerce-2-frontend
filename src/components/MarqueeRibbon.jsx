@@ -1,6 +1,6 @@
 import React from 'react';
 
-const MarqueeRibbon = ({ children, speed = 60, pauseOnHover = true, className = "" }) => {
+const MarqueeRibbon = ({ children, speed = 25, pauseOnHover = true, className = "" }) => {
   return (
     <div className={`relative flex overflow-x-hidden ${className}`}>
       <div className={`flex whitespace-nowrap animate-marquee-ribbon ${pauseOnHover ? 'hover:[animation-play-state:paused]' : ''}`}>
