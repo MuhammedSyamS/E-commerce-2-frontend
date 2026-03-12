@@ -85,11 +85,6 @@ const SocialFeed = () => {
             <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] p-2 md:p-4 hover:opacity-70">
                 <X size={24} className="md:w-8 md:h-8" />
             </button>
-            <div className="absolute top-4 left-4 z-[120] md:hidden">
-                <button onClick={onClose} className="flex items-center gap-2 bg-black/40 backdrop-blur-md text-white px-4 py-2 rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest">
-                    <ChevronRight size={16} className="rotate-180" /> Back
-                </button>
-            </div>
 
             <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-[2.5rem] md:rounded-[3rem] overflow-y-auto no-scrollbar md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
                 {/* IMAGE SIDE */}

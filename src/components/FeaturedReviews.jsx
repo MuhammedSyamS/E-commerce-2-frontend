@@ -370,13 +370,13 @@ const FeaturedReviews = () => {
                     {/* Navigation Buttons */}
                     <button 
                         onClick={() => scroll('left')}
-                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                        className="absolute -left-4 md:-left-12 top-1/2 -translate-y-1/2 z-30 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
                     >
                         <ChevronLeft size={32} strokeWidth={1.5} />
                     </button>
                     <button 
                         onClick={() => scroll('right')}
-                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-2 text-zinc-400 hover:text-black transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
+                        className="absolute -right-4 md:-right-12 top-1/2 -translate-y-1/2 z-30 p-2 text-black hover:text-zinc-600 transition-all group-active:scale-95 md:opacity-0 group-hover/review-scroller:opacity-100"
                     >
                         <ChevronRight size={32} strokeWidth={1.5} />
                     </button>
@@ -467,7 +467,7 @@ const FeaturedReviews = () => {
                                                             </div>
                                                         </div>
                                                 </div>
-                                                <div className="flex items-center justify-center text-zinc-400 hover:text-black transition-colors">
+                                                <div className="flex items-center justify-center text-black hover:text-zinc-600 transition-colors">
                                                     <ArrowUpRight size={14} />
                                                 </div>
                                             </div>
