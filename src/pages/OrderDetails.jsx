@@ -101,7 +101,7 @@ const OrderDetails = () => {
   );
 
   return (
-    <div className="min-h-screen bg-zinc-50/50 pt-24 md:pt-52 pb-20 font-sans text-[#1a1a1a]">
+    <div className="min-h-screen bg-zinc-50/50 pb-20 font-sans text-[#1a1a1a] page-top">
       {/* Increased Max Width for Desktop Table View */}
       <div className="container-responsive">
 

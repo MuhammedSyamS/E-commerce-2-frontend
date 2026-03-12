@@ -46,7 +46,7 @@ const Orders = () => {
   );
 
   return (
-    <div className="min-h-screen bg-white pb-20 pt-24 md:pt-52 px-4 md:px-6 font-sans text-[#1a1a1a]">
+    <div className="min-h-screen bg-white pb-20 px-4 md:px-6 font-sans text-[#1a1a1a] page-top">
       <div className="container mx-auto max-w-5xl">
         <div className="mb-12 flex justify-between items-end">
           <div>

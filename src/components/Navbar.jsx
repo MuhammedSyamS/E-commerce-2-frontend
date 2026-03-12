@@ -285,7 +285,7 @@ const Navbar = () => {
           >
             {/* SEARCH INPUT AREA */}
             <div className="flex items-center px-5 md:px-8 h-16 md:h-20 w-full relative border-b border-zinc-100 md:border-none shrink-0 bg-white">
-              <Search className="text-zinc-400 w-5 h-5 flex-shrink-0" />
+              <Search className="text-black w-5 h-5 flex-shrink-0" />
               <input
                 autoFocus
                 type="text"
@@ -384,7 +384,7 @@ const Navbar = () => {
                   </>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 px-10 text-center opacity-40">
-                    <Search size={40} strokeWidth={1} className="mb-4 text-zinc-300" />
+                    <Search size={40} strokeWidth={1} className="mb-4 text-black opacity-40" />
                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">No results found</p>
                   </div>
                 )}

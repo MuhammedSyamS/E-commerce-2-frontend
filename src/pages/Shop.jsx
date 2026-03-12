@@ -557,8 +557,8 @@ const Shop = () => {
       </section>
 
       {/* --- MINIMALIST MNC TOOLBAR --- */}
-      <nav className="sticky top-[104px] md:top-[120px] z-[90] px-4 md:px-8 py-2 transition-all duration-500 bg-white/90 backdrop-blur-2xl border-b border-zinc-100 w-full">
-        <div className="container-responsive flex items-center justify-between gap-4 md:gap-8">
+      <nav className="sticky top-[104px] md:top-[120px] z-[90] px-4 md:px-8 py-2 transition-all duration-500 bg-white/90 backdrop-blur-2xl border-b border-zinc-100 w-full overflow-x-hidden">
+        <div className="container-responsive flex items-center justify-between gap-2 md:gap-8">
           
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 hidden sm:block">
@@ -571,13 +571,13 @@ const Shop = () => {
                 placeholder="Search..."
                 value={keyword}
                 onChange={handleSearchChange}
-                className="bg-transparent border-none py-1.5 px-0 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-24 md:w-48"
+                className="bg-transparent border-none py-1.5 px-0 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-zinc-300 w-20 md:w-48"
               />
-              <Search className="text-zinc-300 group-focus-within:text-black transition-colors" size={12} />
+              <Search className="text-black group-focus-within:text-black transition-colors" size={12} />
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2 md:gap-6 shrink-0">
             {/* Sort Dropdown (MNC Style) */}
             <div className="relative group flex items-center gap-2">
               <span className="text-[9px] font-black uppercase tracking-widest text-zinc-300">Sort:</span>
@@ -596,7 +596,7 @@ const Shop = () => {
 
             <button
               onClick={() => setIsDrawerOpen(true)}
-              className="flex items-center gap-3 bg-black text-white px-6 py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-zinc-900 transition-all duration-300 active:scale-95 shadow-xl shadow-black/10"
+              className="flex items-center gap-2 md:gap-3 bg-black text-white px-4 md:px-6 py-2 md:py-2.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] hover:bg-zinc-900 transition-all duration-300 active:scale-95 shadow-xl shadow-black/10 shrink-0"
             >
               <SlidersHorizontal size={12} strokeWidth={3} />
               Filter

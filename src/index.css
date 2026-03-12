@@ -266,7 +266,13 @@ em,
    page-top = 128px mobile (32 * 4), 148px desktop (37 * 4)
  */
 .page-top {
-  padding-top: 7rem; /* 112px — safely clears navbar (64px) + banner (40px) = 104px */
+  padding-top: 9rem !important; /* 144px — safely clears navbar (64px) + banner (40px) + extra buffer */
+}
+
+@media (min-width: 768px) {
+  .page-top {
+    padding-top: 11rem !important; /* 176px - clears larger desktop navbar + banner */
+  }
 }
 
 @media (min-width: 768px) {
