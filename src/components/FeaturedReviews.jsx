@@ -134,7 +134,7 @@ const FeaturedReviews = () => {
     // if (loading) return null; // Removed to prevent section flicker/missing on slow mobile
 
     return (
-        <section className="bg-zinc-50 py-12 md:py-24 border-t border-zinc-200">
+        <section className="bg-white py-12 md:py-24 border-t border-zinc-200">
 
             {/* IMMERSIVE MODAL (Meesho Style Full-Screen) */}
             {selectedReview && (

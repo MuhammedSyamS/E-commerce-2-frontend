@@ -283,15 +283,63 @@ const HeroSettings = ({ settings, setSettings, addToast }) => (
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-zinc-200 mt-8">
-            <h4 className="font-bold text-zinc-900 uppercase tracking-widest text-[10px] mb-4">Scrolling Marquee Text</h4>
-            <input
-                name="marqueeText"
-                placeholder="PROMOTIONAL TEXT • SPECIAL OFFER • NEW ARRIVALS •"
-                className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold focus:outline-none focus:border-black transition"
-                value={settings.marqueeText || ''}
-                onChange={(e) => setSettings({ ...settings, marqueeText: e.target.value })}
-            />
-            <p className="text-[9px] text-zinc-400 mt-2 italic font-medium">This text will scroll horizontally at the bottom of the Hero section on the Home page.</p>
+            <div className="flex justify-between items-center mb-6">
+                <h4 className="font-bold text-zinc-900 uppercase tracking-widest text-[10px]">Scrolling Marquee Items</h4>
+                <button
+                    onClick={() => setSettings(prev => ({ ...prev, marqueeMessages: [...(prev.marqueeMessages || []), { text: '', link: '' }] }))}
+                    className="flex items-center gap-2 bg-zinc-100 text-black px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-200 transition"
+                >
+                    <Plus size={14} /> Add Item
+                </button>
+            </div>
+            
+            <div className="space-y-3">
+                {settings.marqueeMessages?.map((msg, idx) => (
+                    <div key={idx} className="flex flex-col md:flex-row gap-3 items-center group/item bg-zinc-50/50 p-4 rounded-xl border border-zinc-100">
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3 w-full">
+                            <input
+                                placeholder="Message (e.g. SUMMER SALE •)"
+                                className="w-full p-3 bg-white border border-zinc-200 rounded-lg text-[10px] font-bold uppercase focus:outline-none focus:border-black transition"
+                                value={msg.text}
+                                onChange={(e) => {
+                                    const newMsgs = [...settings.marqueeMessages];
+                                    newMsgs[idx].text = e.target.value;
+                                    setSettings({ ...settings, marqueeMessages: newMsgs });
+                                }}
+                            />
+                            <input
+                                placeholder="Link URL (Optional)"
+                                className="w-full p-3 bg-white border border-zinc-200 rounded-lg text-[10px] font-bold focus:outline-none focus:border-black transition"
+                                value={msg.link}
+                                onChange={(e) => {
+                                    const newMsgs = [...settings.marqueeMessages];
+                                    newMsgs[idx].link = e.target.value;
+                                    setSettings({ ...settings, marqueeMessages: newMsgs });
+                                }}
+                            />
+                        </div>
+                        <div className="flex gap-1">
+                            <button
+                                onClick={() => {
+                                    const newMsgs = settings.marqueeMessages.filter((_, i) => i !== idx);
+                                    setSettings({ ...settings, marqueeMessages: newMsgs });
+                                }}
+                                className="p-2 text-zinc-400 hover:text-red-500 transition"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
+                
+                {(!settings.marqueeMessages || settings.marqueeMessages.length === 0) && (
+                    <div className="py-8 text-center border border-dashed border-zinc-200 rounded-xl">
+                        <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">No Marquee Items Added</p>
+                        <p className="text-[8px] text-zinc-300 mt-1 uppercase">Using default marquee content</p>
+                    </div>
+                )}
+            </div>
+            <p className="text-[9px] text-zinc-400 mt-4 italic font-medium">Add multiple items to create a continuous scrolling bar. Items will be separated automatically.</p>
         </div>
     </div>
 );
@@ -427,7 +475,8 @@ const AdminSettings = () => {
         manifestLogo: '',
         heroSlides: [],
         topNavbarMessages: [],
-        marqueeText: ''
+        marqueeText: '',
+        marqueeMessages: []
     });
 
     useEffect(() => {

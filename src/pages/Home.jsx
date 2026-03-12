@@ -264,7 +264,7 @@ const Home = () => {
 
             </section>
           )}
-          <Marquee text={settings?.marqueeText || "Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •"} />
+          <Marquee items={settings?.marqueeMessages} text={settings?.marqueeText} />
         </>
       )}
 
@@ -364,7 +364,7 @@ const Home = () => {
                     <Link 
                       key={look._id} 
                       to="/looks" 
-                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-zinc-50 mx-2 shrink-0 snap-center"
+                      className="relative w-[280px] md:w-[320px] aspect-[3/4] overflow-hidden rounded-3xl group/card border border-zinc-100 bg-white mx-2 shrink-0 snap-center"
                     >
                       <img 
                         src={resolveMediaURL(look.image)} 
@@ -440,7 +440,7 @@ const Home = () => {
 
       {activeView === 'all' && user && recentlyViewed.length > 0 && (
         <Reveal width="100%">
-          <section className="container-responsive py-12 md:py-24 relative bg-zinc-50 border-t border-zinc-100">
+          <section className="container-responsive py-12 md:py-24 relative bg-white border-t border-zinc-100">
             <div className="flex justify-between items-end mb-12">
               <div>
                 <h2 className="text-xl md:text-3xl font-black uppercase tracking-tighter">Recently Viewed</h2>

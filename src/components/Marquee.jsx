@@ -1,19 +1,23 @@
 import React from 'react';
 
-const Marquee = ({ text, reverse = false }) => {
+const Marquee = ({ text, items = [], reverse = false }) => {
+  const content = items.length > 0 
+    ? items.map(item => item.text).join(" • ") + " • "
+    : text || "Premium Artifacts • High Quality • Studio Drops • Handpicked Originals • ";
+
   return (
     <div className="relative flex overflow-x-hidden bg-black py-4 border-y border-zinc-800">
       <div className={`flex whitespace-nowrap animate-marquee ${reverse ? 'flex-row-reverse' : ''}`}>
-        {[...Array(10)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
-            {text}
+            {content}
           </span>
         ))}
       </div>
       <div className={`absolute top-4 flex whitespace-nowrap animate-marquee2 ${reverse ? 'flex-row-reverse' : ''}`}>
-        {[...Array(10)].map((_, i) => (
+        {[...Array(6)].map((_, i) => (
           <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
-            {text}
+            {content}
           </span>
         ))}
       </div>
