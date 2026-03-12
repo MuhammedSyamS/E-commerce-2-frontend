@@ -3,6 +3,7 @@ import api from '../../api/instance';
 import { Save, Bell, Shield, Globe, User, ToggleLeft, ToggleRight, Truck, Image, Plus, Trash2, ArrowUp, ArrowDown, Upload, MessageSquare } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
+import { resolveMediaURL } from '../../utils/mediaUtils';
 
 // --- SUB-COMPONENTS (Moved outside for performance) ---
 
@@ -161,7 +162,7 @@ const HeroSettings = ({ settings, setSettings, addToast }) => (
                         {/* PREVIEW & UPLOAD */}
                         <div className="w-full md:w-32 h-32 bg-zinc-100 rounded-xl overflow-hidden relative border border-zinc-100 shrink-0">
                             {slide.img ? (
-                                <img src={slide.img} className="w-full h-full object-cover" alt="" />
+                                <img src={resolveMediaURL(slide.img)} className="w-full h-full object-cover" alt="" />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-zinc-300">
                                     <Image size={24} />
