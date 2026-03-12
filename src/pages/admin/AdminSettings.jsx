@@ -281,6 +281,18 @@ const HeroSettings = ({ settings, setSettings, addToast }) => (
                 </div>
             )}
         </div>
+
+        <div className="bg-white p-6 rounded-2xl border border-zinc-200 mt-8">
+            <h4 className="font-bold text-zinc-900 uppercase tracking-widest text-[10px] mb-4">Scrolling Marquee Text</h4>
+            <input
+                name="marqueeText"
+                placeholder="PROMOTIONAL TEXT • SPECIAL OFFER • NEW ARRIVALS •"
+                className="w-full p-4 bg-zinc-50 border border-zinc-200 rounded-xl text-xs font-bold focus:outline-none focus:border-black transition"
+                value={settings.marqueeText || ''}
+                onChange={(e) => setSettings({ ...settings, marqueeText: e.target.value })}
+            />
+            <p className="text-[9px] text-zinc-400 mt-2 italic font-medium">This text will scroll horizontally at the bottom of the Hero section on the Home page.</p>
+        </div>
     </div>
 );
 
@@ -414,7 +426,8 @@ const AdminSettings = () => {
         maxDeliveryDays: 7,
         manifestLogo: '',
         heroSlides: [],
-        topNavbarMessages: []
+        topNavbarMessages: [],
+        marqueeText: ''
     });
 
     useEffect(() => {

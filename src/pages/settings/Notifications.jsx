@@ -114,7 +114,7 @@ const Notifications = () => {
             <div className="relative space-y-2">
               <button
                 onClick={() => navigate('/account')}
-                className="group flex items-center gap-2 text-zinc-400 font-bold text-[9px] md:text-[10px] uppercase tracking-mega hover:text-black transition-all mb-4"
+                className="group flex items-center gap-2 text-zinc-400 font-semibold text-[9px] md:text-[10px] uppercase tracking-wider hover:text-black transition-all mb-4"
               >
                 <div className="w-5 h-5 flex items-center justify-center rounded-full bg-zinc-100 group-hover:bg-black group-hover:text-white transition-all">
                   <ArrowLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
@@ -124,7 +124,7 @@ const Notifications = () => {
               <h1 className="text-3xl md:text-5xl font-black tracking-tighter text-zinc-900 flex items-center gap-3">
                 Inbox
                 {unreadCount > 0 && (
-                  <span className="inline-flex items-center justify-center px-4 py-1.5 bg-red-600 text-white text-[9px] md:text-xs font-black rounded-full shadow-lg shadow-red-200 animate-pulse tracking-widest whitespace-nowrap ml-4">
+                    <span className="inline-flex items-center justify-center px-4 py-1.5 bg-red-600 text-white text-[9px] md:text-xs font-bold rounded-full shadow-lg shadow-red-200 animate-pulse tracking-wider whitespace-nowrap ml-4">
                     {unreadCount} NEW
                   </span>
                 )}
@@ -138,7 +138,7 @@ const Notifications = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="bg-white border border-zinc-200 text-zinc-600 px-5 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-black hover:text-white hover:border-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-sm group"
+                  className="bg-white border border-zinc-200 text-zinc-600 px-5 py-3 text-[10px] font-bold uppercase tracking-wider hover:bg-black hover:text-white hover:border-black transition-all rounded-xl flex items-center justify-center gap-2 shadow-sm group"
                 >
                   <CheckCheck size={14} className="group-hover:scale-110 transition-transform" /> Mark All Read
                 </button>
@@ -146,7 +146,7 @@ const Notifications = () => {
               <button
                 onClick={subscribeToPush}
                 disabled={isSubscribed}
-                className={`px-6 py-3 text-[10px] font-black uppercase tracking-widest transition-all shadow-xl flex items-center justify-center gap-2 rounded-xl w-full sm:w-auto ${isSubscribed
+                className={`px-6 py-3 text-[10px] font-bold uppercase tracking-wider transition-all shadow-xl flex items-center justify-center gap-2 rounded-xl w-full sm:w-auto ${isSubscribed
                   ? 'bg-zinc-50 text-emerald-600 shadow-none cursor-default border border-emerald-100'
                   : 'bg-black text-white hover:shadow-black/20 hover:scale-[1.02] active:scale-95'
                   }`}
@@ -167,7 +167,7 @@ const Notifications = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${activeTab === tab.id
+              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab.id
                 ? 'bg-white text-black shadow-md shadow-zinc-200/50'
                 : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/50'
                 }`}
@@ -202,7 +202,7 @@ const Notifications = () => {
             {activeTab !== 'all' && (
               <button
                 onClick={() => setActiveTab('all')}
-                className="mt-8 text-[10px] font-black uppercase tracking-mega text-blue-600 hover:text-black transition-colors"
+                className="mt-8 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-black transition-colors"
               >
                 View all activity
               </button>
@@ -287,13 +287,13 @@ const Notifications = () => {
                           <div className="flex flex-wrap items-center gap-2 w-full">
                             <button
                               onClick={(e) => { e.stopPropagation(); navigate('/my-orders'); }}
-                              className="px-6 py-2.5 bg-black text-white text-[10px] font-black uppercase tracking-mega rounded-xl hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-lg shadow-zinc-200"
+                              className="px-6 py-2.5 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-lg shadow-zinc-200"
                             >
                               <Truck size={14} strokeWidth={3} /> Track Package
                             </button>
                             <button
                               onClick={(e) => { e.stopPropagation(); navigate('/support'); }}
-                              className="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-black uppercase tracking-mega rounded-xl hover:border-black hover:bg-zinc-50 transition-all flex items-center gap-2"
+                              className="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:border-black hover:bg-zinc-50 transition-all flex items-center gap-2"
                             >
                               <Info size={14} /> View Details
                             </button>

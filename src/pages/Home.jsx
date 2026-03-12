@@ -15,26 +15,7 @@ import { Skeleton } from '../components/ui/Skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import AIStylist from '../components/AIStylist';
 
-const DEFAULT_SLIDES = [
-  {
-    title: "SLOOK STUDIO SERIES",
-    subtitle: "Premium Essentials",
-    img: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80&w=2070&auto=format&fit=crop",
-    link: "/shop"
-  },
-  {
-    title: "MODERN ARTIFACTS",
-    subtitle: "Curated Drops",
-    img: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop",
-    link: "/shop"
-  },
-  {
-    title: "ARCHIVAL SELECTIONS",
-    subtitle: "Timeless Quality",
-    img: "https://images.unsplash.com/photo-1523381210434-271e8be1f52b?q=80&w=2070&auto=format&fit=crop",
-    link: "/shop"
-  }
-];
+const DEFAULT_SLIDES = [];
 
 const Home = () => {
   const location = useLocation();
@@ -56,12 +37,11 @@ const Home = () => {
   const slides = useMemo(() => {
     const raw = settings?.heroSlides || [];
     const valid = raw.filter(s => s && s.img);
-    const final = valid.length > 0 ? valid : DEFAULT_SLIDES;
-    
-    return final.map((s, i) => ({
+    // If no slides are configured, it will be empty
+    return valid.map((s, i) => ({
       ...s,
       img: resolveMediaURL(s.img),
-      key: `hero-${i}-${(s.img || '').slice(-5)}`
+      key: `hero-${i}-${(s.img || '').slice(-10)}` // More unique key
     }));
   }, [settings?.heroSlides]);
 
@@ -226,7 +206,7 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.6, ease: "easeInOut" }} // Smoother, slightly faster
+                  transition={{ duration: 0.8, ease: "linear" }}
                   className="absolute inset-0"
                 >
                   <div className="absolute inset-0 overflow-hidden bg-black"> {/* Changed from zinc-900 to black */}
@@ -284,7 +264,7 @@ const Home = () => {
 
             </section>
           )}
-          <Marquee text="Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •" />
+          <Marquee text={settings?.marqueeText || "Premium Artifacts • High Quality • Studio Drops • Handpicked Originals •"} />
         </>
       )}
 
@@ -314,7 +294,7 @@ const Home = () => {
                       <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
                     </div>
                   )}
-                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
+                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full overscroll-x-contain touch-pan-x' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
                     {section.items.length > 0 ? (
                       section.items.filter(p => p && p._id).map((product) => (
                         <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0' : 'w-full'}`}><ProductCard product={product} /></div>
