@@ -467,7 +467,7 @@ const FeaturedReviews = () => {
                                                             </div>
                                                         </div>
                                                 </div>
-                                                <div className="w-8 h-8 rounded-full border border-zinc-200 flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                                                <div className="flex items-center justify-center text-zinc-400 hover:text-black transition-colors">
                                                     <ArrowUpRight size={14} />
                                                 </div>
                                             </div>

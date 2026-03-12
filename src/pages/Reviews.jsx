@@ -110,7 +110,7 @@ const Reviews = () => {
                                         </div>
                                         <button 
                                             onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
-                                            className="bg-white/10 text-white p-2 rounded-full hover:bg-white/20 transition-all"
+                                            className="text-white p-2 hover:opacity-70 transition-all"
                                         >
                                             <X size={20} />
                                         </button>
@@ -119,7 +119,7 @@ const Reviews = () => {
                                     {/* DESKTOP CLOSE BUTTON */}
                                     <button 
                                         onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); }}
-                                        className="hidden md:block absolute top-6 right-6 z-[130] bg-black text-white p-2.5 rounded-full shadow-2xl border border-white/20 hover:scale-110 active:scale-95 transition-all"
+                                        className="hidden md:block absolute top-6 right-6 z-[130] text-white p-2.5 hover:scale-110 active:scale-95 transition-all"
                                     >
                                         <X size={20} />
                                     </button>

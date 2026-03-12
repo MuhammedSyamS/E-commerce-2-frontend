@@ -471,7 +471,7 @@ const ProductDetails = () => {
 
           {selectedReviewIdx !== null && (
             <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-lg flex items-center justify-center p-4 md:p-10 animate-in fade-in duration-300" onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); setModalCommentExpanded(false); }}>
-              <button className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 bg-white/10 rounded-full z-[120]">
+              <button onClick={() => { setSelectedReviewIdx(null); setSelectedMediaIdx(0); setModalCommentExpanded(false); }} className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors p-2 z-[120]">
                 <X size={24} className="md:w-8 md:h-8" />
               </button>
 
@@ -483,9 +483,9 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                className="fixed left-2 md:left-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <ChevronLeft size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+                <ChevronLeft size={48} strokeWidth={1.5} className="md:w-16 md:h-16" />
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
               </button>
 
@@ -496,9 +496,9 @@ const ProductDetails = () => {
                   setSelectedMediaIdx(0);
                   setModalCommentExpanded(false);
                 }}
-                className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-black/40 hover:text-black transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
+                className="fixed right-2 md:right-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex flex-col items-center gap-2"
               >
-                <ChevronRight size={48} strokeWidth={1.5} className="md:w-16 md:h-16 drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]" />
+                <ChevronRight size={48} strokeWidth={1.5} className="md:w-16 md:h-16" />
                 <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
               </button>
 

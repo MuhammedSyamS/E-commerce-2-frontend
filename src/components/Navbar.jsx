@@ -437,19 +437,17 @@ const Navbar = () => {
           {/* RIGHT SECTION */}
           <div className="flex-1 flex items-center justify-end gap-3 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
             <button onClick={toggleSearch} className="relative group p-2 md:p-3 transition-all">
-              <Search className="w-5 h-5 md:w-[22px] md:h-[22px] text-white group-hover:text-zinc-200 transition" />
+              <Search className="w-4 h-4 md:w-5 md:h-5 text-white group-hover:text-zinc-200 transition" />
             </button>
 
             {/* WISHLIST */}
             <Link to="/wishlist" className="relative group p-2 md:p-3 transition-all">
-              <Heart className={`w-5 h-5 md:w-[22px] md:h-[22px] transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
-              <Badge count={wishlistCount} showNumber={false} />
+              <Heart className={`w-4 h-4 md:w-5 md:h-5 transition ${wishlistCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
             </Link>
 
             {/* CART */}
             <button onClick={toggleCart} className="relative group p-2 md:p-3 transition-all">
-              <ShoppingBag className={`w-5 h-5 md:w-[22px] md:h-[22px] transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
-              <Badge count={cartCount} showNumber={false} />
+              <ShoppingBag className={`w-4 h-4 md:w-5 md:h-5 transition ${cartCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
             </button>
 
             {/* NOTIFICATIONS - DESKTOP ONLY */}
@@ -461,7 +459,7 @@ const Navbar = () => {
                 }}
                 className="relative outline-none flex items-center justify-center p-2 rounded-full hover:bg-white/10 transition-all"
               >
-                <Bell className={`w-5 h-5 md:w-[22px] md:h-[22px] transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
+                <Bell className={`w-4 h-4 md:w-5 md:h-5 transition ${showNotif ? 'text-zinc-400' : 'text-white'}`} />
                 <Badge count={unreadCount} />
               </button>
 
@@ -510,13 +508,13 @@ const Navbar = () => {
 
             {/* PROFILE - DESKTOP ONLY */}
             <Link to={user ? "/account" : "/login"} className="hidden md:flex p-2 rounded-full hover:bg-white/10 transition-all text-white">
-              <User className="w-[22px] h-[22px]" fill={user ? "currentColor" : "none"} />
+              <User className="w-5 h-5" fill={user ? "currentColor" : "none"} />
             </Link>
 
             {/* ADMIN SHORTCUT */}
             {(user?.role === 'admin' || user?.isAdmin) && (
               <Link to="/admin/dashboard" className="hidden md:flex p-2 rounded-full hover:bg-white/10 transition-all text-red-500" title="Admin Dashboard">
-                <Shield className="w-[22px] h-[22px] fill-red-500/10" />
+                <Shield className="w-5 h-5 fill-red-500/10" />
               </Link>
             )}
 

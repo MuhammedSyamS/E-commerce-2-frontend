@@ -82,7 +82,7 @@ const SocialFeed = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[110] flex items-end md:items-center justify-center p-0 md:p-10 bg-black/95 backdrop-blur-xl"
         >
-            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] bg-black/40 md:bg-white p-2 md:p-4 rounded-full border border-white/20 md:border-zinc-200 md:text-black shadow-2xl">
+            <button onClick={onClose} className="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:rotate-90 transition-transform duration-300 z-[120] p-2 md:p-4 hover:opacity-70">
                 <X size={24} className="md:w-8 md:h-8" />
             </button>
             <div className="absolute top-4 left-4 z-[120] md:hidden">
@@ -226,7 +226,7 @@ const SocialFeed = () => {
                             >
                                 <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-zinc-100 bg-white hover:shadow-2xl transition-all duration-500">
                                     <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
-                                        <div className="bg-white/90 backdrop-blur-md p-3 rounded-full shadow-xl">
+                                        <div className="text-white drop-shadow-lg">
                                             <ShoppingBag size={18} />
                                         </div>
                                     </div>
