@@ -81,44 +81,29 @@ const Home = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchHomeData = async () => {
+    const fetchAllData = async () => {
       try {
         setLoading(true);
-        const { data } = await api.get('/products/home');
-        if (data) setHomeData(data);
+        const [homeRes, settingsRes, looksRes] = await Promise.allSettled([
+          api.get('/products/home'),
+          api.get(`/settings?t=${Date.now()}`),
+          api.get('/looks')
+        ]);
+
+        if (homeRes.status === 'fulfilled') setHomeData(homeRes.value.data);
+        if (settingsRes.status === 'fulfilled') setSettings(settingsRes.value.data);
+        if (looksRes.status === 'fulfilled' && looksRes.value.data?.length > 0) {
+          setCommunityLooks(looksRes.value.data.slice(0, 12));
+        }
       } catch (err) {
-        console.error("HOME: Data Fetch Error:", err);
+        console.error("HOME: Initial Data Fetch Error:", err);
         setError("Failed to fetch products.");
       } finally {
         setLoading(false);
       }
     };
-    fetchHomeData();
-
-    const fetchSettings = async () => {
-      try {
-        const { data } = await api.get(`/settings?t=${Date.now()}`);
-        setSettings(data);
-      } catch (err) {
-        console.error("Home Settings Fetch Error:", err);
-      }
-    };
-    fetchSettings();
-  }, []);
-
-  useEffect(() => {
-    const fetchLooks = async () => {
-      try {
-        const { data } = await api.get('/looks');
-        if (data && data.length > 0) {
-          setCommunityLooks(data.slice(0, 12));
-        }
-      } catch (err) {
-        console.error("Home Looks Fetch Error:", err);
-      }
-    };
-    fetchLooks();
-  }, []);
+    fetchAllData();
+  }, [user?._id]); // Re-fetch only on user change to refresh specific state if needed
 
   // Auto-scroll Community Looks
   useEffect(() => {
@@ -176,6 +161,16 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [nextSlide, activeView, resetKey]);
 
+  // Preload Images
+  useEffect(() => {
+    if (slides.length > 0) {
+      slides.forEach(slide => {
+        const img = new Image();
+        img.src = slide.img;
+      });
+    }
+  }, [slides]);
+
   // Safety: Reset if out of bounds
   useEffect(() => {
     if (currentSlide >= slides.length) {
@@ -231,20 +226,20 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }} // Smoother, slightly faster
                   className="absolute inset-0"
                 >
-                  <div className="absolute inset-0 overflow-hidden bg-zinc-900">
+                  <div className="absolute inset-0 overflow-hidden bg-black"> {/* Changed from zinc-900 to black */}
                     <motion.img
                       src={slides[currentSlide]?.img}
-                      initial={{ scale: 1.2, opacity: 1 }}
+                      initial={{ scale: 1.1, opacity: 0 }}
                       animate={{ 
                         scale: 1.1 + (scrollY * 0.0005),
                         y: scrollY * 0.1,
                         opacity: 1
                       }}
                       transition={{ 
-                        opacity: { duration: 1.2, ease: "easeOut" },
+                        opacity: { duration: 0.5 },
                         scale: { duration: 0 }
                       }}
                       className="w-full h-full object-cover"

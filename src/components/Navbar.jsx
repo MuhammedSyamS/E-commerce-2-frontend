@@ -442,12 +442,12 @@ const Navbar = () => {
 
             {/* WISHLIST */}
             <Link to="/wishlist" className="relative group p-2 md:p-3 transition-all">
-              <Heart className={`w-4 h-4 md:w-5 md:h-5 transition ${wishlistCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
+              <Heart className={`w-4 h-4 md:w-5 md:h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
             </Link>
 
             {/* CART */}
             <button onClick={toggleCart} className="relative group p-2 md:p-3 transition-all">
-              <ShoppingBag className={`w-4 h-4 md:w-5 md:h-5 transition ${cartCount > 0 ? 'text-black fill-white' : 'text-white'}`} />
+              <ShoppingBag className={`w-4 h-4 md:w-5 md:h-5 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
             </button>
 
             {/* NOTIFICATIONS - DESKTOP ONLY */}
