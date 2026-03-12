@@ -63,7 +63,7 @@ const AddressBook = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-24 md:pt-52 pb-20">
+    <div className="min-h-screen bg-white page-top md:pt-52 pb-20">
       <div className="container mx-auto px-6 max-w-4xl">
 
         <button onClick={() => navigate('/account')} className="flex items-center gap-2 text-zinc-400 font-bold uppercase text-[10px] hover:text-black mb-8">

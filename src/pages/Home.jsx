@@ -194,7 +194,7 @@ const Home = () => {
   };
 
   const productSections = [
-    { id: 'trending', title: 'Trending Now', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-zinc-50' },
+    { id: 'trending', title: 'Trending Now', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-white' },
     { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Drops Studio', items: homeData.newArrivals || [], link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' },
     ...(homeData.dynamicSections || []).map((section, idx) => ({
       id: section.id,
@@ -203,7 +203,7 @@ const Home = () => {
       items: section.items || [],
       link: `/shop?keyword=${encodeURIComponent(section.title)}`,
       ref: React.createRef(),
-      bg: idx % 2 === 0 ? 'bg-zinc-50' : 'bg-white'
+      bg: 'bg-white'
     }))
   ];
 

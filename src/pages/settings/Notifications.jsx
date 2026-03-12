@@ -97,7 +97,7 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafafa] pt-16 md:pt-32 lg:pt-40 pb-20 font-sans selection:bg-black selection:text-white">
+    <div className="min-h-screen bg-[#fafafa] page-top md:pt-32 lg:pt-40 pb-20 font-sans selection:bg-black selection:text-white">
       <div className="container mx-auto px-4 md:px-6 max-w-4xl">
 
         {/* TOP GLASSMORPHISM HEADER */}
