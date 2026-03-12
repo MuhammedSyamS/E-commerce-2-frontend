@@ -108,7 +108,6 @@ const ProductCard = ({ product, onAddToCart }) => {
       className="relative w-full md:max-w-[260px] group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onTouchStart={() => setHovered(true)}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">

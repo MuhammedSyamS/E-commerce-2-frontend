@@ -204,7 +204,7 @@ const Home = () => {
   };
 
   const productSections = [
-    { id: 'trending', title: 'Trending Now', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-white' },
+    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-white' },
     { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Drops Studio', items: homeData.newArrivals || [], link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' },
     ...(homeData.dynamicSections || []).map((section, idx) => ({
       id: section.id,
@@ -229,7 +229,7 @@ const Home = () => {
       {activeView === 'all' && (
         <>
           {slides.length > 0 && (
-            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden">
+            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden touch-pan-y">
               <AnimatePresence initial={false}>
                 <motion.div
                   key={slides[currentSlide]?.key || currentSlide}

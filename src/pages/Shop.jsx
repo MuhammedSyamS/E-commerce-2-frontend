@@ -536,7 +536,7 @@ const Shop = () => {
       </Helmet>
 
       {/* --- CONDENSED SHOP HERO --- */}
-      <section className="relative pt-32 pb-8 md:pt-48 md:pb-12 px-6 bg-white w-full">
+      <section className="relative page-top pb-8 md:pb-12 px-6 bg-white w-full">
         <div className="container-responsive relative">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>

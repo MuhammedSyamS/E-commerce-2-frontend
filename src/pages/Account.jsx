@@ -167,7 +167,7 @@ const Account = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pb-20 px-4 md:px-6 pt-44 md:pt-52 font-sans text-[#1a1a1a]">
+    <div className="min-h-screen bg-white pb-20 px-4 md:px-6 page-top font-sans text-[#1a1a1a]">
       <div className="max-w-7xl mx-auto">
         {showRewardsModal && <RewardsModal />}
 

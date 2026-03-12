@@ -329,7 +329,7 @@ const Checkout = () => {
   if (cartItems.length === 0 && !isSubmitting) return null;
 
   return (
-    <div className="bg-white min-h-screen pt-24 md:pt-52 pb-20 font-sans text-[#1a1a1a]">
+    <div className="bg-white min-h-screen page-top pb-20 font-sans text-[#1a1a1a]">
       <div className="container-responsive">
 
         {/* TOP NAV */}

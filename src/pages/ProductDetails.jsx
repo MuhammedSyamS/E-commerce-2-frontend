@@ -441,7 +441,7 @@ const ProductDetails = () => {
   })();
 
   return (
-    <div className="bg-white min-h-screen pt-24 md:pt-52 px-4 md:px-6 pb-20 font-sans text-[#1a1a1a] page-top selection:bg-black selection:text-white">
+    <div className="bg-white min-h-screen px-4 md:px-6 pb-20 font-sans text-[#1a1a1a] page-top selection:bg-black selection:text-white">
       {/* 1. LOADING STATE */}
       {loading ? (
         <div className="container-responsive animate-in fade-in duration-700">

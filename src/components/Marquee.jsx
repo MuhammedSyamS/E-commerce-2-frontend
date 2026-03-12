@@ -6,7 +6,7 @@ const Marquee = ({ text, items = [], reverse = false }) => {
     : text || "Premium Artifacts • High Quality • Studio Drops • Handpicked Originals • ";
 
   return (
-    <div className="relative flex overflow-x-hidden bg-black py-4 border-y border-zinc-800">
+    <div className="relative flex overflow-x-hidden bg-black py-4 border-y border-zinc-800 touch-pan-y">
       <div className={`flex whitespace-nowrap animate-marquee ${reverse ? 'flex-row-reverse' : ''}`}>
         {[...Array(6)].map((_, i) => (
           <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">

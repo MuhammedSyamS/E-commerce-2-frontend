@@ -259,24 +259,10 @@ em,
   }
 }
 
-/* --- PAGE TOP PADDING UTILITY ---
-   Clears the fixed navbar + optional top banner on all devices.
-   Navbar: h-16 (64px) mobile / h-20 (80px) desktop
-   Optional top banner: h-10 (40px) 
-   page-top = 128px mobile (32 * 4), 148px desktop (37 * 4)
- */
-.page-top {
-  padding-top: 9rem !important; /* 144px — safely clears navbar (64px) + banner (40px) + extra buffer */
-}
+.page-top { padding-top: 10.5rem !important; }
 
 @media (min-width: 768px) {
   .page-top {
-    padding-top: 11rem !important; /* 176px - clears larger desktop navbar + banner */
+    padding-top: 12.5rem !important;
   }
 }
-
-@media (min-width: 768px) {
-  .page-top {
-    padding-top: 9rem; /* 144px — clears navbar (80px) + banner (40px) = 120px */
-  }
-}

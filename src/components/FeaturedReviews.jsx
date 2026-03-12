@@ -173,14 +173,14 @@ const FeaturedReviews = () => {
                         onClick={prevReview}
                         className="hidden md:flex fixed left-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex-col items-center gap-2"
                     >
-                        <ChevronLeft size={64} strokeWidth={1} />
+                        <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">PREV</span>
                     </button>
                     <button
                         onClick={nextReview}
                         className="hidden md:flex fixed right-12 top-1/2 -translate-y-1/2 text-white/20 hover:text-white transition-all z-[120] hover:scale-125 group flex-col items-center gap-2"
                     >
-                        <ChevronRight size={64} strokeWidth={1} />
+                        <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">NEXT</span>
                     </button>
 
@@ -398,13 +398,13 @@ const FeaturedReviews = () => {
                          onClick={() => scroll('left')}
                         className="absolute -left-2 md:-left-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
                     >
-                        <ChevronLeft size={64} strokeWidth={1} />
+                        <ChevronLeft className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
                     </button>
                     <button 
                         onClick={() => scroll('right')}
                         className="absolute -right-2 md:-right-20 top-1/2 -translate-y-1/2 z-[60] text-black hover:text-zinc-600 transition-all hover:scale-110 active:scale-95 bg-white/10 rounded-full"
                     >
-                        <ChevronRight size={64} strokeWidth={1} />
+                        <ChevronRight className="w-8 h-8 md:w-16 md:h-16" strokeWidth={1} />
                     </button>
 
                     {loading ? (

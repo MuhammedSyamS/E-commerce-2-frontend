@@ -122,7 +122,7 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white px-6 pt-52 pb-20">
+    <div className="min-h-screen flex items-center justify-center bg-white px-6 page-top pb-20">
       <div className="w-full max-w-md">
         <h1 className="text-xl md:text-3xl font-black uppercase tracking-normal md:tracking-tighter text-center mb-2 whitespace-nowrap">
           {showOtp ? <span>Verify <span className="text-red-500">OTP</span></span> : <span>Create <span className="text-red-500">Account</span></span>}
