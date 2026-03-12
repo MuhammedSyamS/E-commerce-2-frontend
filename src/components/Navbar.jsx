@@ -437,17 +437,17 @@ const Navbar = () => {
           {/* RIGHT SECTION */}
           <div className="flex-1 flex items-center justify-end gap-3 md:gap-6 text-base md:text-[10px] font-black tracking-[0.3em] uppercase transition-all">
             <button onClick={toggleSearch} className="relative group p-2 md:p-3 transition-all">
-              <Search className="w-5 h-5 md:w-6 md:h-6 text-white group-hover:text-zinc-200 transition" />
+              <Search className="w-5 h-5 md:w-5 md:h-5 text-white group-hover:text-zinc-200 transition" />
             </button>
 
             {/* WISHLIST */}
             <Link to="/wishlist" className="relative group p-2 md:p-3 transition-all">
-              <Heart className={`w-5 h-5 md:w-6 md:h-6 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+              <Heart className={`w-5 h-5 md:w-5 md:h-5 transition ${wishlistCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
             </Link>
 
             {/* CART */}
             <button onClick={toggleCart} className="relative group p-2 md:p-3 transition-all">
-              <ShoppingBag className={`w-5 h-5 md:w-6 md:h-6 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+              <ShoppingBag className={`w-5 h-5 md:w-5 md:h-5 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
             </button>
 
             {/* NOTIFICATIONS - DESKTOP ONLY */}

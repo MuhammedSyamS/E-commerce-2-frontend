@@ -259,9 +259,6 @@ const Home = () => {
                       <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
                       <div className="flex flex-col md:flex-row items-center justify-center gap-4">
                         <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
-                        {slides[currentSlide]?.link && (
-                          <button onClick={() => navigate(slides[currentSlide]?.link)} className="bg-transparent border border-white/30 text-white px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-white hover:text-black transition-all duration-500 cursor-pointer backdrop-blur-md">View Collection</button>
-                        )}
                       </div>
                     </motion.div>
                   </div>
