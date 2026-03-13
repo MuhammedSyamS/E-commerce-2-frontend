@@ -326,7 +326,7 @@ const Home = () => {
                       <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
                     </div>
                   )}
-                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full overscroll-x-contain touch-pan-x' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
+                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full overscroll-x-contain' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
                     {section.items.length > 0 ? (
                       section.items.filter(p => p && p._id).map((product) => (
                         <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0' : 'w-full'}`}><ProductCard product={product} /></div>
