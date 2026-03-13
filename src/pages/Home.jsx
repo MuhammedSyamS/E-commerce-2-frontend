@@ -203,7 +203,7 @@ const Home = () => {
     }
   };
 
-  const productSections = [
+  const productSections = useMemo(() => [
     { id: 'trending', title: 'Trending Now', subtitle: 'Most Wanted Artifacts', items: homeData.trending || [], link: '/shop?sort=mostViewed', ref: trendingRef, bg: 'bg-white' },
     { id: 'best-sellers', title: 'Best Sellers', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: bestSellersSectionRef, bg: 'bg-white' },
     { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Drops Studio', items: homeData.newArrivals || [], link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' },
@@ -216,7 +216,7 @@ const Home = () => {
       ref: React.createRef(),
       bg: 'bg-white'
     }))
-  ];
+  ], [homeData]);
 
   return (
     <div className="bg-white min-h-screen selection:bg-black selection:text-white overflow-x-hidden font-sans">

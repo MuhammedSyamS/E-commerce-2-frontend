@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
@@ -8,8 +8,12 @@ import { resolveMediaURL } from '../utils/mediaUtils';
 import Price from './Price';
 
 
-const ProductCard = ({ product, onAddToCart }) => {
-  const { user, setUser, addToCart, flashSale } = useStore();
+const ProductCard = memo(({ product, onAddToCart }) => {
+  const user = useStore(state => state.user);
+  const setUser = useStore(state => state.setUser);
+  const addToCart = useStore(state => state.addToCart);
+  const flashSale = useStore(state => state.flashSale);
+  
   const navigate = useNavigate();
   const { success, error, info } = useToast();
 
@@ -266,6 +270,6 @@ const ProductCard = ({ product, onAddToCart }) => {
       </div>
     </div>
   );
-};
+});
 
 export default ProductCard;
