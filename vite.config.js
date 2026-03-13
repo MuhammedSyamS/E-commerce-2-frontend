@@ -6,6 +6,14 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
+    {
+      name: 'env-fallback',
+      config: () => ({
+        define: {
+          'import.meta.env.VITE_GOOGLE_CLIENT_ID': JSON.stringify('860117335351-vjtkiko7ce194gd1r55qguspcor2b542.apps.googleusercontent.com')
+        }
+      })
+    },
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',

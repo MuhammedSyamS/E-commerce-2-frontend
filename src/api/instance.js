@@ -1,14 +1,16 @@
 import axios from 'axios';
 
-let rawBaseUrl = import.meta.env.VITE_API_URL || '';
-// Remove trailing slash if present
-rawBaseUrl = rawBaseUrl.replace(/\/$/, '');
+let baseUrl = import.meta.env.VITE_API_URL || '';
 
-let baseUrl = rawBaseUrl || '/api';
+// If empty or relative, default to /api
+if (!baseUrl || baseUrl === '/') {
+    baseUrl = '/api';
+}
 
-// If rawBaseUrl was provided but doesn't end with /api, append it
-if (rawBaseUrl && !rawBaseUrl.endsWith('/api')) {
-    baseUrl = `${rawBaseUrl}/api`;
+// Remove trailing slash and ensure /api suffix if not present
+baseUrl = baseUrl.replace(/\/$/, '');
+if (!baseUrl.endsWith('/api') && baseUrl.startsWith('http')) {
+    baseUrl = `${baseUrl}/api`;
 }
 
 
