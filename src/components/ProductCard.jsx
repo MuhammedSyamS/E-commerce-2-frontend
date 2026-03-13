@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
@@ -19,8 +19,44 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   const [selectedSize, setSelectedSize] = useState(null);
 
-  // Hover state — React controlled (100% reliable vs CSS group-hover)
+  // Hover/Active state — React controlled for reliability across devices
   const [hovered, setHovered] = useState(false);
+  
+  // Mobile Scroll-Aware Interaction
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const isScrollingRef = useRef(false);
+
+  const handleTouchStart = (e) => {
+    touchStartRef.current = { 
+      x: e.touches[0].clientX, 
+      y: e.touches[0].clientY 
+    };
+    isScrollingRef.current = false;
+  };
+
+  const handleTouchMove = (e) => {
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartRef.current.y);
+
+    // If vertical scroll is dominant, hide "Add to Bag" to prevent friction
+    if (deltaY > deltaX && deltaY > 10) {
+      setHovered(false);
+      isScrollingRef.current = true;
+    } 
+    // If horizontal scroll is dominant, allow the "Add to Bag" bar to show
+    else if (deltaX > deltaY && deltaX > 10) {
+      setHovered(true);
+      isScrollingRef.current = false;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // If it was a clean tap (no significant scroll), toggle the bar
+    if (!isScrollingRef.current) {
+      // Small timeout to allow the actual click to pass if needed
+      // or just toggle hovered here for mobile-first "tap to see price/buy"
+    }
+  };
 
   // Determine if product is in cart (based on store state for accurate badge/state)
   const cart = user ? (user.cart || []) : useStore.getState().cart;
@@ -105,9 +141,12 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   return (
     <div
-      className="relative w-full md:max-w-[260px] group"
+      className="relative w-full md:max-w-[260px] group touch-pan-y"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">

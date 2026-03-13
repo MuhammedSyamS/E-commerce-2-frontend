@@ -204,7 +204,8 @@ const Home = () => {
   };
 
   const productSections = [
-    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: trendingRef, bg: 'bg-white' },
+    { id: 'trending', title: 'Trending Now', subtitle: 'Most Wanted Artifacts', items: homeData.trending || [], link: '/shop?sort=mostViewed', ref: trendingRef, bg: 'bg-white' },
+    { id: 'best-sellers', title: 'Best Sellers', subtitle: 'Curated Elite Artifacts', items: homeData.bestSellers || [], link: '/shop?best=true', ref: bestSellersSectionRef, bg: 'bg-white' },
     { id: 'new-arrivals', title: 'New Arrivals', subtitle: 'Fresh Drops Studio', items: homeData.newArrivals || [], link: '/shop?new=true', ref: newArrivalRef, bg: 'bg-white' },
     ...(homeData.dynamicSections || []).map((section, idx) => ({
       id: section.id,
@@ -236,7 +237,7 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
                   className="absolute inset-0 z-20"
                 >
                   <div className="absolute inset-0 overflow-hidden bg-black">
@@ -250,7 +251,7 @@ const Home = () => {
                         opacity: loadedImages[currentSlide] ? 1 : 0
                       }}
                       transition={{ 
-                        opacity: { duration: 0.8 }
+                        opacity: { duration: 0.3 }
                       }}
                       className="w-full h-full object-cover"
                       alt={slides[currentSlide]?.title}
