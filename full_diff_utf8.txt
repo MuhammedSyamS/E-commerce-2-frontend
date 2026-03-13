@@ -1,0 +1,3185 @@
+﻿diff --git a/src/App.jsx b/src/App.jsx
+index 1096c60..02709f0 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -17,6 +17,7 @@ import AIStylist from './components/AIStylist';
+ const Home = lazy(() => import('./pages/Home'));
+ const Shop = lazy(() => import('./pages/Shop'));
+ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
++const SocialFeed = lazy(() => import('./pages/SocialFeed'));
+ const Login = lazy(() => import('./pages/Login'));
+ const Register = lazy(() => import('./pages/Register'));
+ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+@@ -80,6 +81,7 @@ const AdminSettings = lazy(() => import('./pages/admin/AdminSettings'));
+ const AdminReviews = lazy(() => import('./pages/admin/AdminReviews'));
+ const AdminPayments = lazy(() => import('./pages/admin/AdminPayments'));
+ const AdminMarketing = lazy(() => import('./pages/admin/AdminMarketing'));
++const AdminLooks = lazy(() => import('./pages/admin/AdminLooks')); // NEW
+ const AdminBlog = lazy(() => import('./pages/admin/AdminBlog')); // NEW
+ const AdminLogs = lazy(() => import('./pages/admin/AdminLogs'));
+ const AdminReports = lazy(() => import('./pages/admin/AdminReports'));
+@@ -151,6 +153,7 @@ const App = () => {
+                 <Route path="/returns-portal" element={<ReturnPortal />} />
+                 <Route path="/track-order" element={<TrackOrder />} />
+                 <Route path="/product/:slug" element={<ProductDetails />} />
++                <Route path="/social" element={<SocialFeed />} />
+                 <Route path="/login" element={<Login />} />
+                 <Route path="/register" element={<Register />} />
+                 <Route path="/forgot-password" element={<ForgotPassword />} />
+@@ -206,6 +209,7 @@ const App = () => {
+                   <Route path="products/bulk" element={<AdminBulkEditor />} />
+                   <Route path="orders" element={<AdminOrders />} />
+                   <Route path="returns" element={<AdminReturns />} /> {/* NEW ROUTE */}
++                  <Route path="looks" element={<AdminLooks />} /> {/* NEW COMMUNITY MODERATION */}
+                   <Route path="support" element={<AdminSupport />} /> {/* NEW SUPPORT */}
+                   <Route path="payments" element={<AdminPayments />} />
+                   <Route path="marketing" element={<AdminMarketing />} />
+diff --git a/src/api/instance.js b/src/api/instance.js
+index 6f5f851..13a6cd6 100644
+--- a/src/api/instance.js
++++ b/src/api/instance.js
+@@ -6,7 +6,25 @@ const api = axios.create({
+     baseURL: API_BASE_URL,
+ });
+ 
+-// Helper for authenticated requests
++// Request Interceptor to add Auth Token automatically
++api.interceptors.request.use((config) => {
++    try {
++        const storage = localStorage.getItem('slook-storage');
++        if (storage) {
++            const { state } = JSON.parse(storage);
++            if (state?.user?.token) {
++                config.headers.Authorization = `Bearer ${state.user.token}`;
++            }
++        }
++    } catch (err) {
++        console.error("Auth Interceptor Error:", err);
++    }
++    return config;
++}, (error) => {
++    return Promise.reject(error);
++});
++
++// Helper for authenticated requests (deprecated but kept for compatibility)
+ export const getAuthConfig = (token) => ({
+     headers: {
+         Authorization: `Bearer ${token}`,
+diff --git a/src/components/CartDrawer.jsx b/src/components/CartDrawer.jsx
+index f987ee0..edb2063 100644
+--- a/src/components/CartDrawer.jsx
++++ b/src/components/CartDrawer.jsx
+@@ -1,18 +1,33 @@
+ import React, { useState, useEffect, useRef } from 'react';
+-import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart } from 'lucide-react'; // Added Trash2, Heart
++import { X, ShoppingBag, Plus, Minus, ChevronRight, ChevronLeft, Ticket, Trash2, Heart, CheckCircle2 } from 'lucide-react'; // Added Trash2, Heart
+ 
+ import { useStore } from '../store/useStore';
+ import { useToast } from '../context/ToastContext';
+ import { useNavigate } from 'react-router-dom';
++import api from '../api/instance';
+ import axios from 'axios';
+ import Price from './Price';
+ 
+ const CartDrawer = () => {
+   const { user, setUser, toggleCart, isCartOpen, coupon: appliedCoupon, applyCoupon, removeCoupon } = useStore();
++  const [siteSettings, setSiteSettings] = useState({ taxRate: 0, shippingCharge: 0, freeShippingThreshold: 0 });
+   const { addToast } = useToast();
+   const navigate = useNavigate();
+   const scrollRef = useRef(null);
+ 
++  // Fetch Site Settings (Tax, Shipping etc)
++  useEffect(() => {
++    const fetchSettings = async () => {
++      try {
++        const { data } = await api.get('/settings');
++        setSiteSettings(data);
++      } catch (err) {
++        console.error("Failed to fetch settings", err);
++      }
++    };
++    fetchSettings();
++  }, []);
++
+   const [couponCode, setCouponCode] = useState('');
+   const [suggestions, setSuggestions] = useState([]);
+ 
+@@ -325,17 +340,39 @@ const CartDrawer = () => {
+               )}
+             </>
+           ) : (
+-            <div className="h-full flex flex-col items-center justify-center text-center opacity-50 space-y-4">
+-              <div className="bg-zinc-50 p-4 rounded-full mb-2">
+-                <ShoppingBag size={32} strokeWidth={1.5} className="text-zinc-300" />
++            <div className="h-full flex flex-col items-center justify-center text-center space-y-8 py-10">
++              <div className="opacity-50 flex flex-col items-center">
++                <div className="bg-zinc-50 p-4 rounded-full mb-2">
++                  <ShoppingBag size={32} strokeWidth={1.5} className="text-zinc-300" />
++                </div>
++                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Your Cart is Empty</p>
++                <button
++                  onClick={() => { toggleCart(false); navigate('/shop'); }}
++                  className="text-xs font-bold underline underline-offset-4 decoration-zinc-300 hover:decoration-black hover:text-black transition-all mt-2"
++                >
++                  Start Curating
++                </button>
++              </div>
++
++              {/* QUICK ADD TRENDING STRIP */}
++              <div className="w-full pt-10 border-t border-zinc-50">
++                <p className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-300 mb-6">Trending Now</p>
++                <div className="flex gap-4 overflow-x-auto no-scrollbar px-4">
++                  {suggestions.slice(0, 3).map(sug => (
++                    <div
++                      key={sug._id}
++                      onClick={() => { navigate(`/product/${sug.slug || sug._id}`); toggleCart(false); }}
++                      className="min-w-[140px] bg-white p-3 rounded-2xl border border-zinc-100 shadow-sm cursor-pointer group"
++                    >
++                      <div className="aspect-[3/4] bg-zinc-50 rounded-xl overflow-hidden mb-3">
++                        <img src={sug.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" alt="" />
++                      </div>
++                      <p className="text-[9px] font-black uppercase truncate text-zinc-600 group-hover:text-black transition-colors mb-1">{sug.name}</p>
++                      <Price amount={sug.price} className="text-[10px] font-bold text-zinc-900" />
++                    </div>
++                  ))}
++                </div>
+               </div>
+-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Your Cart is Empty</p>
+-              <button
+-                onClick={() => { toggleCart(false); navigate('/shop'); }}
+-                className="text-xs font-bold underline underline-offset-4 decoration-zinc-300 hover:decoration-black hover:text-black transition-all"
+-              >
+-                Start Curating
+-              </button>
+             </div>
+           )}
+ 
+@@ -363,54 +400,71 @@ const CartDrawer = () => {
+           )}
+         </div>
+ 
+-        {/* Footer Summary */}
+-        {cartItems.length > 0 && (
+-          <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
+-
+-            {/* LOYALTY EARNINGS */}
+-            {user && (
+-              <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between">
+-                <div className="flex items-center gap-2">
+-                  <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
+-                  <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
+-                    Earn {Math.floor(total / 100)} Coins
+-                  </span>
+-                </div>
+-                <span className="text-[9px] font-bold text-amber-900">
+-                  Balance: {user.loyaltyPoints || 0}
+-                </span>
++        <div className="p-8 bg-white border-t border-zinc-100 space-y-6">
++
++          {/* FREE SHIPPING PROGRESS BAR */}
++          {subtotal > 0 && siteSettings.freeShippingThreshold > 0 && (
++            <div className="space-y-2">
++              <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest">
++                {subtotal >= siteSettings.freeShippingThreshold ? (
++                  <span className="text-green-600 flex items-center gap-1"><CheckCircle2 size={10} /> You've unlocked FREE Shipping!</span>
++                ) : (
++                  <span className="text-zinc-400">Γé╣{(siteSettings.freeShippingThreshold - subtotal).toLocaleString()} away from <span className="text-black">FREE Shipping</span></span>
++                )}
++                <span className="text-zinc-300">{Math.min(100, Math.round((subtotal / siteSettings.freeShippingThreshold) * 100))}%</span>
+               </div>
+-            )}
++              <div className="h-1.5 w-full bg-zinc-100 rounded-full overflow-hidden">
++                <div
++                  className={`h-full transition-all duration-1000 ease-out ${subtotal >= siteSettings.freeShippingThreshold ? 'bg-green-500' : 'bg-black'}`}
++                  style={{ width: `${Math.min(100, (subtotal / siteSettings.freeShippingThreshold) * 100)}%` }}
++                />
++              </div>
++            </div>
++          )}
+ 
+-            <div className="space-y-3">
+-              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
+-                <span>Subtotal</span>
+-                <Price amount={subtotal} />
++          {/* LOYALTY EARNINGS */}
++          {user && (
++            <div className="bg-amber-50 border border-amber-100 p-3 rounded-xl flex items-center justify-between">
++              <div className="flex items-center gap-2">
++                <div className="bg-amber-400 text-white p-1 rounded-full"><Ticket size={10} fill="currentColor" /></div>
++                <span className="text-[9px] font-bold uppercase text-amber-900 tracking-wide">
++                  Earn {Math.floor(total / 100)} Coins
++                </span>
+               </div>
++              <span className="text-[9px] font-bold text-amber-900">
++                Balance: {user.loyaltyPoints || 0}
++              </span>
++            </div>
++          )}
+ 
+-              {discount > 0 && (
+-                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
+-                  <span>Studio Discount</span>
+-                  <Price amount={discount} />
+-                </div>
+-              )}
++          <div className="space-y-3">
++            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-zinc-400">
++              <span>Subtotal</span>
++              <Price amount={subtotal} />
++            </div>
+ 
+-              <div className="flex justify-between items-end pt-2">
+-                <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
+-                <div className="text-right">
+-                  <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
+-                  <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
+-                </div>
++            {discount > 0 && (
++              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-green-600">
++                <span>Studio Discount</span>
++                <Price amount={discount} />
++              </div>
++            )}
++
++            <div className="flex justify-between items-end pt-2">
++              <span className="text-sm font-black uppercase italic transform -skew-x-2">Total</span>
++              <div className="text-right">
++                <Price amount={total} className="text-2xl font-black uppercase italic transform -skew-x-3 block leading-none" />
++                <span className="text-[9px] text-zinc-400 font-medium uppercase tracking-widest">Incl. of all taxes</span>
+               </div>
+             </div>
+-            <button
+-              onClick={() => { toggleCart(false); navigate('/checkout'); }}
+-              className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
+-            >
+-              <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+-            </button>
+           </div>
+-        )}
++          <button
++            onClick={() => { toggleCart(false); navigate('/checkout'); }}
++            className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.3em] text-[10px] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-black/10 group"
++          >
++            <span>Secure <span className="text-red-500 group-hover:text-white transition-colors">Checkout</span></span> <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
++          </button>
++        </div>
+       </div>
+     </div>
+   );
+diff --git a/src/components/FeaturedReviews.jsx b/src/components/FeaturedReviews.jsx
+index c298e3f..f271780 100644
+--- a/src/components/FeaturedReviews.jsx
++++ b/src/components/FeaturedReviews.jsx
+@@ -276,7 +276,7 @@ const FeaturedReviews = () => {
+                                         <Star key={i} size={16} fill="black" className="text-black" />
+                                     ))}
+                                 </div>
+-                                <h3 className="text-2xl font-serif italic mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
++                                <h3 className="text-2xl font-serif mb-4 text-zinc-900">"{selectedReview.title || "Product Review"}"</h3>
+                                 <p className="text-zinc-600 leading-loose text-base font-light">
+                                     {selectedReview.comment}
+                                 </p>
+@@ -286,7 +286,7 @@ const FeaturedReviews = () => {
+                                         <p className="text-[10px] font-black uppercase text-zinc-900 mb-2 flex items-center gap-1">
+                                             <Zap size={10} fill="black" /> Official Response
+                                         </p>
+-                                        <p className="text-xs text-zinc-500 italic">{selectedReview.adminResponse}</p>
++                                        <p className="text-xs text-zinc-500">{selectedReview.adminResponse}</p>
+                                     </div>
+                                 )}
+                             </div>
+@@ -313,7 +313,7 @@ const FeaturedReviews = () => {
+                         <p className="text-xs font-bold uppercase tracking-[0.2em] text-zinc-400 mb-2">
+                             Community Verified
+                         </p>
+-                        <h2 className="text-4xl md:text-5xl font-serif italic text-zinc-900">
++                        <h2 className="text-4xl md:text-5xl font-serif text-zinc-900">
+                             The Collection in the Wild
+                         </h2>
+                     </div>
+@@ -380,7 +380,7 @@ const FeaturedReviews = () => {
+                                     ) : (
+                                         // Fallback Pattern for Text-Only
+                                         <div className="w-full h-full flex items-center justify-center bg-zinc-50 p-8">
+-                                            <p className="font-serif italic text-3xl text-zinc-300 text-center leading-tight">
++                                            <p className="font-serif text-3xl text-zinc-300 text-center leading-tight">
+                                                 "{r.comment.substring(0, 50)}..."
+                                             </p>
+                                         </div>
+@@ -395,7 +395,7 @@ const FeaturedReviews = () => {
+                                         ))}
+                                     </div>
+ 
+-                                    <h3 className="font-serif text-xl italic mb-4 line-clamp-3 leading-relaxed">
++                                    <h3 className="font-serif text-xl mb-4 line-clamp-3 leading-relaxed">
+                                         "{r.comment}"
+                                     </h3>
+ 
+diff --git a/src/components/Marquee.jsx b/src/components/Marquee.jsx
+index c45d302..8ce7d7b 100644
+--- a/src/components/Marquee.jsx
++++ b/src/components/Marquee.jsx
+@@ -1,24 +1,24 @@
+ import React from 'react';
+ 
+ const Marquee = ({ text, reverse = false }) => {
+-    return (
+-        <div className="relative flex overflow-x-hidden bg-black py-4 border-y border-zinc-800">
+-            <div className={`flex whitespace-nowrap animate-marquee ${reverse ? 'flex-row-reverse' : ''}`}>
+-                {[...Array(10)].map((_, i) => (
+-                    <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
+-                        {text}
+-                    </span>
+-                ))}
+-            </div>
+-            <div className={`absolute top-4 flex whitespace-nowrap animate-marquee2 ${reverse ? 'flex-row-reverse' : ''}`}>
+-                {[...Array(10)].map((_, i) => (
+-                    <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
+-                        {text}
+-                    </span>
+-                ))}
+-            </div>
++  return (
++    <div className="relative flex overflow-x-hidden bg-black py-4 border-y border-zinc-800">
++      <div className={`flex whitespace-nowrap animate-marquee ${reverse ? 'flex-row-reverse' : ''}`}>
++        {[...Array(10)].map((_, i) => (
++          <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
++            {text}
++          </span>
++        ))}
++      </div>
++      <div className={`absolute top-4 flex whitespace-nowrap animate-marquee2 ${reverse ? 'flex-row-reverse' : ''}`}>
++        {[...Array(10)].map((_, i) => (
++          <span key={i} className="text-[10px] font-black uppercase tracking-[0.6em] text-white/40 px-10">
++            {text}
++          </span>
++        ))}
++      </div>
+ 
+-            <style jsx>{`
++      <style jsx>{`
+         @keyframes marquee {
+           0% { transform: translateX(0%); }
+           100% { transform: translateX(-100%); }
+@@ -28,14 +28,14 @@ const Marquee = ({ text, reverse = false }) => {
+           100% { transform: translateX(0%); }
+         }
+         .animate-marquee {
+-          animation: marquee 40s linear infinite;
++          animation: marquee 80s linear infinite;
+         }
+         .animate-marquee2 {
+-          animation: marquee2 40s linear infinite;
++          animation: marquee2 80s linear infinite;
+         }
+       `}</style>
+-        </div>
+-    );
++    </div>
++  );
+ };
+ 
+ export default Marquee;
+diff --git a/src/components/Navbar.jsx b/src/components/Navbar.jsx
+index 6b2fe98..7037f16 100644
+--- a/src/components/Navbar.jsx
++++ b/src/components/Navbar.jsx
+@@ -221,6 +221,10 @@ const Navbar = () => {
+           <div className="hidden md:flex items-center gap-12 text-[10px] font-black tracking-[0.3em] uppercase">
+             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">NEW ARRIVAL</button>
+             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white hover:text-zinc-400 transition whitespace-nowrap">BEST SELLER</button>
++            <Link to="/social" className="text-white hover:text-zinc-400 transition group flex items-center gap-1">
++              SOCIAL
++              <span className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" title="New Feed" />
++            </Link>
+             <Link to="/shop" className="text-white hover:text-zinc-400 transition">Shop</Link>
+           </div>
+ 
+@@ -346,6 +350,9 @@ const Navbar = () => {
+                       <Link to="/wishlist" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                         Wishlist
+                       </Link>
++                      <Link to="/social" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all text-amber-500">
++                        Social Feed
++                      </Link>
+                       <Link to="/account/settings" className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide hover:pl-2 transition-all">
+                       </Link>
+                       <Link
+@@ -393,6 +400,9 @@ const Navbar = () => {
+           <div className="md:hidden absolute top-24 left-0 w-full bg-black/95 backdrop-blur-3xl rounded-3xl p-10 flex flex-col gap-8 border border-white/10 animate-in slide-in-from-top duration-500">
+             <button onClick={() => handleFilterNavigation('new-arrivals')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">New Arrivals</button>
+             <button onClick={() => handleFilterNavigation('best-sellers')} className="text-white text-lg font-black uppercase tracking-widest text-left border-b border-white/5 pb-4">Best Sellers</button>
++            <Link to="/social" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 flex items-center justify-between">
++              Social Feed <span className="bg-amber-400 text-black text-[10px] px-2 py-0.5 rounded-full">NEW</span>
++            </Link>
+             <Link to="/shop" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4">Shop All</Link>
+             <Link to="/support" onClick={() => setIsMenuOpen(false)} className="text-white text-lg font-black uppercase tracking-widest border-b border-white/5 pb-4 italic">Support Hub</Link>
+           </div>
+diff --git a/src/components/ProductCard.jsx b/src/components/ProductCard.jsx
+index 1854bdc..f5385fa 100644
+--- a/src/components/ProductCard.jsx
++++ b/src/components/ProductCard.jsx
+@@ -129,6 +129,12 @@ const ProductCard = ({ product, onAddToCart }) => {
+           </div>
+         )}
+ 
++        {product.countInStock > 0 && product.countInStock < 5 && (
++          <div className="absolute top-0 right-0 bg-amber-500 text-white px-3 py-1.5 z-20 animate-pulse">
++            <p className="text-[10px] font-black uppercase tracking-widest">Limited Stock</p>
++          </div>
++        )}
++
+         {product.countInStock === 0 && (
+           <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
+             <span className="bg-black text-white px-4 py-2 text-[10px] font-black uppercase tracking-widest">
+diff --git a/src/data/products.js b/src/data/products.js
+index f99cd99..a12384a 100644
+--- a/src/data/products.js
++++ b/src/data/products.js
+@@ -204,7 +204,7 @@ const products = [
+ const seedDatabase = async () => {
+   try {
+     await mongoose.connect(process.env.MONGO_URI);
+-    console.log("Miso Studio DB Connected for Fresh Seed...");
++    console.log("SLOOK Studio DB Connected for Fresh Seed...");
+     await Product.deleteMany();
+     console.log("All previous items removed.");
+     await Product.insertMany(products);
+diff --git a/src/index.css b/src/index.css
+index a1efd54..555af8c 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -55,4 +55,4 @@ body {
+     background: #a1a1aa;
+     /* zinc-400 */
+   }
+-}
++}
+\ No newline at end of file
+diff --git a/src/pages/About.jsx b/src/pages/About.jsx
+index c101f75..c31df22 100644
+--- a/src/pages/About.jsx
++++ b/src/pages/About.jsx
+@@ -5,7 +5,7 @@ const About = () => {
+         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+             <div className="max-w-3xl mx-auto space-y-12">
+                 <div className="space-y-4 text-center">
+-                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic">The Mission</h1>
++                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter">The Mission</h1>
+                     <p className="text-lg font-bold text-zinc-400 max-w-lg mx-auto">
+                         "Curating essentials for the modern lifestyle."
+                     </p>
+diff --git a/src/pages/Account.jsx b/src/pages/Account.jsx
+index ed3729f..9f28d40 100644
+--- a/src/pages/Account.jsx
++++ b/src/pages/Account.jsx
+@@ -1,6 +1,10 @@
+-import React from 'react';
++import React, { useState, useEffect } from 'react';
++import { motion, AnimatePresence } from 'framer-motion';
+ import { useStore } from '../store/useStore';
+-import { useNavigate } from 'react-router-dom';
++import { useNavigate, Link, useSearchParams } from 'react-router-dom';
++import api from '../api/instance';
++import { useToast } from '../context/ToastContext';
++import axios from 'axios';
+ import {
+   Package,
+   Heart,
+@@ -16,12 +20,63 @@ import {
+   MessageSquare,
+   Trophy,
+   Crown,
+-  Info
++  Info,
++  X,
++  Camera,
++  Image as ImageIcon,
++  PlusCircle,
++  Settings,
++  ArrowRight,
++  CheckCircle2,
++  Plus,
++  Search,
++  Trash2,
++  Upload
+ } from 'lucide-react';
+ 
+ const Account = () => {
+   const { user, logout } = useStore();
+   const navigate = useNavigate();
++  const [searchParams] = useSearchParams();
++  const { success, error: toastError } = useToast();
++  const [showRewardsModal, setShowRewardsModal] = useState(false);
++  const [showUploadModal, setShowUploadModal] = useState(false);
++  const [myLooks, setMyLooks] = useState([]);
++  const [loadingLooks, setLoadingLooks] = useState(true);
++
++  useEffect(() => {
++    if (searchParams.get('action') === 'upload') {
++      setShowUploadModal(true);
++    }
++  }, [searchParams]);
++
++  useEffect(() => {
++    const fetchMyLooks = async () => {
++      try {
++        const { data } = await api.get('/looks/my');
++        setMyLooks(data);
++      } catch (err) {
++        console.error('Error fetching my looks:', err);
++      } finally {
++        setLoadingLooks(false);
++      }
++    };
++
++    if (user) {
++      fetchMyLooks();
++    }
++  }, [user]);
++
++  // UPLOAD MODAL STATE
++  const [uploadStep, setUploadStep] = useState(1);
++  const [selectedImage, setSelectedImage] = useState(null);
++  const [selectedFile, setSelectedFile] = useState(null);
++  const [caption, setCaption] = useState('');
++  const [taggedProducts, setTaggedProducts] = useState([]);
++  const [searchQuery, setSearchQuery] = useState('');
++  const [searchResults, setSearchResults] = useState([]);
++  const [isSearching, setIsSearching] = useState(false);
++  const [isSubmitting, setIsSubmitting] = useState(false);
+ 
+   // Redirect if not logged in
+   if (!user) {
+@@ -58,9 +113,76 @@ const Account = () => {
+     </button>
+   );
+ 
++  // Rewards Modal Component
++  const RewardsModal = () => (
++    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
++      <div className="bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in duration-300">
++        <div className="p-8 bg-black text-white relative">
++          <button onClick={() => setShowRewardsModal(false)} className="absolute top-6 right-6 p-2 hover:bg-white/10 rounded-full transition-colors"><X size={20} /></button>
++          <div className="flex items-center gap-4 mb-2">
++            <div className="p-3 bg-amber-400 rounded-full text-black"><Crown size={24} /></div>
++            <h2 className="text-2xl font-black uppercase tracking-tighter">Elite <span className="text-amber-400">Rewards</span></h2>
++          </div>
++          <p className="text-zinc-400 text-xs font-bold uppercase tracking-[0.3em]">The SLOOK Privilege Program</p>
++        </div>
++
++        <div className="p-8 space-y-8 max-h-[60vh] overflow-y-auto no-scrollbar">
++          <section>
++            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
++              <div className="w-1 h-1 bg-amber-400 rounded-full"></div> Membership Tiers
++            </h3>
++            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
++              {[
++                { name: 'Bronze', spend: 'Γé╣0', perks: '1.0x Coin Multiplier' },
++                { name: 'Silver', spend: 'Γé╣10k+', perks: '1.2x Coin Multiplier' },
++                { name: 'Gold', spend: 'Γé╣50k+', perks: '1.5x Coin Multiplier' },
++                { name: 'Platinum', spend: 'Γé╣1 Lakh+', perks: '2.0x Coin Multiplier' }
++              ].map(tier => (
++                <div key={tier.name} className={`p-4 rounded-2xl border ${user.membershipTier === tier.name ? 'border-amber-400 bg-amber-50' : 'border-zinc-100'}`}>
++                  <div className="flex justify-between items-center mb-1">
++                    <span className="font-black text-sm uppercase">{tier.name}</span>
++                    <span className="text-[9px] font-bold text-zinc-500">{tier.spend}</span>
++                  </div>
++                  <p className="text-[10px] text-zinc-400 font-medium">{tier.perks}</p>
++                </div>
++              ))}
++            </div>
++          </section>
++
++          <section>
++            <h3 className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4 flex items-center gap-2">
++              <div className="w-1 h-1 bg-amber-400 rounded-full"></div> How to Earn Coins
++            </h3>
++            <div className="space-y-3">
++              <div className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
++                <div className="p-2 bg-white rounded-lg shadow-sm"><Package size={18} /></div>
++                <div>
++                  <p className="text-xs font-black uppercase">Shopping</p>
++                  <p className="text-[10px] text-zinc-500">Earn coins on every purchase based on your tier.</p>
++                </div>
++              </div>
++              <div className="flex items-center gap-4 p-4 bg-zinc-50 rounded-2xl border border-zinc-100">
++                <div className="p-2 bg-white rounded-lg shadow-sm"><User size={18} /></div>
++                <div>
++                  <p className="text-xs font-black uppercase">Referrals</p>
++                  <p className="text-[10px] text-zinc-500">Earn Γé╣500 for every friend who makes their first purchase.</p>
++                </div>
++              </div>
++            </div>
++          </section>
++        </div>
++
++        <div className="p-8 border-t border-zinc-100 flex justify-end">
++          <button onClick={() => setShowRewardsModal(false)} className="px-8 py-3 bg-black text-white rounded-full font-black uppercase tracking-widest text-[10px] hover:scale-105 active:scale-95 transition-all">Understood</button>
++        </div>
++      </div>
++    </div>
++  );
++
+   return (
+     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 pt-44 md:pt-52">
+       <div className="max-w-7xl mx-auto">
++        {showRewardsModal && <RewardsModal />}
+ 
+         {/* Header Section */}
+         <div className="mb-12 text-center">
+@@ -82,21 +204,39 @@ const Account = () => {
+             onClick={() => navigate('/my-orders')}
+           />
+ 
+-          <div
+-            onClick={() => navigate('/account/loyalty-ledger')}
+-            className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer"
+-          >
+-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
++          <AccountCard
++            icon={Camera}
++            title="My SLOOKS"
++            subtext="Share your style with community"
++            onClick={() => {
++              const el = document.getElementById('slooks-section');
++              el?.scrollIntoView({ behavior: 'smooth' });
++            }}
++          />
++
++          {/* LOYALTY CARD */}
++          <div className="bg-gradient-to-br from-amber-200 via-yellow-400 to-amber-500 rounded-xl p-6 text-black shadow-lg relative overflow-hidden group hover:shadow-xl transition-all cursor-pointer">
++            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity" onClick={() => navigate('/account/loyalty-ledger')}>
+               <Star size={100} fill="black" />
+             </div>
+-            <div className="relative z-10">
+-              <div className="flex items-center gap-2 mb-2">
+-                <div className="bg-black/10 p-2 rounded-full"><Star size={20} fill="black" /></div>
+-                <h3 className="font-black uppercase tracking-widest text-xs">SLOOK Coins</h3>
++            <div className="relative z-10 h-full flex flex-col">
++              <div className="flex items-center justify-between mb-2">
++                <div className="flex items-center gap-2">
++                  <div className="bg-black/10 p-2 rounded-full"><Star size={20} fill="black" /></div>
++                  <h3 className="font-black uppercase tracking-widest text-xs">SLOOK Coins</h3>
++                </div>
++                <button
++                  onClick={(e) => { e.stopPropagation(); setShowRewardsModal(true); }}
++                  className="p-1 hover:bg-black/10 rounded-full transition-colors"
++                >
++                  <Info size={16} />
++                </button>
++              </div>
++              <div onClick={() => navigate('/account/loyalty-ledger')} className="flex-1">
++                <p className="text-4xl font-black mb-1">{user.loyaltyPoints || 0}</p>
++                <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Available Balance</p>
++                <p className="text-[10px] mt-4 font-medium opacity-60">1 Coin = Γé╣1. <span className="underline decoration-black/20">View Ledger</span></p>
+               </div>
+-              <p className="text-4xl font-black mb-1">{user.loyaltyPoints || 0}</p>
+-              <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Available Balance</p>
+-              <p className="text-[10px] mt-4 font-medium opacity-60">1 Coin = Γé╣1. Redeem at checkout.</p>
+             </div>
+           </div>
+ 
+@@ -107,7 +247,7 @@ const Account = () => {
+             onClick={() => navigate('/wishlist')}
+           />
+ 
+-          {/* New "My Tickets" Card */}
++          {/* MY TICKETS */}
+           <AccountCard
+             icon={MessageSquare}
+             title="My Tickets"
+@@ -115,7 +255,8 @@ const Account = () => {
+             onClick={() => navigate('/support-tickets')}
+           />
+ 
+-          <div className={`rounded-xl p-6 text-white shadow-lg relative overflow-hidden group hover:shadow-xl transition-all ${user.membershipTier === 'Platinum' ? 'bg-zinc-900' :
++          {/* TIER CARD */}
++          <div className={`rounded-xl p-6 text-white shadow-lg relative overflow-hidden group hover:shadow-xl transition-all ${user.membershipTier === 'Platinum' ? 'bg-zinc-900 border border-zinc-800' :
+             user.membershipTier === 'Gold' ? 'bg-amber-600' :
+               user.membershipTier === 'Silver' ? 'bg-blue-600' : 'bg-green-600'
+             }`}>
+@@ -123,9 +264,17 @@ const Account = () => {
+               <Crown size={100} fill="white" />
+             </div>
+             <div className="relative z-10">
+-              <div className="flex items-center gap-2 mb-2">
+-                <div className="bg-white/10 p-2 rounded-full"><Trophy size={20} fill="white" /></div>
+-                <h3 className="font-black uppercase tracking-widest text-xs">{user.membershipTier || 'Bronze'} Member</h3>
++              <div className="flex items-center justify-between mb-2">
++                <div className="flex items-center gap-2">
++                  <div className="bg-white/10 p-2 rounded-full"><Trophy size={20} fill="white" /></div>
++                  <h3 className="font-black uppercase tracking-widest text-xs">{user.membershipTier || 'Bronze'} Member</h3>
++                </div>
++                <button
++                  onClick={() => setShowRewardsModal(true)}
++                  className="p-1 hover:bg-white/10 rounded-full transition-colors"
++                >
++                  <Info size={16} />
++                </button>
+               </div>
+               <p className="text-4xl font-black mb-1">{user.membershipTier || 'Bronze'}</p>
+               <p className="text-xs font-bold opacity-70 uppercase tracking-wider">Tier Status</p>
+@@ -133,11 +282,18 @@ const Account = () => {
+               {/* Progress to next tier */}
+               <div className="mt-4">
+                 <div className="w-full bg-white/20 h-1 rounded-full overflow-hidden">
+-                  <div className="bg-white h-full" style={{ width: `${Math.min(100, (user.totalSpent / 50000) * 100)}%` }}></div>
++                  <div className="bg-white h-full" style={{ width: `${Math.min(100, ((user.totalSpent || 0) / 100000) * 100)}%` }}></div>
++                </div>
++                <div className="flex justify-between items-center mt-2">
++                  <p className="text-[9px] font-bold uppercase tracking-widest opacity-60">
++                    Γé╣{(user.totalSpent || 0).toLocaleString()} Spent
++                  </p>
++                  {user.membershipTier !== 'Platinum' && (
++                    <p className="text-[8px] font-black uppercase tracking-tighter bg-white/10 px-2 py-0.5 rounded">Next: {
++                      user.membershipTier === 'Silver' ? 'Gold' : user.membershipTier === 'Gold' ? 'Platinum' : 'Silver'
++                    }</p>
++                  )}
+                 </div>
+-                <p className="text-[9px] mt-2 font-bold uppercase tracking-widest opacity-60">
+-                  {user.membershipTier === 'Platinum' ? 'Highest Tier Reached' : `Γé╣${user.totalSpent?.toLocaleString() || 0} lifetime spend`}
+-                </p>
+               </div>
+             </div>
+           </div>
+@@ -198,7 +354,308 @@ const Account = () => {
+             onClick={handleLogout}
+             danger={true}
+           />
++        </div>
++
++        {/* UPLOAD LOOK MODAL */}
++        <AnimatePresence>
++          {showUploadModal && (
++            <motion.div
++              initial={{ opacity: 0 }}
++              animate={{ opacity: 1 }}
++              exit={{ opacity: 0 }}
++              className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
++            >
++              <motion.div
++                initial={{ scale: 0.9, y: 20 }}
++                animate={{ scale: 1, y: 0 }}
++                exit={{ scale: 0.9, y: 20 }}
++                className="bg-white w-full max-w-4xl rounded-[2.5rem] overflow-hidden flex flex-col md:flex-row h-[85vh] md:h-[70vh] shadow-2xl"
++              >
++                {/* LEFT SIDE: PREVIEW */}
++                <div className="w-full md:w-1/2 bg-zinc-100 relative group">
++                  {selectedImage ? (
++                    <div className="w-full h-full relative">
++                      <img src={selectedImage} className="w-full h-full object-cover" alt="Preview" />
++                      {uploadStep === 2 && (
++                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
++                          <p className="text-white text-[10px] font-black uppercase tracking-widest bg-black/40 px-4 py-2 rounded-full backdrop-blur-md">
++                            Tap image to pin tag (Coming Soon)
++                          </p>
++                        </div>
++                      )}
++                    </div>
++                  ) : (
++                    <div className="w-full h-full flex flex-col items-center justify-center p-12 text-center border-2 border-dashed border-zinc-200">
++                      <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-xl mb-6">
++                        <Camera size={32} className="text-zinc-300" />
++                      </div>
++                      <p className="text-sm font-black uppercase tracking-widest text-zinc-400">Share your Vibe</p>
++                      <input
++                        type="file"
++                        accept="image/*"
++                        className="absolute inset-0 opacity-0 cursor-pointer"
++                        onChange={(e) => {
++                          const file = e.target.files[0];
++                          if (file) {
++                            setSelectedFile(file);
++                            const reader = new FileReader();
++                            reader.onloadend = () => setSelectedImage(reader.result);
++                            reader.readAsDataURL(file);
++                          }
++                        }}
++                      />
++                    </div>
++                  )}
++                  {selectedImage && uploadStep === 1 && (
++                    <button
++                      onClick={() => {
++                        setSelectedImage(null);
++                        setSelectedFile(null);
++                      }}
++                      className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black transition-colors"
++                    >
++                      <Trash2 size={16} />
++                    </button>
++                  )}
++                </div>
++
++                {/* RIGHT SIDE: ACTIONS */}
++                <div className="w-full md:w-1/2 p-8 flex flex-col bg-white">
++                  <div className="flex justify-between items-center mb-8">
++                    <h3 className="text-2xl font-black uppercase tracking-tighter italic">Step {uploadStep}/3</h3>
++                    <button onClick={() => setShowUploadModal(false)} className="p-2 hover:bg-zinc-50 rounded-full">
++                      <X size={24} />
++                    </button>
++                  </div>
++
++                  <div className="flex-1 overflow-y-auto no-scrollbar">
++                    {uploadStep === 1 && (
++                      <div className="space-y-6">
++                        <div className="space-y-2">
++                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Add a Caption</label>
++                          <textarea
++                            value={caption}
++                            onChange={(e) => setCaption(e.target.value)}
++                            placeholder="Tell the community about this look..."
++                            className="w-full h-32 p-4 bg-zinc-50 border border-zinc-100 rounded-3xl text-sm outline-none focus:border-black transition-all resize-none"
++                          />
++                        </div>
++                        <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
++                          <p className="text-[10px] font-bold text-amber-800 uppercase leading-relaxed">
++                            ≡ƒÆí Tip: Looks with engaging captions get 40% more likes!
++                          </p>
++                        </div>
++                      </div>
++                    )}
++
++                    {uploadStep === 2 && (
++                      <div className="space-y-6">
++                        <div className="space-y-2">
++                          <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Tag Products</label>
++                          <div className="relative">
++                            <input
++                              type="text"
++                              value={searchQuery}
++                              onChange={async (e) => {
++                                setSearchQuery(e.target.value);
++                                if (e.target.value.length > 2) {
++                                  setIsSearching(true);
++                                  try {
++                                    const { data } = await axios.get(`/api/products/search?keyword=${e.target.value}`);
++                                    setSearchResults(data);
++                                  } catch (err) {
++                                    console.error(err);
++                                  } finally {
++                                    setIsSearching(false);
++                                  }
++                                } else {
++                                  setSearchResults([]);
++                                }
++                              }}
++                              placeholder="Search products to tag..."
++                              className="w-full pl-12 pr-4 py-4 bg-zinc-50 border border-zinc-100 rounded-2xl text-sm outline-none focus:border-black transition-all"
++                            />
++                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-300" size={18} />
++                          </div>
++                        </div>
++
++                        {/* SEARCH RESULTS */}
++                        <div className="space-y-2 max-h-[300px] overflow-y-auto no-scrollbar">
++                          {searchResults.map((prod) => (
++                            <div
++                              key={prod._id}
++                              onClick={() => {
++                                if (!taggedProducts.find(p => p._id === prod._id)) {
++                                  setTaggedProducts([...taggedProducts, prod]);
++                                }
++                                setSearchQuery('');
++                                setSearchResults([]);
++                              }}
++                              className="flex items-center gap-4 p-3 rounded-2xl border border-zinc-50 hover:border-black cursor-pointer transition-all group"
++                            >
++                              <img src={prod.image} className="w-10 h-12 object-cover rounded-lg" alt="" />
++                              <div className="flex-1">
++                                <p className="text-[10px] font-black uppercase tracking-tight">{prod.name}</p>
++                                <p className="text-[9px] font-bold text-zinc-400">Γé╣{prod.price}</p>
++                              </div>
++                              <Plus size={14} className="text-zinc-300 group-hover:text-black" />
++                            </div>
++                          ))}
++                        </div>
++
++                        {/* TAGGED PRODUCTS LIST */}
++                        {taggedProducts.length > 0 && (
++                          <div className="pt-4 border-t border-zinc-100">
++                            <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-4">Tagged In this Look</p>
++                            <div className="flex flex-wrap gap-2">
++                              {taggedProducts.map(prod => (
++                                <div key={prod._id} className="flex items-center gap-2 bg-zinc-100 px-3 py-1.5 rounded-full">
++                                  <span className="text-[9px] font-black uppercase truncate max-w-[100px]">{prod.name}</span>
++                                  <button onClick={() => setTaggedProducts(taggedProducts.filter(p => p._id !== prod._id))}>
++                                    <X size={10} className="text-zinc-400 hover:text-red-500" />
++                                  </button>
++                                </div>
++                              ))}
++                            </div>
++                          </div>
++                        )}
++                      </div>
++                    )}
+ 
++                    {uploadStep === 3 && (
++                      <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
++                        <div className="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center">
++                          <CheckCircle2 size={40} />
++                        </div>
++                        <div>
++                          <h4 className="text-xl font-black uppercase tracking-tighter italic">Ready for Review!</h4>
++                          <p className="text-xs text-zinc-500 max-w-[250px] mx-auto mt-2 leading-relaxed">
++                            Your look will be reviewed by the SLOOK Curators and should be live within 24 hours.
++                          </p>
++                        </div>
++                        <div className="w-full p-6 bg-zinc-50 rounded-[2rem] border border-zinc-100 text-left">
++                          <p className="text-[9px] font-black uppercase text-zinc-400 mb-2">Details Summary</p>
++                          <div className="space-y-1">
++                            <p className="text-[10px] font-bold uppercase">Caption: <span className="text-zinc-500">{caption || "No caption"}</span></p>
++                            <p className="text-[10px] font-bold uppercase">Tags: <span className="text-zinc-500">{taggedProducts.length} Products</span></p>
++                          </div>
++                        </div>
++                      </div>
++                    )}
++                  </div>
++
++                  <div className="pt-8 mt-auto border-t border-zinc-50 flex gap-4">
++                    {uploadStep > 1 && (
++                      <button
++                        onClick={() => setUploadStep(uploadStep - 1)}
++                        className="flex-1 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest border border-zinc-200 hover:border-black transition-all"
++                      >
++                        Back
++                      </button>
++                    )}
++                    {uploadStep < 3 ? (
++                      <button
++                        // Disable next until image is selected
++                        disabled={uploadStep === 1 && !selectedImage}
++                        onClick={() => setUploadStep(uploadStep + 1)}
++                        className={`flex-1 px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${selectedImage || uploadStep > 1 ? 'bg-black text-white hover:bg-zinc-800' : 'bg-zinc-100 text-zinc-300 cursor-not-allowed'}`}
++                      >
++                        Next
++                      </button>
++                    ) : (
++                      <button
++                        onClick={async () => {
++                          setIsSubmitting(true);
++                          try {
++                            const formData = new FormData();
++                            formData.append('image', selectedFile);
++                            formData.append('caption', caption);
++                            formData.append('products', JSON.stringify(taggedProducts));
++
++                            const { data } = await api.post('/looks', formData, {
++                              headers: { 'Content-Type': 'multipart/form-data' }
++                            });
++
++                            success("Look submitted for curation! Γ£¿");
++                            setMyLooks(prev => [data, ...prev]);
++                            setShowUploadModal(false);
++                            setUploadStep(1);
++                            setSelectedImage(null);
++                            setSelectedFile(null);
++                            setCaption('');
++                            setTaggedProducts([]);
++                          } catch (err) {
++                            console.error('Upload failed:', err);
++                            toastError(err.response?.data?.message || "Failed to upload style look");
++                          } finally {
++                            setIsSubmitting(false);
++                          }
++                        }}
++                        className="flex-1 bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all shadow-xl flex items-center justify-center gap-2"
++                      >
++                        {isSubmitting ? (
++                          <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
++                        ) : (
++                          <>Complete Upload <Plus size={14} /></>
++                        )}
++                      </button>
++                    )}
++                  </div>
++                </div>
++              </motion.div>
++            </motion.div>
++          )}
++        </AnimatePresence>
++
++        {/* MY SLOOKS (LOOKBOOK) SECTION */}
++        <div id="slooks-section" className="mt-20 pt-20 border-t border-zinc-200">
++          <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
++            <div>
++              <p className="text-[11px] font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Social Proof</p>
++              <h2 className="text-4xl font-black uppercase tracking-tighter italic transform -skew-x-3">Your <span className="text-zinc-300">Signature</span> Looks</h2>
++            </div>
++            <button
++              onClick={() => setShowUploadModal(true)}
++              className="bg-black text-white px-8 py-4 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center gap-2 group"
++            >
++              <PlusCircle size={16} className="group-hover:rotate-90 transition-transform duration-300" /> Upload New Look
++            </button>
++          </div>
++
++          {/* LOOKS GRID */}
++          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
++            {/* UPLOAD PLACEHOLDER */}
++            <div
++              onClick={() => setShowUploadModal(true)}
++              className="aspect-[3/4] border-2 border-dashed border-zinc-200 rounded-3xl flex flex-col items-center justify-center p-6 text-center hover:border-black hover:bg-zinc-50 transition-all cursor-pointer group"
++            >
++              <div className="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
++                <ImageIcon size={24} className="text-zinc-400 group-hover:text-black" />
++              </div>
++              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 group-hover:text-black">Drop a Photo</p>
++            </div>
++
++            {/* REAL USER LOOKS */}
++            {loadingLooks ? (
++              [1, 2, 3].map(i => (
++                <div key={i} className="aspect-[3/4] rounded-3xl bg-zinc-100 animate-pulse" />
++              ))
++            ) : (
++              myLooks.map(look => (
++                <div key={look._id} className="relative aspect-[3/4] rounded-3xl overflow-hidden border border-zinc-100 group shadow-sm hover:shadow-xl transition-all">
++                  <img src={look.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
++                  <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
++                    <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${look.status === 'approved' ? 'bg-green-400 text-black' :
++                      look.status === 'rejected' ? 'bg-red-400 text-white' :
++                        'bg-amber-400 text-black'
++                      }`}>
++                      {look.status}
++                    </span>
++                  </div>
++                </div>
++              ))
++            )}
++          </div>
+         </div>
+       </div>
+     </div>
+diff --git a/src/pages/Blog.jsx b/src/pages/Blog.jsx
+index c2e2f84..3cc1c8b 100644
+--- a/src/pages/Blog.jsx
++++ b/src/pages/Blog.jsx
+@@ -30,7 +30,7 @@ const Blog = () => {
+             <section className="pt-32 pb-16 px-6 md:px-12 max-w-7xl mx-auto">
+                 <div className="text-center mb-16">
+                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400 mb-3">Journal</p>
+-                    <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">The <span className="text-zinc-300">Edit</span></h1>
++                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">The <span className="text-zinc-300">Edit</span></h1>
+                 </div>
+ 
+                 {loading ? (
+@@ -46,7 +46,7 @@ const Blog = () => {
+                                         <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                     ) : (
+                                         <div className="w-full h-full flex items-center justify-center text-zinc-300 font-black text-4xl uppercase opacity-20 group-hover:opacity-30 transition-opacity">
+-                                            Highphaus
++                                            Slook
+                                         </div>
+                                     )}
+                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
+diff --git a/src/pages/Checkout.jsx b/src/pages/Checkout.jsx
+index 93f71f2..f907766 100644
+--- a/src/pages/Checkout.jsx
++++ b/src/pages/Checkout.jsx
+@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
+ import { useStore } from '../store/useStore';
+ import { useNavigate } from 'react-router-dom';
+ import { useToast } from '../context/ToastContext';
+-import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star } from 'lucide-react';
++import { ShieldCheck, ArrowLeft, Smartphone, CreditCard, Landmark, Truck, CheckCircle2, Wallet, Star, Gift, Zap } from 'lucide-react';
+ import api from '../api/instance';
+ import Price from '../components/Price';
+ 
+@@ -21,6 +21,9 @@ const Checkout = () => {
+   const [discountError, setDiscountError] = useState('');
+   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+   const [pointsRedeemed, setPointsRedeemed] = useState(0); // NEW: Loyalty Logic
++  const [isGift, setIsGift] = useState(false);
++  const [giftNote, setGiftNote] = useState('');
++  const [premiumPackaging, setPremiumPackaging] = useState(false);
+ 
+   const handleApplyCoupon = async () => {
+     if (!couponCode.trim()) return;
+@@ -64,8 +67,9 @@ const Checkout = () => {
+ 
+   const taxPrice = (subtotal * (siteSettings.taxRate / 100));
+   const shippingPrice = subtotal >= siteSettings.freeShippingThreshold ? 0 : siteSettings.shippingCharge;
++  const packagingPrice = premiumPackaging ? 250 : 0; // Premium SLOOK Packaging
+ 
+-  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice);
++  const total = Math.max(0, subtotal - discountAmount + taxPrice + shippingPrice + packagingPrice);
+ 
+   const getDeliveryEstimate = () => {
+     const min = siteSettings.minDeliveryDays || 3;
+@@ -75,8 +79,8 @@ const Checkout = () => {
+     minDate.setDate(minDate.getDate() + min);
+     maxDate.setDate(maxDate.getDate() + max);
+ 
+-    const options = { month: 'short', day: 'numeric' };
+-    return `${minDate.toLocaleDateString('en-US', options)} - ${maxDate.toLocaleDateString('en-US', options)}`;
++    const options = { weekday: 'long', month: 'short', day: 'numeric' };
++    return `Arriving ${minDate.toLocaleDateString('en-US', { weekday: 'long' })}, ${minDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${maxDate.toLocaleDateString('en-US', options)}`;
+   };
+ 
+   const [formData, setFormData] = useState({
+@@ -154,7 +158,9 @@ const Checkout = () => {
+         discountAmount,
+         couponCode: couponApplied?.code || (coupon?.code || ''),
+         pointsToRedeem: pointsRedeemed,
+-        orderNote: formData.orderNote
++        orderNote: isGift ? `GIFT: ${giftNote}` : formData.orderNote,
++        isGift,
++        premiumPackaging
+       };
+ 
+       // 2. Branch: Online Payment (Razorpay) - Handle ALL non-COD methods
+@@ -388,15 +394,49 @@ const Checkout = () => {
+                     </div>
+                   </div>
+ 
+-                  <div className="space-y-2">
+-                    <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Special Instructions / Order Notes (Optional)</label>
+-                    <textarea
+-                      rows="2"
+-                      placeholder="e.g. Leave at the back gate, specific delivery time, etc."
+-                      className="w-full border-b border-zinc-200 py-2 outline-none focus:border-black bg-transparent font-medium text-xs resize-none"
+-                      value={formData.orderNote}
+-                      onChange={e => setFormData({ ...formData, orderNote: e.target.value })}
+-                    />
++                  {/* PREMIUM GIFT OPTIONS */}
++                  <div className="bg-zinc-50 p-6 rounded-3xl space-y-6 border border-zinc-100">
++                    <div className="flex items-center justify-between">
++                      <div className="flex items-center gap-3">
++                        <div className="p-2 bg-white rounded-xl shadow-sm"><Gift size={18} className="text-zinc-900" /></div>
++                        <div>
++                          <p className="text-xs font-black uppercase tracking-tight">Gift Options</p>
++                          <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">Make it a SLOOK Moment</p>
++                        </div>
++                      </div>
++                      <button
++                        type="button"
++                        onClick={() => setIsGift(!isGift)}
++                        className={`w-12 h-6 rounded-full transition-colors relative ${isGift ? 'bg-black' : 'bg-zinc-200'}`}
++                      >
++                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${isGift ? 'left-7' : 'left-1'}`} />
++                      </button>
++                    </div>
++
++                    {isGift && (
++                      <div className="space-y-4 animate-in slide-in-from-top-2 duration-300">
++                        <textarea
++                          placeholder="WRITE A HEARTFELT NOTE..."
++                          className="w-full bg-white border border-zinc-100 rounded-2xl p-4 text-[10px] font-bold uppercase h-24 outline-none focus:border-black transition-all"
++                          value={giftNote}
++                          onChange={(e) => setGiftNote(e.target.value)}
++                        />
++
++                        <div
++                          onClick={() => setPremiumPackaging(!premiumPackaging)}
++                          className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${premiumPackaging ? 'border-black bg-white shadow-md' : 'border-zinc-100 opacity-60'}`}
++                        >
++                          <div className="flex items-center gap-3">
++                            <Zap size={16} className={premiumPackaging ? 'text-amber-400 fill-amber-400' : 'text-zinc-300'} />
++                            <div>
++                              <p className="text-[10px] font-black uppercase">Premium SLOOK Packaging</p>
++                              <p className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">+ Γé╣250.00</p>
++                            </div>
++                          </div>
++                          {premiumPackaging && <CheckCircle2 size={16} className="text-black" />}
++                        </div>
++                      </div>
++                    )}
+                   </div>
+ 
+                   <div className="space-y-2">
+diff --git a/src/pages/Home.jsx b/src/pages/Home.jsx
+index 5f753d6..276850b 100644
+--- a/src/pages/Home.jsx
++++ b/src/pages/Home.jsx
+@@ -1,6 +1,6 @@
+ import React, { useState, useEffect, useRef } from 'react';
+-import { Link, useLocation } from 'react-router-dom';
+-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
++import { Link, useLocation, useNavigate } from 'react-router-dom';
++import { ChevronLeft, ChevronRight, ArrowRight, ShoppingBag, Plus } from 'lucide-react';
+ import api from '../api/instance';
+ import { useStore } from '../store/useStore';
+ import { Helmet } from 'react-helmet-async';
+@@ -11,18 +11,66 @@ import Reveal from '../components/Reveal';
+ import Marquee from '../components/Marquee';
+ import { Skeleton } from '../components/ui/Skeleton';
+ 
++const MOCK_LOOKS = [
++  {
++    _id: 'mock-1',
++    image: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "The 2026 Collection - Modern Essentials",
++    user: { firstName: "Julian", lastName: "S.", avatar: "https://i.pravatar.cc/150?u=julian" },
++    likes: 124
++  },
++  {
++    _id: 'mock-2',
++    image: "https://images.pexels.com/photos/10972439/pexels-photo-10972439.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "Urban Living - Curated Design",
++    user: { firstName: "Elena", lastName: "R.", avatar: "https://i.pravatar.cc/150?u=elena" },
++    likes: 89
++  },
++  {
++    _id: 'mock-3',
++    image: "https://images.pexels.com/photos/1453008/pexels-photo-1453008.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "Premium Quality - Built to Last",
++    user: { firstName: "Marcus", lastName: "T.", avatar: "https://i.pravatar.cc/150?u=marcus" },
++    likes: 215
++  },
++  {
++    _id: 'mock-4',
++    image: "https://images.pexels.com/photos/2690323/pexels-photo-2690323.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "Minimalist Workspace Vibes",
++    user: { firstName: "Sarah", lastName: "J.", avatar: "https://i.pravatar.cc/150?u=sarah" },
++    likes: 156
++  },
++  {
++    _id: 'mock-5',
++    image: "https://images.pexels.com/photos/4458554/pexels-photo-4458554.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "Industrial Minimalism",
++    user: { firstName: "David", lastName: "L.", avatar: "https://i.pravatar.cc/150?u=david" },
++    likes: 42
++  },
++  {
++    _id: 'mock-6',
++    image: "https://images.pexels.com/photos/5935748/pexels-photo-5935748.jpeg?auto=compress&cs=tinysrgb&w=800",
++    caption: "Monochrome Studio",
++    user: { firstName: "Alex", lastName: "K.", avatar: "https://i.pravatar.cc/150?u=alex" },
++    likes: 310
++  }
++];
++
+ const Home = () => {
+   const location = useLocation();
++  const navigate = useNavigate();
+   const [activeView, setActiveView] = useState('all');
+   const [products, setProducts] = useState([]);
+   const [currentSlide, setCurrentSlide] = useState(0);
+   const [recentlyViewed, setRecentlyViewed] = useState([]);
++  const [looks, setLooks] = useState([]); // NEW: Community Looks
+   const { user } = useStore();
+ 
+   const newArrivalRef = useRef(null);
+   const bestSellersSectionRef = useRef(null);
+   const trendingRef = useRef(null);
+   const recentlyViewedRef = useRef(null);
++  const socialRef = useRef(null);
+ 
+   const slides = [
+     { id: 1, img: "https://images.pexels.com/photos/9461772/pexels-photo-9461772.jpeg?auto=compress&cs=tinysrgb&w=1600", title: "The 2026 Collection", subtitle: "Modern Essentials" },
+@@ -46,6 +94,18 @@ const Home = () => {
+     fetchProducts();
+   }, []);
+ 
++  useEffect(() => {
++    const fetchLooks = async () => {
++      try {
++        const { data } = await api.get('/looks');
++        setLooks(data);
++      } catch (err) {
++        console.error("Home Looks Fetch Error:", err);
++      }
++    };
++    fetchLooks();
++  }, []);
++
+   useEffect(() => {
+     const fetchRecentlyViewed = async () => {
+       if (!user?.token) return;
+@@ -149,7 +209,7 @@ const Home = () => {
+               <section id={section.id} className={`max-w-[1440px] mx-auto px-4 md:px-16 py-24 relative ${section.bg} ${activeView !== 'all' ? 'pt-40' : ''}`}>
+                 <div className="flex justify-between items-end mb-12">
+                   <div>
+-                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter italic transform -skew-x-3">{section.title}</h2>
++                    <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter">{section.title}</h2>
+                     <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest mt-2">{section.subtitle}</p>
+                   </div>
+                   <Link to={section.link} className="text-[10px] font-black uppercase tracking-[0.2em] border-b border-zinc-200 pb-1 hover:border-black hover:text-zinc-600 transition-all">View All</Link>
+@@ -192,7 +252,7 @@ const Home = () => {
+                 <div className="container mx-auto px-6 md:px-16 relative z-10 text-white">
+                   <div className="max-w-3xl">
+                     <p className="text-white/60 text-[10px] font-black uppercase tracking-[0.6em] mb-4">SLOOK Heritage</p>
+-                    <h2 className="text-5xl md:text-9xl font-black uppercase leading-[0.85] mb-8 tracking-tighter italic">Timeless <br /> Quality.</h2>
++                    <h2 className="text-5xl md:text-9xl font-black uppercase leading-[0.85] mb-8 tracking-tighter">Timeless <br /> Quality.</h2>
+                     <p className="text-white/80 text-sm md:text-base font-medium max-w-md mb-10 leading-relaxed">Every piece is selected for durability and style, designed to merge industrial minimalism with everyday utility.</p>
+                     <Link to="/shop" className="group flex items-center gap-4 text-[11px] font-black uppercase tracking-[0.4em] hover:gap-10 transition-all duration-500">Shop Full Collection <ArrowRight size={20} className="group-hover:translate-x-2 transition-transform" /></Link>
+                   </div>
+@@ -209,12 +269,55 @@ const Home = () => {
+         </Reveal>
+       )}
+ 
++      {/* STYLED BY YOU - SOCIAL PROOF */}
++      {activeView === 'all' && (
++        <Reveal width="100%">
++          <section className="bg-white py-32 border-t border-zinc-100">
++            <div className="max-w-[1440px] mx-auto px-4 md:px-16 mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
++              <div>
++                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-amber-500 mb-2">Social Hub</p>
++                <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic transform -skew-x-3">Styled by <span className="text-zinc-200">You</span></h2>
++              </div>
++              <Link to="/social" className="px-8 py-4 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-all flex items-center gap-2">
++                Join Community <ArrowRight size={14} />
++              </Link>
++            </div>
++
++            <div className="relative group/social-scroller">
++              <button onClick={() => scroll(socialRef, 'left')} className="absolute left-6 top-[40%] -translate-y-1/2 z-50 text-white/50 hover:text-white transition-all hover:scale-110 p-4 bg-black/20 backdrop-blur-md rounded-full opacity-0 group-hover/social-scroller:opacity-100"><ChevronLeft size={24} /></button>
++              <button onClick={() => scroll(socialRef, 'right')} className="absolute right-6 top-[40%] -translate-y-1/2 z-50 text-white/50 hover:text-white transition-all hover:scale-110 p-4 bg-black/20 backdrop-blur-md rounded-full opacity-0 group-hover/social-scroller:opacity-100"><ChevronRight size={24} /></button>
++
++              <div ref={socialRef} className="flex gap-6 md:gap-8 overflow-x-auto no-scrollbar scroll-smooth px-4 md:px-8 pb-10">
++                {(Array.isArray(looks) && looks.length > 0 ? looks : MOCK_LOOKS).map((look) => (
++                  <div key={look._id} className="min-w-[320px] md:min-w-[400px] aspect-[4/5] rounded-[2rem] overflow-hidden relative group cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 border border-zinc-100">
++                    <img src={look.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-[1500ms]" alt={look.caption} />
++                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-8 text-center backdrop-blur-[2px]">
++                      <div className="flex items-center gap-3 mb-6 bg-black/40 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
++                        <img src={look.user?.avatar || `https://ui-avatars.com/api/?name=${look.user?.firstName || 'U'}`} className="w-8 h-8 rounded-full border-2 border-white/20" />
++                        <div className="text-left">
++                          <p className="text-[10px] font-black text-white uppercase tracking-wider leading-none">{look.user?.firstName} {look.user?.lastName}</p>
++                          <p className="text-[8px] text-white/50 font-bold uppercase tracking-[0.2em] mt-1">Verified House Style</p>
++                        </div>
++                      </div>
++                      <div className="bg-white text-black p-5 rounded-full shadow-2xl scale-0 group-hover:scale-100 transition-all duration-300 hover:bg-zinc-100 active:scale-90" onClick={(e) => { e.stopPropagation(); navigate('/social'); }}>
++                        <Plus size={24} />
++                      </div>
++                      <p className="absolute bottom-10 left-0 right-0 text-[10px] text-white/40 font-black uppercase tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-opacity duration-700">Explore Look</p>
++                    </div>
++                  </div>
++                ))}
++              </div>
++            </div>
++          </section>
++        </Reveal>
++      )}
++
+       {activeView === 'all' && user && recentlyViewed.length > 0 && (
+         <Reveal width="100%">
+           <section className="max-w-[1440px] mx-auto px-4 md:px-16 py-24 relative bg-zinc-50 border-t border-zinc-100">
+             <div className="flex justify-between items-end mb-12">
+               <div>
+-                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter italic">Recently Viewed</h2>
++                <h2 className="text-2xl md:text-3xl font-black uppercase tracking-tighter">Recently Viewed</h2>
+                 <p className="text-[9px] text-zinc-400 font-bold uppercase tracking-widest mt-2">Pick up where you left off</p>
+               </div>
+             </div>
+diff --git a/src/pages/OrderDetails.jsx b/src/pages/OrderDetails.jsx
+index 1e0a2cb..d688157 100644
+--- a/src/pages/OrderDetails.jsx
++++ b/src/pages/OrderDetails.jsx
+@@ -26,20 +26,20 @@ const OrderDetails = () => {
+   const [returnReason, setReturnReason] = useState("");
+   const [returnFiles, setReturnFiles] = useState([]); // Array of URLs
+   const [uploading, setUploading] = useState(false);
++  const [uploadProgress, setUploadProgress] = useState(0);
+ 
+-  const handleFileUpload = async (e) => {
+-    const files = e.target.files;
+-    if (!files || files.length === 0) return;
++  // Exchange Logic
++  const [variants, setVariants] = useState([]);
++  const [variantsLoading, setVariantsLoading] = useState(false);
++  const [selectedExchangeVariant, setSelectedExchangeVariant] = useState(null);
+ 
+-    const formData = new FormData();
+-    for (let i = 0; i < files.length; i++) {
+-      formData.append('file', files[i]);
+-    }
++  const handleFileUpload = async (e) => {
++    const files = Array.from(e.target.files);
++    if (files.length === 0) return;
+ 
+     setUploading(true);
++    setUploadProgress(0);
+     try {
+-      // Upload one by one or modify backend to accept multiple. 
+-      // Our backend /api/upload accepts .single('file'). So we loop.
+       const newUrls = [];
+       for (let i = 0; i < files.length; i++) {
+         const fd = new FormData();
+@@ -47,15 +47,17 @@ const OrderDetails = () => {
+         const { data } = await api.post('/upload', fd, {
+           headers: { 'Content-Type': 'multipart/form-data' }
+         });
+-        newUrls.push(data.filePath); // Ensure backend returns full path or we prepend generic host
+-        // Backend returns relative path "/uploads/filename". Frontend can use it directly if served statically.
++        newUrls.push(data.filePath);
++        setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+       }
+       setReturnFiles(prev => [...prev, ...newUrls]);
++      addToast(`Uploaded ${files.length} proof file(s)`, "success");
+     } catch (err) {
+       console.error("Upload failed", err);
+       addToast("Upload Failed. Video/Images only.", "error");
+     } finally {
+       setUploading(false);
++      setUploadProgress(0);
+     }
+   };
+ 
+@@ -189,62 +191,85 @@ const OrderDetails = () => {
+           </div>
+         )}
+ 
+-        {/* ORDER STATUS TIMELINE */}
+-        <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-x-auto">
+-          <div className="min-w-[600px] relative">
+-            {/* Timeline Line */}
+-            <div className="absolute top-1/2 left-0 w-full h-1 bg-zinc-100 -translate-y-1/2 z-0"></div>
+-            <div
+-              className="absolute top-1/2 left-0 h-1 bg-black -translate-y-1/2 z-0 transition-all duration-1000"
+-              style={{
+-                width: (() => {
+-                  const status = order.orderStatus;
+-                  if (status === 'Pending' || status === 'Processing') return '0%';
+-                  if (status === 'Confirmed') return '33%';
+-                  if (status === 'Dispatched' || status === 'Shipped') return '66%';
+-                  if (status === 'Delivered') return '100%';
+-                  return '0%';
+-                })()
+-              }}
+-            ></div>
+-
+-            {/* Timeline Steps */}
+-            <div className="relative z-10 flex justify-between">
+-              {[
+-                { id: 'Pending', label: 'Order Placed', icon: <Package size={16} /> },
+-                { id: 'Confirmed', label: 'Confirmed', icon: <CheckCircle2 size={16} /> },
+-                { id: 'Shipped', label: 'Shipped', icon: <Truck size={16} /> },
+-                { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} /> }
+-              ].map((step, idx) => {
+-                const status = order.orderStatus;
+-                const isCompleted = (() => {
++        {/* ELITE FULFILLMENT VISUALIZER */}
++        <div className="bg-white rounded-[2.5rem] p-8 lg:p-12 shadow-sm border border-zinc-100 mb-8 overflow-hidden relative">
++          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
++            <div>
++              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-2">Shipment Status</p>
++              <h2 className="text-2xl font-black uppercase tracking-tighter italic">Tracking Your Look</h2>
++            </div>
++
++            {order.orderStatus !== 'Delivered' && (
++              <div className="bg-zinc-50 px-6 py-4 rounded-3xl border border-zinc-100 flex items-center gap-4">
++                <div className="w-10 h-10 bg-black text-white rounded-full flex items-center justify-center animate-pulse">
++                  <Calendar size={18} />
++                </div>
++                <div>
++                  <p className="text-[8px] font-black uppercase tracking-widest text-zinc-400">Estimated Arrival</p>
++                  <p className="text-xs font-black uppercase">{new Date(new Date(order.createdAt).setDate(new Date(order.createdAt).getDate() + 5)).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
++                </div>
++              </div>
++            )}
++          </div>
++
++          <div className="relative pt-10 pb-4 overflow-x-auto no-scrollbar">
++            <div className="min-w-[700px] relative px-4">
++              {/* Animated Progress Line */}
++              <div className="absolute top-[19px] left-0 w-full h-[2px] bg-zinc-100 z-0"></div>
++              <div
++                className="absolute top-[19px] left-0 h-[3px] bg-black z-0 transition-all duration-[2000ms] ease-in-out shadow-[0_0_10px_rgba(0,0,0,0.1)]"
++                style={{
++                  width: (() => {
++                    const status = order.orderStatus;
++                    if (status === 'Pending' || status === 'Processing') return '12.5%';
++                    if (status === 'Confirmed') return '37.5%';
++                    if (status === 'Shipped' || status === 'Dispatched') return '62.5%';
++                    if (status === 'Delivered') return '100%';
++                    return '0%';
++                  })()
++                }}
++              ></div>
++
++              {/* Enhanced Steps */}
++              <div className="relative z-10 flex justify-between">
++                {[
++                  { id: 'Pending', label: 'Accepted', icon: <Package size={16} />, desc: 'Order is curated' },
++                  { id: 'Confirmed', label: 'Quality Check', icon: <ShieldCheck size={16} />, desc: 'Verified by SLOOK' },
++                  { id: 'Shipped', label: 'In Transit', icon: <Truck size={16} />, desc: 'Handed to partner' },
++                  { id: 'Delivered', label: 'Delivered', icon: <MapPin size={16} />, desc: 'Enjoy your look' }
++                ].map((step, idx) => {
+                   const statusList = ['Pending', 'Confirmed', 'Shipped', 'Delivered'];
+-                  const normalizedStatus = status === 'Processing' ? 'Pending' : status === 'Dispatched' ? 'Shipped' : status;
++                  const normalizedStatus = order.orderStatus === 'Processing' ? 'Pending' : (order.orderStatus === 'Dispatched' || order.orderStatus === 'Shipped') ? 'Shipped' : order.orderStatus;
+                   const currentIdx = statusList.indexOf(normalizedStatus);
+-                  return idx <= currentIdx;
+-                })();
+-                const isActive = (status === step.id) || (status === 'Processing' && step.id === 'Pending') || (status === 'Dispatched' && step.id === 'Shipped');
++                  const isCompleted = idx <= currentIdx;
++                  const isActive = normalizedStatus === step.id;
++
++                  return (
++                    <div key={step.id} className="flex flex-col items-center group">
++                      <div className={`
++                        w-10 h-10 rounded-full flex items-center justify-center transition-all duration-700 relative
++                        ${isCompleted ? 'bg-black text-white shadow-xl scale-110' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
++                        ${isActive ? 'ring-[6px] ring-zinc-50' : ''}
++                      `}>
++                        {isCompleted && !isActive && idx < 3 ? <CheckCircle2 size={16} className="animate-in zoom-in duration-300" /> : step.icon}
++
++                        {isActive && (
++                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-amber-400 rounded-full border-2 border-white animate-bounce" />
++                        )}
++                      </div>
+ 
+-                return (
+-                  <div key={step.id} className="flex flex-col items-center gap-3">
+-                    <div className={`
+-                      w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500
+-                      ${isCompleted ? 'bg-black text-white' : 'bg-white border-2 border-zinc-100 text-zinc-300'}
+-                      ${isActive ? 'ring-4 ring-zinc-100 scale-110' : ''}
+-                    `}>
+-                      {isCompleted && !isActive && step.id !== 'Delivered' ? <CheckCircle2 size={16} /> : step.icon}
+-                    </div>
+-                    <div className="text-center">
+-                      <p className={`text-[10px] font-black uppercase tracking-widest ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
+-                        {step.label}
+-                      </p>
+-                      {isActive && (
+-                        <p className="text-[8px] font-bold text-zinc-400 mt-1 uppercase animate-pulse">In Progress</p>
+-                      )}
++                      <div className="mt-4 text-center">
++                        <p className={`text-[10px] font-black uppercase tracking-widest mb-1 transition-colors ${isCompleted ? 'text-black' : 'text-zinc-400'}`}>
++                          {step.label}
++                        </p>
++                        <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-tighter opacity-0 group-hover:opacity-100 transition-opacity">
++                          {step.desc}
++                        </p>
++                      </div>
+                     </div>
+-                  </div>
+-                );
+-              })}
++                  );
++                })}
++              </div>
+             </div>
+           </div>
+         </div>
+@@ -497,7 +522,24 @@ const OrderDetails = () => {
+                     {['Return', 'Exchange'].map(type => (
+                       <button
+                         key={type}
+-                        onClick={() => setConfirmModal(prev => ({ ...prev, requestType: type }))}
++                        onClick={async () => {
++                          const newType = type;
++                          setConfirmModal(prev => ({ ...prev, requestType: newType }));
++                          if (newType === 'Exchange') {
++                            // Fetch Variants
++                            setVariantsLoading(true);
++                            try {
++                              const item = order.orderItems.find(it => it._id === confirmModal.itemId);
++                              const pId = item.product?._id || item.product;
++                              const { data } = await api.get(`/products/${pId}/variants`);
++                              setVariants(data.filter(v => v.stock > 0));
++                            } catch (err) {
++                              addToast("Failed to fetch size options", "error");
++                            } finally {
++                              setVariantsLoading(false);
++                            }
++                          }
++                        }}
+                         className={`flex-1 py-3 rounded-lg text-xs font-black uppercase tracking-widest transition-all ${(confirmModal.requestType || 'Return') === type ? 'bg-black text-white shadow-md' : 'text-zinc-400 hover:text-black'
+                           }`}
+                       >
+@@ -506,6 +548,36 @@ const OrderDetails = () => {
+                     ))}
+                   </div>
+ 
++                  {/* Variant Picker for Exchange */}
++                  {confirmModal.requestType === 'Exchange' && (
++                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
++                      <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Select Replacement Size/Color</label>
++                      {variantsLoading ? (
++                        <div className="flex items-center gap-2 p-4 bg-zinc-50 rounded-xl border border-dashed border-zinc-200 mt-1">
++                          <Loader2 size={12} className="animate-spin text-zinc-400" />
++                          <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Checking Availability...</span>
++                        </div>
++                      ) : variants.length === 0 ? (
++                        <div className="p-4 bg-red-50 rounded-xl border border-red-100 mt-1">
++                          <p className="text-[10px] font-black uppercase tracking-tight text-red-600">No other variants in stock for exchange.</p>
++                        </div>
++                      ) : (
++                        <div className="grid grid-cols-2 gap-2 mt-1">
++                          {variants.map((v, idx) => (
++                            <button
++                              key={idx}
++                              onClick={() => setSelectedExchangeVariant(v)}
++                              className={`p-3 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${selectedExchangeVariant === v ? 'border-black bg-black text-white' : 'border-zinc-200 hover:border-zinc-400 text-zinc-600'
++                                }`}
++                            >
++                              {v.size} {v.color && `/ ${v.color}`}
++                            </button>
++                          ))}
++                        </div>
++                      )}
++                    </div>
++                  )}
++
+                   {/* Reason Select */}
+                   <div>
+                     <label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-2">Reason</label>
+@@ -552,7 +624,20 @@ const OrderDetails = () => {
+                           file:bg-orange-100 file:text-orange-700
+                           hover:file:bg-orange-200 transaction"
+                     />
+-                    {uploading && <p className="text-[10px] font-bold text-zinc-400 mt-2 flex items-center gap-2"><Loader2 className="animate-spin" size={12} /> Uploading Proof...</p>}
++                    {uploading && (
++                      <div className="mt-2 space-y-1">
++                        <div className="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-zinc-400">
++                          <span>Uploading...</span>
++                          <span>{uploadProgress}%</span>
++                        </div>
++                        <div className="h-1 w-full bg-orange-100 rounded-full overflow-hidden">
++                          <div
++                            className="h-full bg-orange-500 transition-all duration-300"
++                            style={{ width: `${uploadProgress}%` }}
++                          />
++                        </div>
++                      </div>
++                    )}
+ 
+                     {/* PREVIEW FILES */}
+                     {returnFiles.length > 0 && (
+@@ -601,7 +686,8 @@ const OrderDetails = () => {
+                           type: confirmModal.requestType || 'Return',
+                           reason: returnReason,
+                           comment: confirmModal.comment,
+-                          images: returnFiles
++                          images: returnFiles,
++                          selectedVariant: selectedExchangeVariant // NEW
+                         }, { headers: { Authorization: `Bearer ${user.token}` } });
+ 
+                         addToast(`${confirmModal.requestType || 'Return'} Requested Successfully`, "success");
+diff --git a/src/pages/OrderSuccess.jsx b/src/pages/OrderSuccess.jsx
+index e225398..3db4974 100644
+--- a/src/pages/OrderSuccess.jsx
++++ b/src/pages/OrderSuccess.jsx
+@@ -1,10 +1,40 @@
+ import React from 'react';
+ import { Link, useLocation } from 'react-router-dom';
+-import { CheckCircle, AlertTriangle } from 'lucide-react';
++import { CheckCircle, AlertTriangle, Share2, Sparkles, ChevronRight, Zap } from 'lucide-react';
++import { useStore } from '../store/useStore';
++import Price from '../components/Price';
++import api from '../api/instance';
+ 
+ const OrderSuccess = () => {
+   const { state } = useLocation(); // Get passed state
++  const { user } = useStore();
+   const orderId = state?.orderId || "PENDING";
++  const [upsellProduct, setUpsellProduct] = React.useState(null);
++
++  React.useEffect(() => {
++    const fetchUpsell = async () => {
++      try {
++        const { data } = await api.get('/products');
++        // Pick a trending product not in the recently viewed? Or just random for now.
++        const shuffled = data.sort(() => 0.5 - Math.random());
++        setUpsellProduct(shuffled[0]);
++      } catch (err) {
++        console.error(err);
++      }
++    };
++    fetchUpsell();
++  }, []);
++
++  const shareText = `Just secured my latest look from SLOOK! ≡ƒÆÄ Order #${orderId.slice(-8).toUpperCase()}`;
++  const shareUrl = window.location.origin;
++
++  const handleShare = (platform) => {
++    let url = '';
++    if (platform === 'twitter') url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
++    if (platform === 'whatsapp') url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
++
++    if (url) window.open(url, '_blank');
++  };
+ 
+   return (
+     <div className="min-h-screen flex items-center justify-center bg-zinc-50 font-sans text-[#1a1a1a] px-6 pt-20 pb-20">
+@@ -44,6 +74,56 @@ const OrderSuccess = () => {
+           </div>
+         </div>
+ 
++        {/* SURPRISE UPSELL: ONE-TIME OFFER */}
++        {upsellProduct && (
++          <div className="bg-zinc-900 text-white rounded-[2rem] p-8 mb-10 relative overflow-hidden group text-left border border-zinc-800 shadow-2xl">
++            <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
++              <Sparkles size={120} fill="white" />
++            </div>
++
++            <div className="relative z-10">
++              <div className="flex items-center gap-2 mb-4">
++                <span className="bg-amber-400 text-black text-[8px] font-black uppercase px-2 py-1 rounded-full animate-pulse">One-Time Offer</span>
++                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Exclusive for you</p>
++              </div>
++
++              <div className="flex gap-6 items-center">
++                <div className="w-20 h-24 bg-zinc-800 rounded-2xl overflow-hidden shrink-0">
++                  <img src={upsellProduct.image} className="w-full h-full object-cover" alt="" />
++                </div>
++                <div className="flex-1">
++                  <h3 className="text-sm font-black uppercase tracking-tight mb-1">{upsellProduct.name}</h3>
++                  <div className="flex items-center gap-2">
++                    <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Get it for</p>
++                    <Price amount={upsellProduct.price * 0.8} className="text-lg font-black italic transform -skew-x-6 text-white" />
++                    <span className="text-[10px] text-zinc-500 line-through"><Price amount={upsellProduct.price} /></span>
++                  </div>
++                </div>
++              </div>
++
++              <Link
++                to={`/product/${upsellProduct.slug || upsellProduct._id}?offer=SLOOK20`}
++                className="mt-6 w-full bg-white text-black py-4 rounded-full font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:bg-amber-400 transition-colors"
++              >
++                Claim This Look <ChevronRight size={14} />
++              </Link>
++            </div>
++          </div>
++        )}
++
++        {/* SOCIAL SHARE */}
++        <div className="mb-10 text-center">
++          <p className="text-[9px] font-black uppercase tracking-[0.3em] text-zinc-400 mb-4">Share your SLOOK Moment</p>
++          <div className="flex justify-center gap-4">
++            <button onClick={() => handleShare('twitter')} className="p-3 bg-zinc-100 rounded-full hover:bg-black hover:text-white transition-all">
++              <Share2 size={18} />
++            </button>
++            <button onClick={() => handleShare('whatsapp')} className="p-3 bg-zinc-100 rounded-full hover:bg-green-500 hover:text-white transition-all text-zinc-900">
++              <Zap size={18} fill="currentColor" />
++            </button>
++          </div>
++        </div>
++
+         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+           <Link
+             to="/my-orders"
+diff --git a/src/pages/OrderTracking.jsx b/src/pages/OrderTracking.jsx
+index 63dea50..fbccea4 100644
+--- a/src/pages/OrderTracking.jsx
++++ b/src/pages/OrderTracking.jsx
+@@ -45,13 +45,13 @@ const OrderTracking = () => {
+         <div className="bg-white min-h-screen pt-40 pb-20">
+             <Helmet>
+                 <title>Track Your Order | SLOOK</title>
+-                <meta name="description" content="Track the status of your HighPhaus order." />
++                <meta name="description" content="Track the status of your SLOOK order." />
+             </Helmet>
+ 
+             <div className="container mx-auto px-6 max-w-4xl">
+ 
+                 <div className="text-center mb-16">
+-                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4 italic transform -skew-x-3">Track Your Order</h1>
++                    <h1 className="text-4xl font-black uppercase tracking-tighter mb-4">Track Your Order</h1>
+                     <p className="text-zinc-500 font-bold uppercase tracking-widest text-[10px]">Enter your details below to see current status</p>
+                 </div>
+ 
+@@ -106,7 +106,7 @@ const OrderTracking = () => {
+                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+                                 <div>
+                                     <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Order Status</p>
+-                                    <h2 className={`text-2xl font-black uppercase italic ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
++                                    <h2 className={`text-2xl font-black uppercase ${order.status === 'Cancelled' ? 'text-red-500' : 'text-green-500'}`}>
+                                         {order.status}
+                                     </h2>
+                                 </div>
+diff --git a/src/pages/Privacy.jsx b/src/pages/Privacy.jsx
+index 4255a61..e014834 100644
+--- a/src/pages/Privacy.jsx
++++ b/src/pages/Privacy.jsx
+@@ -4,7 +4,7 @@ const Privacy = () => {
+     return (
+         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+             <div className="max-w-3xl mx-auto space-y-8">
+-                <h1 className="text-4xl font-black uppercase tracking-tighter italic">Privacy Policy</h1>
++                <h1 className="text-4xl font-black uppercase tracking-tighter">Privacy Policy</h1>
+                 <p className="text-xs text-zinc-500 leading-relaxed">
+                     Last Updated: February 2026
+                 </p>
+diff --git a/src/pages/ProductDetails.jsx b/src/pages/ProductDetails.jsx
+index 1ffb82f..8c25f6c 100644
+--- a/src/pages/ProductDetails.jsx
++++ b/src/pages/ProductDetails.jsx
+@@ -14,6 +14,8 @@ import SocialShare from '../components/SocialShare';
+ import api from '../api/instance';
+ import NotifyMeModal from '../components/NotifyMeModal';
+ 
++import RecentlyViewed from '../components/RecentlyViewed';
++
+ const ProductDetails = () => {
+   const { slug } = useParams();
+   const navigate = useNavigate();
+@@ -38,11 +40,10 @@ const ProductDetails = () => {
+   const [waitlistEmail, setWaitlistEmail] = useState("");
+   const [waitlistLoading, setWaitlistLoading] = useState(false);
+   const [showWaitlistModal, setShowWaitlistModal] = useState(false);
++  const [uploading, setUploading] = useState(false);
+ 
+   const reviewsRef = useRef(null);
+ 
+-  const [uploading, setUploading] = useState(false);
+-
+   const validateFile = (file, type) => {
+     const maxSize = type === 'video' ? 50 * 1024 * 1024 : 5 * 1024 * 1024; // 50MB Video, 5MB Image
+     if (file.size > maxSize) {
+@@ -154,6 +155,15 @@ const ProductDetails = () => {
+         const { data } = await api.get(`/products/${slug}`);
+         setProduct(data);
+ 
++        // --- PHASE 14: RECENTLY VIEWED TRACKING ---
++        const history = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
++        const updatedHistory = [
++          { _id: data._id, name: data.name, slug: data.slug, image: data.image, price: data.price },
++          ...history.filter(item => item._id !== data._id)
++        ].slice(0, 10);
++        localStorage.setItem('recentlyViewed', JSON.stringify(updatedHistory));
++        // -------------------------------------------
++
+         // Record View (AI)
+         if (user && data._id) {
+           api.post('/users/history',
+@@ -491,7 +501,7 @@ const ProductDetails = () => {
+               </div>
+ 
+               <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+-                <p className="text-sm text-zinc-600 leading-relaxed italic mb-6">
++                <p className="text-sm text-zinc-600 leading-relaxed mb-6">
+                   "{selectedReview.comment}"
+                 </p>
+                 {selectedReview.adminResponse && (
+@@ -499,7 +509,7 @@ const ProductDetails = () => {
+                     <p className="text-[10px] font-black uppercase text-zinc-900 mb-2 flex items-center gap-1">
+                       <Zap size={10} fill="black" /> Official Response
+                     </p>
+-                    <p className="text-xs text-zinc-500 italic">{selectedReview.adminResponse}</p>
++                    <p className="text-xs text-zinc-500">{selectedReview.adminResponse}</p>
+                   </div>
+                 )}
+               </div>
+@@ -614,9 +624,9 @@ const ProductDetails = () => {
+                   </div>
+                 )}
+               </div>
+-              <h1 className="text-2xl lg:text-3xl font-black uppercase italic tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
++              <h1 className="text-2xl lg:text-3xl font-black uppercase tracking-tighter leading-none">{product.name} <span className="text-[8px] opacity-20">v2.1</span></h1>
+               <div className="flex items-baseline gap-4 pt-1">
+-                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black italic" />
++                <Price amount={currentPrice} className="text-2xl lg:text-3xl font-black" />
+                 <Price amount={(currentPrice || 0) * 1.25} className="text-base lg:text-lg text-zinc-300 line-through font-bold" />
+               </div>
+ 
+@@ -758,9 +768,13 @@ const ProductDetails = () => {
+           </div>
+         </div>
+ 
++        {/* --- PHASE 14: RECENTLY VIEWED --- */}
++        <RecentlyViewed currentProductId={product._id} />
++        {/* ------------------------------- */}
++
+         <div ref={reviewsRef} id="reviews" className="mt-20 pt-10 border-t border-zinc-100 grid grid-cols-1 lg:grid-cols-3 gap-10">
+           <div className="bg-zinc-50 p-6 rounded-3xl space-y-4 h-fit">
+-            <h3 className="text-xs font-black uppercase italic">Submit Review</h3>
++            <h3 className="text-xs font-black uppercase">Submit Review</h3>
+             <div className="flex gap-1">
+               {[1, 2, 3, 4, 5].map(n => <Star key={n} onClick={() => setRatingInput(n)} size={18} className={`cursor-pointer ${ratingInput >= n ? 'fill-black text-black' : 'text-zinc-200'}`} />)}
+             </div>
+@@ -792,7 +806,7 @@ const ProductDetails = () => {
+                 )}
+               </div>
+ 
+-              {/* MEDIA PREVIEW GRID */}
++              {/* CUSTOMER REVIEWS LIST */}
+               {(reviewImages.length > 0 || reviewVideos.length > 0) && (
+                 <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                   {reviewImages.map((img, idx) => (
+diff --git a/src/pages/Profile.jsx b/src/pages/Profile.jsx
+index 23c3e2d..163dae8 100644
+--- a/src/pages/Profile.jsx
++++ b/src/pages/Profile.jsx
+@@ -10,7 +10,7 @@ const Profile = () => {
+   // Mock data if user isn't logged in for preview purposes
+   const userData = user || {
+     name: "Guest User",
+-    email: "guest@highphaus.com",
++    email: "guest@slook.com",
+     memberSince: "January 2026"
+   };
+ 
+diff --git a/src/pages/Referrals.jsx b/src/pages/Referrals.jsx
+index 705c46b..593d3c7 100644
+--- a/src/pages/Referrals.jsx
++++ b/src/pages/Referrals.jsx
+@@ -39,8 +39,8 @@ const Referrals = () => {
+     const handleShare = () => {
+         if (navigator.share) {
+             navigator.share({
+-                title: 'Join HighPhaus',
+-                text: 'Signup on HighPhaus and get 10% off your first order!',
++                title: 'Join SLOOK',
++                text: 'Signup on SLOOK and get 10% off your first order!',
+                 url: referralLink,
+             })
+                 .then(() => addToast("Link shared successfully!", "success"))
+@@ -60,11 +60,11 @@ const Referrals = () => {
+                             <Gift size={12} className="inline mr-2 mb-0.5" />
+                             Invite & Earn
+                         </span>
+-                        <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mb-6 leading-none">
++                        <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6 leading-none">
+                             Share the <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 to-amber-500 text-6xl">Luxury</span>
+                         </h1>
+                         <p className="text-zinc-400 text-lg mb-8 font-medium">
+-                            Invite your friends to HighPhaus. They get <span className="text-white font-bold">10% off</span> their first order,
++                            Invite your friends to SLOOK. They get <span className="text-white font-bold">10% off</span> their first order,
+                             and you earn <span className="text-white font-bold">Γé╣500</span> in store credit for every successful referral.
+                         </p>
+ 
+@@ -98,7 +98,7 @@ const Referrals = () => {
+                         <div className="w-12 h-12 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                             <DollarSign size={24} />
+                         </div>
+-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">Γé╣{referralData.referralEarnings}</h3>
++                        <h3 className="text-4xl font-black uppercase tracking-tighter">Γé╣{referralData.referralEarnings}</h3>
+                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Total Earnings</p>
+                     </div>
+ 
+@@ -106,7 +106,7 @@ const Referrals = () => {
+                         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                             <Users size={24} />
+                         </div>
+-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">{referralData.referredFriends.length}</h3>
++                        <h3 className="text-4xl font-black uppercase tracking-tighter">{referralData.referredFriends.length}</h3>
+                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Friends Referred</p>
+                     </div>
+ 
+@@ -114,7 +114,7 @@ const Referrals = () => {
+                         <div className="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-4 transition-transform group-hover:scale-110">
+                             <Gift size={24} />
+                         </div>
+-                        <h3 className="text-4xl font-black uppercase italic tracking-tighter">10%</h3>
++                        <h3 className="text-4xl font-black uppercase tracking-tighter">10%</h3>
+                         <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mt-1">Friend's Discount</p>
+                     </div>
+                 </div>
+@@ -122,7 +122,7 @@ const Referrals = () => {
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                     {/* HOW IT WORKS */}
+                     <div className="lg:col-span-1 bg-white border border-zinc-100 rounded-[3rem] p-10 h-fit">
+-                        <h2 className="text-sm font-black uppercase italic tracking-tight mb-8 border-b border-zinc-50 pb-4">How to Earn</h2>
++                        <h2 className="text-sm font-black uppercase tracking-tight mb-8 border-b border-zinc-50 pb-4">How to Earn</h2>
+                         <div className="space-y-10">
+                             {[
+                                 { num: "1", title: "Send Invite", desc: "Share your unique referral link with friends." },
+@@ -130,7 +130,7 @@ const Referrals = () => {
+                                 { num: "3", title: "You Earn", desc: "Once their order is delivered, you get Γé╣500 store credit." }
+                             ].map((step) => (
+                                 <div key={step.num} className="flex gap-4">
+-                                    <span className="text-3xl font-black italic text-zinc-200">{step.num}</span>
++                                    <span className="text-3xl font-black text-zinc-200">{step.num}</span>
+                                     <div>
+                                         <h4 className="text-[11px] font-black uppercase tracking-wide mb-1">{step.title}</h4>
+                                         <p className="text-xs text-zinc-500 leading-relaxed font-medium">{step.desc}</p>
+@@ -143,7 +143,7 @@ const Referrals = () => {
+                     {/* REFERRED FRIENDS LIST */}
+                     <div className="lg:col-span-2 bg-white border border-zinc-100 rounded-[3rem] p-10">
+                         <div className="flex items-center justify-between mb-8 border-b border-zinc-50 pb-4">
+-                            <h2 className="text-sm font-black uppercase italic tracking-tight">Referred Friends</h2>
++                            <h2 className="text-sm font-black uppercase tracking-tight">Referred Friends</h2>
+                             <span className="text-[9px] font-bold text-zinc-400 uppercase">{referralData.referredFriends.length} Total</span>
+                         </div>
+ 
+diff --git a/src/pages/Returns.jsx b/src/pages/Returns.jsx
+index 9dac7c5..2a2ec16 100644
+--- a/src/pages/Returns.jsx
++++ b/src/pages/Returns.jsx
+@@ -4,7 +4,7 @@ const Returns = () => {
+   return (
+     <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+       <div className="max-w-3xl mx-auto space-y-8">
+-        <h1 className="text-4xl font-black uppercase tracking-tighter italic">Returns & Refunds</h1>
++        <h1 className="text-4xl font-black uppercase tracking-tighter">Returns & Refunds</h1>
+ 
+         <div className="space-y-4">
+           <h2 className="text-xl font-black uppercase tracking-tight">7-Day Guarantee</h2>
+@@ -26,7 +26,7 @@ const Returns = () => {
+         </div>
+ 
+         <div className="bg-orange-50 border border-orange-100 rounded-3xl p-8 space-y-4">
+-          <h2 className="text-xl font-black uppercase tracking-tight text-orange-900 flex items-center gap-3 italic">
++          <h2 className="text-xl font-black uppercase tracking-tight text-orange-900 flex items-center gap-3">
+             <span className="w-8 h-8 bg-orange-200 rounded-full flex items-center justify-center text-orange-700">!</span>
+             Mandatory Requirement
+           </h2>
+diff --git a/src/pages/Shipping.jsx b/src/pages/Shipping.jsx
+index 2f5dd69..b0ecca4 100644
+--- a/src/pages/Shipping.jsx
++++ b/src/pages/Shipping.jsx
+@@ -4,7 +4,7 @@ const Shipping = () => {
+     return (
+         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+             <div className="max-w-3xl mx-auto space-y-8">
+-                <h1 className="text-4xl font-black uppercase tracking-tighter italic">Shipping & Delivery</h1>
++                <h1 className="text-4xl font-black uppercase tracking-tighter">Shipping & Delivery</h1>
+ 
+                 <div className="bg-zinc-50 p-6 rounded-2xl border border-zinc-100">
+                     <p className="text-sm font-bold text-zinc-800 leading-relaxed">
+diff --git a/src/pages/Shop.jsx b/src/pages/Shop.jsx
+index 3fe3972..51ca325 100644
+--- a/src/pages/Shop.jsx
++++ b/src/pages/Shop.jsx
+@@ -107,6 +107,131 @@ const Shop = () => {
+     setKeyword('');
+   };
+ 
++  const FilterContent = ({ isMobile = false }) => (
++    <div className={`space-y-14 ${isMobile ? 'pr-2' : ''}`}>
++      {/* Status Section */}
++      <section className="space-y-6">
++        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Artifact Status</h4>
++        <div className="grid grid-cols-3 gap-2">
++          {[
++            { id: 'inStock', label: 'Stock' },
++            { id: 'isNewArrival', label: 'New' },
++            { id: 'isBestSeller', label: 'Best' }
++          ].map(flag => (
++            <button
++              key={flag.id}
++              onClick={() => setFlags({ ...flags, [flag.id]: !flags[flag.id] })}
++              className={`py-3 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${flags[flag.id]
++                ? (isMobile ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-black text-white border-black')
++                : (isMobile ? 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-transparent text-zinc-300 border-zinc-100 hover:border-zinc-200')}`}
++            >
++              {flag.label}
++            </button>
++          ))}
++        </div>
++      </section>
++
++      {/* Categories */}
++      <section className="space-y-8">
++        <div className="space-y-6">
++          <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Main Category</h4>
++          <div className="flex flex-wrap gap-2">
++            {categories.map(cat => (
++              <button
++                key={cat}
++                onClick={() => { setCategory(cat); setSubcategory('All'); }}
++                className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${category === cat
++                  ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
++                  : (isMobile ? 'text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'text-zinc-400 border-zinc-100 hover:border-zinc-200')}`}
++              >
++                {cat}
++              </button>
++            ))}
++          </div>
++        </div>
++
++        {subcategories.length > 0 && (
++          <div className="space-y-6">
++            <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Sub-Style</h4>
++            <div className="flex flex-wrap gap-2">
++              {subcategories.map(s => (
++                <button
++                  key={s}
++                  onClick={() => setSubcategory(subcategory === s ? 'All' : s)}
++                  className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === s
++                    ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
++                    : (isMobile ? 'text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'text-zinc-400 border-zinc-100 hover:border-zinc-200')}`}
++                >
++                  {s}
++                </button>
++              ))}
++            </div>
++          </div>
++        )}
++      </section>
++
++      {/* Colors */}
++      <section className="space-y-6">
++        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Visual Tints</h4>
++        <div className="flex flex-wrap gap-3">
++          {availableColors.map(c => (
++            <button
++              key={c}
++              onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
++              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${filters.color === c
++                ? (isMobile ? 'bg-white text-black border-white' : 'bg-black text-white border-black')
++                : (isMobile ? 'bg-zinc-900/40 text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-zinc-50 text-zinc-400 border-zinc-100 hover:border-zinc-200')
++                }`}
++            >
++              <div className="w-2 h-2 rounded-full border border-zinc-200" style={{ backgroundColor: c.toLowerCase() }}></div>
++              {c}
++            </button>
++          ))}
++        </div>
++      </section>
++
++      {/* Sizes */}
++      <section className="space-y-6">
++        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Dimension Spec</h4>
++        <div className="flex flex-wrap gap-3">
++          {availableSizes.map(s => (
++            <button
++              key={s}
++              onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
++              className={`w-12 h-12 flex items-center justify-center rounded-2xl border text-[11px] font-black transition-all ${filters.size === s
++                ? (isMobile ? 'bg-white text-black border-white scale-110' : 'bg-black text-white border-black scale-105')
++                : (isMobile ? 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700' : 'bg-transparent text-zinc-300 border-zinc-100 hover:border-zinc-200')
++                }`}
++            >
++              {s}
++            </button>
++          ))}
++        </div>
++      </section>
++
++      {/* Price Range */}
++      <section className="space-y-6">
++        <h4 className={`text-[10px] font-black uppercase tracking-[0.5em] border-l-2 pl-4 ${isMobile ? 'text-zinc-600 border-white' : 'text-zinc-400 border-black'}`}>Valuation (Γé╣)</h4>
++        <div className="flex items-center gap-3">
++          <input
++            type="number"
++            placeholder="Min"
++            value={priceRange.min}
++            onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
++            className={`flex-1 border p-4 rounded-2xl text-[11px] font-black outline-none transition-all ${isMobile ? 'bg-zinc-900/50 border-zinc-900 text-white focus:border-zinc-700' : 'bg-zinc-50 border-zinc-100 text-black focus:border-black'}`}
++          />
++          <input
++            type="number"
++            placeholder="Max"
++            value={priceRange.max}
++            onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
++            className={`flex-1 border p-4 rounded-2xl text-[11px] font-black outline-none transition-all ${isMobile ? 'bg-zinc-900/50 border-zinc-900 text-white focus:border-zinc-700' : 'bg-zinc-50 border-zinc-100 text-black focus:border-black'}`}
++          />
++        </div>
++      </section>
++    </div>
++  );
++
+   return (
+     <div className="bg-white min-h-screen pt-40 pb-20 selection:bg-black selection:text-white">
+       <Helmet>
+@@ -169,42 +294,59 @@ const Shop = () => {
+           </div>
+         </div>
+ 
+-        {/* --- PRODUCT GRID --- */}
+-        {loading ? (
+-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
+-            {[...Array(8)].map((_, i) => (
+-              <div key={i} className="space-y-6">
+-                <Skeleton className="aspect-square w-full rounded-xl bg-zinc-50" />
+-                <div className="space-y-3 px-2">
+-                  <Skeleton className="h-4 w-3/4 rounded-full" />
+-                  <Skeleton className="h-3 w-1/4 rounded-full" />
+-                </div>
+-              </div>
+-            ))}
++      </div>
++
++      <div className="flex flex-col lg:flex-row gap-16">
++        {/* --- DESKTOP SIDEBAR --- */}
++        <aside className="hidden lg:block w-72 shrink-0 sticky top-48 h-[calc(100vh-240px)] overflow-y-auto no-scrollbar pb-20">
++          <div className="mb-12">
++            <h2 className="text-4xl font-black uppercase tracking-tighter leading-none mb-1">Catalog</h2>
++            <p className="text-[9px] font-black uppercase tracking-[0.4em] text-zinc-300">Curated Elite Discovery</p>
+           </div>
+-        ) : (
+-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
+-            {products.length > 0 ? (
+-              products.map((product) => (
+-                <div key={product._id} className="group/item animate-in fade-in slide-in-from-bottom-8 duration-700">
+-                  <ProductCard product={product} />
+-                </div>
+-              ))
+-            ) : (
+-              <div className="col-span-full py-40 text-center rounded-[3rem] bg-zinc-50 border-2 border-dashed border-zinc-100">
+-                <RotateCcw size={40} className="mx-auto text-zinc-200 mb-6" />
+-                <h3 className="text-xl font-black uppercase tracking-tighter mb-2">No Artifacts Found</h3>
+-                <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8">Refine your parameters or reset</p>
+-                <button
+-                  onClick={resetFilters}
+-                  className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
+-                >
+-                  Reset Discovery
+-                </button>
+-              </div>
+-            )}
++          <FilterContent />
++          <div className="mt-12 pt-10 border-t border-zinc-100">
++            <button onClick={resetFilters} className="text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">Reset All Parameters</button>
+           </div>
+-        )}
++        </aside>
++
++        {/* --- MAIN GRID --- */}
++        <div className="flex-1">
++          {loading ? (
++            <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24">
++              {[...Array(6)].map((_, i) => (
++                <div key={i} className="space-y-6">
++                  <Skeleton className="aspect-square w-full rounded-xl bg-zinc-50" />
++                  <div className="space-y-3 px-2">
++                    <Skeleton className="h-4 w-3/4 rounded-full" />
++                    <Skeleton className="h-3 w-1/4 rounded-full" />
++                  </div>
++                </div>
++              ))}
++            </div>
++          ) : (
++            <div className="grid grid-cols-2 xl:grid-cols-3 gap-x-6 gap-y-16 md:gap-x-12 md:gap-y-24 relative z-10">
++              {products.length > 0 ? (
++                products.map((product) => (
++                  <div key={product._id} className="group/item animate-in fade-in slide-in-from-bottom-8 duration-700">
++                    <ProductCard product={product} />
++                  </div>
++                ))
++              ) : (
++                <div className="col-span-full py-40 text-center rounded-[3rem] bg-zinc-50 border-2 border-dashed border-zinc-100">
++                  <RotateCcw size={40} className="mx-auto text-zinc-200 mb-6 font-thin" />
++                  <h3 className="text-xl font-black uppercase tracking-tighter mb-2">No Artifacts Found</h3>
++                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 mb-8">Refine your parameters or reset</p>
++                  <button
++                    onClick={resetFilters}
++                    className="px-8 py-3 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition-colors"
++                  >
++                    Reset Discovery
++                  </button>
++                </div>
++              )}
++            </div>
++          )}
++        </div>
+       </div>
+ 
+       {/* --- FILTER DRAWER (ELITE BLACK THEME) --- */}
+@@ -224,7 +366,7 @@ const Shop = () => {
+         >
+           <div className="flex items-center justify-between mb-12">
+             <div>
+-              <h2 className="text-5xl font-black uppercase italic tracking-tighter text-white leading-none">Catalog</h2>
++              <h2 className="text-5xl font-black uppercase tracking-tighter text-white leading-none">Catalog</h2>
+               <p className="text-[9px] font-black uppercase tracking-[0.5em] text-zinc-500 mt-2">Filter Explorer / Elite Specification</p>
+             </div>
+             <button
+@@ -235,143 +377,8 @@ const Shop = () => {
+             </button>
+           </div>
+ 
+-          <div className="flex-1 overflow-y-auto no-scrollbar space-y-14 pr-2 border-t border-zinc-900 pt-10">
+-            {/* Status Section */}
+-            <section className="space-y-6">
+-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Artifact Status</h4>
+-              <div className="grid grid-cols-3 gap-2">
+-                {[
+-                  { id: 'inStock', label: 'Stock' },
+-                  { id: 'isNewArrival', label: 'New' },
+-                  { id: 'isBestSeller', label: 'Best' }
+-                ].map(flag => (
+-                  <button
+-                    key={flag.id}
+-                    onClick={() => setFlags({ ...flags, [flag.id]: !flags[flag.id] })}
+-                    className={`py-3 rounded-lg border text-[9px] font-black uppercase tracking-widest transition-all ${flags[flag.id] ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.2)]' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+-                  >
+-                    {flag.label}
+-                  </button>
+-                ))}
+-              </div>
+-            </section>
+-
+-            {/* General Specs - Category & Style */}
+-            <section className="space-y-8">
+-              <div className="space-y-6">
+-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Main Category</h4>
+-                <div className="flex flex-wrap gap-2">
+-                  {categories.map(cat => (
+-                    <button
+-                      key={cat}
+-                      onClick={() => { setCategory(cat); setSubcategory('All'); }}
+-                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${category === cat ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+-                    >
+-                      {cat}
+-                    </button>
+-                  ))}
+-                </div>
+-              </div>
+-
+-              {subcategories.length > 0 && (
+-                <div className="space-y-6">
+-                  <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Sub-Style</h4>
+-                  <div className="flex flex-wrap gap-2">
+-                    <button
+-                      onClick={() => setSubcategory('All')}
+-                      className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === 'All' ? 'bg-zinc-800 text-white border-zinc-700' : 'text-zinc-400 border-zinc-900 hover:border-zinc-700'}`}
+-                    >
+-                      Default
+-                    </button>
+-                    {subcategories.map(s => (
+-                      <button
+-                        key={s}
+-                        onClick={() => setSubcategory(subcategory === s ? 'All' : s)}
+-                        className={`px-4 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-[0.2em] transition-all ${subcategory === s ? 'bg-white text-black border-white' : 'text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+-                      >
+-                        {s}
+-                      </button>
+-                    ))}
+-                  </div>
+-                </div>
+-              )}
+-            </section>
+-
+-            {/* Technical Coloring */}
+-            <section className="space-y-6">
+-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Visual Tints (Color Spec)</h4>
+-              <div className="flex flex-wrap gap-3">
+-                {availableColors.map(c => (
+-                  <button
+-                    key={c}
+-                    onClick={() => setFilters({ ...filters, color: filters.color === c ? '' : c })}
+-                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all ${filters.color === c ? 'bg-white text-black border-white' : 'bg-zinc-900/40 text-zinc-500 border-zinc-900 hover:border-zinc-700'
+-                      }`}
+-                  >
+-                    <div className="w-2 h-2 rounded-full border border-white/20" style={{ backgroundColor: c.toLowerCase() }}></div>
+-                    {c}
+-                  </button>
+-                ))}
+-              </div>
+-            </section>
+-
+-            {/* Dimensioning / Sizing */}
+-            <section className="space-y-6">
+-              <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Dimension Spec (Size)</h4>
+-              <div className="flex flex-wrap gap-3">
+-                {availableSizes.length > 0 ? availableSizes.map(s => (
+-                  <button
+-                    key={s}
+-                    onClick={() => setFilters({ ...filters, size: filters.size === s ? '' : s })}
+-                    className={`w-14 h-14 flex items-center justify-center rounded-2xl border text-[11px] font-black transition-all ${filters.size === s ? 'bg-white text-black border-white shadow-xl scale-110' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'
+-                      }`}
+-                  >
+-                    {s}
+-                  </button>
+-                )) : (
+-                  <p className="text-[10px] font-black uppercase text-zinc-800 italic">No Size Specifications Found</p>
+-                )}
+-              </div>
+-            </section>
+-
+-            {/* Valuation & Reputation */}
+-            <section className="grid grid-cols-1 gap-12">
+-              <div className="space-y-6">
+-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Valuation Range (Γé╣)</h4>
+-                <div className="flex items-center gap-4">
+-                  <input
+-                    type="number"
+-                    placeholder="Min"
+-                    value={priceRange.min}
+-                    onChange={(e) => setPriceRange({ ...priceRange, min: e.target.value })}
+-                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
+-                  />
+-                  <div className="w-2 h-[2px] bg-zinc-800 shrink-0"></div>
+-                  <input
+-                    type="number"
+-                    placeholder="Max"
+-                    value={priceRange.max}
+-                    onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value })}
+-                    className="flex-1 bg-zinc-900/50 border border-zinc-900 p-5 rounded-2xl text-[11px] font-black text-white outline-none focus:border-zinc-700 transition-all placeholder:text-zinc-800"
+-                  />
+-                </div>
+-              </div>
+-
+-              <div className="space-y-6">
+-                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-zinc-600 border-l-2 border-white pl-4">Public Reputation</h4>
+-                <div className="grid grid-cols-4 gap-2">
+-                  {[1, 2, 3, 4].map(star => (
+-                    <button
+-                      key={star}
+-                      onClick={() => setFilters({ ...filters, minRating: filters.minRating === star ? 0 : star })}
+-                      className={`py-4 rounded-xl border text-[9px] font-black uppercase tracking-widest transition-all ${filters.minRating === star ? 'bg-white text-black border-white' : 'bg-transparent text-zinc-500 border-zinc-900 hover:border-zinc-700'}`}
+-                    >
+-                      {star}+ Γÿà
+-                    </button>
+-                  ))}
+-                </div>
+-              </div>
+-            </section>
++          <div className="flex-1 overflow-y-auto no-scrollbar border-t border-zinc-900 pt-10">
++            <FilterContent isMobile={true} />
+           </div>
+ 
+           <div className="pt-10 flex items-center gap-4 border-t border-zinc-900 mt-auto bg-zinc-950 pb-6">
+diff --git a/src/pages/SupportHub.jsx b/src/pages/SupportHub.jsx
+index a22a51e..3716ab3 100644
+--- a/src/pages/SupportHub.jsx
++++ b/src/pages/SupportHub.jsx
+@@ -15,6 +15,26 @@ const SupportHub = () => {
+     const [ticketData, setTicketData] = useState({ subject: '', message: '' });
+     const [showForm, setShowForm] = useState(false);
+ 
++    // TRACKING STATE
++    const [trackId, setTrackId] = useState('');
++    const [trackEmail, setTrackEmail] = useState('');
++    const [trackResult, setTrackResult] = useState(null);
++    const [isTracking, setIsTracking] = useState(false);
++
++    const handleTrack = async (e) => {
++        e.preventDefault();
++        setIsTracking(true);
++        setTrackResult(null);
++        try {
++            const { data } = await axios.get(`/api/returns/track/${trackId}?email=${trackEmail}`);
++            setTrackResult(data);
++        } catch (err) {
++            addToast(err.response?.data?.message || 'Tracking failed', 'error');
++        } finally {
++            setIsTracking(false);
++        }
++    };
++
+     const handleTicketSubmit = async (e) => {
+         e.preventDefault();
+         if (!user) return addToast('Please login to submit a ticket', 'error');
+@@ -54,12 +74,79 @@ const SupportHub = () => {
+ 
+             <div className="container mx-auto px-6 max-w-4xl">
+                 <div className="text-center mb-16">
+-                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic transform -skew-x-3 mb-6">
++                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6">
+                         Support <span className="text-zinc-300">Hub</span>
+                     </h1>
+                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400">How can we help you today?</p>
+                 </div>
+ 
++                {/* --- TRACKING WIDGET --- */}
++                <div className="mb-16 bg-zinc-50 border border-zinc-100 rounded-[2.5rem] p-10 md:p-12 relative overflow-hidden group">
++                    <div className="relative z-10 max-w-2xl mx-auto text-center">
++                        <h2 className="text-xl font-black uppercase tracking-widest mb-2 flex items-center justify-center gap-3">
++                            <ExternalLink size={20} className="text-zinc-300" /> Track Your Request
++                        </h2>
++                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-8">Enter Return ID & Email to view Status</p>
++
++                        <form onSubmit={handleTrack} className="flex flex-col md:flex-row gap-4 mb-4">
++                            <input
++                                type="text"
++                                placeholder="Return ID (e.g. 65cba...)"
++                                className="flex-1 bg-white border border-zinc-200 rounded-2xl p-4 text-xs font-bold outline-none focus:border-black transition-all"
++                                value={trackId}
++                                onChange={e => setTrackId(e.target.value)}
++                                required
++                            />
++                            <input
++                                type="email"
++                                placeholder="Order Email"
++                                className="flex-1 bg-white border border-zinc-200 rounded-2xl p-4 text-xs font-bold outline-none focus:border-black transition-all"
++                                value={trackEmail}
++                                onChange={e => setTrackEmail(e.target.value)}
++                                required
++                            />
++                            <button
++                                type="submit"
++                                disabled={isTracking}
++                                className="px-10 py-4 bg-black text-white rounded-full text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2"
++                            >
++                                {isTracking ? <Loader2 className="animate-spin" size={14} /> : 'Track'}
++                            </button>
++                        </form>
++
++                        {trackResult && (
++                            <div className="mt-8 text-left bg-white border border-zinc-100 rounded-3xl p-8 animate-in fade-in slide-in-from-top-4 shadow-xl shadow-black/5">
++                                <div className="flex justify-between items-center mb-6 pb-6 border-b border-zinc-50">
++                                    <div>
++                                        <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">Live Status</p>
++                                        <h3 className="text-2xl font-black uppercase tracking-tighter text-black">{trackResult.status}</h3>
++                                    </div>
++                                    <div className="text-right">
++                                        <p className="text-[8px] font-black uppercase text-zinc-400 tracking-widest">Request Ref</p>
++                                        <p className="text-[10px] font-black font-mono">{trackId.slice(-6).toUpperCase()}</p>
++                                    </div>
++                                </div>
++
++                                <div className="space-y-6">
++                                    {trackResult.timeline.map((item, idx) => (
++                                        <div key={idx} className="flex gap-4 group">
++                                            <div className="flex flex-col items-center">
++                                                <div className={`w-3 h-3 rounded-full ${idx === 0 ? 'bg-black scale-125' : 'bg-zinc-200'}`}></div>
++                                                {idx !== trackResult.timeline.length - 1 && <div className="w-[1px] h-full bg-zinc-100 my-1"></div>}
++                                            </div>
++                                            <div className="pb-2">
++                                                <p className={`text-[9px] font-black uppercase tracking-[0.2em] ${idx === 0 ? 'text-black' : 'text-zinc-400'}`}>{item.status}</p>
++                                                <p className="text-xs font-medium text-zinc-500 mt-1 leading-tight">{item.note}</p>
++                                                <p className="text-[8px] text-zinc-300 font-bold mt-2 uppercase">{new Date(item.timestamp).toLocaleString()}</p>
++                                            </div>
++                                        </div>
++                                    ))}
++                                </div>
++                            </div>
++                        )}
++                    </div>
++                </div>
++
+                 {/* --- SEARCH BAR --- */}
+                 <div className="relative mb-16 group">
+                     <div className="absolute inset-y-0 left-6 flex items-center text-zinc-300 group-focus-within:text-black transition-colors">
+@@ -125,7 +212,7 @@ const SupportHub = () => {
+                     <div className="absolute top-0 right-0 p-8 opacity-10">
+                         <ShieldCheck size={120} />
+                     </div>
+-                    <h2 className="text-2xl font-black uppercase italic mb-4">Still need help?</h2>
++                    <h2 className="text-2xl font-black uppercase mb-4">Still need help?</h2>
+                     <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8">Our expert concierge team is available 24/7</p>
+ 
+                     {!showForm ? (
+diff --git a/src/pages/Terms.jsx b/src/pages/Terms.jsx
+index 9d797a6..842b7f4 100644
+--- a/src/pages/Terms.jsx
++++ b/src/pages/Terms.jsx
+@@ -5,7 +5,7 @@ const Terms = () => {
+         <div className="bg-white min-h-screen pt-40 pb-20 px-6">
+             <div className="max-w-3xl mx-auto space-y-12">
+                 <div className="space-y-4 text-center">
+-                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">Terms of Service</h1>
++                    <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter">Terms of Service</h1>
+                     <p className="text-sm font-bold text-zinc-400 max-w-lg mx-auto uppercase tracking-widest">
+                         Effective Date: {new Date().getFullYear()}
+                     </p>
+diff --git a/src/pages/Wishlist.jsx b/src/pages/Wishlist.jsx
+index 5cc4cbb..09c916e 100644
+--- a/src/pages/Wishlist.jsx
++++ b/src/pages/Wishlist.jsx
+@@ -56,7 +56,7 @@ const Wishlist = () => {
+       <div className="container mx-auto px-6 max-w-7xl">
+ 
+         <div className="mb-16 text-center">
+-          <h1 className="text-4xl font-black uppercase tracking-tighter mb-2 italic transform -skew-x-3">
++          <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">
+             Your Wishlist
+           </h1>
+           <div className="h-1 w-12 bg-black mx-auto mb-4"></div>
+diff --git a/src/pages/admin/AdminAnalytics.jsx b/src/pages/admin/AdminAnalytics.jsx
+index cf85838..06007af 100644
+--- a/src/pages/admin/AdminAnalytics.jsx
++++ b/src/pages/admin/AdminAnalytics.jsx
+@@ -17,6 +17,7 @@ const AdminAnalytics = () => {
+     const [stats, setStats] = useState(null);
+     const [loading, setLoading] = useState(true);
+     const [timeRange, setTimeRange] = useState('daily'); // 'daily', 'weekly', 'monthly', 'yearly'
++    const [alerts, setAlerts] = useState([]);
+ 
+     useEffect(() => {
+         const fetchStats = async () => {
+@@ -33,6 +34,17 @@ const AdminAnalytics = () => {
+             }
+         };
+         if (user?.token) fetchStats();
++
++        const fetchAlerts = async () => {
++            try {
++                const config = { headers: { Authorization: `Bearer ${user.token}` } };
++                const { data } = await axios.get('/api/alerts', config);
++                setAlerts(data);
++            } catch (err) {
++                console.error("Alerts Fetch Failed:", err);
++            }
++        };
++        if (user?.token) fetchAlerts();
+     }, [user, timeRange]);
+ 
+     const downloadReport = () => {
+@@ -135,6 +147,45 @@ const AdminAnalytics = () => {
+                 </div>
+             </div>
+ 
++            {/* SYSTEM ALERTS WIDGET */}
++            {alerts.length > 0 && (
++                <div className="bg-red-50 border border-red-100 rounded-2xl p-6 animate-in slide-in-from-top duration-500">
++                    <div className="flex items-center justify-between mb-4">
++                        <h3 className="text-xs font-black uppercase tracking-widest text-red-600 flex items-center gap-2">
++                            <AlertCircle size={16} /> Critical System Alerts ({alerts.length})
++                        </h3>
++                        <button
++                            onClick={async () => {
++                                try {
++                                    const config = { headers: { Authorization: `Bearer ${user.token}` } };
++                                    await axios.delete('/api/alerts', config);
++                                    setAlerts([]);
++                                } catch (e) { console.error(e); }
++                            }}
++                            className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 transition"
++                        >
++                            Dismiss All
++                        </button>
++                    </div>
++                    <div className="space-y-3">
++                        {alerts.map(alert => (
++                            <div key={alert._id} className="bg-white p-3 rounded-xl border border-red-50 flex items-center justify-between shadow-sm">
++                                <div className="flex items-center gap-3">
++                                    <div className={`w-2 h-2 rounded-full ${alert.severity === 'critical' ? 'bg-red-500 animate-ping' : 'bg-amber-500'}`}></div>
++                                    <p className="text-[11px] font-bold text-zinc-900">{alert.message}</p>
++                                </div>
++                                <button
++                                    onClick={() => navigate('/admin/products/bulk')}
++                                    className="px-3 py-1 bg-zinc-900 text-white text-[9px] font-black uppercase tracking-widest rounded-lg hover:bg-black transition"
++                                >
++                                    Restock
++                                </button>
++                            </div>
++                        ))}
++                    </div>
++                </div>
++            )}
++
+             {/* 1. KEY METRICS ROW (Summary for Selected Period) */}
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <div onClick={() => navigate('/admin/analytics/revenue')} className="cursor-pointer">
+diff --git a/src/pages/admin/AdminBulkEditor.jsx b/src/pages/admin/AdminBulkEditor.jsx
+index 9a0de94..dba0945 100644
+--- a/src/pages/admin/AdminBulkEditor.jsx
++++ b/src/pages/admin/AdminBulkEditor.jsx
+@@ -13,6 +13,8 @@ const AdminBulkEditor = () => {
+     const [loading, setLoading] = useState(true);
+     const [saving, setSaving] = useState(false);
+     const [searchTerm, setSearchTerm] = useState('');
++    const [filterCategory, setFilterCategory] = useState('All');
++    const [showLowStockOnly, setShowLowStockOnly] = useState(false);
+     const [edits, setEdits] = useState({}); // { productId: { field: value } }
+ 
+     useEffect(() => {
+@@ -59,10 +61,25 @@ const AdminBulkEditor = () => {
+         }
+     };
+ 
+-    const filteredProducts = products.filter(p =>
+-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+-        p.category.toLowerCase().includes(searchTerm.toLowerCase())
+-    );
++    const filteredProducts = products.filter(p => {
++        const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
++            p.category.toLowerCase().includes(searchTerm.toLowerCase());
++        const matchesCategory = filterCategory === 'All' || p.category === filterCategory;
++        const matchesStock = !showLowStockOnly || p.countInStock < 5;
++        return matchesSearch && matchesCategory && matchesStock;
++    });
++
++    const bulkToggleStatus = (active) => {
++        const newEdits = { ...edits };
++        filteredProducts.forEach(p => {
++            newEdits[p._id] = {
++                ...newEdits[p._id],
++                isActive: active
++            };
++        });
++        setEdits(newEdits);
++        addToast(`Marked ${filteredProducts.length} items as ${active ? 'Active' : 'Disabled'}`, "info");
++    };
+ 
+     if (loading) return (
+         <div className="flex flex-col items-center justify-center h-96 gap-4">
+@@ -86,16 +103,6 @@ const AdminBulkEditor = () => {
+                 </div>
+ 
+                 <div className="flex items-center gap-4 w-full md:w-auto">
+-                    <div className="relative flex-1 md:w-64">
+-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
+-                        <input
+-                            type="text"
+-                            placeholder="SEARCH PRODUCTS..."
+-                            className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-2 ring-black outline-none"
+-                            value={searchTerm}
+-                            onChange={(e) => setSearchTerm(e.target.value)}
+-                        />
+-                    </div>
+                     <button
+                         onClick={saveAll}
+                         disabled={saving || Object.keys(edits).length === 0}
+@@ -112,6 +119,57 @@ const AdminBulkEditor = () => {
+                 </div>
+             </div>
+ 
++            <div className="flex flex-col md:flex-row gap-4 items-center bg-white p-4 rounded-2xl border border-zinc-100 shadow-sm">
++                <div className="flex-1 w-full relative">
++                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" size={16} />
++                    <input
++                        type="text"
++                        placeholder="SEARCH PRODUCTS..."
++                        className="w-full pl-10 pr-4 py-3 bg-zinc-50 border border-zinc-100 rounded-xl text-xs font-bold focus:ring-2 ring-black outline-none"
++                        value={searchTerm}
++                        onChange={(e) => setSearchTerm(e.target.value)}
++                    />
++                </div>
++
++                <div className="flex items-center gap-2 w-full md:w-auto">
++                    <select
++                        className="bg-zinc-50 border border-zinc-100 rounded-xl px-4 py-3 text-[10px] font-black uppercase tracking-widest outline-none focus:ring-2 ring-black"
++                        value={filterCategory}
++                        onChange={(e) => setFilterCategory(e.target.value)}
++                    >
++                        <option value="All">All Categories</option>
++                        <option value="Home Decor">Home Decor</option>
++                        <option value="Furniture">Furniture</option>
++                        <option value="Lighting">Lighting</option>
++                        <option value="Kitchenware">Kitchenware</option>
++                        <option value="Textiles">Textiles</option>
++                    </select>
++
++                    <button
++                        onClick={() => setShowLowStockOnly(!showLowStockOnly)}
++                        className={`px-4 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest border transition-all ${showLowStockOnly ? 'bg-amber-100 border-amber-200 text-amber-700' : 'bg-zinc-50 border-zinc-100 text-zinc-400'
++                            }`}
++                    >
++                        Low Stock {showLowStockOnly && 'ON'}
++                    </button>
++                </div>
++
++                <div className="flex items-center gap-2 pt-4 md:pt-0 border-t md:border-t-0 md:border-l border-zinc-100 md:pl-4 w-full md:w-auto">
++                    <button
++                        onClick={() => bulkToggleStatus(true)}
++                        className="px-4 py-3 bg-green-50 text-green-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-green-100"
++                    >
++                        Enable All
++                    </button>
++                    <button
++                        onClick={() => bulkToggleStatus(false)}
++                        className="px-4 py-3 bg-red-50 text-red-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-100"
++                    >
++                        Disable All
++                    </button>
++                </div>
++            </div>
++
+             {/* TOOLS & LEGEND */}
+             <div className="flex items-center gap-6 bg-amber-50 border border-amber-100 p-4 rounded-2xl text-amber-800">
+                 <AlertCircle size={20} />
+diff --git a/src/pages/admin/AdminLayout.jsx b/src/pages/admin/AdminLayout.jsx
+index 38374f9..53f05a2 100644
+--- a/src/pages/admin/AdminLayout.jsx
++++ b/src/pages/admin/AdminLayout.jsx
+@@ -1,6 +1,7 @@
+ import React, { useEffect } from 'react';
++import axios from 'axios';
+ import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
+-import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity } from 'lucide-react';
++import { LayoutDashboard, ShoppingBag, Users, Settings, LogOut, Tag, Shield, Package, CreditCard, MessageSquare, TrendingUp, X, RefreshCw, HelpCircle, FileText, Edit3, Activity, Camera } from 'lucide-react';
+ import { useStore } from '../../store/useStore';
+ import { useToast } from '../../context/ToastContext';
+ import { io } from 'socket.io-client';
+@@ -13,6 +14,7 @@ const AdminLayout = () => {
+     const { addToast } = useToast();
+     const navigate = useNavigate();
+     const location = useLocation();
++    const [alerts, setAlerts] = React.useState([]);
+ 
+     // --- SOCKET.IO LISTENER ---
+     useEffect(() => {
+@@ -32,10 +34,22 @@ const AdminLayout = () => {
+             addToast(`New Review (${data.rating}Γÿà) on ${data.productName}`, "info");
+         });
+ 
++        const fetchAlerts = async () => {
++            try {
++                const config = { headers: { Authorization: `Bearer ${user.token}` } };
++                const { data } = await axios.get('/api/alerts', config);
++                setAlerts(data);
++            } catch (err) {
++                console.error("Alerts Fetch Failed:", err);
++            }
++        };
++
++        fetchAlerts();
++
+         return () => {
+             socket.disconnect();
+         };
+-    }, [addToast]);
++    }, [addToast, user.token]);
+     // --------------------------
+ 
+     // CLOSE MOBILE DRAWER ON NAVIGATE
+@@ -89,6 +103,9 @@ const AdminLayout = () => {
+                             <>
+                                 <NavLink to="/admin/products" className={navClass}>
+                                     <Package size={18} className="flex-shrink-0" /> Inventory
++                                    {alerts.some(a => a.type === 'low_stock') && (
++                                        <span className="ml-auto w-2 h-2 bg-red-500 rounded-full animate-pulse shadow-sm shadow-red-500/50"></span>
++                                    )}
+                                 </NavLink>
+                                 <NavLink to="/admin/products/bulk" className={navClass}>
+                                     <Edit3 size={18} className="flex-shrink-0" /> Bulk Editor
+@@ -107,8 +124,8 @@ const AdminLayout = () => {
+                             </>
+                         )}
+ 
+-                        {/* ADMIN ONLY ACTIONS */}
+-                        {isAdmin && (
++                        {/* ADMIN & MANAGER ACTIONS */}
++                        {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
+                             <>
+                                 <NavLink to="/admin/users" className={navClass}>
+                                     <Users size={18} className="flex-shrink-0" /> Users
+@@ -119,6 +136,9 @@ const AdminLayout = () => {
+                                 <NavLink to="/admin/reports" className={navClass}>
+                                     <LayoutDashboard size={18} className="flex-shrink-0" /> Reports
+                                 </NavLink>
++                                <NavLink to="/admin/looks" className={navClass}>
++                                    <Camera size={18} className="flex-shrink-0" /> Community Styles
++                                </NavLink>
+                                 <NavLink to="/admin/marketing" className={navClass}>
+                                     <Tag size={18} className="flex-shrink-0" /> Offers
+                                 </NavLink>
+@@ -152,7 +172,7 @@ const AdminLayout = () => {
+                     </nav>
+                 </div>
+ 
+-                <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
++                <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition whitespace-nowrap mb-2">
+                     <HelpCircle size={18} className="flex-shrink-0" /> Help & Support
+                 </a>
+                 <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition whitespace-nowrap">
+@@ -183,7 +203,7 @@ const AdminLayout = () => {
+                 >
+                     {/* HEADER */}
+                     <div className="mb-8 flex justify-between items-center flex-shrink-0">
+-                        <h1 className="text-2xl font-black italic tracking-tighter">SLOOK<span className="text-red-500">ADMIN</span></h1>
++                        <h1 className="text-2xl font-black tracking-tighter">SLOOK<span className="text-red-500">ADMIN</span></h1>
+                         <button
+                             type="button"
+                             onClick={(e) => {
+@@ -228,7 +248,7 @@ const AdminLayout = () => {
+                                 </NavLink>
+                             )}
+ 
+-                            {isAdmin && (
++                            {(user?.isAdmin || user?.role === 'admin' || user?.role === 'manager') && (
+                                 <>
+                                     <NavLink to="/admin/users" className={navClass}>
+                                         <Users size={18} /> Users
+@@ -239,6 +259,9 @@ const AdminLayout = () => {
+                                     <NavLink to="/admin/reports" className={navClass}>
+                                         <LayoutDashboard size={18} /> Reports
+                                     </NavLink>
++                                    <NavLink to="/admin/looks" className={navClass}>
++                                        <Camera size={18} /> Community Styles
++                                    </NavLink>
+                                     <NavLink to="/admin/marketing" className={navClass}>
+                                         <Tag size={18} /> Offers
+                                     </NavLink>
+@@ -269,7 +292,7 @@ const AdminLayout = () => {
+ 
+                     {/* LOGOUT */}
+                     <div className="mt-4 pt-4 border-t border-zinc-100 flex-shrink-0 space-y-2">
+-                        <a href="mailto:support@highphaus.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
++                        <a href="mailto:support@slook.com" className="flex items-center gap-3 px-4 py-3 text-zinc-500 font-bold text-[11px] uppercase tracking-widest hover:text-black hover:bg-zinc-50 rounded-xl transition w-full">
+                             <HelpCircle size={18} /> Help & Support
+                         </a>
+                         <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-red-500 font-bold text-[11px] uppercase tracking-widest hover:bg-red-50 rounded-xl transition w-full">
+diff --git a/src/pages/admin/AdminReturns.jsx b/src/pages/admin/AdminReturns.jsx
+index 1b2e9c3..ac33d85 100644
+--- a/src/pages/admin/AdminReturns.jsx
++++ b/src/pages/admin/AdminReturns.jsx
+@@ -299,6 +299,12 @@ const AdminReturns = () => {
+                                         <span className={`px-2 py-1 rounded text-[8px] font-black uppercase tracking-widest ${ret.type === 'Exchange' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'}`}>
+                                             {ret.type}
+                                         </span>
++                                        {ret.type === 'Exchange' && ret.requestedVariant && (
++                                            <div className="mt-1 flex flex-col">
++                                                <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest">Requested:</span>
++                                                <span className="text-[10px] font-black uppercase text-purple-600">{ret.requestedVariant.size} {ret.requestedVariant.color && `/ ${ret.requestedVariant.color}`}</span>
++                                            </div>
++                                        )}
+                                         <div className="mt-1 text-[10px] font-medium text-zinc-600">{ret.reason}</div>
+                                     </td>
+                                     <td className="px-6 py-4">
+diff --git a/src/pages/admin/AdminSupport.jsx b/src/pages/admin/AdminSupport.jsx
+index bbb2832..337c239 100644
+--- a/src/pages/admin/AdminSupport.jsx
++++ b/src/pages/admin/AdminSupport.jsx
+@@ -71,8 +71,8 @@ const AdminSupport = () => {
+                         >
+                             <div className="flex justify-between items-start mb-2">
+                                 <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest ${ticket.status === 'Open' ? 'bg-blue-100 text-blue-700' :
+-                                        ticket.status === 'Resolved' ? 'bg-green-100 text-green-700' :
+-                                            'bg-zinc-100 text-zinc-600'
++                                    ticket.status === 'Resolved' ? 'bg-green-100 text-green-700' :
++                                        'bg-zinc-100 text-zinc-600'
+                                     }`}>
+                                     {ticket.status}
+                                 </span>
+diff --git a/src/pages/admin/analytics/AnalyticsOrders.jsx b/src/pages/admin/analytics/AnalyticsOrders.jsx
+index df4f535..9e6d523 100644
+--- a/src/pages/admin/analytics/AnalyticsOrders.jsx
++++ b/src/pages/admin/analytics/AnalyticsOrders.jsx
+@@ -5,8 +5,9 @@ import {
+     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     PieChart, Pie, Cell, Legend
+ } from 'recharts';
+-import { Package, ArrowLeft, RefreshCw } from 'lucide-react';
++import { Package, ArrowLeft, RefreshCw, Download } from 'lucide-react';
+ import { useNavigate } from 'react-router-dom';
++import api from '../../../api/instance';
+ 
+ const AnalyticsOrders = () => {
+     const { user } = useStore();
+@@ -65,15 +66,38 @@ const AnalyticsOrders = () => {
+         document.body.removeChild(link);
+     };
+ 
++    const downloadPDF = async () => {
++        try {
++            const config = {
++                headers: { Authorization: `Bearer ${user.token}` },
++                responseType: 'blob'
++            };
++            const { data } = await api.get(`/api/reports/orders/pdf`, config);
++            const url = window.URL.createObjectURL(new Blob([data]));
++            const link = document.createElement('a');
++            link.href = url;
++            link.setAttribute('download', `SLOOK_Order_Operations_Report.pdf`);
++            document.body.appendChild(link);
++            link.click();
++        } catch (error) {
++            console.error("Download failed:", error);
++        }
++    };
++
+     return (
+         <div className="p-8 space-y-8 animate-in fade-in duration-500">
+             <div className="flex justify-between items-center mb-4">
+                 <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black">
+                     <ArrowLeft size={16} /> Back to Dashboard
+                 </button>
+-                <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-zinc-800 transition">
+-                    <Package size={16} /> Export CSV
+-                </button>
++                <div className="flex gap-2">
++                    <button onClick={downloadCSV} className="flex items-center gap-2 px-4 py-2 bg-zinc-100 text-zinc-600 rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-zinc-200 transition">
++                        <Package size={14} /> CSV
++                    </button>
++                    <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg text-[10px] font-black uppercase tracking-wider hover:bg-zinc-800 transition shadow-lg shadow-zinc-200">
++                        <Download size={14} /> Export PDF
++                    </button>
++                </div>
+             </div>
+ 
+             <div className="flex justify-between items-end">
+@@ -122,7 +146,7 @@ const AnalyticsOrders = () => {
+                                     <p className="text-red-700 text-xs font-bold uppercase">Return Requests</p>
+                                 </div>
+                             </div>
+-                            <button className="px-4 py-2 bg-white text-red-600 font-bold text-xs rounded-lg shadow-sm">Review</button>
++                            <button onClick={() => navigate('/admin/returns')} className="px-4 py-2 bg-white text-red-600 font-bold text-xs rounded-lg shadow-sm hover:bg-red-50 transition">Review</button>
+                         </div>
+ 
+                         <div className="p-6 bg-orange-50 rounded-2xl flex items-center justify-between">
+diff --git a/src/pages/admin/analytics/AnalyticsRevenue.jsx b/src/pages/admin/analytics/AnalyticsRevenue.jsx
+index 5c63a27..9c9fd30 100644
+--- a/src/pages/admin/analytics/AnalyticsRevenue.jsx
++++ b/src/pages/admin/analytics/AnalyticsRevenue.jsx
+@@ -5,7 +5,7 @@ import {
+     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     BarChart, Bar, Legend, PieChart, Pie, Cell
+ } from 'recharts';
+-import { IndianRupee, ArrowLeft } from 'lucide-react';
++import { IndianRupee, ArrowLeft, Download } from 'lucide-react';
+ import { useNavigate } from 'react-router-dom';
+ 
+ const AnalyticsRevenue = () => {
+@@ -35,6 +35,24 @@ const AnalyticsRevenue = () => {
+ 
+     const COLORS = ['#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#3b82f6', '#ec4899', '#6366f1'];
+ 
++    const downloadReport = async () => {
++        try {
++            const config = {
++                headers: { Authorization: `Bearer ${user.token}` },
++                responseType: 'blob'
++            };
++            const { data } = await axios.get(`/api/reports/sales/pdf?range=30d`, config);
++            const url = window.URL.createObjectURL(new Blob([data]));
++            const link = document.createElement('a');
++            link.href = url;
++            link.setAttribute('download', `SLOOK_Sales_Report.pdf`);
++            document.body.appendChild(link);
++            link.click();
++        } catch (error) {
++            console.error("Download failed:", error);
++        }
++    };
++
+     return (
+         <div className="p-8 space-y-8 animate-in fade-in duration-500">
+             <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black mb-4">
+@@ -59,6 +77,12 @@ const AnalyticsRevenue = () => {
+                             {range}
+                         </button>
+                     ))}
++                    <button
++                        onClick={downloadReport}
++                        className="flex items-center gap-2 px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest text-blue-600 hover:bg-blue-50 transition border border-transparent hover:border-blue-100"
++                    >
++                        <Download size={12} /> PDF Report
++                    </button>
+                 </div>
+             </div>
+ 
+diff --git a/src/pages/admin/analytics/AnalyticsUsers.jsx b/src/pages/admin/analytics/AnalyticsUsers.jsx
+index a873f2f..071c49f 100644
+--- a/src/pages/admin/analytics/AnalyticsUsers.jsx
++++ b/src/pages/admin/analytics/AnalyticsUsers.jsx
+@@ -5,7 +5,7 @@ import {
+     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+     BarChart, Bar
+ } from 'recharts';
+-import { Users, ArrowLeft, Trophy } from 'lucide-react';
++import { Users, ArrowLeft, Trophy, Download } from 'lucide-react';
+ import { useNavigate } from 'react-router-dom';
+ 
+ const AnalyticsUsers = () => {
+@@ -33,6 +33,24 @@ const AnalyticsUsers = () => {
+ 
+     if (!stats && loading) return <div className="p-8 text-center">Loading...</div>;
+ 
++    const downloadReport = async () => {
++        try {
++            const config = {
++                headers: { Authorization: `Bearer ${user.token}` },
++                responseType: 'blob'
++            };
++            const { data } = await axios.get(`/api/reports/users/pdf`, config);
++            const url = window.URL.createObjectURL(new Blob([data]));
++            const link = document.createElement('a');
++            link.href = url;
++            link.setAttribute('download', `SLOOK_User_Report.pdf`);
++            document.body.appendChild(link);
++            link.click();
++        } catch (error) {
++            console.error("Download failed:", error);
++        }
++    };
++
+     return (
+         <div className="p-8 space-y-8 animate-in fade-in duration-500">
+             <button onClick={() => navigate('/admin/analytics')} className="flex items-center gap-2 text-zinc-500 hover:text-black mb-4">
+@@ -44,6 +62,12 @@ const AnalyticsUsers = () => {
+                     <h1 className="text-3xl font-black italic tracking-tighter text-zinc-900">USER INSIGHTS<span className="text-blue-500">.</span></h1>
+                     <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest mt-1">Growth & Customer Loyalty</p>
+                 </div>
++                <button
++                    onClick={downloadReport}
++                    className="flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest bg-zinc-900 text-white hover:bg-black transition shadow-lg shadow-zinc-200"
++                >
++                    <Download size={14} /> Download PDF
++                </button>
+             </div>
+ 
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+diff --git a/src/pages/help/HelpCenter.jsx b/src/pages/help/HelpCenter.jsx
+index c2c1312..52c5e43 100644
+--- a/src/pages/help/HelpCenter.jsx
++++ b/src/pages/help/HelpCenter.jsx
+@@ -21,7 +21,7 @@ const HelpCenter = () => {
+         <div className="min-h-screen bg-zinc-50 pt-40 pb-20">
+             {/* HERO SECTION */}
+             <div className="bg-black text-white py-20 px-6 text-center mb-12">
+-                <h1 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter mb-6">How can we help?</h1>
++                <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter mb-6">How can we help?</h1>
+                 <div className="relative max-w-2xl mx-auto">
+                     <input
+                         type="text"
+@@ -41,7 +41,7 @@ const HelpCenter = () => {
+                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
+                             <MessageSquare size={28} />
+                         </div>
+-                        <h3 className="text-xl font-black uppercase italic mb-2">My Support Tickets</h3>
++                        <h3 className="text-xl font-black uppercase mb-2">My Support Tickets</h3>
+                         <p className="text-zinc-500 text-sm mb-6">View status of your requests or submit a new issue.</p>
+                         <span className="text-xs font-bold uppercase tracking-widest underline decoration-zinc-300">View Tickets</span>
+                     </div>
+@@ -51,12 +51,12 @@ const HelpCenter = () => {
+                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
+                             <Phone size={28} />
+                         </div>
+-                        <h3 className="text-xl font-black uppercase italic mb-2">Contact Us</h3>
++                        <h3 className="text-xl font-black uppercase mb-2">Contact Us</h3>
+                         <p className="text-zinc-500 text-sm mb-6">Need urgent help? Reach out to our customer care.</p>
+                         <div className="flex justify-center gap-4 text-xs font-bold uppercase">
+                             <a href="tel:+919876543210" className="hover:underline">Call</a>
+                             <span>ΓÇó</span>
+-                            <a href="mailto:support@highphaus.com" className="hover:underline">Email</a>
++                            <a href="mailto:support@slook.com" className="hover:underline">Email</a>
+                         </div>
+                     </div>
+ 
+@@ -65,7 +65,7 @@ const HelpCenter = () => {
+                         <div className="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-black group-hover:text-white transition-colors">
+                             <BookOpen size={28} />
+                         </div>
+-                        <h3 className="text-xl font-black uppercase italic mb-2">Product Care</h3>
++                        <h3 className="text-xl font-black uppercase mb-2">Product Care</h3>
+                         <p className="text-zinc-500 text-sm mb-6">Learn how to take care of your premium products.</p>
+                         <span className="text-xs font-bold uppercase tracking-widest underline decoration-zinc-300">Read Guide</span>
+                     </Link>
+@@ -73,7 +73,7 @@ const HelpCenter = () => {
+ 
+                 {/* FAQ SECTION */}
+                 <div className="bg-white rounded-[3rem] p-10 md:p-16 border border-zinc-100">
+-                    <h2 className="text-3xl font-black uppercase italic tracking-tight mb-10 text-center">Frequently Asked Questions</h2>
++                    <h2 className="text-3xl font-black uppercase tracking-tight mb-10 text-center">Frequently Asked Questions</h2>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                         {filteredFaqs.map((faq, i) => (
+                             <div key={i} className="bg-zinc-50 p-6 rounded-2xl">
+diff --git a/src/pages/settings/Notifications.jsx b/src/pages/settings/Notifications.jsx
+index 5ee2041..622b548 100644
+--- a/src/pages/settings/Notifications.jsx
++++ b/src/pages/settings/Notifications.jsx
+@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
+ import { useStore } from '../../store/useStore';
+ import { useNavigate } from 'react-router-dom';
+ import axios from 'axios';
+-import { Bell, ArrowLeft, Info, Package, Tag, Check, CheckCheck, Trash2, ArrowRight } from 'lucide-react';
++import { Bell, ArrowLeft, Info, Package, Tag, Check, CheckCheck, Trash2, ArrowRight, Truck } from 'lucide-react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ 
+ const Notifications = () => {
+@@ -106,7 +106,7 @@ const Notifications = () => {
+               <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> BACK TO DASHBOARD
+             </button>
+             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-900 mb-2">
+-              Inbox <span className="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full align-middle border border-purple-200">v2.1 MNC</span>
++              Inbox
+             </h1>
+             <p className="text-zinc-500 font-medium">
+               Stay updated on your orders and exclusive drops.
+@@ -219,11 +219,30 @@ const Notifications = () => {
+                       </p>
+ 
+                       {/* Rich Actions / Links */}
+-                      {notif.data?.url && (
+-                        <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700 transition-colors">
+-                          View Details <ArrowRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
+-                        </div>
+-                      )}
++                      <div className="flex flex-wrap items-center gap-3">
++                        {notif.data?.url && (
++                          <div className="flex items-center text-xs font-semibold text-blue-600 group-hover:text-blue-700 transition-colors">
++                            View Details <ArrowRight size={12} className="ml-1 group-hover:translate-x-1 transition-transform" />
++                          </div>
++                        )}
++
++                        {notif.type === 'order' && (
++                          <div className="flex items-center gap-2 pt-2 w-full">
++                            <button
++                              onClick={(e) => { e.stopPropagation(); navigate('/my-orders'); }}
++                              className="px-4 py-2 bg-zinc-900 text-white text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-zinc-800 transition-all flex items-center gap-2"
++                            >
++                              <Truck size={12} /> Track Parcel
++                            </button>
++                            <button
++                              onClick={(e) => { e.stopPropagation(); navigate('/support'); }}
++                              className="px-4 py-2 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-black uppercase tracking-widest rounded-lg hover:border-black transition-all flex items-center gap-2"
++                            >
++                              <Info size={12} /> Need Help?
++                            </button>
++                          </div>
++                        )}
++                      </div>
+                     </div>
+                   </div>
+                 </motion.div>
