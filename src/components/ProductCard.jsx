@@ -19,44 +19,8 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   const [selectedSize, setSelectedSize] = useState(null);
 
-  // Hover/Active state — React controlled for reliability across devices
+  // Hover state - Simple React state for desktop/fine pointer
   const [hovered, setHovered] = useState(false);
-  
-  // Mobile Scroll-Aware Interaction
-  const touchStartRef = useRef({ x: 0, y: 0 });
-  const isScrollingRef = useRef(false);
-
-  const handleTouchStart = (e) => {
-    touchStartRef.current = { 
-      x: e.touches[0].clientX, 
-      y: e.touches[0].clientY 
-    };
-    isScrollingRef.current = false;
-  };
-
-  const handleTouchMove = (e) => {
-    const deltaX = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
-    const deltaY = Math.abs(e.touches[0].clientY - touchStartRef.current.y);
-
-    // If vertical scroll is dominant, hide "Add to Bag" to prevent friction
-    if (deltaY > deltaX && deltaY > 10) {
-      setHovered(false);
-      isScrollingRef.current = true;
-    } 
-    // If horizontal scroll is dominant, allow the "Add to Bag" bar to show
-    else if (deltaX > deltaY && deltaX > 10) {
-      setHovered(true);
-      isScrollingRef.current = false;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    // If it was a clean tap (no significant scroll), toggle the bar
-    if (!isScrollingRef.current) {
-      // Small timeout to allow the actual click to pass if needed
-      // or just toggle hovered here for mobile-first "tap to see price/buy"
-    }
-  };
 
   // Determine if product is in cart (based on store state for accurate badge/state)
   const cart = user ? (user.cart || []) : useStore.getState().cart;
@@ -141,20 +105,16 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   return (
     <div
-      className="relative w-full md:max-w-[260px] group touch-pan-y"
+      className="relative w-full md:max-w-[260px] group"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">
 
-        {/* Lift + shadow on hover via inline style */}
+        {/* Lift + shadow on hover */}
         <div
-          className="absolute inset-0 z-0 rounded-2xl transition-all duration-500"
-          style={{ boxShadow: hovered ? '0 16px 40px rgba(0,0,0,0.15)' : 'none' }}
+          className="absolute inset-0 z-0 rounded-2xl transition-all duration-500 opacity-0 group-hover:opacity-100 group-hover:shadow-[0_16px_40px_rgba(0,0,0,0.15)]"
         />
 
         {/* Image */}
@@ -162,8 +122,7 @@ const ProductCard = ({ product, onAddToCart }) => {
           <img
             src={resolveMediaURL(product.image)}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-700"
-            style={{ transform: hovered ? 'scale(1.08)' : 'scale(1)' }}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
             loading="lazy"
           />
         </Link>
@@ -240,18 +199,13 @@ const ProductCard = ({ product, onAddToCart }) => {
         )}
 
         {/* ====== ADD TO BAG / QUANTITY BAR ======
-            - Uses inline opacity (NOT translate) to show/hide — never clipped by overflow-hidden
-            - hovered is React state (not CSS group-hover) — works inside scroll containers
-            - Renders for EVERY product regardless of stock (stock check disabled for diagnosis)
+            - Uses Tailwind group-hover for performance
+            - For mobile (hover:none), it will show on TAP or via Horizontal scroll detection if using carousels
+            - Added 'pointer-events-none group-hover:pointer-events-auto' to prevent accidental blocks
         */}
         {!showQuickAdd && (
           <div
-            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white transition-all duration-500 ease-out"
-            style={{
-              opacity: hovered ? 1 : 0,
-              transform: hovered ? 'translateY(0)' : 'translateY(100%)',
-              pointerEvents: hovered ? 'auto' : 'none'
-            }}
+            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white transition-all duration-500 ease-out opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0"
           >
             <button
               onClick={handleAdd}

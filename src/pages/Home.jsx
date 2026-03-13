@@ -230,51 +230,53 @@ const Home = () => {
       {activeView === 'all' && (
         <>
           {slides.length > 0 && (
-            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black group/hero overflow-hidden touch-pan-y">
-              <AnimatePresence initial={false}>
-                <motion.div
-                  key={slides[currentSlide]?.key || currentSlide}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="absolute inset-0 z-20"
-                >
-                  <div className="absolute inset-0 overflow-hidden bg-black">
-                    <motion.img
-                      src={slides[currentSlide]?.img}
-                      style={{ 
-                        scale: heroScale,
-                        y: heroY
-                      }}
-                      animate={{ 
-                        opacity: loadedImages[currentSlide] ? 1 : 0
-                      }}
-                      transition={{ 
-                        opacity: { duration: 0.3 }
-                      }}
-                      className="w-full h-full object-cover"
-                      alt={slides[currentSlide]?.title}
-                    />
-                  </div>
-                  
-                  <div className="absolute inset-0 flex items-center justify-center px-6 z-20">
-                    <motion.div 
-                      initial={{ opacity: 0, y: 40 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
-                      className="text-center"
-                    >
-                      <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slides[currentSlide]?.subtitle}</p>
-                      <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slides[currentSlide]?.title}</h1>
-                      <div className="flex flex-col md:flex-row items-center justify-center gap-4">
-                        <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
+            <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black overflow-hidden group/hero">
+              {/* SLIDES LAYER */}
+              <div className="absolute inset-0 z-10">
+                {slides.map((slide, idx) => (
+                  <motion.div
+                    key={slide.key}
+                    initial={false}
+                    animate={{ 
+                      opacity: idx === currentSlide ? 1 : 0,
+                      zIndex: idx === currentSlide ? 20 : 10 
+                    }}
+                    transition={{ duration: 0.8, ease: "linear" }}
+                    className="absolute inset-0"
+                  >
+                    <div className="absolute inset-0 overflow-hidden bg-black">
+                      <motion.img
+                        src={slide.img}
+                        style={{ 
+                          scale: heroScale,
+                          y: heroY
+                        }}
+                        className="w-full h-full object-cover"
+                        alt={slide.title}
+                      />
+                    </div>
+                    
+                    {/* CONTENT LAYER (Only for active slide) */}
+                    {idx === currentSlide && (
+                      <div className="absolute inset-0 flex items-center justify-center px-6 z-30">
+                        <motion.div 
+                          initial={{ opacity: 0, y: 30 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2, duration: 0.5 }}
+                          className="text-center"
+                        >
+                          <p className="text-white/80 text-[7px] md:text-base font-black uppercase tracking-mega mb-4">{slide.subtitle}</p>
+                          <h1 className="text-white text-xl md:text-7xl lg:text-8xl font-black uppercase tracking-tighter mb-8 leading-none">{slide.title}</h1>
+                          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+                            <button onClick={scrollToProducts} className="bg-white text-black px-10 py-4 text-[8px] md:text-[10px] font-black uppercase tracking-extrawide hover:bg-black hover:text-white transition-all duration-500 cursor-pointer shadow-[0_0_30px_rgba(255,255,255,0.1)]">Explore SLOOK</button>
+                          </div>
+                        </motion.div>
                       </div>
-                    </motion.div>
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-10"></div>
-                </motion.div>
-              </AnimatePresence>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-transparent to-black/70 z-20"></div>
+                  </motion.div>
+                ))}
+              </div>
 
               {/* CONTROLS */}
               <div className="absolute inset-0 z-30 flex items-center justify-between px-4 md:px-10 pointer-events-none opacity-0 group-hover/hero:opacity-100 transition-opacity duration-500">
