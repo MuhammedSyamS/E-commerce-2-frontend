@@ -23,11 +23,16 @@ const updateSW = registerSW({
   },
 });
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+if (!googleClientId) {
+  console.error("CRITICAL: VITE_GOOGLE_CLIENT_ID is missing from environment variables!");
+}
+
 if (!rootElement) {
 } else {
   ReactDOM.createRoot(rootElement).render(
     <React.StrictMode>
-      <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <GoogleOAuthProvider clientId={googleClientId || ""}>
         <HelmetProvider>
           <BrowserRouter>
             <App />
