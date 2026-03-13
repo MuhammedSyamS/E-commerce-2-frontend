@@ -39,15 +39,26 @@ const Home = () => {
   const communityLooksRef = useRef(null);
 
   const slides = useMemo(() => {
+    if (!settings) return []; // Trigger Initializing skeleton
+    
     const raw = settings?.heroSlides || [];
-    const valid = raw.filter(s => s && s.img);
-    // If no slides are configured, it will be empty
+    const valid = raw.filter(s => s && (s.img || s.image));
+    
+    if (valid.length === 0) {
+      // High-quality localized fallbacks for immediate premium feel
+      return [
+        { img: "/hero-fallback-1.jpg", key: 'f1', title: 'Curated Excellence' },
+        { img: "/hero-fallback-2.jpg", key: 'f2', title: 'Modern Artifacts' },
+        { img: "/hero-fallback-3.jpg", key: 'f3', title: 'Studio Series' }
+      ];
+    }
+    
     return valid.map((s, i) => ({
       ...s,
-      img: resolveMediaURL(s.img),
-      key: `hero-${i}-${(s.img || '').slice(-10)}` // More unique key
+      img: resolveMediaURL(s.img || s.image),
+      key: `hero-${i}-${(s.img || s.image || '').slice(-10)}`
     }));
-  }, [settings?.heroSlides]);
+  }, [settings]);
 
   const scrollToProducts = () => {
     trendingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -59,29 +70,42 @@ const Home = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchHomeProducts = async () => {
       try {
-        setLoading(true);
-        const [homeRes, settingsRes, looksRes] = await Promise.allSettled([
-          api.get('/products/home'),
-          api.get(`/settings?t=${Date.now()}`),
-          api.get('/looks')
-        ]);
-
-        if (homeRes.status === 'fulfilled') setHomeData(homeRes.value.data);
-        if (settingsRes.status === 'fulfilled') setSettings(settingsRes.value.data);
-        if (looksRes.status === 'fulfilled' && looksRes.value.data?.length > 0) {
-          setCommunityLooks(looksRes.value.data.slice(0, 12));
-        }
+        const { data } = await api.get('/products/home');
+        setHomeData(data);
       } catch (err) {
-        console.error("HOME: Initial Data Fetch Error:", err);
+        console.error("HOME: Products Fetch Error:", err);
         setError("Failed to fetch products.");
       } finally {
         setLoading(false);
       }
     };
-    fetchAllData();
-  }, [user?._id]); // Re-fetch only on user change to refresh specific state if needed
+
+    const fetchSettings = async () => {
+      try {
+        const { data } = await api.get(`/settings?t=${Date.now()}`);
+        setSettings(data);
+      } catch (err) {
+        console.error("HOME: Settings Fetch Error:", err);
+      }
+    };
+
+    const fetchLooks = async () => {
+      try {
+        const { data } = await api.get('/looks');
+        if (data?.length > 0) {
+          setCommunityLooks(data.slice(0, 12));
+        }
+      } catch (err) {
+        console.error("HOME: Looks Fetch Error:", err);
+      }
+    };
+
+    fetchHomeProducts();
+    fetchSettings();
+    fetchLooks();
+  }, [user?._id]);
 
   // Infinite Scroll Implementation for Community Looks
   const displayLooks = useMemo(() => {
@@ -229,7 +253,17 @@ const Home = () => {
 
       {activeView === 'all' && (
         <>
-          {slides.length > 0 && (
+          {slides.length === 0 ? (
+            <section className="relative w-full h-[100vh] bg-zinc-950 flex flex-col items-center justify-center gap-6 overflow-hidden">
+                <div className="absolute inset-0 opacity-20">
+                    <div className="w-full h-full bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-800 via-transparent to-transparent animate-pulse" />
+                </div>
+                <div className="z-10 flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 rounded-full border-t-2 border-white animate-spin opacity-20" />
+                    <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white/30 animate-pulse">Initializing Studio Experience</p>
+                </div>
+            </section>
+          ) : (
             <section className="relative w-full min-h-[100vh] h-[100vh] md:h-screen bg-black overflow-hidden group/hero">
               {/* SLIDES LAYER */}
               <div className="absolute inset-0 z-10">
@@ -394,7 +428,11 @@ const Home = () => {
                 ref={communityLooksRef}
                 className="flex gap-4 md:gap-8 overflow-x-auto no-scrollbar py-8 snap-x snap-mandatory scroll-smooth px-4 md:px-0"
               >
-                {displayLooks.map((look, index) => {
+                {displayLooks.length === 0 ? (
+                   [...Array(4)].map((_, i) => (
+                    <div key={i} className="w-[280px] md:w-[320px] aspect-[3/4] bg-zinc-100 animate-pulse rounded-3xl shrink-0" />
+                   ))
+                ) : displayLooks.map((look, index) => {
                   const u = look.user;
                   const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : look.userName) || "House Stylist";
                   const formattedHandle = displayHandle.toLowerCase().replace(/\s+/g, '');
