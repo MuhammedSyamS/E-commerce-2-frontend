@@ -241,7 +241,13 @@ const Home = () => {
                       opacity: idx === currentSlide ? 1 : 0,
                       zIndex: idx === currentSlide ? 20 : 10 
                     }}
-                    transition={{ duration: 0.8, ease: "linear" }}
+                    transition={{ 
+                      opacity: { 
+                        duration: 0.8, 
+                        ease: "linear",
+                        delay: idx === currentSlide ? 0 : 0.8 
+                      } 
+                    }}
                     className="absolute inset-0"
                   >
                     <div className="absolute inset-0 overflow-hidden bg-black">
@@ -251,7 +257,8 @@ const Home = () => {
                           scale: heroScale,
                           y: heroY
                         }}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover pointer-events-none select-none"
+                        draggable="false"
                         alt={slide.title}
                       />
                     </div>
@@ -326,7 +333,7 @@ const Home = () => {
                       <button onClick={() => window.location.reload()} className="bg-red-600 text-white px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest">Retry Connection</button>
                     </div>
                   )}
-                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full overscroll-x-contain' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
+                  <div ref={section.ref} className={`${activeView === 'all' ? 'flex gap-3 md:gap-4 overflow-x-auto no-scrollbar scroll-smooth snap-x snap-mandatory px-0 pb-10 w-full' : 'grid grid-cols-2 lg:grid-cols-5 gap-4 md:gap-8'}`}>
                     {section.items.length > 0 ? (
                       section.items.filter(p => p && p._id).map((product) => (
                         <div key={product._id} className={`${activeView === 'all' ? 'w-[181.03px] md:w-auto md:min-w-[20%] lg:min-w-[16%] snap-start md:snap-start flex-shrink-0' : 'w-full'}`}><ProductCard product={product} /></div>

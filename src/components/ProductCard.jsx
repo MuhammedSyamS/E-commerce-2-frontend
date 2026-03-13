@@ -19,8 +19,30 @@ const ProductCard = ({ product, onAddToCart }) => {
 
   const [selectedSize, setSelectedSize] = useState(null);
 
-  // Hover state - Simple React state for desktop/fine pointer
-  const [hovered, setHovered] = useState(false);
+  const [isTouchHovered, setIsTouchHovered] = useState(false);
+  const touchStartRef = useRef({ x: 0, y: 0 });
+
+  const handleTouchStart = (e) => {
+    touchStartRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  };
+
+  const handleTouchMove = (e) => {
+    const deltaX = Math.abs(e.touches[0].clientX - touchStartRef.current.x);
+    const deltaY = Math.abs(e.touches[0].clientY - touchStartRef.current.y);
+
+    // Only update state if it changes, to avoid triggering React re-renders on every scroll pixel
+    if (deltaX > 15 && deltaX > deltaY) {
+      if (!isTouchHovered) setIsTouchHovered(true);
+    } else if (deltaY > 10 && deltaY > deltaX) {
+      if (isTouchHovered) setIsTouchHovered(false);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (isTouchHovered) {
+      setTimeout(() => setIsTouchHovered(false), 2500);
+    }
+  };
 
   // Determine if product is in cart (based on store state for accurate badge/state)
   const cart = user ? (user.cart || []) : useStore.getState().cart;
@@ -106,8 +128,9 @@ const ProductCard = ({ product, onAddToCart }) => {
   return (
     <div
       className="relative w-full md:max-w-[260px] group"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {/* IMAGE CONTAINER */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-zinc-50 border border-zinc-100 rounded-2xl shadow-sm">
@@ -124,6 +147,7 @@ const ProductCard = ({ product, onAddToCart }) => {
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
             loading="lazy"
+            draggable="false"
           />
         </Link>
 
@@ -205,7 +229,7 @@ const ProductCard = ({ product, onAddToCart }) => {
         */}
         {!showQuickAdd && (
           <div
-            className="absolute bottom-0 left-0 w-full z-20 bg-black text-white transition-all duration-500 ease-out opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0"
+            className={`absolute bottom-0 left-0 w-full z-20 bg-black text-white transition-all duration-500 ease-out opacity-0 translate-y-full group-hover:opacity-100 group-hover:translate-y-0 ${isTouchHovered ? '!opacity-100 !translate-y-0' : ''}`}
           >
             <button
               onClick={handleAdd}
