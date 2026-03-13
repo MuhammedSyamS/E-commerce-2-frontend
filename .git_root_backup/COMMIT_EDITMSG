@@ -1,0 +1,1 @@
+Fix SPA routing and switch to HashRouter for production stability
