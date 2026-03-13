@@ -34,6 +34,7 @@ const Login = () => {
   }, [user, navigate]);
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) return;
     try {
       const res = await api.post('/users/google-login', {
         token: credentialResponse.credential
@@ -41,13 +42,14 @@ const Login = () => {
 
       if (res.data.token) {
         setUser(res.data);
-        syncGuestWishlist(); // Sync any guest items
+        syncGuestWishlist();
         addToast("Logged in with Google", "success");
         if (isStaff(res.data)) navigate('/admin');
         else navigate('/account');
       }
     } catch (err) {
       console.error("Google Server Login Error:", err.response?.data || err);
+      // Only show toast if this was likely an intentional Google attempt
       addToast("Google Login Failed", "error");
     }
   };

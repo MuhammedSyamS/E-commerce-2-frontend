@@ -22,6 +22,7 @@ const Register = () => {
   const { addToast } = useToast();
 
   const handleGoogleSuccess = async (credentialResponse) => {
+    if (!credentialResponse?.credential) return;
     try {
       console.log("Google Signup Success:", credentialResponse);
       const res = await api.post('/users/google-login', {

@@ -11,6 +11,7 @@ export const useStore = create(
       isCartOpen: false,
       isSearchOpen: false,
       toggleSearch: () => set((state) => ({ isSearchOpen: !state.isSearchOpen })),
+      lastRefresh: 0,
 
       isDesktopSidebarOpen: true, // Desktop default OPEN
       isMobileSidebarOpen: false, // Mobile default CLOSED
@@ -228,11 +229,19 @@ export const useStore = create(
       refreshUser: async () => {
         const state = get();
         if (!state.user?.token) return;
+        
+        // Throttling: Don't refresh more than once every 10 seconds unless forced
+        const now = Date.now();
+        if (now - state.lastRefresh < 10000) return;
+
         try {
           const { data } = await api.get('/users/profile', {
             headers: { Authorization: `Bearer ${state.user.token}` }
           });
-          set({ user: { ...data, token: state.user.token } });
+          set({ 
+            user: { ...data, token: state.user.token },
+            lastRefresh: now
+          });
         } catch (err) {
           console.error('refreshUser failed:', err);
         }
