@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import api from '../api/instance';
 import { useStore } from '../store/useStore';
 import { useToast } from '../context/ToastContext';
-import { Search, ChevronDown, MessageCircle, Mail, Phone, ShieldCheck, Loader2 } from 'lucide-react';
+import { Search, ChevronDown, MessageCircle, Mail, Phone, ShieldCheck, Loader2, Send } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import ChatWidget from '../components/ChatWidget';
 
 const SupportHub = () => {
     const [search, setSearch] = useState('');
     const [activeFAQ, setActiveFAQ] = useState(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isChatOpen, setIsChatOpen] = useState(false);
     const { user } = useStore();
     const { addToast } = useToast();
 
@@ -45,22 +47,26 @@ const SupportHub = () => {
     );
 
     return (
-        <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20">
+        <div className="bg-white min-h-screen pt-44 md:pt-52 pb-20 overflow-x-hidden">
             <Helmet>
                 <title>Support Hub | SLOOK</title>
             </Helmet>
 
-            <div className="container mx-auto px-6 max-w-4xl">
+            <div className="container mx-auto px-6 max-w-4xl relative">
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter mb-6">
-                        Support <span className="text-zinc-300">Hub</span>
+                    <div className="w-fit mx-auto px-3 py-1 bg-zinc-100 rounded-full mb-6 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Live agents online</span>
+                    </div>
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 leading-none">
+                        Support <span className="text-zinc-200">Hub</span>
                     </h1>
-                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-zinc-400">How can we help you today?</p>
+                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Resolution Redefined</p>
                 </div>
 
                 {/* --- SEARCH BAR --- */}
-                <div className="relative mb-16 group">
-                    <div className="absolute inset-y-0 left-6 flex items-center text-zinc-300 group-focus-within:text-black transition-colors">
+                <div className="relative mb-20 group max-w-2xl mx-auto">
+                    <div className="absolute inset-y-0 left-8 flex items-center text-zinc-300 group-focus-within:text-black transition-colors">
                         <Search size={20} />
                     </div>
                     <input
@@ -68,110 +74,161 @@ const SupportHub = () => {
                         placeholder="Search keywords (e.g. returns, points, shipping)..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        className="w-full bg-zinc-50 border border-zinc-100 rounded-3xl py-6 pl-16 pr-8 text-sm font-bold outline-none focus:border-black transition-all"
+                        className="w-full bg-zinc-50/50 backdrop-blur-sm border border-zinc-100 rounded-[2.5rem] py-8 pl-18 pr-8 text-sm font-bold outline-none focus:border-black focus:bg-white transition-all shadow-sm focus:shadow-xl focus:shadow-black/5"
                     />
                 </div>
 
                 {/* --- QUICK CONTACT --- */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
                     {[
-                        { icon: <MessageCircle />, title: "Live Chat", sub: "Avg. response: 5 mins", action: "Chat Now", color: "bg-blue-50 text-blue-600", href: "#" },
-                        { icon: <Mail />, title: "Email Us", sub: "help.slook@gmail.com", action: "Send Email", color: "bg-amber-50 text-amber-600", href: "mailto:help.slook@gmail.com" },
-                        { icon: <Phone />, title: "Call Hub", sub: "+91 800-SLOOK-IT", action: "Call Now", color: "bg-green-50 text-green-600", href: "tel:+918007566548" }
+                        { 
+                            icon: <MessageCircle strokeWidth={2.5} />, 
+                            title: "Live Chat", 
+                            sub: "Direct response", 
+                            action: "Open Chat", 
+                            color: "bg-black text-white", 
+                            onClick: () => {
+                                document.getElementById('still-need-help')?.scrollIntoView({ behavior: 'smooth' });
+                                addToast("Please submit a ticket to unlock live chat", "info");
+                            }
+                        },
+                        { 
+                            icon: <Mail strokeWidth={2.5} />, 
+                            title: "Email Us", 
+                            sub: "24h SLA", 
+                            action: "Send Email", 
+                            color: "bg-zinc-100 text-black", 
+                            href: "mailto:help.slook@gmail.com" 
+                        },
+                        { 
+                            icon: <Phone strokeWidth={2.5} />, 
+                            title: "Voice Hub", 
+                            sub: "9am - 9pm", 
+                            action: "Call Now", 
+                            color: "bg-zinc-100 text-black", 
+                            href: "tel:+918007566548" 
+                        }
                     ].map((item, i) => (
-                        <div key={i} className="p-8 border border-zinc-100 rounded-[2rem] hover:shadow-xl hover:-translate-y-1 transition-all group">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-6 ${item.color}`}>
+                        <div key={i} 
+                            onClick={item.onClick}
+                            className={`p-10 rounded-[2.5rem] border border-zinc-100 hover:shadow-2xl hover:shadow-black/5 transition-all cursor-pointer group flex flex-col items-center text-center ${item.color.includes('bg-black') ? 'bg-black text-white' : 'bg-white hover:border-black'}`}
+                        >
+                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transform group-hover:scale-110 transition-transform ${item.color.includes('bg-black') ? 'bg-zinc-800' : 'bg-zinc-100'}`}>
                                 {item.icon}
                             </div>
-                            <h3 className="font-black uppercase tracking-tight text-lg mb-1">{item.title}</h3>
-                            <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest mb-6">{item.sub}</p>
-                            <a
-                                href={item.href}
-                                className="text-[10px] font-black uppercase tracking-widest underline decoration-2 underline-offset-4 group-hover:text-black text-zinc-400 transition-colors block w-fit"
-                            >
-                                {item.action}
-                            </a>
-                        </div>
-                    ))}
-                </div>
-
-                {/* --- FAQS --- */}
-                <div className="space-y-4">
-                    <h2 className="text-xl font-black uppercase tracking-tighter mb-8">Frequent Questions</h2>
-                    {filteredFAQs.map((faq, i) => (
-                        <div key={i} className="border border-zinc-100 rounded-2xl overflow-hidden">
-                            <button
-                                onClick={() => setActiveFAQ(activeFAQ === i ? null : i)}
-                                className="w-full p-6 flex items-center justify-between text-left hover:bg-zinc-50 transition-colors"
-                            >
-                                <div className="flex gap-4 items-center">
-                                    <span className="text-[9px] font-black uppercase px-2 py-0.5 bg-zinc-100 rounded text-zinc-500">{faq.cat}</span>
-                                    <span className="text-xs font-bold uppercase tracking-wide">{faq.q}</span>
-                                </div>
-                                <ChevronDown size={16} className={`transition-transform duration-300 ${activeFAQ === i ? 'rotate-180' : ''}`} />
-                            </button>
-                            {activeFAQ === i && (
-                                <div className="px-6 pb-6 animate-in slide-in-from-top-2">
-                                    <p className="text-sm text-zinc-500 leading-relaxed font-medium pl-4 border-l-2 border-black">
-                                        {faq.a}
-                                    </p>
-                                </div>
+                            <h3 className="font-black uppercase tracking-tight text-xl mb-1">{item.title}</h3>
+                            <p className={`text-[10px] font-bold uppercase tracking-widest mb-8 ${item.color.includes('bg-black') ? 'text-zinc-500' : 'text-zinc-400'}`}>{item.sub}</p>
+                            
+                            {item.href ? (
+                                <a href={item.href} className={`text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
+                                    {item.action}
+                                </a>
+                            ) : (
+                                <button className={`text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
+                                    {item.action}
+                                </button>
                             )}
                         </div>
                     ))}
                 </div>
 
-                {/* --- FOOTER CTA --- */}
-                <div className="mt-20 p-10 bg-black rounded-[2.5rem] text-center text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <ShieldCheck size={120} />
+                {/* --- FAQS --- */}
+                <div className="max-w-3xl mx-auto">
+                    <div className="flex justify-between items-end mb-10">
+                        <div>
+                            <h2 className="text-2xl font-black uppercase tracking-tighter">Helpful <span className="text-zinc-300">Topics</span></h2>
+                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Self-service resources</p>
+                        </div>
+                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{filteredFAQs.length} matching articles</p>
                     </div>
-                    <h2 className="text-2xl font-black uppercase mb-4">Still need help?</h2>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-8">Our expert support team is available 24/7</p>
 
-                    {!showForm ? (
-                        <button
-                            onClick={() => setShowForm(true)}
-                            className="bg-white text-black px-10 py-4 rounded-full font-black uppercase text-[10px] tracking-widest hover:bg-zinc-100 transition-transform active:scale-95"
-                        >
-                            Contact Support
-                        </button>
-                    ) : (
-                        <form onSubmit={handleTicketSubmit} className="max-w-md mx-auto space-y-4 animate-in fade-in slide-in-from-bottom-4">
-                            <input
-                                type="text"
-                                placeholder="Subject"
-                                required
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-xs font-bold text-white outline-none focus:border-zinc-500"
-                                value={ticketData.subject}
-                                onChange={e => setTicketData({ ...ticketData, subject: e.target.value })}
-                            />
-                            <textarea
-                                placeholder="Tell us more about your issue..."
-                                required
-                                rows="4"
-                                className="w-full bg-zinc-900 border border-zinc-800 rounded-xl p-4 text-xs font-bold text-white outline-none focus:border-zinc-500 resize-none"
-                                value={ticketData.message}
-                                onChange={e => setTicketData({ ...ticketData, message: e.target.value })}
-                            />
-                            <div className="flex gap-4">
+                    <div className="space-y-4">
+                        {filteredFAQs.map((faq, i) => (
+                            <div key={i} className="group border border-zinc-100 rounded-[2rem] overflow-hidden bg-white hover:border-black transition-all">
                                 <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="flex-1 bg-white text-black py-4 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2"
+                                    onClick={() => setActiveFAQ(activeFAQ === i ? null : i)}
+                                    className="w-full p-8 flex items-center justify-between text-left"
                                 >
-                                    {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : 'Submit Ticket'}
+                                    <div className="flex gap-6 items-center">
+                                        <span className="text-[8px] font-black uppercase px-2 py-1 bg-zinc-50 rounded text-zinc-400 group-hover:bg-black group-hover:text-white transition-colors">{faq.cat}</span>
+                                        <span className="text-sm font-bold uppercase tracking-wide">{faq.q}</span>
+                                    </div>
+                                    <ChevronDown size={18} className={`text-zinc-300 transition-transform duration-500 ${activeFAQ === i ? 'rotate-180 text-black' : ''}`} />
                                 </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowForm(false)}
-                                    className="px-8 border border-zinc-800 rounded-full font-black uppercase text-[10px] tracking-widest text-zinc-500"
-                                >
-                                    Cancel
-                                </button>
+                                {activeFAQ === i && (
+                                    <div className="px-8 pb-10 animate-in fade-in slide-in-from-top-4 duration-500">
+                                        <div className="pl-6 border-l-2 border-zinc-100 py-2">
+                                            <p className="text-sm text-zinc-500 leading-relaxed font-medium">
+                                                {faq.a}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
-                        </form>
-                    )}
+                        ))}
+                    </div>
+                </div>
+
+                {/* --- CHAT OVERLAY --- */}
+                <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+
+                {/* --- FOOTER CTA --- */}
+                <div id="still-need-help" className="mt-32 p-16 bg-[#0a0a0a] rounded-[3.5rem] text-center text-white relative overflow-hidden group">
+                    <div className="absolute -top-10 -right-10 opacity-[0.03] group-hover:scale-110 transition-transform duration-1000">
+                        <ShieldCheck size={300} />
+                    </div>
+                    
+                    <div className="relative z-10">
+                        <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-6 leading-none">Can't find what <br/> you need?</h2>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600 mb-12">Open a high-priority support ticket</p>
+
+                        {!showForm ? (
+                            <button
+                                onClick={() => setShowForm(true)}
+                                className="bg-white text-black px-12 py-5 rounded-full font-black uppercase text-[11px] tracking-[0.2em] hover:bg-zinc-100 transition-all hover:px-14 shadow-2xl shadow-white/10"
+                            >
+                                Contact Support
+                            </button>
+                        ) : (
+                            <form onSubmit={handleTicketSubmit} className="max-w-md mx-auto space-y-4 animate-in fade-in zoom-in duration-500">
+                                <input
+                                    type="text"
+                                    placeholder="Enter Issue Subject"
+                                    required
+                                    className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 text-xs font-bold text-white outline-none focus:border-zinc-600 transition-all"
+                                    value={ticketData.subject}
+                                    onChange={e => setTicketData({ ...ticketData, subject: e.target.value })}
+                                />
+                                <div className="relative">
+                                    <textarea
+                                        placeholder="Describe your issue in detail..."
+                                        required
+                                        rows="5"
+                                        className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-5 text-xs font-bold text-white outline-none focus:border-zinc-600 transition-all resize-none"
+                                        value={ticketData.message}
+                                        onChange={e => setTicketData({ ...ticketData, message: e.target.value })}
+                                    />
+                                    <div className="absolute bottom-4 right-4 text-[8px] font-black uppercase text-zinc-700">Min 20 characters</div>
+                                </div>
+                                <div className="flex gap-4 pt-4">
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting}
+                                        className="flex-1 bg-white text-black py-5 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all"
+                                    >
+                                        {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : 'Submit Now'}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForm(false)}
+                                        className="px-10 border border-zinc-800 rounded-full font-black uppercase text-[10px] tracking-widest text-zinc-500 hover:border-zinc-600 transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        )}
+                    </div>
                 </div>
 
             </div>

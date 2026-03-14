@@ -38,21 +38,26 @@ const AdminOrders = () => {
             setOrders(data.orders || []);
             setPages(data.pages || 1);
             setTotal(data.total || 0);
-            setPage(data.page || 1);
+            // setPage(data.page || 1); // Remove this to avoid overwriting state during transitions
         } catch (err) {
             addToast("Failed to fetch orders", "error");
         } finally {
             setLoading(false);
         }
-    }, [addToast, activeTab, searchTerm, page]);
+    }, [addToast, searchTerm, activeTab, page]);
 
+    // Update effect to use current page instead of hardcoded 1
     useEffect(() => {
-        fetchOrders(1);
-    }, [fetchOrders]);
+        fetchOrders(page);
+    }, [page, activeTab]);
 
+    // Debounced search with explicit page reset
     useEffect(() => {
         const timer = setTimeout(() => {
-            fetchOrders(1, searchTerm);
+            if (searchTerm) {
+                setPage(1);
+                fetchOrders(1, searchTerm);
+            }
         }, 500);
         return () => clearTimeout(timer);
     }, [searchTerm]);
