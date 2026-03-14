@@ -445,7 +445,11 @@ const Navbar = () => {
 
             {/* CART */}
             <button onClick={toggleCart} className="relative group p-2 md:p-3 transition-all">
-              <ShoppingBag className={`w-5 h-5 md:w-5 md:h-5 transition ${cartCount > 0 ? 'text-white fill-white' : 'text-white'}`} />
+              <ShoppingBag 
+                className={`w-5 h-5 md:w-5 md:h-5 transition-all duration-300 ${cartCount > 0 ? 'text-black' : 'text-white'}`}
+                fill={cartCount > 0 ? "white" : "none"}
+                strokeWidth={cartCount > 0 ? 2.5 : 2}
+              />
             </button>
 
             {/* NOTIFICATIONS - DESKTOP ONLY */}

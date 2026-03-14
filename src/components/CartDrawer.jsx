@@ -44,7 +44,6 @@ const CartDrawer = () => {
   // Fetch Suggestions
   useEffect(() => {
     if (isCartOpen) {
-      if (user?.token) refreshUser();
       const fetchSuggestions = async () => {
         try {
           const { data } = await api.get('/products');
