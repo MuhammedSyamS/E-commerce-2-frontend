@@ -167,7 +167,7 @@ const Notifications = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all whitespace-nowrap ${activeTab === tab.id
+              className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-[10px] font-bold transition-all whitespace-nowrap ${activeTab === tab.id
                 ? 'bg-white text-black shadow-md shadow-zinc-200/50'
                 : 'text-zinc-400 hover:text-zinc-600 hover:bg-white/50'
                 }`}
@@ -264,11 +264,11 @@ const Notifications = () => {
                     {/* Middle: Text Content */}
                     <div className="flex-1 min-w-0 pt-1">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 mb-2">
-                        <h4 className={`text-base md:text-xl font-bold tracking-tight truncate pr-12 md:pr-0 ${!notif.isRead ? 'text-zinc-900 font-extrabold' : 'text-zinc-500'}`}>
+                        <h4 className={`text-base md:text-lg font-bold truncate pr-12 md:pr-0 font-inter ${!notif.isRead ? 'text-zinc-900' : 'text-zinc-500'}`}>
                           {notif.title}
                         </h4>
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] md:text-[10px] font-bold text-zinc-400 uppercase tracking-widest whitespace-nowrap bg-zinc-50 px-2 py-0.5 rounded-full border border-zinc-100">
+                          <span className="text-[9px] md:text-[10px] font-bold text-zinc-400 whitespace-nowrap bg-zinc-50 px-2 py-0.5 rounded-full border border-zinc-100">
                             {new Date(notif.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                           </span>
                           <span className="text-[9px] md:text-[10px] font-medium text-zinc-300">
@@ -277,7 +277,7 @@ const Notifications = () => {
                         </div>
                       </div>
 
-                      <p className={`text-[12px] md:text-[15px] leading-relaxed mb-6 max-w-2xl ${!notif.isRead ? 'text-zinc-600 font-medium' : 'text-zinc-400'}`}>
+                      <p className={`text-[12px] md:text-[15px] leading-relaxed mb-6 max-w-2xl font-inter ${!notif.isRead ? 'text-zinc-600 font-medium' : 'text-zinc-400'}`}>
                         {notif.message}
                       </p>
 
@@ -286,25 +286,31 @@ const Notifications = () => {
                         {notif.type === 'order' && (
                           <div className="flex flex-wrap items-center gap-2 w-full">
                             <button
-                              onClick={(e) => { e.stopPropagation(); navigate('/my-orders'); }}
-                              className="px-6 py-2.5 bg-black text-white text-[10px] font-bold uppercase tracking-wider rounded-xl hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-lg shadow-zinc-200"
+                               onClick={(e) => { e.stopPropagation(); navigate('/my-orders'); }}
+                               className="px-6 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl hover:bg-zinc-800 transition-all flex items-center gap-2 shadow-lg shadow-zinc-200 font-inter"
                             >
                               <Truck size={14} strokeWidth={3} /> Track Package
                             </button>
                             <button
-                              onClick={(e) => { e.stopPropagation(); navigate('/support'); }}
-                              className="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-[10px] font-bold uppercase tracking-wider rounded-xl hover:border-black hover:bg-zinc-50 transition-all flex items-center gap-2"
+                               onClick={(e) => { e.stopPropagation(); navigate('/support'); }}
+                               className="px-6 py-2.5 bg-white border border-zinc-200 text-zinc-900 text-[11px] font-bold rounded-xl hover:border-black hover:bg-zinc-50 transition-all flex items-center gap-2 font-inter"
                             >
                               <Info size={14} /> View Details
                             </button>
                           </div>
                         )}
 
-                        {notif.type !== 'order' && notif.data?.url && (
-                          <div className="group/btn flex items-center gap-2 text-[10px] font-black uppercase tracking-mega text-blue-600 hover:text-blue-700 transition-colors">
-                            Explore Now <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
-                          </div>
-                        )}
+                         {notif.type !== 'order' && notif.data?.url && (
+                           <button
+                             onClick={(e) => {
+                               e.stopPropagation();
+                               navigate(notif.data.url);
+                             }}
+                             className="group/btn flex items-center gap-2 text-[11px] font-bold text-blue-600 hover:text-blue-700 transition-colors font-inter border-none bg-transparent"
+                           >
+                             {(notif.title.toLowerCase().includes('ticket') || notif.message.toLowerCase().includes('reply')) ? 'View Reply' : 'Explore Now'} <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />
+                           </button>
+                         )}
                       </div>
                     </div>
                   </div>
@@ -315,9 +321,9 @@ const Notifications = () => {
         )}
 
         <div className="mt-16 pt-8 border-t border-zinc-100 text-center">
-          <p className="text-[10px] font-black uppercase tracking-mega text-zinc-300">
-            End of Activity
-          </p>
+           <p className="text-[11px] font-bold text-zinc-300 font-inter">
+             End of Activity
+           </p>
         </div>
       </div>
     </div>

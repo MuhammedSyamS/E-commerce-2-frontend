@@ -309,6 +309,7 @@ export const useStore = create(
           membershipTier: state.user.membershipTier,
           totalSpent: state.user.totalSpent,
           referralCode: state.user.referralCode,
+          chatEnabledUntil: state.user.chatEnabledUntil,
           // Persist cart items but without full product population
           cart: (state.user.cart || []).map(item => ({
             _id: item._id,

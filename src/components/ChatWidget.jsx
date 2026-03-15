@@ -6,7 +6,7 @@ import api from '../api/instance';
 import { io } from 'socket.io-client';
 
 const ChatWidget = ({ isOpen, onClose }) => {
-    const { user } = useStore();
+    const { user, setUser } = useStore();
     const { addToast } = useToast();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -47,6 +47,7 @@ const ChatWidget = ({ isOpen, onClose }) => {
                 const now = Date.now();
                 if (expiry > now) {
                     startTimer(expiry);
+                    setUser({ ...user, chatEnabledUntil: data.chatEnabledUntil });
                 }
             }
         } catch (err) {
@@ -65,6 +66,9 @@ const ChatWidget = ({ isOpen, onClose }) => {
             if (diff <= 0) {
                 clearInterval(timerRef.current);
                 setEnabledUntil(null);
+                if (user?.chatEnabledUntil) {
+                    setUser({ ...user, chatEnabledUntil: null });
+                }
             }
         };
 
@@ -97,9 +101,10 @@ const ChatWidget = ({ isOpen, onClose }) => {
         socketRef.current.on('chat-enabled', (data) => {
             const expiry = new Date(data.enabledUntil).getTime();
             startTimer(expiry);
+            setUser({ ...user, chatEnabledUntil: data.enabledUntil });
             addToast("Support has replied! Live chat is now enabled for 5 minutes.", "success");
-            // Auto open if not open?
-            // setIsChatOpen(true);
+            // Trigger auto-open via event
+            window.dispatchEvent(new CustomEvent('open-chat'));
         });
 
         socketRef.current.on('chat-error', (data) => {
@@ -162,8 +167,8 @@ const ChatWidget = ({ isOpen, onClose }) => {
                         <User size={20} className="text-white" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black uppercase tracking-widest">Support Session</h3>
-                        <p className="text-[10px] font-bold opacity-60 uppercase tracking-tighter">
+                        <h3 className="text-sm font-bold font-inter">Support Session</h3>
+                        <p className="text-[10px] font-medium opacity-60 font-inter">
                             {timeLeft > 0 ? `Active: ${formatTime(timeLeft)} Left` : 'Session Locked'}
                         </p>
                     </div>
@@ -185,8 +190,8 @@ const ChatWidget = ({ isOpen, onClose }) => {
                         <div className="w-20 h-20 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
                             <ShieldCheck className="text-zinc-300" size={40} />
                         </div>
-                        <h4 className="text-xs font-black uppercase tracking-widest mb-2">Chat Restricted</h4>
-                        <p className="text-[10px] font-medium text-zinc-400 leading-relaxed uppercase">
+                        <h4 className="text-sm font-bold mb-2 font-inter">Chat Restricted</h4>
+                        <p className="text-[11px] font-medium text-zinc-400 leading-relaxed font-inter">
                             Submit a ticket below. Once an admin replies, a 5-minute live chat session will unlock here.
                         </p>
                         <button 

@@ -152,13 +152,16 @@ const AdminSupport = () => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await api.put(`/support/${selectedTicket._id}`,
+            const { data } = await api.put(`/support/${selectedTicket._id}`,
                 { adminResponse: reply, status: statusUpdate || selectedTicket.status }
             );
             addToast("Ticket Updated", "success");
+            
+            // Optimistic State Update
+            setTickets(prev => prev.map(t => t._id === data._id ? data : t));
+            
             setSelectedTicket(null);
             setReply('');
-            fetchData();
         } catch (err) {
             addToast("Update Failed", "error");
         } finally {

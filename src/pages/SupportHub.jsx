@@ -17,6 +17,12 @@ const SupportHub = () => {
     const [ticketData, setTicketData] = useState({ subject: '', message: '' });
     const [showForm, setShowForm] = useState(false);
 
+    React.useEffect(() => {
+        const handleOpenChat = () => setIsChatOpen(true);
+        window.addEventListener('open-chat', handleOpenChat);
+        return () => window.removeEventListener('open-chat', handleOpenChat);
+    }, []);
+
     const handleTicketSubmit = async (e) => {
         e.preventDefault();
         if (!user) return addToast('Please login to submit a ticket', 'error');
@@ -56,12 +62,12 @@ const SupportHub = () => {
                 <div className="text-center mb-16">
                     <div className="w-fit mx-auto px-3 py-1 bg-zinc-100 rounded-full mb-6 flex items-center gap-2">
                         <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-zinc-500">Live agents online</span>
+                        <span className="text-[10px] font-bold text-zinc-500 font-inter">Live agents online</span>
                     </div>
                     <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter mb-4 leading-none">
                         Support <span className="text-zinc-200">Hub</span>
                     </h1>
-                    <p className="text-[10px] font-bold uppercase tracking-[0.4em] text-zinc-400">Resolution Redefined</p>
+                    <p className="text-[11px] font-bold text-zinc-400 font-inter">Resolution Redefined</p>
                 </div>
 
                 {/* --- SEARCH BAR --- */}
@@ -88,8 +94,14 @@ const SupportHub = () => {
                             action: "Open Chat", 
                             color: "bg-black text-white", 
                             onClick: () => {
-                                document.getElementById('still-need-help')?.scrollIntoView({ behavior: 'smooth' });
-                                addToast("Please submit a ticket to unlock live chat", "info");
+                                const currentExpiry = user?.chatEnabledUntil ? new Date(user.chatEnabledUntil).getTime() : 0;
+                                const isChatActive = currentExpiry > Date.now();
+                                if (isChatActive) {
+                                    setIsChatOpen(true);
+                                } else {
+                                    document.getElementById('still-need-help')?.scrollIntoView({ behavior: 'smooth' });
+                                    addToast("Please submit a ticket to unlock live chat", "info");
+                                }
                             }
                         },
                         { 
@@ -116,15 +128,15 @@ const SupportHub = () => {
                             <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-8 transform group-hover:scale-110 transition-transform ${item.color.includes('bg-black') ? 'bg-zinc-800' : 'bg-zinc-100'}`}>
                                 {item.icon}
                             </div>
-                            <h3 className="font-black uppercase tracking-tight text-xl mb-1">{item.title}</h3>
-                            <p className={`text-[10px] font-bold uppercase tracking-widest mb-8 ${item.color.includes('bg-black') ? 'text-zinc-500' : 'text-zinc-400'}`}>{item.sub}</p>
+                            <h3 className="font-black text-xl mb-1">{item.title}</h3>
+                            <p className={`text-[11px] font-bold mb-8 font-inter ${item.color.includes('bg-black') ? 'text-zinc-500' : 'text-zinc-400'}`}>{item.sub}</p>
                             
                             {item.href ? (
-                                <a href={item.href} className={`text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
+                                <a href={item.href} className={`text-[10px] font-black font-inter py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
                                     {item.action}
                                 </a>
                             ) : (
-                                <button className={`text-[10px] font-black uppercase tracking-widest py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
+                                <button className={`text-[10px] font-black font-inter py-3 px-6 rounded-full border transition-all ${item.color.includes('bg-black') ? 'border-zinc-800 hover:bg-white hover:text-black' : 'border-zinc-100 hover:border-black'}`}>
                                     {item.action}
                                 </button>
                             )}
@@ -137,9 +149,9 @@ const SupportHub = () => {
                     <div className="flex justify-between items-end mb-10">
                         <div>
                             <h2 className="text-2xl font-black uppercase tracking-tighter">Helpful <span className="text-zinc-300">Topics</span></h2>
-                            <p className="text-[9px] font-bold text-zinc-400 uppercase tracking-widest">Self-service resources</p>
+                            <p className="text-[10px] font-bold text-zinc-400 font-inter">Self-service resources</p>
                         </div>
-                        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{filteredFAQs.length} matching articles</p>
+                        <p className="text-[10px] font-bold text-zinc-500 font-inter">{filteredFAQs.length} matching articles</p>
                     </div>
 
                     <div className="space-y-4">
@@ -151,7 +163,7 @@ const SupportHub = () => {
                                 >
                                     <div className="flex gap-6 items-center">
                                         <span className="text-[8px] font-black uppercase px-2 py-1 bg-zinc-50 rounded text-zinc-400 group-hover:bg-black group-hover:text-white transition-colors">{faq.cat}</span>
-                                        <span className="text-sm font-bold uppercase tracking-wide">{faq.q}</span>
+                                        <span className="text-sm font-bold font-inter">{faq.q}</span>
                                     </div>
                                     <ChevronDown size={18} className={`text-zinc-300 transition-transform duration-500 ${activeFAQ === i ? 'rotate-180 text-black' : ''}`} />
                                 </button>
@@ -180,12 +192,12 @@ const SupportHub = () => {
                     
                     <div className="relative z-10">
                         <h2 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-6 leading-none">Can't find what <br/> you need?</h2>
-                        <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-600 mb-12">Open a high-priority support ticket</p>
+                        <p className="text-[11px] font-bold text-zinc-600 mb-12 font-inter">Open a high-priority support ticket</p>
 
                         {!showForm ? (
                             <button
                                 onClick={() => setShowForm(true)}
-                                className="bg-white text-black px-12 py-5 rounded-full font-black uppercase text-[11px] tracking-[0.2em] hover:bg-zinc-100 transition-all hover:px-14 shadow-2xl shadow-white/10"
+                                className="bg-white text-black px-12 py-5 rounded-full font-bold text-[11px] hover:bg-zinc-100 transition-all hover:px-14 shadow-2xl shadow-white/10 font-inter border-none"
                             >
                                 Contact Support
                             </button>
@@ -214,14 +226,14 @@ const SupportHub = () => {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className="flex-1 bg-white text-black py-5 rounded-full font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all"
+                                        className="flex-1 bg-white text-black py-5 rounded-full font-bold text-[11px] flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all font-inter border-none"
                                     >
                                         {isSubmitting ? <Loader2 className="animate-spin" size={14} /> : 'Submit Now'}
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setShowForm(false)}
-                                        className="px-10 border border-zinc-800 rounded-full font-black uppercase text-[10px] tracking-widest text-zinc-500 hover:border-zinc-600 transition-all"
+                                        className="px-10 border border-zinc-800 rounded-full font-bold text-[11px] text-zinc-500 hover:border-zinc-600 transition-all font-inter"
                                     >
                                         Cancel
                                     </button>

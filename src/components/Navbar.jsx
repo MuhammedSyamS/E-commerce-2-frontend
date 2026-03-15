@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
-import Price from './Price'; // Assuming Price component exists or needs to be handled
+import Price from './Price';
+import { useToast } from '../context/ToastContext';
 import { io } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { resolveMediaURL } from '../utils/mediaUtils';
@@ -47,7 +48,14 @@ const Badge = ({ count, textColor = "text-white", showNumber = true }) => (
 );
 
 const Navbar = () => {
-  const { toggleCart, user, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates, cart } = useStore();
+  const { toggleCart, user, setUser, isSearchOpen, toggleSearch, toggleAdminSidebar, currency, setCurrency, currencyRates, cart, wishlist } = useStore();
+  const { addToast } = useToast();
+  
+  const currentCart = user ? (user.cart || []) : (cart || []);
+  const cartCount = currentCart.reduce((acc, item) => acc + (item.quantity || 1), 0);
+
+  const currentWishlist = user ? (user.wishlist || []) : (wishlist || []);
+  const wishlistCount = Array.isArray(currentWishlist) ? currentWishlist.length : 0;
 
   const [notifications, setNotifications] = useState([]);
   const [showNotif, setShowNotif] = useState(false);
@@ -165,6 +173,15 @@ const Navbar = () => {
 
       socket.on('ticket-reply', (data) => {
       });
+      
+      socket.on('chat-enabled', (data) => {
+        const latestUser = useStore.getState().user;
+        if (latestUser) {
+          setUser({ ...latestUser, chatEnabledUntil: data.enabledUntil });
+          addToast("Support has replied! Live chat is now enabled for 5 minutes.", "success");
+          window.dispatchEvent(new CustomEvent('open-chat'));
+        }
+      });
     }
 
     // Poll every 60s as fallback
@@ -234,11 +251,6 @@ const Navbar = () => {
     setIsMenuOpen(false);
   };
 
-  const guestCartCount = (cart && Array.isArray(cart)) ? cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
-  const userCartCount = (user?.cart && Array.isArray(user.cart)) ? user.cart.reduce((acc, item) => acc + (item.quantity || 1), 0) : 0;
-  const cartCount = user ? userCartCount : guestCartCount;
-
-  const wishlistCount = user?.wishlist?.length || 0;
 
   return (
     <div className={`fixed top-0 z-[100] transition-all duration-300 ease-in-out left-0 w-full`}>
@@ -445,11 +457,40 @@ const Navbar = () => {
 
             {/* CART */}
             <button onClick={toggleCart} className="relative group p-2 md:p-3 transition-all">
-              <ShoppingBag 
-                className={`w-5 h-5 md:w-5 md:h-5 transition-all duration-300 ${cartCount > 0 ? 'text-black' : 'text-white'}`}
-                fill={cartCount > 0 ? "white" : "none"}
-                strokeWidth={cartCount > 0 ? 2.5 : 2}
-              />
+              <motion.svg 
+                key={cartCount > 0 ? 'full' : 'empty'}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 20 }}
+                width="22" height="22" 
+                viewBox="0 0 24 24" 
+                className="transition-all duration-300"
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                {/* 1. Main Bag Body */}
+                <path 
+                  d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" 
+                  fill={cartCount > 0 ? "#ffffff" : "none"} 
+                  stroke="#ffffff" 
+                  strokeWidth="2"
+                />
+                
+                {/* 2. Top Edge Line */}
+                <line 
+                  x1="3" y1="6" x2="21" y2="6" 
+                  stroke={cartCount > 0 ? "#000000" : "#ffffff"} 
+                  strokeWidth="2"
+                />
+                
+                {/* 3. Internal Handle Curve (The "Smile") */}
+                <path 
+                  d="M16 10a4 4 0 0 1-8 0" 
+                  fill="none" 
+                  stroke={cartCount > 0 ? "#000000" : "#ffffff"} 
+                  strokeWidth="2"
+                />
+              </motion.svg>
             </button>
 
             {/* NOTIFICATIONS - DESKTOP ONLY */}
@@ -468,15 +509,15 @@ const Navbar = () => {
               {showNotif && (
                 <div className="absolute right-0 top-full mt-4 z-50 origin-top-right animate-in fade-in zoom-in-95 duration-200">
                   <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-2xl w-[90vw] max-w-[20rem] border border-white/20 overflow-hidden ring-1 ring-black/5">
-                    <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50">
-                      <h3 className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-500">Notifications</h3>
+                     <div className="p-4 border-b border-zinc-100 flex justify-between items-center bg-white/50 font-inter">
+                      <h3 className="text-[12px] font-bold text-zinc-500">Notifications</h3>
                       <button onClick={() => setShowNotif(false)} className="hover:bg-zinc-100 p-1 rounded-full transition"><X size={14} /></button>
                     </div>
                     <div className="max-h-80 overflow-y-auto custom-scrollbar bg-white/30">
                       {!Array.isArray(notifications) || notifications.length === 0 ? (
                         <div className="p-8 text-center flex flex-col items-center gap-2">
                           <Bell size={24} className="text-zinc-200" />
-                          <p className="text-sm md:text-[10px] font-bold text-zinc-400 uppercase">No new alerts</p>
+                          <p className="text-sm md:text-[12px] font-medium text-zinc-400 font-inter">No new alerts</p>
                         </div>
                       ) : (
                         notifications.map(n => (
@@ -491,8 +532,8 @@ const Navbar = () => {
                                 {n.type === 'order' ? <ShoppingBag size={14} /> : (n.title.includes('Price Drop') ? <BadgePercent size={14} /> : (n.type === 'promo' ? <Heart size={14} /> : <Info size={14} />))}
                               </div>
                               <div className="flex-1">
-                                <p className="text-[10px] font-black text-black mb-1 uppercase tracking-tight">{n.title}</p>
-                                <p className="text-[9px] text-zinc-600 leading-relaxed">{n.message}</p>
+                                <p className="text-[11px] font-bold text-black mb-1 font-inter">{n.title}</p>
+                                <p className="text-[9px] text-zinc-600 leading-relaxed font-inter">{n.message}</p>
                                 <p className="text-[8px] md:text-[9px] text-zinc-300 mt-2 font-mono">{new Date(n.createdAt).toLocaleDateString()}</p>
                               </div>
                             </div>
@@ -501,7 +542,7 @@ const Navbar = () => {
                       )}
                     </div>
                     <div className="p-2 border-t border-zinc-100 bg-white/50 text-center">
-                      <Link to="/account/notifications" className="text-[9px] md:text-[10px] font-black uppercase tracking-widest text-zinc-400 hover:text-black transition-colors">View All History</Link>
+                       <Link to="/account/notifications" className="text-[10px] md:text-[11px] font-bold text-zinc-400 hover:text-black transition-colors font-inter">View All Notifications</Link>
                     </div>
                   </div>
                 </div>
