@@ -18,16 +18,33 @@ const ChatWidget = ({ isOpen, onClose }) => {
     const scrollRef = useRef(null);
     const timerRef = useRef(null);
 
+    const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin;
+
     useEffect(() => {
         if (user?._id) {
             setupSocket();
-            fetchUserChatStatus();
         }
         return () => {
             if (socketRef.current) socketRef.current.disconnect();
             if (timerRef.current) clearInterval(timerRef.current);
         };
     }, [user?._id]);
+
+    // REACTIVE TIMER: Watch the global user object for chat authorization
+    useEffect(() => {
+        if (user?.chatEnabledUntil) {
+            const expiry = new Date(user.chatEnabledUntil).getTime();
+            if (expiry > Date.now()) {
+                startTimer(expiry);
+            } else {
+                setTimeLeft(0);
+                setEnabledUntil(null);
+            }
+        } else {
+            setTimeLeft(0);
+            setEnabledUntil(null);
+        }
+    }, [user?.chatEnabledUntil]);
 
     useEffect(() => {
         if (isOpen && user?._id && timeLeft > 0) {
@@ -90,21 +107,18 @@ const ChatWidget = ({ isOpen, onClose }) => {
     };
 
     const setupSocket = () => {
-        socketRef.current = io();
+        socketRef.current = io(socketUrl);
         socketRef.current.emit('join-user-room', user._id);
 
         socketRef.current.on('receive-message', (msg) => {
-            setMessages(prev => [...prev, msg]);
+            setMessages(prev => {
+                // If this is our own message and we already added it optimistically, just update it if needed
+                // But for now, simple duplication check
+                const isDuplicate = prev.some(m => m._id === msg._id || (m.tempId && m.tempId === msg.tempId));
+                if (isDuplicate) return prev;
+                return [...prev, msg];
+            });
             if (isOpen) api.put(`/chat/read/${user._id}`);
-        });
-
-        socketRef.current.on('chat-enabled', (data) => {
-            const expiry = new Date(data.enabledUntil).getTime();
-            startTimer(expiry);
-            setUser({ ...user, chatEnabledUntil: data.enabledUntil });
-            addToast("Support has replied! Live chat is now enabled for 5 minutes.", "success");
-            // Trigger auto-open via event
-            window.dispatchEvent(new CustomEvent('open-chat'));
         });
 
         socketRef.current.on('chat-error', (data) => {
@@ -129,11 +143,27 @@ const ChatWidget = ({ isOpen, onClose }) => {
         e.preventDefault();
         if (!newMessage.trim() || !user || timeLeft <= 0) return;
 
+        const tempId = Date.now().toString();
+        const optimisticMsg = {
+            _id: tempId,
+            tempId: tempId,
+            user: user._id,
+            sender: user._id,
+            message: newMessage,
+            isAdmin: false,
+            createdAt: new Date().toISOString(),
+            isOptimistic: true
+        };
+
+        // Add to local state immediately
+        setMessages(prev => [...prev, optimisticMsg]);
+
         const msgData = {
             userId: user._id,
             senderId: user._id,
             message: newMessage,
-            isAdmin: false
+            isAdmin: false,
+            tempId: tempId
         };
 
         socketRef.current.emit('send-message', msgData);

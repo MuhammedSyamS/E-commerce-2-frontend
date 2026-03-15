@@ -41,7 +41,8 @@ const AdminSupport = () => {
         fetchData();
 
         // --- SOCKET.IO ---
-        socketRef.current = io();
+        const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : window.location.origin;
+        socketRef.current = io(socketUrl);
 
         socketRef.current.on('new-ticket', (data) => {
             addToast(`New Support Ticket: ${data.subject}`, "info");
@@ -67,7 +68,11 @@ const AdminSupport = () => {
 
             // Update history if current chat is selected
             if (selectedChat?._id === msg.user) {
-                setChatHistory(prev => [...prev, msg]);
+                setChatHistory(prev => {
+                    const isDuplicate = prev.some(m => m._id === msg._id || (m.tempId && m.tempId === msg.tempId));
+                    if (isDuplicate) return prev;
+                    return [...prev, msg];
+                });
                 api.put(`/chat/read/${msg.user}`);
             }
         });
@@ -137,11 +142,27 @@ const AdminSupport = () => {
         e.preventDefault();
         if (!chatMessage.trim() || !selectedChat) return;
 
+        const tempId = Date.now().toString();
+        const optimisticMsg = {
+            _id: tempId,
+            tempId: tempId,
+            user: selectedChat._id,
+            sender: user._id,
+            message: chatMessage,
+            isAdmin: true,
+            createdAt: new Date().toISOString(),
+            isOptimistic: true
+        };
+
+        // Add to history immediately
+        setChatHistory(prev => [...prev, optimisticMsg]);
+
         const msgData = {
             userId: selectedChat._id,
             senderId: user._id,
             message: chatMessage,
-            isAdmin: true
+            isAdmin: true,
+            tempId: tempId
         };
 
         socketRef.current.emit('send-message', msgData);
