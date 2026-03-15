@@ -40,6 +40,45 @@ const AddProduct = () => {
   const [quickVariantColor, setQuickVariantColor] = useState('');
 
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (file, type, variantIdx = null) => {
+    if (!file) return;
+    
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+    setUploading(true);
+
+    try {
+      const { data } = await api.post('/upload', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const uploadedUrl = data.filePath;
+
+      if (type === 'main') {
+        setFormData(prev => ({ ...prev, image: uploadedUrl }));
+      } else if (type === 'gallery') {
+        if (formData.images.length >= 4) {
+          addToast("Max 4 gallery images allowed", "error");
+          return;
+        }
+        setFormData(prev => ({ ...prev, images: [...prev.images, uploadedUrl] }));
+      } else if (type === 'variant' && variantIdx !== null) {
+        const newVar = [...formData.variants];
+        newVar[variantIdx].image = uploadedUrl;
+        setFormData(prev => ({ ...prev, variants: newVar }));
+      } else if (type === 'video') {
+        setFormData(prev => ({ ...prev, video: uploadedUrl }));
+      }
+      
+      addToast(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`, "success");
+    } catch (err) {
+      addToast(err.response?.data?.message || "Upload failed", "error");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const addImage = (e) => {
     e.preventDefault();
@@ -150,10 +189,10 @@ const AddProduct = () => {
             </button>
             <button
               onClick={handleSubmit}
-              disabled={loading}
+              disabled={loading || uploading}
               className="bg-black text-white px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-zinc-800 transition shadow-lg shadow-black/10 disabled:opacity-50"
             >
-              {loading ? 'Publishing...' : 'Publish'}
+              {loading ? 'Publishing...' : uploading ? 'Uploading Media...' : 'Publish'}
             </button>
           </div>
         </div>
@@ -269,33 +308,7 @@ const AddProduct = () => {
                       type="file"
                       accept="video/*"
                       className="hidden"
-                      onChange={async (e) => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-
-                        if (file.size > 100 * 1024 * 1024) { // 100MB
-                          addToast("File is too large (Max 100MB)", "error");
-                          return;
-                        }
-
-                        const uploadData = new FormData();
-                        uploadData.append('file', file);
-                        setLoading(true);
-
-                        try {
-                          const { data } = await api.post('/upload', uploadData, {
-                            headers: { 'Content-Type': 'multipart/form-data' }
-                          });
-                          // Prepend server URL for consistency
-                          const fullUrl = `${data.filePath}`;
-                          setFormData(prev => ({ ...prev, video: fullUrl }));
-                          addToast("Video uploaded successfully", "success");
-                        } catch (err) {
-                          addToast("Upload failed", "error");
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
+                      onChange={(e) => handleImageUpload(e.target.files[0], 'video')}
                     />
                   </div>
                   <p className="text-[9px] text-zinc-400 mt-1 pl-1">Supports YouTube, Vimeo, or upload a file (Max 100MB).</p>
@@ -327,14 +340,7 @@ const AddProduct = () => {
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onloadend = () => setFormData({ ...formData, image: reader.result });
-                          reader.readAsDataURL(file);
-                        }
-                      }}
+                      onChange={(e) => handleImageUpload(e.target.files[0], 'main')}
                     />
                   </div>
                 </div>
@@ -370,13 +376,7 @@ const AddProduct = () => {
                       accept="image/*"
                       className="hidden"
                       onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          if (formData.images.length >= 4) return addToast("Max 4 images allowed", "error");
-                          const reader = new FileReader();
-                          reader.onloadend = () => setFormData(prev => ({ ...prev, images: [...prev.images, reader.result] }));
-                          reader.readAsDataURL(file);
-                        }
+                        handleImageUpload(e.target.files[0], 'gallery');
                         e.target.value = '';
                       }}
                     />
@@ -609,18 +609,7 @@ const AddProduct = () => {
                               const input = document.createElement('input');
                               input.type = 'file';
                               input.accept = 'image/*';
-                              input.onchange = (e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    const newVar = [...formData.variants];
-                                    newVar[idx].image = reader.result;
-                                    setFormData({ ...formData, variants: newVar });
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              };
+                              input.onchange = (e) => handleImageUpload(e.target.files[0], 'variant', idx);
                               input.click();
                             }}
                             className="p-3 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200"

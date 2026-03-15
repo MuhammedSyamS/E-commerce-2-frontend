@@ -83,53 +83,33 @@ const ProductDetails = () => {
     return true;
   };
 
-  const resizeImage = (file) => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          let width = img.width;
-          let height = img.height;
-          const MAX_WIDTH = 1080;
-          const MAX_HEIGHT = 1080;
-          if (width > height) {
-            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-          } else {
-            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
-          resolve(canvas.toDataURL('image/jpeg', 0.7));
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
-    
-    // ENFORCE 10 IMAGE LIMIT
+
     if (reviewImages.length + files.length > 10) {
       addToast("Maximum 10 images allowed per review", "warning");
       return;
     }
 
     setUploading(true);
-    for (const file of files) {
-      if (!validateFile(file, 'image')) continue;
-      try {
-        const resizedImage = await resizeImage(file);
-        setReviewImages(prev => [...prev, resizedImage]);
-      } catch (err) { addToast("Failed to process image", "error"); }
+    try {
+      for (const file of files) {
+        if (!validateFile(file, 'image')) continue;
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        const { data } = await api.post('/upload', formDataUpload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setReviewImages(prev => [...prev, data.filePath]);
+      }
+      addToast("Images uploaded successfully", "success");
+    } catch (err) {
+      addToast("Image upload failed", "error");
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const [reviewVideos, setReviewVideos] = useState([]);
@@ -137,22 +117,28 @@ const ProductDetails = () => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // ENFORCE 5 VIDEO LIMIT
     if (reviewVideos.length + files.length > 5) {
       addToast("Maximum 5 videos allowed per review", "warning");
       return;
     }
 
     setUploading(true);
-    for (const file of files) {
-      if (!validateFile(file, 'video')) continue;
-      const reader = new FileReader();
-      await new Promise((resolve) => {
-        reader.onloadend = () => { setReviewVideos(prev => [...prev, reader.result]); resolve(); };
-        reader.readAsDataURL(file);
-      });
+    try {
+      for (const file of files) {
+        if (!validateFile(file, 'video')) continue;
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        const { data } = await api.post('/upload', formDataUpload, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setReviewVideos(prev => [...prev, data.filePath]);
+      }
+      addToast("Videos uploaded successfully", "success");
+    } catch (err) {
+      addToast("Video upload failed", "error");
+    } finally {
+      setUploading(false);
     }
-    setUploading(false);
   };
 
   const scroll = (ref, direction) => {

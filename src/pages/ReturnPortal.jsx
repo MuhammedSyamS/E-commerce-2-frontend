@@ -27,30 +27,27 @@ const ReturnPortal = () => {
     const { user } = useStore();
     const navigate = useNavigate();
 
-    const handleFileUpload = (e) => {
+    const handleFileUpload = async (e) => {
         const files = Array.from(e.target.files);
         if (files.length === 0) return;
 
         setUploading(true);
-        const promises = files.map(file => {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        });
-
-        Promise.all(promises)
-            .then(base64s => {
-                setImages(prev => [...prev, ...base64s]);
-                addToast(`Attached ${files.length} file(s)`, "success");
-            })
-            .catch(err => {
-                console.error("Upload failed", err);
-                addToast("Failed to process files", "error");
-            })
-            .finally(() => setUploading(false));
+        try {
+            for (const file of files) {
+                const formDataUpload = new FormData();
+                formDataUpload.append('file', file);
+                const { data } = await api.post('/upload', formDataUpload, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                setImages(prev => [...prev, data.filePath]);
+            }
+            addToast(`Attached ${files.length} file(s)`, "success");
+        } catch (err) {
+            console.error("Upload failed", err);
+            addToast("Failed to process files", "error");
+        } finally {
+            setUploading(false);
+        }
     };
 
     const handleLookup = async (e) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Trash2, Loader2, Plus, X, Upload, AlertCircle, Package, Copy } from 'lucide-react';
+import { ArrowLeft, Trash2, Loader2, Plus, X, Upload, AlertCircle, Package, Copy, Video } from 'lucide-react';
 import api from '../../api/instance';
 import StockHistory from '../../components/StockHistory';
 import { useStore } from '../../store/useStore';
@@ -44,6 +44,45 @@ const EditProduct = () => {
   const [quickVariantColor, setQuickVariantColor] = useState('');
 
   const [newImageUrl, setNewImageUrl] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageUpload = async (file, type, variantIdx = null) => {
+    if (!file) return;
+    
+    const formDataUpload = new FormData();
+    formDataUpload.append('file', file);
+    setUploading(true);
+
+    try {
+      const { data } = await api.post('/upload', formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      const uploadedUrl = data.filePath;
+
+      if (type === 'main') {
+        setFormData(prev => ({ ...prev, image: uploadedUrl }));
+      } else if (type === 'gallery') {
+        if (formData.images.length >= 4) {
+          addToast("Max 4 gallery images allowed", "error");
+          return;
+        }
+        setFormData(prev => ({ ...prev, images: [...prev.images, uploadedUrl] }));
+      } else if (type === 'variant' && variantIdx !== null) {
+        const newVar = [...formData.variants];
+        newVar[variantIdx].image = uploadedUrl;
+        setFormData(prev => ({ ...prev, variants: newVar }));
+      } else if (type === 'video') {
+        setFormData(prev => ({ ...prev, video: uploadedUrl }));
+      }
+      
+      addToast(`${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`, "success");
+    } catch (err) {
+      addToast(err.response?.data?.message || "Upload failed", "error");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -264,28 +303,64 @@ const EditProduct = () => {
                 <h3 className="text-xs font-black uppercase tracking-widest">Product Imagery</h3>
 
                 <div>
-                  <label className="block text-[10px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">Main Product Image URL</label>
-                  <input
-                    type="text"
-                    className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black text-xs"
-                    value={formData.image}
-                    onChange={e => setFormData({ ...formData, image: e.target.value })}
-                  />
+                  <div className="flex gap-2 items-center">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        className="w-full bg-zinc-50 border border-zinc-200 p-4 rounded-xl outline-none focus:border-black text-xs pr-12"
+                        value={formData.image}
+                        onChange={e => setFormData({ ...formData, image: e.target.value })}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => document.getElementById('mainImageInput').click()}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-black transition"
+                      >
+                        <Upload size={18} />
+                      </button>
+                    </div>
+                    <input
+                      id="mainImageInput"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleImageUpload(e.target.files[0], 'main')}
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-bold uppercase mb-2 text-zinc-400 tracking-widest">Additional Images ({formData.images.length}/4)</label>
                   <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add another image URL..."
-                      className="flex-1 bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs"
-                      value={newImageUrl}
-                      onChange={e => setNewImageUrl(e.target.value)}
-                    />
-                    <button type="button" onClick={addImage} className="bg-black text-white px-4 rounded-xl hover:bg-zinc-800">
-                      <Plus size={18} />
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        placeholder="Add another image URL..."
+                        className="w-full bg-zinc-50 border border-zinc-200 p-3 rounded-xl outline-none focus:border-black text-xs pr-10"
+                        value={newImageUrl}
+                        onChange={e => setNewImageUrl(e.target.value)}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        if (newImageUrl.trim()) addImage();
+                        else document.getElementById('multiImageInput').click();
+                      }}
+                      className="bg-black text-white px-4 rounded-xl hover:bg-zinc-800 flex items-center gap-2"
+                    >
+                      {newImageUrl.trim() ? <Plus size={18} /> : <Upload size={16} />}
                     </button>
+                    <input
+                      id="multiImageInput"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        handleImageUpload(e.target.files[0], 'gallery');
+                        e.target.value = '';
+                      }}
+                    />
                   </div>
 
                   {/* Image List */}
@@ -622,18 +697,7 @@ const EditProduct = () => {
                               const input = document.createElement('input');
                               input.type = 'file';
                               input.accept = 'image/*';
-                              input.onchange = (e) => {
-                                const file = e.target.files[0];
-                                if (file) {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    const newVar = [...formData.variants];
-                                    newVar[idx].image = reader.result;
-                                    setFormData({ ...formData, variants: newVar });
-                                  };
-                                  reader.readAsDataURL(file);
-                                }
-                              };
+                              input.onchange = (e) => handleImageUpload(e.target.files[0], 'variant', idx);
                               input.click();
                             }}
                             className="p-3 bg-zinc-100 text-zinc-600 rounded-xl hover:bg-zinc-200"
@@ -848,8 +912,11 @@ const EditProduct = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition shadow-xl mt-4">
-                Save Changes
+              <button 
+                disabled={uploading}
+                className="w-full bg-black text-white py-5 rounded-full font-black uppercase tracking-[0.2em] text-xs hover:bg-zinc-800 transition shadow-xl mt-4 disabled:opacity-50"
+              >
+                {uploading ? 'Uploading Media...' : 'Save Changes'}
               </button>
             </form>
           </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '../store/useStore';
 import { resolveMediaURL } from '../utils/mediaUtils';
@@ -44,6 +44,8 @@ const Account = () => {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [myLooks, setMyLooks] = useState([]);
   const [loadingLooks, setLoadingLooks] = useState(true);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (searchParams.get('action') === 'upload') {
@@ -154,6 +156,36 @@ const Account = () => {
     });
   };
 
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Optional: Basic client-side check
+    if (!file.type.startsWith('image/')) {
+      toastError("Please select an image file");
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    const formDataAvatar = new FormData();
+    formDataAvatar.append('file', file);
+
+    try {
+      const { data } = await api.post('/users/profile/avatar', formDataAvatar, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // Update local state by refreshing user
+      await refreshUser();
+      success("Profile picture updated!");
+    } catch (err) {
+      console.error(err);
+      toastError(err.response?.data?.message || "Failed to update profile picture");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   const handleDeleteLook = async (lookId) => {
     if (!window.confirm("Are you sure you want to delete this look? This cannot be undone.")) return;
     try {
@@ -173,6 +205,43 @@ const Account = () => {
 
         {/* Header Section */}
         <div className="mb-12 text-center">
+          <div className="flex flex-col items-center mb-8 relative">
+            <div 
+              className="relative group cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-zinc-100 flex items-center justify-center transition-transform group-hover:scale-105">
+                {user.avatar ? (
+                  <img 
+                    src={user.avatar} 
+                    alt={displayName} 
+                    className={`w-full h-full object-cover ${isUploadingAvatar ? 'opacity-50' : 'opacity-100'}`}
+                  />
+                ) : (
+                  <User size={40} className="text-zinc-400" />
+                )}
+                
+                {isUploadingAvatar && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="absolute bottom-0 right-0 bg-zinc-950 text-white p-2 rounded-full shadow-lg border-2 border-white group-hover:bg-zinc-800 transition-colors">
+                <Camera size={14} />
+              </div>
+              
+              <input 
+                type="input"
+                className="hidden" 
+                ref={fileInputRef}
+                onChange={handleAvatarChange}
+                accept="image/*"
+              />
+            </div>
+          </div>
+
           <div className="inline-block mb-6">
             <div className="flex flex-wrap items-center justify-center gap-3">
               <div className="bg-zinc-950 text-white px-6 py-2 rounded-full flex items-center gap-2 shadow-xl border border-white/10">

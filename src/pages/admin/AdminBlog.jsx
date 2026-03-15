@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/instance';
 import { useStore } from '../../store/useStore';
 import { useToast } from '../../context/ToastContext';
-import { Plus, Trash2, Edit, ExternalLink, FileText, Eye, EyeOff } from 'lucide-react';
+import { Plus, Trash2, Edit, ExternalLink, FileText, Eye, EyeOff, Upload } from 'lucide-react';
 
 const AdminBlog = () => {
     const { user } = useStore();
@@ -18,6 +18,29 @@ const AdminBlog = () => {
         tags: '',
         isPublished: false
     });
+
+    const [uploading, setUploading] = useState(false);
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formDataUpload = new FormData();
+        formDataUpload.append('file', file);
+        setUploading(true);
+
+        try {
+            const { data } = await api.post('/upload', formDataUpload, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setFormData(prev => ({ ...prev, coverImage: data.filePath }));
+            addToast("Image uploaded successfully", "success");
+        } catch (err) {
+            addToast("Upload failed", "error");
+        } finally {
+            setUploading(false);
+        }
+    };
 
     useEffect(() => {
         fetchPosts();
@@ -128,8 +151,18 @@ const AdminBlog = () => {
 
                         <div>
                             <label className="block text-[10px] font-black uppercase text-zinc-400 mb-2">Cover Image URL</label>
-                            <input type="text" className="w-full bg-zinc-50 p-4 rounded-xl text-sm font-medium outline-none focus:ring-2 ring-black/5"
-                                value={formData.coverImage} onChange={e => setFormData({ ...formData, coverImage: e.target.value })} />
+                            <div className="flex gap-2">
+                                <input type="text" className="flex-1 bg-zinc-50 p-4 rounded-xl text-sm font-medium outline-none focus:ring-2 ring-black/5"
+                                    value={formData.coverImage} onChange={e => setFormData({ ...formData, coverImage: e.target.value })} />
+                                <button
+                                    type="button"
+                                    onClick={() => document.getElementById('coverImageInput').click()}
+                                    className="px-4 bg-zinc-50 border border-zinc-100 rounded-xl hover:bg-zinc-100 transition"
+                                >
+                                    <Upload size={18} className={uploading ? 'animate-bounce' : ''} />
+                                </button>
+                                <input id="coverImageInput" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                            </div>
                         </div>
 
                         <div>
