@@ -94,8 +94,9 @@ const Home = () => {
     const fetchLooks = async () => {
       try {
         const { data } = await api.get('/looks');
-        if (data?.length > 0) {
-          setCommunityLooks(data.slice(0, 12));
+        const looksArray = data.looks || (Array.isArray(data) ? data : []);
+        if (looksArray.length > 0) {
+          setCommunityLooks(looksArray.slice(0, 12));
         }
       } catch (err) {
         console.error("HOME: Looks Fetch Error:", err);
