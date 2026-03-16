@@ -69,6 +69,65 @@ const EditProfile = () => {
 
         <h1 className="text-3xl font-black uppercase tracking-tighter mb-8">Edit <span className="text-zinc-300">Profile</span></h1>
 
+        {/* Avatar Section */}
+        <div className="flex flex-col items-center mb-10">
+          <div 
+            className="relative group cursor-pointer"
+            onClick={() => document.getElementById('avatar-input').click()}
+          >
+            <div className="w-24 h-24 rounded-full border-4 border-zinc-50 shadow-lg overflow-hidden bg-zinc-100 flex items-center justify-center transition-transform group-hover:scale-105">
+              {user.avatar ? (
+                <img 
+                  src={user.avatar} 
+                  alt="Profile" 
+                  className={`w-full h-full object-cover ${loading ? 'opacity-50' : 'opacity-100'}`}
+                />
+              ) : (
+                <User size={40} className="text-zinc-400" />
+              )}
+              
+              {loading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/10">
+                  <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              )}
+            </div>
+            
+            <div className="absolute bottom-0 right-0 bg-black text-white p-2 rounded-full shadow-lg border-2 border-white">
+              <User size={12} />
+            </div>
+            
+            <input 
+              id="avatar-input"
+              type="file" 
+              className="hidden" 
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                  setLoading(true);
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  
+                  const { data } = await api.post('/users/profile/avatar', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                  });
+                  
+                  setUser({ ...user, avatar: data.avatar });
+                  setMessage({ type: 'success', text: "Profile picture updated!" });
+                } catch (err) {
+                  setMessage({ type: 'error', text: err.response?.data?.message || "Avatar update failed" });
+                } finally {
+                  setLoading(false);
+                }
+              }}
+            />
+          </div>
+          <p className="text-[9px] font-bold uppercase text-zinc-400 mt-3 tracking-widest">Tap to change photo</p>
+        </div>
+
         {message && (
           <div className={`p-4 mb-8 text-xs font-bold uppercase tracking-widest rounded-xl ${message.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
             {message.text}
