@@ -34,36 +34,39 @@ const OrderDetails = () => {
   const [variantsLoading, setVariantsLoading] = useState(false);
   const [selectedExchangeVariant, setSelectedExchangeVariant] = useState(null);
 
-  const handleFileUpload = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
+    const handleFileUpload = async (e) => {
+        const files = Array.from(e.target.files);
+        if (files.length === 0) return;
 
-    setUploading(true);
-    setUploadProgress(0);
-
-    const promises = files.map(file => {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    });
-
-    Promise.all(promises)
-      .then(base64s => {
-        setReturnFiles(prev => [...prev, ...base64s]);
-        addToast(`Attached ${files.length} proof file(s)`, "success");
-      })
-      .catch(err => {
-        console.error("Upload failed", err);
-        addToast("Failed to process files", "error");
-      })
-      .finally(() => {
-        setUploading(false);
+        setUploading(true);
         setUploadProgress(0);
-      });
-  };
+
+        try {
+            const uploadedUrls = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const { data } = await api.post('/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                
+                if (data.secure_url) {
+                    uploadedUrls.push(data.secure_url);
+                }
+                setUploadProgress(Math.round(((i + 1) / files.length) * 100));
+            }
+            setReturnFiles(prev => [...prev, ...uploadedUrls]);
+            addToast(`Attached ${files.length} proof file(s)`, "success");
+        } catch (err) {
+            console.error("Upload error:", err);
+            addToast("Failed to upload files", "error");
+        } finally {
+            setUploading(false);
+            setUploadProgress(0);
+        }
+    };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -686,6 +689,7 @@ const OrderDetails = () => {
                       accept="video/*,image/*"
                       multiple
                       onChange={handleFileUpload}
+                      disabled={uploading}
                       className="block w-full text-xs text-zinc-500
                           file:mr-4 file:py-2 file:px-4
                           file:rounded-full file:border-0
@@ -713,10 +717,10 @@ const OrderDetails = () => {
                       <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
                         {returnFiles.map((url, idx) => (
                           <div key={idx} className="w-16 h-16 bg-zinc-100 rounded-lg overflow-hidden border border-zinc-200 shrink-0 relative group">
-                            {(url.match(/\.(mp4|mov|avi|webm)$/i) || url.startsWith('data:video/')) ? (
-                              <video src={url} className="w-full h-full object-cover" />
+                            {(url.match(/\.(mp4|mov|avi|webm)$/i) || url.includes('/video/upload/')) ? (
+                              <video src={resolveMediaURL(url)} className="w-full h-full object-cover" />
                             ) : (
-                              <img src={url} alt="proof" className="w-full h-full object-cover" />
+                              <img src={resolveMediaURL(url)} alt="proof" className="w-full h-full object-cover" />
                             )}
                             <button
                               onClick={() => setReturnFiles(prev => prev.filter((_, i) => i !== idx))}
