@@ -233,7 +233,7 @@ const Account = () => {
               </div>
               
               <input 
-                type="input"
+                type="file"
                 className="hidden" 
                 ref={fileInputRef}
                 onChange={handleAvatarChange}
