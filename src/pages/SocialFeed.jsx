@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, Heart, Share2, X, Plus, ChevronRight, User, Sparkles } from 'lucide-react';
+import { ShoppingBag, Heart, Share2, X, Plus, ChevronRight, User, Sparkles, Loader2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import api from '../api/instance';
@@ -17,6 +17,9 @@ const SocialFeed = () => {
     const [looks, setLooks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeLook, setActiveLook] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [loadingMore, setLoadingMore] = useState(false);
 
     const handleAddFullLook = (look) => {
         if (!look.products?.length) return;
@@ -49,30 +52,43 @@ const SocialFeed = () => {
         }
     };
 
-    useEffect(() => {
-        const fetchLooks = async () => {
-            try {
-                const { data } = await api.get('/looks');
-                // Ensure data is mapped correctly if the backend returns different structure
-                const mappedData = (data || []).map(l => {
-                    const u = l.user;
-                    const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : l.userName) || "House Stylist";
-                    return {
-                        ...l,
-                        displayHandle,
-                        formattedHandle: displayHandle.toLowerCase().replace(/\s+/g, '')
-                    };
-                });
+    const fetchLooks = async (pageNum = 1, append = false) => {
+        if (pageNum > 1) setLoadingMore(true);
+        else setLoading(true);
+
+        try {
+            const { data } = await api.get(`/looks?page=${pageNum}&limit=9`);
+            const looksData = data.looks || [];
+            
+            const mappedData = looksData.map(l => {
+                const u = l.user;
+                const displayHandle = (u ? `${u.firstName} ${u.lastName}`.trim() : l.userName) || "House Stylist";
+                return {
+                    ...l,
+                    displayHandle,
+                    formattedHandle: displayHandle.toLowerCase().replace(/\s+/g, '')
+                };
+            });
+
+            if (append) {
+                setLooks(prev => [...prev, ...mappedData]);
+            } else {
                 setLooks(mappedData);
-            } catch (err) {
-                console.error('Error fetching looks:', err);
-                // setLooks(MOCK_LOOKS);
-                setLooks([]);
-            } finally {
-                setLoading(false);
             }
-        };
-        fetchLooks();
+            
+            setTotalPages(data.pages || 1);
+            setPage(pageNum);
+        } catch (err) {
+            console.error('Error fetching looks:', err);
+            if (!append) setLooks([]);
+        } finally {
+            setLoading(false);
+            setLoadingMore(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchLooks(1, false);
     }, []);
 
     const LookModal = ({ look, onClose }) => (
@@ -89,7 +105,7 @@ const SocialFeed = () => {
             <div className="bg-white w-full max-w-6xl max-h-[95vh] md:max-h-[85vh] md:h-full rounded-t-[2.5rem] md:rounded-[3rem] overflow-y-auto no-scrollbar md:overflow-hidden flex flex-col md:flex-row shadow-2xl relative">
                 {/* IMAGE SIDE */}
                 <div className="relative w-full aspect-[4/5] md:aspect-auto md:flex-1 bg-zinc-950 overflow-hidden group flex-shrink-0 flex items-center justify-center max-h-[60vh] md:max-h-none">
-                    <img src={resolveMediaURL(look.image)} className="w-full h-full object-contain md:object-cover" alt="" />
+                    <img src={resolveMediaURL(look.image, { width: 1200, quality: '90' })} className="w-full h-full object-contain md:object-cover" alt="" />
                     <div className="absolute inset-0 pointer-events-none md:pointer-events-auto">
                         {look.products.map(prod => (
                             <div
@@ -210,23 +226,25 @@ const SocialFeed = () => {
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 space-y-3 md:space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
                         {looks.map((look) => (
                             <motion.div
                                 key={look._id}
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 onClick={() => setActiveLook(look)}
-                                className="break-inside-avoid mb-3 md:mb-6 group cursor-pointer relative"
+                                className="group cursor-pointer relative"
                             >
-                                <div className="relative overflow-hidden rounded-[1.5rem] md:rounded-[2rem] shadow-sm border border-zinc-100 bg-white hover:shadow-2xl transition-all duration-500">
+                                <div className="relative overflow-hidden rounded-[2.5rem] shadow-sm border border-zinc-100 bg-white hover:shadow-2xl transition-all duration-500">
                                     <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                                         <div className="text-white drop-shadow-lg">
                                             <ShoppingBag size={18} />
                                         </div>
                                     </div>
 
-                                    <img src={resolveMediaURL(look.image)} className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
+                                    <div className="aspect-[4/5] overflow-hidden bg-zinc-100">
+                                        <img src={resolveMediaURL(look.image, { width: 600, quality: 'auto', crop: 'fill' })} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="" loading="lazy" />
+                                    </div>
 
                                     <div className="p-3 md:p-5">
                                         <div className="flex items-center justify-between mb-3">
@@ -258,6 +276,21 @@ const SocialFeed = () => {
                                 </div>
                             </motion.div>
                         ))}
+
+                        {/* LOAD MORE BUTTON */}
+                        {page < totalPages && (
+                            <div className="col-span-full flex justify-center py-12">
+                                <button
+                                    onClick={() => fetchLooks(page + 1, true)}
+                                    disabled={loadingMore}
+                                    className="bg-zinc-900 text-white px-12 py-5 rounded-full text-xs font-black uppercase tracking-[0.2em] hover:bg-black transition-all shadow-xl disabled:opacity-50 flex items-center gap-3"
+                                >
+                                    {loadingMore ? (
+                                        <Loader2 className="animate-spin" size={16} />
+                                    ) : "Load More Stories"}
+                                </button>
+                            </div>
+                        )}
 
                         {/* YOU'RE NEXT CARD */}
                         <motion.div
