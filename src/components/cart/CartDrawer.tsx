@@ -110,7 +110,11 @@ const CartDrawer = () => {
                 cartTotal: subtotal,
                 userId: user?._id || user?.id
             });
-            applyCoupon({ code: data.code, discount: data.discount });
+            applyCoupon({ 
+                code: data.code, 
+                discount: data.discount,
+                discountType: data.discountType 
+            });
             addToast(data.message || "Coupon Applied", "success");
             setCouponCode('');
         } catch (err: any) {
