@@ -4,7 +4,7 @@ const baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5005/api';
 
 export const client = axios.create({
   baseURL,
-  timeout: 20000, // Increased for heavy data fetches (Home/Collections)
+  timeout: 60000, // Increased to 60s for heavy admin dashboard and notification fetches
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
